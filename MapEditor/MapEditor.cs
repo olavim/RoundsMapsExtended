@@ -13,6 +13,7 @@ namespace MapEditor
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
         private bool isResizingMapObject;
+        private bool isRotatingMapObject;
         private int resizeDirection;
         private Vector3 selectionStartPosition;
         private Rect selectionRect;
@@ -27,6 +28,7 @@ namespace MapEditor
             this.isCreatingSelection = false;
             this.isDraggingMapObjects = false;
             this.isResizingMapObject = false;
+            this.isRotatingMapObject = false;
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
             this.gui = this.gameObject.AddComponent<MapEditorUI>();
@@ -47,6 +49,11 @@ namespace MapEditor
             if (this.isResizingMapObject)
             {
                 this.ResizeMapObject();
+            }
+
+            if (this.isRotatingMapObject)
+            {
+                this.RotateMapObject();
             }
         }
 
@@ -146,6 +153,20 @@ namespace MapEditor
         public void OnResizeEnd()
         {
             this.isResizingMapObject = false;
+        }
+
+        public void OnRotateStart(GameObject mapObject)
+        {
+            var mousePos = Input.mousePosition;
+            var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+
+            this.isRotatingMapObject = true;
+            this.prevMouse = mouseWorldPos;
+        }
+
+        public void OnRotateEnd()
+        {
+            this.isRotatingMapObject = false;
         }
 
         public bool IsMapObjectSelected(GameObject obj)
@@ -307,6 +328,22 @@ namespace MapEditor
                 {
                     this.prevMouse += mouseDelta;
                 }
+            }
+        }
+
+        private void RotateMapObject()
+        {
+            var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+
+            foreach (var mapObject in this.selectedMapObjects)
+            {
+                var mousePos = mouseWorldPos;
+                var objectPos = mapObject.transform.position;
+                mousePos.x -= objectPos.x;
+                mousePos.y -= objectPos.y;
+
+                float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
+                mapObject.transform.rotation = Quaternion.Euler(new Vector3(0, 0, EditorUtils.Snap(angle, 15f)));
             }
         }
     }

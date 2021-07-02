@@ -9,13 +9,13 @@ namespace MapEditor
     {
         public static readonly Dictionary<int, Vector2> directionMultipliers = new Dictionary<int, Vector2>()
         {
-            { TogglePosition.TopLeft, new Vector2(-1f, -1f) },
-            { TogglePosition.TopMiddle, new Vector2(0, -1f) },
-            { TogglePosition.TopRight, new Vector2(1f, -1f) },
+            { TogglePosition.TopLeft, new Vector2(-1f, 1f) },
+            { TogglePosition.TopMiddle, new Vector2(0, 1f) },
+            { TogglePosition.TopRight, new Vector2(1f, 1f) },
             { TogglePosition.MiddleRight, new Vector2(1f, 0) },
-            { TogglePosition.BottomRight, new Vector2(1f, 1f) },
-            { TogglePosition.BottomMiddle, new Vector2(0, 1f) },
-            { TogglePosition.BottomLeft, new Vector2(-1f, 1f) },
+            { TogglePosition.BottomRight, new Vector2(1f, -1f) },
+            { TogglePosition.BottomMiddle, new Vector2(0, -1f) },
+            { TogglePosition.BottomLeft, new Vector2(-1f, -1f) },
             { TogglePosition.MiddleLeft, new Vector2(-1f, 0) }
         };
 
@@ -34,6 +34,7 @@ namespace MapEditor
         private GameObject controlledMapObject;
         private int resizeDirection;
         private bool isResizing;
+        private bool isRotating;
 
         private MapEditor editor;
         private Vector2 scrollPos;
@@ -47,6 +48,7 @@ namespace MapEditor
             this.selectedMapObjects = new List<GameObject>();
             this.controlledMapObject = null;
             this.isResizing = false;
+            this.isRotating = false;
 
             this.uiControls = new GameObject("MapEditorUI");
             this.uiControls.transform.SetParent(this.transform);
@@ -61,16 +63,28 @@ namespace MapEditor
 
         public void Update()
         {
-            if (Input.GetMouseButtonDown(0) && this.controlledMapObject != null)
+            if (Input.GetMouseButtonDown(0) && this.isResizing)
             {
-                this.isResizing = true;
                 this.editor.OnResizeStart(this.controlledMapObject, this.resizeDirection);
+            }
+
+            if (Input.GetMouseButtonDown(0) && this.isRotating)
+            {
+                this.editor.OnRotateStart(this.controlledMapObject);
             }
 
             if (Input.GetMouseButtonUp(0) && this.isResizing)
             {
                 this.isResizing = false;
+                this.controlledMapObject = null;
                 this.editor.OnResizeEnd();
+            }
+
+            if (Input.GetMouseButtonUp(0) && this.isRotating)
+            {
+                this.isRotating = false;
+                this.controlledMapObject = null;
+                this.editor.OnRotateEnd();
             }
         }
 
@@ -100,6 +114,8 @@ namespace MapEditor
                     this.AddResizeHandle(mapObject, TogglePosition.BottomMiddle);
                     this.AddResizeHandle(mapObject, TogglePosition.TopMiddle);
                 }
+
+                this.AddRotationHandle(mapObject);
             }
 
             foreach (var obj in list)
@@ -136,17 +152,43 @@ namespace MapEditor
 
             var events = go.AddComponent<EditorPointerEvents>();
 
-            events.pointerEnter += hoveredObj =>
+            events.pointerDown += hoveredObj =>
             {
-                this.resizeDirection = direction;
-                this.controlledMapObject = mapObject;
+                if (!this.isRotating && !this.isResizing)
+                {
+                    this.isResizing = true;
+                    this.resizeDirection = direction;
+                    this.controlledMapObject = mapObject;
+                }
             };
 
-            events.pointerExit += hoveredObj =>
+            go.transform.SetParent(this.uiControls.transform);
+        }
+
+        private void AddRotationHandle(GameObject mapObject)
+        {
+            var go = new GameObject("RotationHandle");
+
+            go.AddComponent<GraphicRaycaster>();
+            var canvas = go.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+            var aligner = go.AddComponent<UI.UIAligner>();
+            aligner.referenceGameObject = mapObject;
+            aligner.position = TogglePosition.TopMiddle;
+            aligner.padding = 32f;
+
+            var image = go.AddComponent<Image>();
+            image.rectTransform.sizeDelta = new Vector2(10f, 10f);
+
+            var events = go.AddComponent<EditorPointerEvents>();
+
+            events.pointerDown += hoveredObj =>
             {
-                if (this.controlledMapObject = mapObject)
+                if (!this.isRotating && !this.isResizing)
                 {
-                    this.controlledMapObject = null;
+                    this.isRotating = true;
+                    this.controlledMapObject = mapObject;
                 }
             };
 

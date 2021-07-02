@@ -4,10 +4,16 @@ using UnityEngine.EventSystems;
 
 namespace MapEditor
 {
-    class EditorPointerEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    class EditorPointerEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
     {
         public Action<GameObject> pointerEnter;
         public Action<GameObject> pointerExit;
+        public Action<GameObject> pointerDown;
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            this.pointerDown?.Invoke(this.gameObject);
+        }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
