@@ -41,6 +41,10 @@ namespace MapEditor
             this.mapObjects.Add("Background Box", Resources.Load<GameObject>("4 Map Objects/Box_BG"));
             this.mapObjects.Add("Saw", Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat"));
 
+            this.mapObjects["Ground"].AddComponent<Transformers.BoxTransformer>();
+            this.mapObjects["Box"].AddComponent<Transformers.BoxTransformer>();
+            this.mapObjects["Destructible Box"].AddComponent<Transformers.BoxTransformer>();
+            this.mapObjects["Background Box"].AddComponent<Transformers.BoxTransformer>();
             this.mapObjects["Saw"].AddComponent<Transformers.SawTransformer>();
         }
 

@@ -8,16 +8,15 @@ namespace MapEditor
     public class MapEditor : MonoBehaviour
     {
         public List<GameObject> selectedMapObjects;
+        public float gridSize;
 
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
         private bool isResizingMapObject;
-        private GameObject resizeMapObject;
         private int resizeDirection;
         private Vector3 selectionStartPosition;
         private Rect selectionRect;
         private Vector3 prevMouse;
-        private float gridSize;
 
         private MapEditorUI gui;
 
@@ -28,7 +27,6 @@ namespace MapEditor
             this.isCreatingSelection = false;
             this.isDraggingMapObjects = false;
             this.isResizingMapObject = false;
-            this.resizeMapObject = null;
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
             this.gui = this.gameObject.AddComponent<MapEditorUI>();
@@ -141,7 +139,6 @@ namespace MapEditor
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
             this.isResizingMapObject = true;
-            this.resizeMapObject = mapObject;
             this.resizeDirection = resizeDirection;
             this.prevMouse = mouseWorldPos;
         }
@@ -149,7 +146,6 @@ namespace MapEditor
         public void OnResizeEnd()
         {
             this.isResizingMapObject = false;
-            this.resizeMapObject = null;
         }
 
         public bool IsMapObjectSelected(GameObject obj)
@@ -297,27 +293,21 @@ namespace MapEditor
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-
-            var scaleMulti = TogglePosition.directionMultipliers[this.resizeDirection];
-
             var mouseDelta = EditorUtils.SnapToGrid(mouseWorldPos - this.prevMouse, this.gridSize);
-            var scaleDelta = Vector3.Scale(mouseDelta, new Vector3(scaleMulti.x, scaleMulti.y, 0));
-            var positionDelta = Vector3.Scale(mouseDelta, new Vector3(Mathf.Abs(scaleMulti.x) * 0.5f, Mathf.Abs(scaleMulti.y) * 0.5f, 0));
 
             if (mouseDelta != Vector3.zero)
             {
+                bool resized = false;
                 foreach (var mapObject in this.selectedMapObjects)
                 {
-                    var newScale = mapObject.transform.localScale + new Vector3(scaleDelta.x, scaleDelta.y, 0);
-                    if (newScale.x >= this.gridSize && newScale.y >= this.gridSize)
-                    {
-                        mapObject.transform.localScale = newScale;
-                        mapObject.transform.position += positionDelta;
-                    }
+                    resized |= mapObject.GetComponent<Transformers.IMapObjectTransformer>().Resize(mouseDelta, this.resizeDirection);
+                }
+
+                if (resized)
+                {
+                    this.prevMouse += mouseDelta;
                 }
             }
-
-            this.prevMouse += mouseDelta;
         }
     }
 }
