@@ -11,10 +11,15 @@ namespace MapEditor
 
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
+        private bool isResizingMapObject;
+        private GameObject resizeMapObject;
+        private int resizeDirection;
         private Vector3 selectionStartPosition;
         private Rect selectionRect;
         private Vector3 prevMouse;
         private float gridSize;
+
+        private MapEditorUI gui;
 
         public void Awake()
         {
@@ -22,9 +27,11 @@ namespace MapEditor
             this.gridSize = 2.0f;
             this.isCreatingSelection = false;
             this.isDraggingMapObjects = false;
+            this.isResizingMapObject = false;
+            this.resizeMapObject = null;
 
-            this.gameObject.AddComponent<MapEditorEventHandler>();
-            this.gameObject.AddComponent<MapEditorGUI>();
+            this.gameObject.AddComponent<MapEditorInputHandler>();
+            this.gui = this.gameObject.AddComponent<MapEditorUI>();
         }
 
         public void Update()
@@ -38,6 +45,11 @@ namespace MapEditor
             {
                 this.UpdateSelection();
             }
+
+            if (this.isResizingMapObject)
+            {
+                this.ResizeMapObject();
+            }
         }
 
         public void OnSelectionStart()
@@ -50,9 +62,10 @@ namespace MapEditor
         {
             if (this.selectionRect.width > 2 && this.selectionRect.height > 2)
             {
-                var list = EditorUtils.GetContainedMapObjects(GUIUtils.GUIToWorldRect(this.selectionRect));
+                var list = EditorUtils.GetContainedMapObjects(UIUtils.GUIToWorldRect(this.selectionRect));
                 this.selectedMapObjects.Clear();
                 this.selectedMapObjects.AddRange(list);
+                this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
             }
 
             this.isCreatingSelection = false;
@@ -95,6 +108,7 @@ namespace MapEditor
             if (mapObject == null)
             {
                 this.selectedMapObjects.Clear();
+                this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
                 return;
             }
 
@@ -104,10 +118,12 @@ namespace MapEditor
                 {
                     this.selectedMapObjects.Clear();
                     this.selectedMapObjects.Add(mapObject);
+                    this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
                 }
                 else
                 {
                     this.selectedMapObjects.Clear();
+                    this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
                 }
             }
             else
@@ -115,7 +131,25 @@ namespace MapEditor
                 // GameObject is not part of a selection group, so we want to select only this object
                 this.selectedMapObjects.Clear();
                 this.selectedMapObjects.Add(mapObject);
+                this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
             }
+        }
+
+        public void OnResizeStart(GameObject mapObject, int resizeDirection)
+        {
+            var mousePos = Input.mousePosition;
+            var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+
+            this.isResizingMapObject = true;
+            this.resizeMapObject = mapObject;
+            this.resizeDirection = resizeDirection;
+            this.prevMouse = mouseWorldPos;
+        }
+
+        public void OnResizeEnd()
+        {
+            this.isResizingMapObject = false;
+            this.resizeMapObject = null;
         }
 
         public bool IsMapObjectSelected(GameObject obj)
@@ -257,11 +291,33 @@ namespace MapEditor
             }
 
             this.prevMouse += delta;
+        }
 
-            if (delta != Vector3.zero)
+        private void ResizeMapObject()
+        {
+            var mousePos = Input.mousePosition;
+            var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+
+            var scaleMulti = TogglePosition.directionMultipliers[this.resizeDirection];
+
+            var mouseDelta = EditorUtils.SnapToGrid(mouseWorldPos - this.prevMouse, this.gridSize);
+            var scaleDelta = Vector3.Scale(mouseDelta, new Vector3(scaleMulti.x, scaleMulti.y, 0));
+            var positionDelta = Vector3.Scale(mouseDelta, new Vector3(Mathf.Abs(scaleMulti.x) * 0.5f, Mathf.Abs(scaleMulti.y) * 0.5f, 0));
+
+            if (mouseDelta != Vector3.zero)
             {
-                this.isDraggingMapObjects = true;
+                foreach (var mapObject in this.selectedMapObjects)
+                {
+                    var newScale = mapObject.transform.localScale + new Vector3(scaleDelta.x, scaleDelta.y, 0);
+                    if (newScale.x >= this.gridSize && newScale.y >= this.gridSize)
+                    {
+                        mapObject.transform.localScale = newScale;
+                        mapObject.transform.position += positionDelta;
+                    }
+                }
             }
+
+            this.prevMouse += mouseDelta;
         }
     }
 }

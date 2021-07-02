@@ -40,9 +40,8 @@ namespace MapEditor
             this.mapObjects.Add("Destructible Box", Resources.Load<GameObject>("4 Map Objects/Box_Destructible"));
             this.mapObjects.Add("Background Box", Resources.Load<GameObject>("4 Map Objects/Box_BG"));
             this.mapObjects.Add("Saw", Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat"));
-            this.mapObjects.Add("Smasher", Resources.Load<GameObject>("4 Map Objects/Smasher 2.0"));
 
-            this.mapObjects["Smasher"].AddComponent<Transformers.SmasherTransformer>();
+            this.mapObjects["Saw"].AddComponent<Transformers.SawTransformer>();
         }
 
         public void Update()
@@ -75,6 +74,8 @@ namespace MapEditor
             }
 
             var go = MapManager.instance.currentMap.Map.gameObject;
+            go.transform.position = Vector3.zero;
+
             if (!go.GetComponent<MapEditor>())
             {
                 go.AddComponent<MapEditor>();

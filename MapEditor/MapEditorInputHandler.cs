@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace MapEditor
 {
-    public class MapEditorEventHandler : MonoBehaviour
+    public class MapEditorInputHandler : MonoBehaviour
     {
         private readonly float clickTimeMsEpsilon = 500f;
         private readonly float clickPositionEpsilon = 5f;
@@ -36,6 +37,11 @@ namespace MapEditor
 
         private void HandleMouseDown()
         {
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
             this.mouseDownSince = Time.time * 1000;
             this.mouseDownPosition = Input.mousePosition;
 

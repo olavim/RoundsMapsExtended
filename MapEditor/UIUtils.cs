@@ -2,7 +2,7 @@
 
 namespace MapEditor
 {
-    public static class GUIUtils
+    public static class UIUtils
     {
         public static Texture2D GetTexture(int width, int height, Color color)
         {
@@ -28,9 +28,23 @@ namespace MapEditor
 
         public static Rect WorldToGUIRect(Rect rect)
         {
-            var min = MainCam.instance.cam.WorldToScreenPoint(new Vector2(rect.min.x, rect.min.y));
-            var max = MainCam.instance.cam.WorldToScreenPoint(new Vector2(rect.max.x, rect.max.y));
+            var min = MainCam.instance.cam.WorldToScreenPoint(rect.min);
+            var max = MainCam.instance.cam.WorldToScreenPoint(rect.max);
             return new Rect(min.x, Screen.height - max.y, max.x - min.x, max.y - min.y);
+        }
+
+        public static Rect ScreenToWorldRect(Rect rect)
+        {
+            var min = MainCam.instance.cam.ScreenToWorldPoint(rect.min);
+            var max = MainCam.instance.cam.ScreenToWorldPoint(rect.max);
+            return new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
+        }
+
+        public static Rect WorldToScreenRect(Rect rect)
+        {
+            var min = MainCam.instance.cam.WorldToScreenPoint(rect.min);
+            var max = MainCam.instance.cam.WorldToScreenPoint(rect.max);
+            return new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
         }
     }
 }

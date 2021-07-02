@@ -87,6 +87,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Libs\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\..\Libs\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AssetsEmbedded\mapeditor" />

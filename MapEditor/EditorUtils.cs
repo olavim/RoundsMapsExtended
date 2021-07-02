@@ -56,8 +56,8 @@ namespace MapEditor
 
         public static Vector3 SnapToGrid(Vector3 pos, float gridSize)
         {
-            float gridX = Mathf.Round(pos.x / gridSize) * gridSize;
-            float gridY = Mathf.Round(pos.y / gridSize) * gridSize;
+            float gridX = Mathf.Round(pos.x / gridSize) * Mathf.Abs(gridSize);
+            float gridY = Mathf.Round(pos.y / gridSize) * Mathf.Abs(gridSize);
             return new Vector3(gridX, gridY, pos.z);
         }
 
