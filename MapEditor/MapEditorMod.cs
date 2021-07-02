@@ -5,6 +5,7 @@ using BepInEx;
 using Jotunn.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using HarmonyLib;
 
 namespace MapEditor
 {
@@ -17,18 +18,24 @@ namespace MapEditor
 
         public static MapEditorMod instance;
 
-        private int newMapID = -1;
         public Dictionary<string, GameObject> mapObjects = new Dictionary<string, GameObject>();
+        public bool editorActive = false;
+
+        private int newMapID = -1;
 
         public void Awake()
         {
             MapEditorMod.instance = this;
+
+            var harmony = new Harmony(MapEditorMod.ModId);
+            harmony.PatchAll();
 
             SceneManager.sceneLoaded += (scene, mode) =>
             {
                 if (mode == LoadSceneMode.Single)
                 {
                     this.newMapID = -1;
+                    this.editorActive = false;
                 }
             };
 
@@ -59,6 +66,7 @@ namespace MapEditor
 
                 this.StartCoroutine(this.AddEditorOnLevelLoad());
                 MapManager.instance.LoadLevelFromID(this.newMapID);
+                this.editorActive = true;
             }
         }
 
@@ -84,6 +92,15 @@ namespace MapEditor
             {
                 go.AddComponent<MapEditor>();
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(ArtHandler), "Update")]
+    class ArtHandlerPatch
+    {
+        public static bool Prefix()
+        {
+            return !MapEditorMod.instance.editorActive;
         }
     }
 }

@@ -211,6 +211,9 @@ namespace MapEditor
                 }
             }
 
+            GUILayout.Label("Grid size: " + this.editor.gridSize);
+            this.editor.gridSize = EditorUtils.Snap(GUILayout.HorizontalSlider(this.editor.gridSize, 0.5f, 4f), 0.5f);
+
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
 
@@ -226,40 +229,6 @@ namespace MapEditor
             {
                 GUI.Box(selectionRect, GUIContent.none, selectionStyle);
             }
-
-            //var resizeButtonStyle = new GUIStyle(GUI.skin.button);
-            //resizeButtonStyle.border = new RectOffset();
-            //resizeButtonStyle.normal.background = GUIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 100));
-
-            //foreach (var obj in this.selectedMapObjects)
-            //{
-            //    var rect = GUIUtils.WorldToGUIRect(this.GetMapObjectBounds(obj));
-
-            //    float padding = 10f;
-            //    rect.x -= padding;
-            //    rect.y -= padding;
-            //    rect.width += 2 * padding;
-            //    rect.height += 2 * padding;
-
-            //    GUI.Box(rect, GUIContent.none, selectionStyle);
-
-            //    Func<Vector2, float, Rect> GetRectAt = (pos, size) => new Rect(pos.x - (size / 2f), pos.y - (size / 2f), size, size);
-
-            //    var toggles = this.resizeToggles[obj];
-            //    Action<int, Vector2> AddToggle = (togglePos, pos) =>
-            //    {
-            //        toggles[togglePos] = GUI.RepeatButton(GetRectAt(pos, 10), GUIContent.none, resizeButtonStyle);
-            //    };
-
-            //    AddToggle(TogglePosition.TopLeft, rect.min);
-            //    AddToggle(TogglePosition.BottomRight, rect.max);
-            //    AddToggle(TogglePosition.BottomLeft, new Vector2(rect.min.x, rect.max.y));
-            //    AddToggle(TogglePosition.TopRight, new Vector2(rect.max.x, rect.min.y));
-            //    AddToggle(TogglePosition.MiddleLeft, new Vector2(rect.min.x, rect.center.y));
-            //    AddToggle(TogglePosition.MiddleRight, new Vector2(rect.max.x, rect.center.y));
-            //    AddToggle(TogglePosition.BottomMiddle, new Vector2(rect.center.x, rect.max.y));
-            //    AddToggle(TogglePosition.TopMiddle, new Vector2(rect.center.x, rect.min.y));
-            //}
         }
     }
 }

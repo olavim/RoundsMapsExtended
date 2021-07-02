@@ -9,6 +9,7 @@ namespace MapEditor
     {
         public List<GameObject> selectedMapObjects;
         public float gridSize;
+        public bool SnapToGrid { get; private set; }
 
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
@@ -25,6 +26,7 @@ namespace MapEditor
         {
             this.selectedMapObjects = new List<GameObject>();
             this.gridSize = 2.0f;
+            this.SnapToGrid = true;
             this.isCreatingSelection = false;
             this.isDraggingMapObjects = false;
             this.isResizingMapObject = false;
@@ -36,6 +38,16 @@ namespace MapEditor
 
         public void Update()
         {
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                this.SnapToGrid = false;
+            }
+
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                this.SnapToGrid = true;
+            }
+
             if (this.isDraggingMapObjects)
             {
                 this.DragMapObjects();
@@ -300,7 +312,12 @@ namespace MapEditor
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-            var delta = EditorUtils.SnapToGrid(mouseWorldPos - this.prevMouse, this.gridSize);
+            var delta = mouseWorldPos - this.prevMouse;
+
+            if (this.SnapToGrid)
+            {
+                delta = EditorUtils.SnapToGrid(delta, this.gridSize);
+            }
 
             foreach (var obj in this.selectedMapObjects)
             {
@@ -314,7 +331,12 @@ namespace MapEditor
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-            var mouseDelta = EditorUtils.SnapToGrid(mouseWorldPos - this.prevMouse, this.gridSize);
+            var mouseDelta = mouseWorldPos - this.prevMouse;
+
+            if (this.SnapToGrid)
+            {
+                mouseDelta = EditorUtils.SnapToGrid(mouseDelta, this.gridSize);
+            }
 
             if (mouseDelta != Vector3.zero)
             {
@@ -343,7 +365,13 @@ namespace MapEditor
                 mousePos.y -= objectPos.y;
 
                 float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
-                mapObject.transform.rotation = Quaternion.Euler(new Vector3(0, 0, EditorUtils.Snap(angle, 15f)));
+
+                if (this.SnapToGrid)
+                {
+                    angle = EditorUtils.Snap(angle, 15f);
+                }
+
+                mapObject.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
             }
         }
     }
