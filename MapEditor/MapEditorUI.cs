@@ -207,7 +207,7 @@ namespace MapEditor
             {
                 if (GUILayout.Button(entry.Key))
                 {
-                    this.editor.SpawnObject(entry.Value);
+                    MapEditorMod.instance.SpawnObject(entry.Value, this.gameObject);
                 }
             }
 
@@ -216,6 +216,15 @@ namespace MapEditor
 
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
+
+            GUILayout.BeginVertical();
+
+            if (GUILayout.Button("Spawn Point"))
+            {
+                MapEditorMod.instance.AddSpawn(this.gameObject);
+            }
+
+            GUILayout.EndVertical();
 
             GUILayout.EndVertical();
             GUILayout.EndArea();

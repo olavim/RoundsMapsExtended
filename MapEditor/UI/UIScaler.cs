@@ -26,12 +26,6 @@ namespace MapEditor.UI
                 return;
             }
 
-            //var bounds = UIUtils.WorldToScreenRect(EditorUtils.GetMapObjectBounds(this.referenceGameObject));
-            //bounds.x -= this.padding;
-            //bounds.y -= this.padding;
-            //bounds.width += 2 * this.padding;
-            //bounds.height += 2 * this.padding;
-
             var pos = this.referenceGameObject.transform.position;
             var scale = this.referenceGameObject.transform.localScale;
             var bounds = UIUtils.WorldToScreenRect(new Rect(pos.x - (scale.x / 2f), pos.y - (scale.y / 2f), scale.x, scale.y));
