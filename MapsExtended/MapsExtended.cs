@@ -56,7 +56,7 @@ namespace MapsExtended
             Unbound.RegisterMaps(this.mapFiles);
         }
 
-        public void SpawnMap(Map mapBase, string mapFilePath)
+        public static void LoadMap(Map mapBase, string mapFilePath)
         {
             var bytes = File.ReadAllBytes(BepInEx.Paths.PluginPath + mapFilePath);
             var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
@@ -73,11 +73,11 @@ namespace MapsExtended
 
             foreach (var spawn in mapData.spawns)
             {
-                this.AddSpawn(mapBase.gameObject, spawn);
+                MapsExtended.AddSpawn(mapBase.gameObject, spawn);
             }
         }
 
-        public GameObject AddSpawn(GameObject map, SpawnPointData data = null)
+        public static GameObject AddSpawn(GameObject map, SpawnPointData data = null)
         {
             if (data == null)
             {
@@ -107,7 +107,7 @@ namespace MapsExtended
         {
             SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
-            MapsExtended.instance.SpawnMap(map, MapManagerPatch.mapToLoad);
+            MapsExtended.LoadMap(map, MapManagerPatch.mapToLoad);
         }
 
         public static void Prefix(ref string sceneName)

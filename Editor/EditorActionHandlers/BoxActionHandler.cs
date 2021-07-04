@@ -4,6 +4,15 @@ namespace MapsExtended.Editor
 {
     public class BoxActionHandler : MonoBehaviour, IEditorActionHandler
     {
+        public bool CanRotate()
+        {
+            return true;
+        }
+        public bool CanResize(int resizeDirection)
+        {
+            return true;
+        }
+
         public bool Resize(Vector3 mouseDelta, int resizeDirection)
         {
             float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().gridSize;

@@ -1,10 +1,20 @@
 ﻿using UnityEngine;
-using MapsExtended.Editor;
 
 namespace MapsExtended.Editor
 {
     public class SawActionHandler : MonoBehaviour, IEditorActionHandler
     {
+        public bool CanRotate()
+        {
+            return false;
+        }
+
+        public bool CanResize(int resizeDirection)
+        {
+            var multi = TogglePosition.directionMultipliers[resizeDirection];
+            return Mathf.Abs(multi.x) == Mathf.Abs(multi.y);
+        }
+
         public bool Resize(Vector3 mouseDelta, int resizeDirection)
         {
             float gridSize = this.gameObject.GetComponentInParent<MapEditor>().gridSize;

@@ -105,14 +105,10 @@ namespace MapsExtended.Editor
                 this.AddResizeHandle(mapObject, TogglePosition.TopRight);
                 this.AddResizeHandle(mapObject, TogglePosition.BottomLeft);
                 this.AddResizeHandle(mapObject, TogglePosition.BottomRight);
-
-                if (mapObject.GetComponent<BoxCollider2D>() || mapObject.GetComponentsInChildren<BoxCollider2D>().Length > 0)
-                {
-                    this.AddResizeHandle(mapObject, TogglePosition.MiddleLeft);
-                    this.AddResizeHandle(mapObject, TogglePosition.MiddleRight);
-                    this.AddResizeHandle(mapObject, TogglePosition.BottomMiddle);
-                    this.AddResizeHandle(mapObject, TogglePosition.TopMiddle);
-                }
+                this.AddResizeHandle(mapObject, TogglePosition.MiddleLeft);
+                this.AddResizeHandle(mapObject, TogglePosition.MiddleRight);
+                this.AddResizeHandle(mapObject, TogglePosition.BottomMiddle);
+                this.AddResizeHandle(mapObject, TogglePosition.TopMiddle);
 
                 this.AddRotationHandle(mapObject);
             }
@@ -136,6 +132,11 @@ namespace MapsExtended.Editor
 
         private void AddResizeHandle(GameObject mapObject, int direction)
         {
+            if (!mapObject.GetComponent<IEditorActionHandler>().CanResize(direction))
+            {
+                return;
+            }
+
             var go = new GameObject("Toggle");
 
             go.AddComponent<GraphicRaycaster>();
@@ -166,6 +167,11 @@ namespace MapsExtended.Editor
 
         private void AddRotationHandle(GameObject mapObject)
         {
+            if (!mapObject.GetComponent<IEditorActionHandler>().CanRotate())
+            {
+                return;
+            }
+
             var go = new GameObject("RotationHandle");
 
             go.AddComponent<GraphicRaycaster>();
@@ -229,8 +235,9 @@ namespace MapsExtended.Editor
 
             if (GUILayout.Button("Spawn Point"))
             {
-                var spawn = MapsExtended.instance.AddSpawn(this.gameObject);
+                var spawn = MapsExtended.AddSpawn(this.gameObject);
                 spawn.AddComponent<Visualizers.SpawnVisualizer>();
+                spawn.AddComponent<SpawnActionHandler>();
             }
 
             GUILayout.EndVertical();
