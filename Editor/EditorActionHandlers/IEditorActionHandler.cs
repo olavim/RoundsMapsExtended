@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-namespace MapEditor.Transformers
+namespace MapsExtended.Editor
 {
-    public interface IMapObjectTransformer
+    public interface IEditorActionHandler
     {
         bool Resize(Vector3 mouseDelta, int resizeDirection);
     }

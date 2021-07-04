@@ -1,96 +1,53 @@
-﻿using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
-using Jotunn.Utils;
+﻿using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using HarmonyLib;
 using UnboundLib;
 using Photon.Pun;
-using Sirenix.Serialization;
 
-namespace MapEditor
+namespace MapsExtended.Editor
 {
     [BepInDependency("com.willis.rounds.unbound", "2.1.4")]
-    [BepInPlugin(ModId, "MapEditor", Version)]
-    public class MapEditorMod : BaseUnityPlugin
+    [BepInDependency("io.olavim.rounds.mapsextended", "1.0.0")]
+    [BepInPlugin(ModId, "MapsExtended.Editor", Version)]
+    public class EditorMod : BaseUnityPlugin
     {
-        private const string ModId = "io.olavim.rounds.mapeditor";
+        private const string ModId = "io.olavim.rounds.mapsextended.editor";
         public const string Version = "1.0.0";
 
-        public static MapEditorMod instance;
+        public static EditorMod instance;
 
-        public Dictionary<string, GameObject> mapObjects = new Dictionary<string, GameObject>();
         public bool editorActive = false;
-
-        private int newMapID = -1;
 
         public void Awake()
         {
-            MapEditorMod.instance = this;
+            EditorMod.instance = this;
 
-            var harmony = new Harmony(MapEditorMod.ModId);
+            var harmony = new Harmony(EditorMod.ModId);
             harmony.PatchAll();
 
             SceneManager.sceneLoaded += (scene, mode) =>
             {
                 if (mode == LoadSceneMode.Single)
                 {
-                    this.newMapID = -1;
                     this.editorActive = false;
                 }
             };
-
-            AssetUtils.LoadAssetBundleFromResources("mapeditor", typeof(MapEditorMod).Assembly);
-            var objectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapEditorMod).Assembly);
-
-            this.RegisterMapObject<Transformers.BoxTransformer>("Ground", objectBundle.LoadAsset<GameObject>("Ground"));
-            this.RegisterMapObject<Transformers.BoxTransformer>("Box", Resources.Load<GameObject>("4 Map Objects/Box"));
-            this.RegisterMapObject<Transformers.BoxTransformer>("Destructible Box", Resources.Load<GameObject>("4 Map Objects/Box_Destructible"));
-            this.RegisterMapObject<Transformers.BoxTransformer>("Background Box", Resources.Load<GameObject>("4 Map Objects/Box_BG"));
-            this.RegisterMapObject<Transformers.SawTransformer>("Saw", Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat"));
-        }
-
-        private void RegisterMapObject<TTrans>(string name, GameObject prefab) where TTrans : Component
-        {
-            this.mapObjects.Add(name, prefab);
-            prefab.AddComponent<TTrans>();
-
-            var obj = prefab.AddComponent<MapObject>();
-            obj.mapObjectName = name;
         }
 
         public void Update()
         {
             if (Input.GetKeyDown(KeyCode.F5))
             {
-                if (this.newMapID == -1)
-                {
-                    this.InsertNewMap();
-                }
-
-                this.StartCoroutine(this.AddEditorOnLevelLoad());
-                MapManager.instance.LoadLevelFromID(this.newMapID);
                 this.editorActive = true;
+                MapManager.instance.RPCA_LoadLevel("NewMap");
+                SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
             }
         }
 
-        private void InsertNewMap()
+        private void AddEditorOnLevelLoad(Scene scene, LoadSceneMode mode)
         {
-            this.newMapID = MapManager.instance.levels.Length;
-            var list = MapManager.instance.levels.ToList();
-            list.Add("NewMap");
-            MapManager.instance.levels = list.ToArray();
-        }
-
-        private IEnumerator AddEditorOnLevelLoad()
-        {
-            while (MapManager.instance.currentLevelID != this.newMapID)
-            {
-                yield return null;
-            }
+            SceneManager.sceneLoaded -= this.AddEditorOnLevelLoad;
 
             var go = MapManager.instance.currentMap.Map.gameObject;
             go.transform.position = Vector3.zero;
@@ -98,29 +55,6 @@ namespace MapEditor
             if (!go.GetComponent<MapEditor>())
             {
                 go.AddComponent<MapEditor>();
-            }
-        }
-
-        public void AddSpawn(GameObject map, SpawnPointData data = null)
-        {
-            if (data == null)
-            {
-                int id = map.GetComponentsInChildren<SpawnPoint>().Length;
-                int teamID = id % 2;
-                data = new SpawnPointData(id, teamID, Vector3.zero);
-            }
-
-            var spawnGo = new GameObject($"SPAWN POINT {data.id}");
-            spawnGo.transform.SetParent(map.transform);
-            spawnGo.transform.position = data.position;
-
-            var spawn = spawnGo.AddComponent<SpawnPoint>();
-            spawn.ID = data.id;
-            spawn.TEAMID = data.teamID;
-
-            if (this.editorActive)
-            {
-                spawnGo.AddComponent<Visualizers.SpawnVisualizer>();
             }
         }
 
@@ -230,26 +164,6 @@ namespace MapEditor
                 mask.backSortingOrder = 0;
             }
         }
-
-        public void SpawnMap(Map map)
-        {
-            var bytes = File.ReadAllBytes("map.json");
-            var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
-
-            foreach (var mapObject in mapData.mapObjects)
-            {
-                var prefab = MapEditorMod.instance.mapObjects[mapObject.mapObjectName];
-                var instance = MapEditorMod.instance.SpawnObject(prefab, map.gameObject);
-                instance.transform.position = mapObject.position;
-                instance.transform.localScale = mapObject.scale;
-                instance.transform.rotation = mapObject.rotation;
-            }
-
-            foreach (var spawn in mapData.spawns)
-            {
-                MapEditorMod.instance.AddSpawn(map.gameObject, spawn);
-            }
-        }
     }
 
     [HarmonyPatch(typeof(ArtHandler), "Update")]
@@ -257,27 +171,7 @@ namespace MapEditor
     {
         public static bool Prefix()
         {
-            return !MapEditorMod.instance.editorActive;
-        }
-    }
-
-    [HarmonyPatch(typeof(MapManager), "RPCA_LoadLevel")]
-    class MapManagerPatch
-    {
-        private static void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
-        {
-            SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
-            Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
-            MapEditorMod.instance.SpawnMap(map);
-        }
-
-        public static void Prefix(ref string sceneName)
-        {
-            if (sceneName != null)
-            {
-                sceneName = "NewMap";
-                SceneManager.sceneLoaded += MapManagerPatch.OnLevelFinishedLoading;
-            }
+            return !EditorMod.instance.editorActive;
         }
     }
 }

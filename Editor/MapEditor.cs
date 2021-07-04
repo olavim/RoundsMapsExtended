@@ -1,12 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
-using UnboundLib;
 using UnityEngine;
-using Photon.Pun;
 using Sirenix.Serialization;
 
-namespace MapEditor
+namespace MapsExtended.Editor
 {
     public class MapEditor : MonoBehaviour
     {
@@ -44,9 +41,11 @@ namespace MapEditor
         {
             if (Input.GetKeyDown(KeyCode.J))
             {
-                var mapData = new CustomMap();
-                mapData.mapObjects = new List<MapObjectData>();
-                mapData.spawns = new List<SpawnPointData>();
+                var mapData = new CustomMap
+                {
+                    mapObjects = new List<MapObjectData>(),
+                    spawns = new List<SpawnPointData>()
+                };
 
                 var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>();
                 var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>();
@@ -265,7 +264,7 @@ namespace MapEditor
                 bool resized = false;
                 foreach (var mapObject in this.selectedMapObjects)
                 {
-                    resized |= mapObject.GetComponent<Transformers.IMapObjectTransformer>().Resize(mouseDelta, this.resizeDirection);
+                    resized |= mapObject.GetComponent<IEditorActionHandler>().Resize(mouseDelta, this.resizeDirection);
                 }
 
                 if (resized)

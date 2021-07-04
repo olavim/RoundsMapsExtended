@@ -5,8 +5,8 @@
     <ProjectGuid>{43885CDF-DA4E-421D-8FE9-943FFA8A9C96}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MapEditor</RootNamespace>
-    <AssemblyName>MapEditor</AssemblyName>
+    <RootNamespace>MapsExtended</RootNamespace>
+    <AssemblyName>MapsExtended.Editor</AssemblyName>
     <Authors>olavim</Authors>
     <TargetFramework>net462</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -29,6 +29,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="UnboundLib" Version="2.1.4" />
+    <ProjectReference Include="..\MapsExtended\MapsExtended.csproj" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\Libs\0Harmony.dll</HintPath>
@@ -53,17 +65,6 @@
     </Reference>
     <Reference Include="Sirenix.Serialization.Config">
       <HintPath>..\..\Libs\Sirenix.Serialization.Config.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UnboundLib, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\UnboundLib.2.1.4\lib\net461\UnboundLib.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>..\..\Libs\Unity.TextMeshPro.dll</HintPath>
@@ -102,11 +103,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>..\..\Libs\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="AssetsEmbedded\mapeditor" />
-    <EmbeddedResource Include="AssetsEmbedded\mapobjects" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Target Name="ReadPackageVersionFromOutputAssembly" DependsOnTargets="Build" Outputs="$(PackageVersion)">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace MapEditor
+namespace MapsExtended
 {
     class EditorPointerEvents : MonoBehaviour, IPointerDownHandler
     {

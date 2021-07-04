@@ -36,8 +36,7 @@ Write-Host "Publishing for $Target from $TargetPath"
 # Plugin name without ".dll"
 $name = "$TargetAssembly" -Replace('.dll')
 
-# Debug copies the dll to ROUNDS
-if($name.Equals("MapEditor")) {
+if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
     Write-Host "Updating local installation in $RoundsPath"
     
     $plug = New-Item -Type Directory -Path "$RoundsPath\BepInEx\plugins\$name" -Force
@@ -46,7 +45,7 @@ if($name.Equals("MapEditor")) {
 }
 
 # Release package for ThunderStore
-if($Target.Equals("Release") -and $name.Equals("MapEditor")) {
+if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
     $package = "$ProjectPath\release"
     
     Write-Host "Packaging for ThunderStore"
@@ -66,7 +65,7 @@ if($Target.Equals("Release") -and $name.Equals("MapEditor")) {
 }
 
 # Release package for GitHub
-if($Target.Equals("Release") -and $name.Equals("MapEditor")) {
+if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
     $package = "$ProjectPath\release"
 
     Write-Host "Packaging for GitHub"

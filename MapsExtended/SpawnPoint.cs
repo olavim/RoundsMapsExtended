@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace MapEditor
+namespace MapsExtended
 {
     [Serializable]
     public class SpawnPointData

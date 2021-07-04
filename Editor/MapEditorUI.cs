@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MapEditor
+namespace MapsExtended.Editor
 {
     public static class TogglePosition
     {
@@ -203,11 +202,20 @@ namespace MapEditor
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, GUILayout.Width(200), GUILayout.Height(200));
             GUILayout.BeginVertical();
 
-            foreach (var entry in MapEditorMod.instance.mapObjects)
+            foreach (string objectName in MapObjectManager.instance.GetMapObjects())
             {
-                if (GUILayout.Button(entry.Key))
+                if (GUILayout.Button(objectName))
                 {
-                    MapEditorMod.instance.SpawnObject(entry.Value, this.gameObject);
+                    var instance = EditorMod.instance.SpawnObject(MapObjectManager.instance.GetMapObject(objectName), this.gameObject);
+
+                    if (objectName == "Saw")
+                    {
+                        instance.AddComponent<SawActionHandler>();
+                    }
+                    else
+                    {
+                        instance.AddComponent<BoxActionHandler>();
+                    }
                 }
             }
 
@@ -221,7 +229,8 @@ namespace MapEditor
 
             if (GUILayout.Button("Spawn Point"))
             {
-                MapEditorMod.instance.AddSpawn(this.gameObject);
+                var spawn = MapsExtended.instance.AddSpawn(this.gameObject);
+                spawn.AddComponent<Visualizers.SpawnVisualizer>();
             }
 
             GUILayout.EndVertical();

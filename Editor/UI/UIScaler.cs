@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MapEditor.UI
+namespace MapsExtended.Editor.UI
 {
     class UIScaler : MonoBehaviour
     {

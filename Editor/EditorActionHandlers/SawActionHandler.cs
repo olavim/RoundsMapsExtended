@@ -1,31 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
+using MapsExtended.Editor;
 
-namespace MapEditor.Transformers
+namespace MapsExtended.Editor
 {
-    public class SawTransformer : MonoBehaviour, IMapObjectTransformer
+    public class SawActionHandler : MonoBehaviour, IEditorActionHandler
     {
-        public void Start()
-        {
-            var collider = this.GetComponent<CircleCollider2D>();
-            float oldRadius = collider.radius;
-            collider.radius = 0.5f;
-
-            float ratio = (collider.radius / oldRadius);
-            this.transform.GetChild(0).localScale *= ratio;
-
-            var shadow = this.GetComponent<SFPolygon>();
-            var path = shadow.GetPath(0);
-            var newPath = new List<Vector2>();
-
-            foreach (var point in path)
-            {
-                newPath.Add(point * ratio);
-            }
-
-            shadow.SetPath(0, newPath.ToArray());
-        }
-
         public bool Resize(Vector3 mouseDelta, int resizeDirection)
         {
             float gridSize = this.gameObject.GetComponentInParent<MapEditor>().gridSize;

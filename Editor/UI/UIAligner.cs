@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace MapEditor.UI
+namespace MapsExtended.Editor.UI
 {
     class UIAligner : MonoBehaviour
     {

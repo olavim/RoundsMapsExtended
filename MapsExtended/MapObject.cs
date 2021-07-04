@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace MapEditor
+namespace MapsExtended
 {
     [Serializable]
     public class MapObjectData

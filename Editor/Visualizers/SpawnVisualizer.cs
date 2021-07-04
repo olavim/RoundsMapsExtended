@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-namespace MapEditor.Visualizers
+namespace MapsExtended.Visualizers
 {
     public class SpawnVisualizer : MonoBehaviour
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MapEditor
+namespace MapsExtended
 {
     [Serializable]
     public class CustomMap
