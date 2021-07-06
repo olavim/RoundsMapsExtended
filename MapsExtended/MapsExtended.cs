@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using Sirenix.Serialization;
 using UnityEngine;
 using UnboundLib;
+using Photon.Pun;
 
 namespace MapsExtended
 {
@@ -47,25 +48,31 @@ namespace MapsExtended
 
         public void UpdateMapFiles()
         {
+            var pluginPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
+            var rootPaths = Directory.GetFiles(Path.Combine(BepInEx.Paths.GameRootPath, "maps"), "*.map", SearchOption.AllDirectories);
+
             this.mapFiles = new List<string>();
-            var paths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
-            this.mapFiles.AddRange(paths.Select(p => p.Replace(BepInEx.Paths.PluginPath, "")));
+            this.mapFiles.AddRange(pluginPaths.Select(p => p.Replace(BepInEx.Paths.GameRootPath, "")));
+            this.mapFiles.AddRange(rootPaths.Select(p => p.Replace(BepInEx.Paths.GameRootPath, "")));
 
             Logger.LogMessage($"Loaded {mapFiles.Count} custom maps");
 
             Unbound.RegisterMaps(this.mapFiles);
         }
 
-        public static void LoadMap(Map mapBase, string mapFilePath)
+        public static void LoadMap(Map mapBase, string mapFilePath, bool isDelayedLoad = false)
         {
-            var bytes = File.ReadAllBytes(BepInEx.Paths.PluginPath + mapFilePath);
+            var bytes = File.ReadAllBytes(BepInEx.Paths.GameRootPath + mapFilePath);
             var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
+
+            foreach (Transform child in mapBase.transform)
+            {
+                GameObject.Destroy(child.gameObject);
+            }
 
             foreach (var mapObject in mapData.mapObjects)
             {
-                var prefab = MapObjectManager.instance.GetMapObject(mapObject.mapObjectName);
-                var instance = GameObject.Instantiate(prefab, mapBase.transform);
-                instance.name = prefab.name;
+                var instance = MapsExtended.SpawnMapObject(mapBase, mapObject.mapObjectName, isDelayedLoad);
                 instance.transform.position = mapObject.position;
                 instance.transform.localScale = mapObject.scale;
                 instance.transform.rotation = mapObject.rotation;
@@ -73,15 +80,33 @@ namespace MapsExtended
 
             foreach (var spawn in mapData.spawns)
             {
-                MapsExtended.AddSpawn(mapBase.gameObject, spawn);
+                MapsExtended.AddSpawn(mapBase, spawn);
             }
         }
 
-        public static GameObject AddSpawn(GameObject map, SpawnPointData data = null)
+        public static GameObject SpawnMapObject(Map map, string mapObjectName, bool isDelayedSpawn = false)
+        {
+            var prefab = MapObjectManager.instance.GetMapObject(mapObjectName);
+            GameObject instance;
+
+            if (isDelayedSpawn && prefab.GetComponent<PhotonMapObject>())
+            {
+                instance = PhotonNetwork.Instantiate($"4 Map Objects/{prefab.name}", Vector3.zero, Quaternion.identity);
+            }
+            else
+            {
+                instance = GameObject.Instantiate(prefab, map.transform);
+            }
+
+            instance.name = prefab.name;
+            return instance;
+        }
+
+        public static GameObject AddSpawn(Map map, SpawnPointData data = null)
         {
             if (data == null)
             {
-                int id = map.GetComponentsInChildren<SpawnPoint>().Length;
+                int id = map.gameObject.GetComponentsInChildren<SpawnPoint>().Length;
                 int teamID = id % 2;
                 data = new SpawnPointData(id, teamID, Vector3.zero);
             }

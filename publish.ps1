@@ -42,9 +42,10 @@ if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
     $plug = New-Item -Type Directory -Path "$RoundsPath\BepInEx\plugins\$name" -Force
     Write-Host "Copy $TargetAssembly to $plug"
     Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
+    Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$plug" -Force
 }
 
-# Release package for ThunderStore
+# Release packages for ThunderStore
 if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
     $package = "$ProjectPath\release"
     
@@ -56,6 +57,10 @@ if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
     Copy-Item -Path "$ProjectPath\README.md" -Destination "$thunder\README.md"
     Copy-Item -Path "$ProjectPath\manifest.json" -Destination "$thunder\manifest.json"
     Copy-Item -Path "$ProjectPath\icon.png" -Destination "$thunder\icon.png"
+
+    if($name.Equals("MapsExtended.Editor")) {
+        Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$thunder\plugins\"
+    }
 
     ((Get-Content -path "$thunder\manifest.json" -Raw) -replace "#VERSION#", "$Version") | Set-Content -Path "$thunder\manifest.json"
 
@@ -72,6 +77,10 @@ if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name
     $pkg = New-Item -Type Directory -Path "$package\package"
     $pkg.CreateSubdirectory('BepInEx\plugins')
     Copy-Item -Path "$TargetPath\$name.dll" -Destination "$pkg\BepInEx\plugins\$name.dll"
+
+    if($name.Equals("MapsExtended.Editor")) {
+        Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$pkg\BepInEx\plugins\$name.UI.dll"
+    }
 
     Remove-Item -Path "$package\$name.$Version.zip" -Force
     Compress-Archive -Path "$pkg\*" -DestinationPath "$package\$name.$Version.zip"

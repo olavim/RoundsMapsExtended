@@ -47,6 +47,9 @@
     <Reference Include="BepInEx">
       <HintPath>..\..\Libs\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="PhotonUnityNetworking">
+      <HintPath>..\..\Libs\PhotonUnityNetworking.dll</HintPath>
+    </Reference>
     <Reference Include="Sirenix.Serialization">
       <HintPath>..\..\Libs\Sirenix.Serialization.dll</HintPath>
     </Reference>

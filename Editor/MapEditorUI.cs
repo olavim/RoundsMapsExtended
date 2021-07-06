@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 namespace MapsExtended.Editor
 {
@@ -30,31 +31,27 @@ namespace MapsExtended.Editor
 
     public class MapEditorUI : MonoBehaviour
     {
+        public MapEditor editor;
+
         private GameObject controlledMapObject;
         private int resizeDirection;
         private bool isResizing;
         private bool isRotating;
 
-        private MapEditor editor;
         private Vector2 scrollPos;
         private List<GameObject> selectedMapObjects;
-        private GameObject uiControls;
 
         public void Awake()
         {
-            this.editor = this.gameObject.GetComponent<MapEditor>();
             this.scrollPos = Vector2.zero;
             this.selectedMapObjects = new List<GameObject>();
             this.controlledMapObject = null;
             this.isResizing = false;
             this.isRotating = false;
 
-            this.uiControls = new GameObject("MapEditorUI");
-            this.uiControls.transform.SetParent(this.transform);
-
-            var canvas = this.uiControls.AddComponent<Canvas>();
-            var scaler = this.uiControls.AddComponent<CanvasScaler>();
-            this.uiControls.AddComponent<GraphicRaycaster>();
+            var canvas = this.gameObject.AddComponent<Canvas>();
+            var scaler = this.gameObject.AddComponent<CanvasScaler>();
+            this.gameObject.AddComponent<GraphicRaycaster>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.pixelPerfect = false;
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
@@ -89,7 +86,7 @@ namespace MapsExtended.Editor
 
         public void OnChangeSelectedObjects(List<GameObject> list)
         {
-            foreach (Transform child in this.uiControls.transform)
+            foreach (Transform child in this.transform)
             {
                 GameObject.Destroy(child.gameObject);
             }
@@ -126,7 +123,7 @@ namespace MapsExtended.Editor
                 var image = go.AddComponent<Image>();
                 image.color = new Color32(255, 255, 255, 5);
 
-                go.transform.SetParent(this.uiControls.transform);
+                go.transform.SetParent(this.transform);
             }
         }
 
@@ -162,7 +159,7 @@ namespace MapsExtended.Editor
                 }
             };
 
-            go.transform.SetParent(this.uiControls.transform);
+            go.transform.SetParent(this.transform);
         }
 
         private void AddRotationHandle(GameObject mapObject)
@@ -197,7 +194,7 @@ namespace MapsExtended.Editor
                 }
             };
 
-            go.transform.SetParent(this.uiControls.transform);
+            go.transform.SetParent(this.transform);
         }
 
         public void OnGUI()
@@ -212,16 +209,7 @@ namespace MapsExtended.Editor
             {
                 if (GUILayout.Button(objectName))
                 {
-                    var instance = EditorMod.instance.SpawnObject(MapObjectManager.instance.GetMapObject(objectName), this.gameObject);
-
-                    if (objectName == "Saw")
-                    {
-                        instance.AddComponent<SawActionHandler>();
-                    }
-                    else
-                    {
-                        instance.AddComponent<BoxActionHandler>();
-                    }
+                    EditorMod.instance.SpawnObject(this.editor.gameObject.GetComponent<Map>(), objectName);
                 }
             }
 
@@ -235,7 +223,7 @@ namespace MapsExtended.Editor
 
             if (GUILayout.Button("Spawn Point"))
             {
-                var spawn = MapsExtended.AddSpawn(this.gameObject);
+                var spawn = MapsExtended.AddSpawn(this.editor.gameObject.GetComponent<Map>());
                 spawn.AddComponent<Visualizers.SpawnVisualizer>();
                 spawn.AddComponent<SpawnActionHandler>();
             }

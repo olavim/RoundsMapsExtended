@@ -30,7 +30,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="AssetsEmbedded\uielements" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AssetsEmbedded\uielements" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="UnboundLib" Version="2.1.4" />
+    <ProjectReference Include="..\Editor.UI\Editor.UI.csproj" />
     <ProjectReference Include="..\MapsExtended\MapsExtended.csproj" />
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -1,9 +1,9 @@
-﻿using BepInEx;
+﻿using System.IO;
+using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using HarmonyLib;
 using UnboundLib;
-using Photon.Pun;
 
 namespace MapsExtended.Editor
 {
@@ -33,6 +33,8 @@ namespace MapsExtended.Editor
                     this.editorActive = false;
                 }
             };
+
+            Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
         }
 
         public void Update()
@@ -58,37 +60,24 @@ namespace MapsExtended.Editor
             }
         }
 
-        public GameObject SpawnObject(GameObject prefab, GameObject map)
+        public void LoadMap(Map mapBase, string mapFilePath)
         {
-            GameObject instance;
+            MapsExtended.LoadMap(mapBase, mapFilePath, true);
 
-            if (this.editorActive && prefab.GetComponent<PhotonMapObject>())
+            this.ExecuteAfterFrames(1, () =>
             {
-                instance = PhotonNetwork.Instantiate($"4 Map Objects/{prefab.name}", Vector3.zero, Quaternion.identity);
-            }
-            else
-            {
-                instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, map.transform);
-            }
-
-            instance.name = prefab.name;
-            this.SetupMapObject(instance, map);
-
-            if (this.editorActive)
-            {
-                this.ExecuteAfterFrames(1, () =>
+                var mapObjects = mapBase.GetComponentsInChildren<MapObject>();
+                foreach (var mapObject in mapObjects)
                 {
-                    var rig = instance.GetComponent<Rigidbody2D>();
-                    if (rig)
-                    {
-                        rig.simulated = true;
-                        rig.isKinematic = true;
-                    }
+                    this.SetupMapObject(mapBase, mapObject.gameObject);
+                }
+            });
+        }
 
-                    this.ResetAnimations(map.gameObject);
-                });
-            }
-
+        public GameObject SpawnObject(Map map, string mapObjectName)
+        {
+            GameObject instance = MapsExtended.SpawnMapObject(map, mapObjectName, true);
+            this.SetupMapObject(map, instance);
             return instance;
         }
 
@@ -112,8 +101,17 @@ namespace MapsExtended.Editor
             }
         }
 
-        private void SetupMapObject(GameObject go, GameObject map)
+        private void SetupMapObject(Map map, GameObject go)
         {
+            if (go.name == "Saw")
+            {
+                go.AddComponent<SawActionHandler>();
+            }
+            else
+            {
+                go.AddComponent<BoxActionHandler>();
+            }
+
             if (go.GetComponent<CodeAnimation>())
             {
                 var originalPosition = go.transform.position;
@@ -127,16 +125,6 @@ namespace MapsExtended.Editor
 
                 wrapper.transform.position = originalPosition;
                 wrapper.transform.localScale = originalScale;
-
-                // Offset object to snap top left corner instead of center
-                var scale = wrapper.transform.localScale;
-                wrapper.transform.position += new Vector3(scale.x / 2f, -scale.y / 2f, 0);
-            }
-            else
-            {
-                // Offset object to snap top left corner instead of center
-                var scale = go.transform.localScale;
-                go.transform.position += new Vector3(scale.x / 2f, -scale.y / 2f, 0);
             }
 
             // The Map component normally sets the renderers and masks, but only on load
@@ -163,6 +151,18 @@ namespace MapsExtended.Editor
                 mask.backSortingLayerID = SortingLayer.NameToID("MapParticle");
                 mask.backSortingOrder = 0;
             }
+
+            this.ExecuteAfterFrames(1, () =>
+            {
+                var rig = go.GetComponent<Rigidbody2D>();
+                if (rig)
+                {
+                    rig.simulated = true;
+                    rig.isKinematic = true;
+                }
+
+                this.ResetAnimations(map.gameObject);
+            });
         }
     }
 

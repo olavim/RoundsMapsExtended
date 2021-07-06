@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.Serialization;
+using MapsExtended.UI.MapBrowser;
 
 namespace MapsExtended.Editor
 {
@@ -34,11 +35,30 @@ namespace MapsExtended.Editor
             this.isRotatingMapObject = false;
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
-            this.gui = this.gameObject.AddComponent<MapEditorUI>();
+
+            var uiGo = new GameObject("MapEditorUI");
+            uiGo.transform.SetParent(this.transform);
+
+            this.gui = uiGo.AddComponent<MapEditorUI>();
+            this.gui.editor = this;
         }
 
         public void Update()
         {
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                FileDialog.Open(file =>
+                {
+                    this.gui.transform.SetParent(null);
+
+                    var map = this.gameObject.GetComponent<Map>();
+                    var relativePath = file.Replace(BepInEx.Paths.GameRootPath, "");
+                    EditorMod.instance.LoadMap(map, relativePath);
+
+                    this.gui.transform.SetParent(this.transform);
+                });
+            }
+
             if (Input.GetKeyDown(KeyCode.J))
             {
                 var mapData = new CustomMap
@@ -61,7 +81,17 @@ namespace MapsExtended.Editor
                 }
 
                 var bytes = SerializationUtility.SerializeValue(mapData, DataFormat.JSON);
-                File.WriteAllBytes("map.json", bytes);
+
+                var path = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
+                var filename = "map-";
+                int i = 1;
+
+                while (File.Exists(Path.Combine(path, filename + i + ".map")))
+                {
+                    i++;
+                }
+
+                File.WriteAllBytes(Path.Combine(path, filename + i + ".map"), bytes);
             }
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
