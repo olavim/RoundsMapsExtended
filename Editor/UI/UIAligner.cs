@@ -13,7 +13,6 @@ namespace MapsExtended.Editor.UI
 
         public void Awake()
         {
-            this.referenceGameObject = null;
             this.padding = 16f;
         }
 
@@ -23,20 +22,21 @@ namespace MapsExtended.Editor.UI
             {
                 this.gameObject.AddComponent<RectTransform>();
             }
+
+            this.UpdatePosition();
         }
 
         public void Update()
+        {
+            this.UpdatePosition();
+        }
+
+        public void UpdatePosition()
         {
             if (!this.referenceGameObject)
             {
                 return;
             }
-
-            //var bounds = UIUtils.WorldToScreenRect(EditorUtils.GetMapObjectBounds(this.referenceGameObject));
-            //bounds.x -= this.padding;
-            //bounds.y -= this.padding;
-            //bounds.width += 2 * this.padding;
-            //bounds.height += 2 * this.padding;
 
             var refPos = this.referenceGameObject.transform.position;
             var refScale = this.referenceGameObject.transform.localScale;

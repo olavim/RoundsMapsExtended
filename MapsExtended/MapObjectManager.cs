@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Jotunn.Utils;
@@ -11,31 +12,55 @@ namespace MapsExtended
         public static MapObjectManager instance;
 
         private readonly Dictionary<string, GameObject> mapObjects = new Dictionary<string, GameObject>();
+        private readonly Dictionary<string, List<Tuple<Type, Action<object>>>> mapObjectComponents = new Dictionary<string, List<Tuple<Type, Action<object>>>>();
 
         public void Awake()
         {
             MapObjectManager.instance = this;
 
             var objectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
-            this.RegisterMapObject<BoxTransformer>("Ground", objectBundle.LoadAsset<GameObject>("Ground"));
-            this.RegisterMapObject<BoxTransformer>("Box", Resources.Load<GameObject>("4 Map Objects/Box"));
-            this.RegisterMapObject<BoxTransformer>("Destructible Box", Resources.Load<GameObject>("4 Map Objects/Box_Destructible"));
-            this.RegisterMapObject<BoxTransformer>("Background Box", Resources.Load<GameObject>("4 Map Objects/Box_BG"));
-            this.RegisterMapObject<SawTransformer>("Saw", Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat"));
+            this.RegisterMapObject("Ground", objectBundle.LoadAsset<GameObject>("Ground"));
+            this.RegisterMapObject("Box", Resources.Load<GameObject>("4 Map Objects/Box"));
+            this.RegisterMapObject("Destructible Box", Resources.Load<GameObject>("4 Map Objects/Box_Destructible"));
+            this.RegisterMapObject("Background Box", Resources.Load<GameObject>("4 Map Objects/Box_BG"));
+            this.RegisterMapObject("Saw", Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat"));
+
+            this.RegisterMapObjectComponent<SawTransformer>("Saw");
         }
 
-        public void RegisterMapObject<T>(string name, GameObject prefab) where T : Component
+        public void RegisterMapObject(string mapObjectName, GameObject prefab)
         {
-            this.mapObjects.Add(name, prefab);
-            prefab.AddComponent<T>();
-
-            var obj = prefab.AddComponent<MapObject>();
-            obj.mapObjectName = name;
+            this.mapObjects.Add(mapObjectName, prefab);
+            this.RegisterMapObjectComponent<MapObject>(mapObjectName, c => c.mapObjectName = mapObjectName);
         }
 
-        public GameObject GetMapObject(string name)
+        public void RegisterMapObjectComponent<T>(string mapObjectName, Action<T> action = null) where T : Component
         {
-            return this.mapObjects[name];
+            if (!this.mapObjectComponents.ContainsKey(mapObjectName))
+            {
+                this.mapObjectComponents.Add(mapObjectName, new List<Tuple<Type, Action<object>>>());
+            }
+
+            Action<object> middleware = obj => action?.Invoke((T) obj);
+            this.mapObjectComponents[mapObjectName].Add(new Tuple<Type, Action<object>>(typeof(T), middleware));
+        }
+
+        public GameObject GetMapObject(string mapObjectName)
+        {
+            return this.mapObjects[mapObjectName];
+        }
+
+        public void AddMapObjectComponents(string mapObjectName, GameObject instance)
+        {
+            if (this.mapObjectComponents.ContainsKey(mapObjectName))
+            {
+                foreach (var tuple in this.mapObjectComponents[mapObjectName])
+                {
+                    var c = instance.AddComponent(tuple.Item1);
+                    var action = tuple.Item2;
+                    action.Invoke(c);
+                }
+            }
         }
 
         public string[] GetMapObjects()

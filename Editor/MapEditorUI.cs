@@ -223,9 +223,7 @@ namespace MapsExtended.Editor
 
             if (GUILayout.Button("Spawn Point"))
             {
-                var spawn = MapsExtended.AddSpawn(this.editor.gameObject.GetComponent<Map>());
-                spawn.AddComponent<Visualizers.SpawnVisualizer>();
-                spawn.AddComponent<SpawnActionHandler>();
+                EditorMod.instance.AddSpawn(this.editor.gameObject.GetComponent<Map>());
             }
 
             GUILayout.EndVertical();

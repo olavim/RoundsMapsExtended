@@ -95,8 +95,12 @@ namespace MapsExtended
             }
             else
             {
-                instance = GameObject.Instantiate(prefab, map.transform);
+                instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, map.transform);
             }
+
+            instance.SetActive(false);
+            MapObjectManager.instance.AddMapObjectComponents(mapObjectName, instance);
+            instance.SetActive(true);
 
             instance.name = prefab.name;
             return instance;

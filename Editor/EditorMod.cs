@@ -37,6 +37,15 @@ namespace MapsExtended.Editor
             Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
         }
 
+        public void Start()
+        {
+            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Ground", c => c.enabled = this.editorActive);
+            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Box", c => c.enabled = this.editorActive);
+            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Destructible Box", c => c.enabled = this.editorActive);
+            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Background Box", c => c.enabled = this.editorActive);
+            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Saw", c => c.enabled = this.editorActive);
+        }
+
         public void Update()
         {
             if (Input.GetKeyDown(KeyCode.F5))
@@ -67,9 +76,16 @@ namespace MapsExtended.Editor
             this.ExecuteAfterFrames(1, () =>
             {
                 var mapObjects = mapBase.GetComponentsInChildren<MapObject>();
+                var spawns = mapBase.GetComponentsInChildren<SpawnPoint>();
+
                 foreach (var mapObject in mapObjects)
                 {
                     this.SetupMapObject(mapBase, mapObject.gameObject);
+                }
+
+                foreach (var spawn in spawns)
+                {
+                    this.SetupSpawn(spawn.gameObject);
                 }
             });
         }
@@ -79,6 +95,13 @@ namespace MapsExtended.Editor
             GameObject instance = MapsExtended.SpawnMapObject(map, mapObjectName, true);
             this.SetupMapObject(map, instance);
             return instance;
+        }
+
+        public GameObject AddSpawn(Map map)
+        {
+            var spawn = MapsExtended.AddSpawn(map);
+            this.SetupSpawn(spawn);
+            return spawn;
         }
 
         public void ResetAnimations(GameObject go)
@@ -101,17 +124,14 @@ namespace MapsExtended.Editor
             }
         }
 
+        private void SetupSpawn(GameObject spawn)
+        {
+            spawn.AddComponent<Visualizers.SpawnVisualizer>();
+            spawn.AddComponent<SpawnActionHandler>();
+        }
+
         private void SetupMapObject(Map map, GameObject go)
         {
-            if (go.name == "Saw")
-            {
-                go.AddComponent<SawActionHandler>();
-            }
-            else
-            {
-                go.AddComponent<BoxActionHandler>();
-            }
-
             if (go.GetComponent<CodeAnimation>())
             {
                 var originalPosition = go.transform.position;

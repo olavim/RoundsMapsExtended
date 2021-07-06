@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
@@ -25,6 +20,7 @@ namespace MapsExtended.Visualizers
 
             var canvasGo = new GameObject("Canvas");
             canvasGo.transform.SetParent(this.transform);
+            canvasGo.transform.localPosition = Vector3.zero;
 
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
@@ -38,7 +34,8 @@ namespace MapsExtended.Visualizers
             this.labelBg = imageGo.AddComponent<Image>();
             this.labelBg.rectTransform.sizeDelta = new Vector2(3f, 1f) * canvasScale;
             this.labelBg.color = new Color32(200, 200, 200, 150);
-            this.labelBg.rectTransform.anchoredPosition = this.transform.position + new Vector3(0, 2f * canvasScale, 0);
+            this.labelBg.rectTransform.anchoredPosition = this.transform.position + new Vector3(0, 1.5f * canvasScale, 0);
+            imageGo.transform.localPosition = new Vector3(0, 1.5f * canvasScale, 0);
 
             var textGo = new GameObject("Text");
             textGo.transform.SetParent(canvasGo.transform);
@@ -50,7 +47,8 @@ namespace MapsExtended.Visualizers
             this.label.fontStyle = FontStyles.Bold;
             this.label.color = new Color32(50, 50, 50, 255);
             this.label.alignment = TextAlignmentOptions.Center;
-            this.label.rectTransform.anchoredPosition = this.transform.position + new Vector3(0, 2f * canvasScale, 0);
+            this.label.rectTransform.anchoredPosition = this.transform.position + new Vector3(0, 1.5f * canvasScale, 0);
+            textGo.transform.localPosition = new Vector3(0, 1.5f * canvasScale, 0);
 
             var pointCanvasGo = new GameObject("Position Indicator");
             pointCanvasGo.transform.SetParent(canvasGo.transform);
@@ -59,6 +57,7 @@ namespace MapsExtended.Visualizers
             this.positionIndicator = pointCanvasGo.AddComponent<Image>();
             this.positionIndicator.rectTransform.sizeDelta = collider.size * canvasScale;
             this.positionIndicator.rectTransform.anchoredPosition = this.transform.position;
+            pointCanvasGo.transform.localPosition = Vector3.zero;
         }
     }
 }
