@@ -50,6 +50,9 @@ namespace MapsExtended.Editor
         {
             if (Input.GetKeyDown(KeyCode.F5))
             {
+                // Prevents Landfall's own map testing stuff from triggering
+                GameManager.instance.isPlaying = true;
+
                 this.editorActive = true;
                 MapManager.instance.RPCA_LoadLevel("NewMap");
                 SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
@@ -60,13 +63,21 @@ namespace MapsExtended.Editor
         {
             SceneManager.sceneLoaded -= this.AddEditorOnLevelLoad;
 
-            var go = MapManager.instance.currentMap.Map.gameObject;
+            var map = MapManager.instance.currentMap.Map;
+            var go = map.gameObject;
             go.transform.position = Vector3.zero;
 
             if (!go.GetComponent<MapEditor>())
             {
                 go.AddComponent<MapEditor>();
             }
+
+            MapManager.instance.isTestingMap = true;
+            GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);
+            GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOffline();
+            map.hasEntered = true;
+
+            ArtHandler.instance.NextArt();
         }
 
         public void LoadMap(Map mapBase, string mapFilePath)
@@ -87,6 +98,8 @@ namespace MapsExtended.Editor
                 {
                     this.SetupSpawn(spawn.gameObject);
                 }
+
+                this.SetMapPhysicsActive(mapBase, false);
             });
         }
 
@@ -94,6 +107,12 @@ namespace MapsExtended.Editor
         {
             GameObject instance = MapsExtended.SpawnMapObject(map, mapObjectName, true);
             this.SetupMapObject(map, instance);
+
+            this.ExecuteAfterFrames(1, () =>
+            {
+                this.SetMapObjectPhysicsActive(instance, false);
+            });
+
             return instance;
         }
 
@@ -174,15 +193,27 @@ namespace MapsExtended.Editor
 
             this.ExecuteAfterFrames(1, () =>
             {
-                var rig = go.GetComponent<Rigidbody2D>();
-                if (rig)
-                {
-                    rig.simulated = true;
-                    rig.isKinematic = true;
-                }
-
                 this.ResetAnimations(map.gameObject);
             });
+        }
+
+        public void SetMapPhysicsActive(Map map, bool active)
+        {
+            var mapObjects = map.gameObject.GetComponentsInChildren<MapObject>();
+            foreach (var mapObject in mapObjects)
+            {
+                this.SetMapObjectPhysicsActive(mapObject.gameObject, active);
+            }
+        }
+
+        public void SetMapObjectPhysicsActive(GameObject mapObject, bool active)
+        {
+            var rig = mapObject.GetComponent<Rigidbody2D>();
+            if (rig)
+            {
+                rig.simulated = true;
+                rig.isKinematic = !active;
+            }
         }
     }
 

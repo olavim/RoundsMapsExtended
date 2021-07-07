@@ -62,8 +62,10 @@ namespace MapsExtended
 
         public static void LoadMap(Map mapBase, string mapFilePath, bool isDelayedLoad = false)
         {
-            var bytes = File.ReadAllBytes(BepInEx.Paths.GameRootPath + mapFilePath);
+            var bytes = File.ReadAllBytes(mapFilePath);
             var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
+
+            mapBase.SetFieldValue("spawnPoints", null);
 
             foreach (Transform child in mapBase.transform)
             {
@@ -143,7 +145,7 @@ namespace MapsExtended
         {
             if (sceneName != null && sceneName.EndsWith(".map"))
             {
-                MapManagerPatch.mapToLoad = sceneName;
+                MapManagerPatch.mapToLoad = BepInEx.Paths.GameRootPath + sceneName;
                 sceneName = "NewMap";
                 SceneManager.sceneLoaded += MapManagerPatch.OnLevelFinishedLoading;
             }

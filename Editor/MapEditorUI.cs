@@ -203,6 +203,11 @@ namespace MapsExtended.Editor
 
             GUILayout.BeginVertical();
 
+            if (this.editor.isSimulating)
+            {
+                GUI.enabled = false;
+            }
+
             if (GUILayout.Button("Open..."))
             {
                 this.editor.OnClickOpen();
@@ -231,6 +236,11 @@ namespace MapsExtended.Editor
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, GUILayout.Width(200), GUILayout.Height(200));
             GUILayout.BeginVertical();
 
+            if (this.editor.isSimulating)
+            {
+                GUI.enabled = false;
+            }
+
             if (GUILayout.Button("Spawn Point"))
             {
                 EditorMod.instance.AddSpawn(this.editor.gameObject.GetComponent<Map>());
@@ -250,6 +260,25 @@ namespace MapsExtended.Editor
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
 
+            GUILayout.BeginVertical();
+            
+            if (this.editor.isSimulating)
+            {
+                GUI.enabled = true;
+                if (GUILayout.Button("Stop Testing"))
+                {
+                    this.editor.OnStopSimulation();
+                }
+                GUI.enabled = false;
+            }
+
+            if (!this.editor.isSimulating && GUILayout.Button("Test Map"))
+            {
+                this.editor.OnStartSimulation();
+            }
+
+            GUILayout.EndVertical();
+
             GUILayout.EndVertical();
             GUILayout.EndArea();
 
@@ -262,6 +291,8 @@ namespace MapsExtended.Editor
             {
                 GUI.Box(selectionRect, GUIContent.none, selectionStyle);
             }
+
+            GUI.enabled = true;
         }
     }
 }

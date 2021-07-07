@@ -4,13 +4,18 @@ using TMPro;
 
 namespace MapsExtended.Visualizers
 {
-    public class SpawnVisualizer : MonoBehaviour
+    public class SpawnVisualizer : MonoBehaviour, IMapObjectVisualizer
     {
         private Image labelBg;
         private TextMeshProUGUI label;
         private Image positionIndicator;
 
-        public void Awake()
+        public void SetEnabled(bool enabled)
+        {
+            this.enabled = enabled;
+        }
+
+        public void OnEnable()
         {
             float canvasScale = 4f;
 
@@ -58,6 +63,12 @@ namespace MapsExtended.Visualizers
             this.positionIndicator.rectTransform.sizeDelta = collider.size * canvasScale;
             this.positionIndicator.rectTransform.anchoredPosition = this.transform.position;
             pointCanvasGo.transform.localPosition = Vector3.zero;
+        }
+
+        public void OnDisable()
+        {
+            GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
+            GameObject.Destroy(this.transform.Find("Canvas").gameObject);
         }
     }
 }

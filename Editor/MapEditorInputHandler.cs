@@ -37,7 +37,7 @@ namespace MapsExtended.Editor
 
         private void HandleMouseDown()
         {
-            if (EventSystem.current.IsPointerOverGameObject())
+            if (this.editor.isSimulating || EventSystem.current.IsPointerOverGameObject())
             {
                 return;
             }
