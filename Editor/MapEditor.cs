@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.Serialization;
-using MapsExtended.UI.MapBrowser;
+using MapsExtended.UI;
 
 namespace MapsExtended.Editor
 {
@@ -10,6 +10,7 @@ namespace MapsExtended.Editor
     {
         public List<GameObject> selectedMapObjects;
         public float gridSize;
+        public string currentMapName;
 
         public bool SnapToGrid { get; private set; }
 
@@ -33,6 +34,7 @@ namespace MapsExtended.Editor
             this.isDraggingMapObjects = false;
             this.isResizingMapObject = false;
             this.isRotatingMapObject = false;
+            this.currentMapName = null;
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
 
@@ -45,55 +47,6 @@ namespace MapsExtended.Editor
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                FileDialog.Open(file =>
-                {
-                    this.gui.transform.SetParent(null);
-
-                    var map = this.gameObject.GetComponent<Map>();
-                    var relativePath = file.Replace(BepInEx.Paths.GameRootPath, "");
-                    EditorMod.instance.LoadMap(map, relativePath);
-
-                    this.gui.transform.SetParent(this.transform);
-                });
-            }
-
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                var mapData = new CustomMap
-                {
-                    mapObjects = new List<MapObjectData>(),
-                    spawns = new List<SpawnPointData>()
-                };
-
-                var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>();
-                var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>();
-
-                foreach (var mapObject in mapObjects)
-                {
-                    mapData.mapObjects.Add(new MapObjectData(mapObject));
-                }
-
-                foreach (var spawn in spawns)
-                {
-                    mapData.spawns.Add(new SpawnPointData(spawn));
-                }
-
-                var bytes = SerializationUtility.SerializeValue(mapData, DataFormat.JSON);
-
-                var path = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
-                var filename = "map-";
-                int i = 1;
-
-                while (File.Exists(Path.Combine(path, filename + i + ".map")))
-                {
-                    i++;
-                }
-
-                File.WriteAllBytes(Path.Combine(path, filename + i + ".map"), bytes);
-            }
-
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
                 this.SnapToGrid = false;
@@ -122,6 +75,66 @@ namespace MapsExtended.Editor
             if (this.isRotatingMapObject)
             {
                 this.RotateMapObject();
+            }
+        }
+
+        public void SaveMap(string filename)
+        {
+            var mapData = new CustomMap
+            {
+                mapObjects = new List<MapObjectData>(),
+                spawns = new List<SpawnPointData>()
+            };
+
+            var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>();
+            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>();
+
+            foreach (var mapObject in mapObjects)
+            {
+                mapData.mapObjects.Add(new MapObjectData(mapObject));
+            }
+
+            foreach (var spawn in spawns)
+            {
+                mapData.spawns.Add(new SpawnPointData(spawn));
+            }
+
+            var bytes = SerializationUtility.SerializeValue(mapData, DataFormat.JSON);
+            var path = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
+            File.WriteAllBytes(Path.Combine(path, filename + ".map"), bytes);
+
+            this.currentMapName = filename;
+        }
+
+        public void OnClickOpen()
+        {
+            FileDialog.OpenDialog(file =>
+            {
+                this.gui.transform.SetParent(null);
+
+                var map = this.gameObject.GetComponent<Map>();
+                string relativePath = file.Replace(BepInEx.Paths.GameRootPath, "");
+                EditorMod.instance.LoadMap(map, relativePath);
+
+                this.gui.transform.SetParent(this.transform);
+
+                string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
+                string mapName = file.Substring(0, file.Length - 4).Replace(personalFolder, "");
+
+                this.currentMapName = file.StartsWith(personalFolder) ? mapName : null;
+            });
+        }
+
+        public void OnClickSaveAs()
+        {
+            FileDialog.SaveDialog(this.SaveMap);
+        }
+
+        public void OnClickSave()
+        {
+            if (this.currentMapName?.Length > 0)
+            {
+                this.SaveMap(this.currentMapName);
             }
         }
 

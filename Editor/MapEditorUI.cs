@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using MapsExtended.UI;
 
 namespace MapsExtended.Editor
 {
@@ -200,10 +200,41 @@ namespace MapsExtended.Editor
         public void OnGUI()
         {
             GUILayout.BeginArea(new Rect(10, 10, 200, 400));
+
+            GUILayout.BeginVertical();
+
+            if (GUILayout.Button("Open..."))
+            {
+                this.editor.OnClickOpen();
+            }
+
+            if (GUILayout.Button("Save As..."))
+            {
+                this.editor.OnClickSaveAs();
+            }
+
+            if (this.editor.currentMapName == null)
+            {
+                GUI.enabled = false;
+            }
+
+            if (GUILayout.Button("Save"))
+            {
+                this.editor.OnClickSave();
+            }
+            GUI.enabled = true;
+
+            GUILayout.EndVertical();
+
             GUILayout.BeginVertical();
 
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, GUILayout.Width(200), GUILayout.Height(200));
             GUILayout.BeginVertical();
+
+            if (GUILayout.Button("Spawn Point"))
+            {
+                EditorMod.instance.AddSpawn(this.editor.gameObject.GetComponent<Map>());
+            }
 
             foreach (string objectName in MapObjectManager.instance.GetMapObjects())
             {
@@ -218,15 +249,6 @@ namespace MapsExtended.Editor
 
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
-
-            GUILayout.BeginVertical();
-
-            if (GUILayout.Button("Spawn Point"))
-            {
-                EditorMod.instance.AddSpawn(this.editor.gameObject.GetComponent<Map>());
-            }
-
-            GUILayout.EndVertical();
 
             GUILayout.EndVertical();
             GUILayout.EndArea();
