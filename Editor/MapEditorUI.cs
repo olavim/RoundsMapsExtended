@@ -240,7 +240,7 @@ namespace MapsExtended.Editor
             {
                 if (GUILayout.Button(objectName))
                 {
-                    EditorMod.instance.SpawnObject(this.editor.gameObject.GetComponent<Map>(), objectName);
+                    this.editor.SpawnMapObject(objectName);
                 }
             }
 

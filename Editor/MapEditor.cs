@@ -106,6 +106,13 @@ namespace MapsExtended.Editor
             this.currentMapName = filename;
         }
 
+        public void SpawnMapObject(string mapObjectName)
+        {
+            var mapObject = EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), mapObjectName);
+            mapObject.transform.localScale = EditorUtils.SnapToGrid(mapObject.transform.localScale, this.gridSize);
+            mapObject.transform.position = Vector3.zero;
+        }
+
         public void OnClickOpen()
         {
             FileDialog.OpenDialog(file =>

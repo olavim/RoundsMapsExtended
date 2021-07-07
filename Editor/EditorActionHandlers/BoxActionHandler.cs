@@ -16,6 +16,7 @@ namespace MapsExtended.Editor
         public bool Resize(Vector3 mouseDelta, int resizeDirection)
         {
             float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().gridSize;
+            bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().SnapToGrid;
 
             var scaleMulti = Editor.TogglePosition.directionMultipliers[resizeDirection];
 
@@ -25,9 +26,19 @@ namespace MapsExtended.Editor
             var scaleDelta = Vector3.Scale(snappedRotation * mouseDelta, new Vector3(scaleMulti.x, scaleMulti.y, 0));
             var positionDelta = this.transform.rotation * Vector3.Scale(snappedRotation * mouseDelta, new Vector3(Mathf.Abs(scaleMulti.x), Mathf.Abs(scaleMulti.y), 0));
 
-            var oldScale = this.transform.localScale;
             var newScale = this.transform.localScale + scaleDelta;
-            if ((newScale.x < oldScale.x && newScale.x < gridSize) || (newScale.y < oldScale.y && newScale.y < gridSize))
+
+            if (snapToGrid && newScale.x != this.transform.localScale.x && newScale.x < gridSize)
+            {
+                newScale.x = gridSize;
+            }
+
+            if (snapToGrid && newScale.y != this.transform.localScale.y && newScale.y < gridSize)
+            {
+                newScale.y = gridSize;
+            }
+
+            if (newScale == this.transform.localScale)
             {
                 return false;
             }
