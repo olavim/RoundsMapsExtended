@@ -12,7 +12,7 @@ using Photon.Pun;
 
 namespace MapsExtended
 {
-    [BepInDependency("com.willis.rounds.unbound", "2.1.4")]
+    [BepInDependency("com.willis.rounds.unbound", "2.2.0")]
     [BepInPlugin(ModId, "MapsExtended", Version)]
     public class MapsExtended : BaseUnityPlugin
     {

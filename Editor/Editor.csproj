@@ -36,7 +36,7 @@
     <EmbeddedResource Include="AssetsEmbedded\uielements" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="UnboundLib" Version="2.1.4" />
+    <PackageReference Include="UnboundLib" Version="2.2.0" />
     <ProjectReference Include="..\Editor.UI\Editor.UI.csproj" />
     <ProjectReference Include="..\MapsExtended\MapsExtended.csproj" />
     <Reference Include="System" />

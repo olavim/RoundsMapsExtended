@@ -7,7 +7,7 @@ using UnboundLib;
 
 namespace MapsExtended.Editor
 {
-    [BepInDependency("com.willis.rounds.unbound", "2.1.4")]
+    [BepInDependency("com.willis.rounds.unbound", "2.2.0")]
     [BepInDependency("io.olavim.rounds.mapsextended", "1.0.0")]
     [BepInPlugin(ModId, "MapsExtended.Editor", Version)]
     public class EditorMod : BaseUnityPlugin

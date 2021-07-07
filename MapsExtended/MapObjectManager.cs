@@ -34,14 +34,14 @@ namespace MapsExtended
             this.RegisterMapObjectComponent<MapObject>(mapObjectName, c => c.mapObjectName = mapObjectName);
         }
 
-        public void RegisterMapObjectComponent<T>(string mapObjectName, Action<T> action = null) where T : Component
+        public void RegisterMapObjectComponent<T>(string mapObjectName, Action<T> onInstantiate = null) where T : Component
         {
             if (!this.mapObjectComponents.ContainsKey(mapObjectName))
             {
                 this.mapObjectComponents.Add(mapObjectName, new List<Tuple<Type, Action<object>>>());
             }
 
-            Action<object> middleware = obj => action?.Invoke((T) obj);
+            Action<object> middleware = obj => onInstantiate?.Invoke((T) obj);
             this.mapObjectComponents[mapObjectName].Add(new Tuple<Type, Action<object>>(typeof(T), middleware));
         }
 
