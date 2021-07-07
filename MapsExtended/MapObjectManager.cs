@@ -42,7 +42,8 @@ namespace MapsExtended
             }
 
             Action<object> middleware = obj => onInstantiate?.Invoke((T) obj);
-            this.mapObjectComponents[mapObjectName].Add(new Tuple<Type, Action<object>>(typeof(T), middleware));
+            var tuple = new Tuple<Type, Action<object>>(typeof(T), middleware);
+            this.mapObjectComponents[mapObjectName].Add(tuple);
         }
 
         public GameObject GetMapObject(string mapObjectName)
@@ -54,12 +55,14 @@ namespace MapsExtended
         {
             if (this.mapObjectComponents.ContainsKey(mapObjectName))
             {
+                instance.SetActive(false);
                 foreach (var tuple in this.mapObjectComponents[mapObjectName])
                 {
                     var c = instance.AddComponent(tuple.Item1);
                     var action = tuple.Item2;
                     action.Invoke(c);
                 }
+                instance.SetActive(true);
             }
         }
 
