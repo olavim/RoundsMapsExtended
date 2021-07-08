@@ -121,6 +121,12 @@ namespace MapsExtended.Editor
             mapObject.transform.position = Vector3.zero;
         }
 
+        public void AddSpawn()
+        {
+            var spawn = EditorMod.instance.AddSpawn(this.gameObject.GetComponent<Map>());
+            spawn.transform.position = Vector3.zero;
+        }
+
         public void OnToggleSnapToGrid(bool enabled)
         {
             this.snapToGrid = enabled;
@@ -134,17 +140,13 @@ namespace MapsExtended.Editor
             }
 
             // Reset spawn IDs
-            this.ExecuteAfterFrames(1, () =>
+            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>().Reverse().ToList();
+            for (int i = 0; i < spawns.Count; i++)
             {
-                var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>().Reverse().ToList();
-                for (int i = 0; i < spawns.Count; i++)
-                {
-                    spawns[i].ID = i;
-                    spawns[i].TEAMID = i;
-                    spawns[i].gameObject.name = $"SPAWN POINT {i}";
-                    spawns[i].transform.SetAsFirstSibling();
-                }
-            });
+                spawns[i].ID = i;
+                spawns[i].TEAMID = i;
+                spawns[i].gameObject.name = $"SPAWN POINT {i}";
+            }
 
             this.ClearSelected();
         }
@@ -277,6 +279,7 @@ namespace MapsExtended.Editor
             }
 
             int previouslySelectedCount = this.selectedMapObjects.Count;
+            bool clickedMapObjectIsSelected = this.IsMapObjectSelected(mapObject);
             this.ClearSelected();
 
             if (mapObject == null)
@@ -284,8 +287,8 @@ namespace MapsExtended.Editor
                 return;
             }
 
-            bool changeMultiSelectionToSingle = this.IsMapObjectSelected(mapObject) && previouslySelectedCount > 1;
-            bool selectUnselected = !this.IsMapObjectSelected(mapObject);
+            bool changeMultiSelectionToSingle = clickedMapObjectIsSelected && previouslySelectedCount > 1;
+            bool selectUnselected = !clickedMapObjectIsSelected;
 
             if (changeMultiSelectionToSingle || selectUnselected)
             {

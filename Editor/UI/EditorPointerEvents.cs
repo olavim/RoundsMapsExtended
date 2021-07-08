@@ -8,7 +8,7 @@ namespace MapsExtended
     {
         public Action<GameObject> pointerDown;
 
-        public void OnPointerDown(PointerEventData eventData)
+        void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
         {
             this.pointerDown?.Invoke(this.gameObject);
         }

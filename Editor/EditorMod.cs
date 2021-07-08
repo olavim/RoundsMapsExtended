@@ -147,7 +147,7 @@ namespace MapsExtended.Editor
         {
             spawn.AddComponent<Visualizers.SpawnVisualizer>();
             spawn.AddComponent<SpawnActionHandler>();
-            spawn.transform.SetAsFirstSibling();
+            spawn.transform.SetAsLastSibling();
         }
 
         private void SetupMapObject(Map map, GameObject go)

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using MapsExtended.UI;
+using UnityEngine.UI.ProceduralImage;
 
 namespace MapsExtended.Editor
 {
@@ -143,6 +143,16 @@ namespace MapsExtended.Editor
             var image = go.AddComponent<Image>();
             image.rectTransform.sizeDelta = new Vector2(10f, 10f);
 
+            var button = go.AddComponent<Button>();
+            button.colors = new ColorBlock()
+            {
+                colorMultiplier = 1,
+                fadeDuration = 0.1f,
+                normalColor = new Color(1, 1, 1),
+                highlightedColor = new Color(0.8f, 0.8f, 0.8f),
+                pressedColor = new Color(0.6f, 0.6f, 0.6f)
+            };
+
             var events = go.AddComponent<EditorPointerEvents>();
 
             events.pointerDown += hoveredObj =>
@@ -173,10 +183,23 @@ namespace MapsExtended.Editor
             var aligner = go.AddComponent<UI.UIAligner>();
             aligner.referenceGameObject = mapObject;
             aligner.position = TogglePosition.TopMiddle;
-            aligner.padding = 32f;
+            aligner.padding = 48f;
 
-            var image = go.AddComponent<Image>();
-            image.rectTransform.sizeDelta = new Vector2(10f, 10f);
+            var image = go.AddComponent<ProceduralImage>();
+            image.rectTransform.sizeDelta = new Vector2(12f, 12f);
+
+            var modifier = go.AddComponent<UniformModifier>();
+            modifier.Radius = 6;
+
+            var button = go.AddComponent<Button>();
+            button.colors = new ColorBlock()
+            {
+                colorMultiplier = 1,
+                fadeDuration = 0.1f,
+                normalColor = new Color(1, 1, 1),
+                highlightedColor = new Color(0.8f, 0.8f, 0.8f),
+                pressedColor = new Color(0.6f, 0.6f, 0.6f)
+            };
 
             var events = go.AddComponent<EditorPointerEvents>();
 
@@ -237,7 +260,7 @@ namespace MapsExtended.Editor
 
             if (GUILayout.Button("Spawn Point"))
             {
-                EditorMod.instance.AddSpawn(this.editor.gameObject.GetComponent<Map>());
+                this.editor.AddSpawn();
             }
 
             foreach (string objectName in MapObjectManager.instance.GetMapObjects())
