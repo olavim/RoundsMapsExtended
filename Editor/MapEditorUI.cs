@@ -271,8 +271,8 @@ namespace MapsExtended.Editor
                 }
             }
 
-            GUILayout.Label("Grid size: " + this.editor.gridSize);
-            this.editor.gridSize = EditorUtils.Snap(GUILayout.HorizontalSlider(this.editor.gridSize, 0.5f, 4f), 0.5f);
+            GUILayout.Label("Grid size: " + this.editor.GridSize);
+            this.editor.GridSize = EditorUtils.Snap(GUILayout.HorizontalSlider(this.editor.GridSize, 0.5f, 4f), 0.5f);
 
             GUILayout.EndVertical();
             GUILayout.EndScrollView();

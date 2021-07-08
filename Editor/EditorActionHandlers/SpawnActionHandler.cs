@@ -14,7 +14,7 @@ namespace MapsExtended.Editor
             return false;
         }
 
-        public bool Resize(Vector3 mouseDelta, int resizeDirection)
+        public bool Resize(Vector3 sizeDelta, int resizeDirection)
         {
             return false;
         }

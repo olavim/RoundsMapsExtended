@@ -71,6 +71,7 @@ namespace MapsExtended.Visualizers
         {
             GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
             GameObject.Destroy(this.transform.Find("Canvas").gameObject);
+            GameObject.Destroy(this.transform.Find("Label Collider").gameObject);
         }
 
         public void LateUpdate()

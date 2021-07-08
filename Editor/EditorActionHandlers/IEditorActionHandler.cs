@@ -8,6 +8,6 @@ namespace MapsExtended.Editor
 
         bool CanResize(int resizeDirection);
 
-        bool Resize(Vector3 mouseDelta, int resizeDirection);
+        bool Resize(Vector3 sizeDelta, int resizeDirection);
     }
 }

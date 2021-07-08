@@ -5,7 +5,6 @@ using UnityEngine;
 using Sirenix.Serialization;
 using MapsExtended.UI;
 using MapsExtended.Visualizers;
-using UnboundLib;
 using UnboundLib.GameModes;
 
 namespace MapsExtended.Editor
@@ -13,10 +12,15 @@ namespace MapsExtended.Editor
     public class MapEditor : MonoBehaviour
     {
         public List<GameObject> selectedMapObjects;
-        public float gridSize;
         public string currentMapName;
         public bool isSimulating;
         public bool snapToGrid;
+
+        public float GridSize
+        {
+            get { return this.grid.cellSize.x; }
+            set { this.grid.cellSize = Vector3.one * value; }
+        }
 
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
@@ -26,14 +30,17 @@ namespace MapsExtended.Editor
         private Vector3 selectionStartPosition;
         private Rect selectionRect;
         private Vector3 prevMouse;
+        private Vector3Int prevCell;
         private string temporaryFile;
+        private Dictionary<GameObject, Vector3> selectionGroupGridOffsets;
+        private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
+        private Grid grid;
 
         private MapEditorUI gui;
 
         public void Awake()
         {
             this.selectedMapObjects = new List<GameObject>();
-            this.gridSize = 1.0f;
             this.snapToGrid = true;
             this.isCreatingSelection = false;
             this.isDraggingMapObjects = false;
@@ -42,6 +49,8 @@ namespace MapsExtended.Editor
             this.currentMapName = null;
             this.temporaryFile = null;
             this.isSimulating = false;
+            this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
+            this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
 
@@ -50,6 +59,12 @@ namespace MapsExtended.Editor
 
             this.gui = uiGo.AddComponent<MapEditorUI>();
             this.gui.editor = this;
+
+            var gridGo = new GameObject("MapEditorGrid");
+            gridGo.transform.SetParent(this.transform);
+
+            this.grid = gridGo.AddComponent<Grid>();
+            this.grid.cellSize = Vector3.one;
         }
 
         public void Update()
@@ -117,7 +132,7 @@ namespace MapsExtended.Editor
         public void SpawnMapObject(string mapObjectName)
         {
             var mapObject = EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), mapObjectName);
-            mapObject.transform.localScale = EditorUtils.SnapToGrid(mapObject.transform.localScale, this.gridSize);
+            mapObject.transform.localScale = EditorUtils.SnapToGrid(mapObject.transform.localScale, this.GridSize);
             mapObject.transform.position = Vector3.zero;
         }
 
@@ -206,11 +221,13 @@ namespace MapsExtended.Editor
         private void LoadMap(string file)
         {
             this.gui.transform.SetParent(null);
+            this.grid.transform.SetParent(null);
 
             var map = this.gameObject.GetComponent<Map>();
             EditorMod.instance.LoadMap(map, file);
 
             this.gui.transform.SetParent(this.transform);
+            this.grid.transform.SetParent(this.transform);
         }
 
         public void OnClickSaveAs()
@@ -252,6 +269,55 @@ namespace MapsExtended.Editor
 
             this.prevMouse = mouseWorldPos;
             this.isDraggingMapObjects = true;
+
+            this.selectionGroupGridOffsets.Clear();
+            this.selectionGroupPositionOffsets.Clear();
+
+            if (this.selectedMapObjects.Count == 1)
+            {
+                var obj = this.selectedMapObjects[0];
+
+                var referenceRotation = obj.transform.rotation;
+                var referenceAngles = referenceRotation.eulerAngles;
+                referenceRotation.eulerAngles = new Vector3(referenceAngles.x, referenceAngles.y, referenceAngles.z % 90);
+                this.grid.transform.rotation = referenceRotation;
+
+                var scaleOffset = Vector3.zero;
+                var objectCell = this.grid.WorldToCell(obj.transform.position);
+                var snappedPosition = this.grid.CellToWorld(objectCell);
+
+                if (snappedPosition != obj.transform.position)
+                {
+                    var diff = obj.transform.position - snappedPosition;
+                    var identityDiff = Quaternion.Inverse(referenceRotation) * diff;
+                    var identityDelta = new Vector3(this.GridSize / 2f, this.GridSize / 2f, 0);
+
+                    const float eps = 0.000005f;
+
+                    if ((Mathf.Abs(identityDiff.x) < eps || Mathf.Abs(identityDiff.x - identityDelta.x) < eps) && 
+                        (Mathf.Abs(identityDiff.y) < eps || Mathf.Abs(identityDiff.y - identityDelta.y) < eps))
+                    {
+                        scaleOffset = diff;
+                    }
+                }
+
+                this.selectionGroupGridOffsets.Add(obj, Vector3.zero);
+                this.selectionGroupPositionOffsets.Add(obj, scaleOffset);
+            }
+            else
+            {
+                this.grid.transform.rotation = Quaternion.identity;
+
+                foreach (var mapObject in this.selectedMapObjects)
+                {
+                    var objectCell = this.grid.WorldToCell(mapObject.transform.position);
+                    var snappedPosition = this.grid.CellToWorld(objectCell);
+                    this.selectionGroupGridOffsets.Add(mapObject, mapObject.transform.position - snappedPosition);
+                    this.selectionGroupPositionOffsets.Add(mapObject, Vector3.zero);
+                }
+            }
+
+            this.prevCell = this.grid.WorldToCell(mouseWorldPos);
         }
 
         public void OnDragEnd()
@@ -301,9 +367,12 @@ namespace MapsExtended.Editor
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
+            this.grid.transform.rotation = this.selectedMapObjects[0].transform.rotation;
+
             this.isResizingMapObject = true;
             this.resizeDirection = resizeDirection;
             this.prevMouse = mouseWorldPos;
+            this.prevCell = this.grid.WorldToCell(mouseWorldPos);
         }
 
         public void OnResizeEnd()
@@ -351,43 +420,53 @@ namespace MapsExtended.Editor
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-            var delta = mouseWorldPos - this.prevMouse;
-
-            if (this.snapToGrid)
-            {
-                delta = EditorUtils.SnapToGrid(delta, this.gridSize);
-            }
+            var mouseCell = this.grid.WorldToCell(mouseWorldPos);
+            var mouseDelta = mouseWorldPos - this.prevMouse;
+            var cellDelta = mouseCell - this.prevCell;
 
             foreach (var obj in this.selectedMapObjects)
             {
-                obj.transform.position += delta;
+                if (this.snapToGrid)
+                {
+                    Vector3 groupOffset = this.selectionGroupGridOffsets[obj];
+                    Vector3 positionOffset = this.selectionGroupPositionOffsets[obj];
+                    var objectCell = this.grid.WorldToCell(obj.transform.position);
+                    var snappedPosition = this.grid.CellToWorld(objectCell + cellDelta);
+
+                    obj.transform.position = snappedPosition + groupOffset + positionOffset;
+                }
+                else
+                {
+                    obj.transform.position += mouseDelta;
+                }
             }
 
-            this.prevMouse += delta;
+            this.prevMouse += mouseDelta;
+            this.prevCell = mouseCell;
         }
 
         private void ResizeMapObject()
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+            var mouseCell = this.grid.WorldToCell(mouseWorldPos);
             var mouseDelta = mouseWorldPos - this.prevMouse;
+            var cellDelta = mouseCell - this.prevCell;
 
-            if (this.snapToGrid)
-            {
-                mouseDelta = EditorUtils.SnapToGrid(mouseDelta, this.gridSize);
-            }
+            var sizeDelta = this.snapToGrid ? cellDelta : Quaternion.Inverse(this.grid.transform.rotation) * mouseDelta;
 
-            if (mouseDelta != Vector3.zero)
+            if (sizeDelta != Vector3.zero)
             {
                 bool resized = false;
                 foreach (var mapObject in this.selectedMapObjects)
                 {
-                    resized |= mapObject.GetComponent<IEditorActionHandler>().Resize(mouseDelta, this.resizeDirection);
+                    resized |= mapObject.GetComponent<IEditorActionHandler>().Resize(sizeDelta, this.resizeDirection);
                 }
 
                 if (resized)
                 {
                     this.prevMouse += mouseDelta;
+                    this.prevCell = mouseCell;
                 }
             }
         }
