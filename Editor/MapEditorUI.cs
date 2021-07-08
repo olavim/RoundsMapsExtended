@@ -33,7 +33,6 @@ namespace MapsExtended.Editor
     {
         public MapEditor editor;
 
-        private GameObject controlledMapObject;
         private int resizeDirection;
         private bool isResizing;
         private bool isRotating;
@@ -45,7 +44,6 @@ namespace MapsExtended.Editor
         {
             this.scrollPos = Vector2.zero;
             this.selectedMapObjects = new List<GameObject>();
-            this.controlledMapObject = null;
             this.isResizing = false;
             this.isRotating = false;
 
@@ -61,25 +59,23 @@ namespace MapsExtended.Editor
         {
             if (Input.GetMouseButtonDown(0) && this.isResizing)
             {
-                this.editor.OnResizeStart(this.controlledMapObject, this.resizeDirection);
+                this.editor.OnResizeStart(this.resizeDirection);
             }
 
             if (Input.GetMouseButtonDown(0) && this.isRotating)
             {
-                this.editor.OnRotateStart(this.controlledMapObject);
+                this.editor.OnRotateStart();
             }
 
             if (Input.GetMouseButtonUp(0) && this.isResizing)
             {
                 this.isResizing = false;
-                this.controlledMapObject = null;
                 this.editor.OnResizeEnd();
             }
 
             if (Input.GetMouseButtonUp(0) && this.isRotating)
             {
                 this.isRotating = false;
-                this.controlledMapObject = null;
                 this.editor.OnRotateEnd();
             }
         }
@@ -155,7 +151,6 @@ namespace MapsExtended.Editor
                 {
                     this.isResizing = true;
                     this.resizeDirection = direction;
-                    this.controlledMapObject = mapObject;
                 }
             };
 
@@ -190,7 +185,6 @@ namespace MapsExtended.Editor
                 if (!this.isRotating && !this.isResizing)
                 {
                     this.isRotating = true;
-                    this.controlledMapObject = mapObject;
                 }
             };
 

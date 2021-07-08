@@ -33,6 +33,21 @@ namespace MapsExtended.Editor
             {
                 this.HandleMouseUp();
             }
+
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                this.editor.OnToggleSnapToGrid(false);
+            }
+
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                this.editor.OnToggleSnapToGrid(true);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Delete))
+            {
+                this.editor.OnDeleteSelectedMapObjects();
+            }
         }
 
         private void HandleMouseDown()

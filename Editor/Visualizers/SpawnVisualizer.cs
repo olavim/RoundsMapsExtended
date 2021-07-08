@@ -19,7 +19,6 @@ namespace MapsExtended.Visualizers
         {
             float canvasScale = 4f;
 
-            var spawnObj = this.gameObject.GetComponent<SpawnPoint>();
             var collider = this.gameObject.AddComponent<BoxCollider2D>();
             collider.size = Vector3.one * 0.5f;
 
@@ -47,7 +46,6 @@ namespace MapsExtended.Visualizers
             textGo.transform.localScale = Vector3.one;
 
             this.label = textGo.AddComponent<TextMeshProUGUI>();
-            this.label.text = $"Spawn {spawnObj.ID}";
             this.label.fontSize = 0.6f * canvasScale;
             this.label.fontStyle = FontStyles.Bold;
             this.label.color = new Color32(50, 50, 50, 255);
@@ -69,6 +67,12 @@ namespace MapsExtended.Visualizers
         {
             GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
             GameObject.Destroy(this.transform.Find("Canvas").gameObject);
+        }
+
+        public void LateUpdate()
+        {
+            var spawnObj = this.gameObject.GetComponent<SpawnPoint>();
+            this.label.text = $"Spawn {spawnObj.ID}";
         }
     }
 }

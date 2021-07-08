@@ -16,7 +16,7 @@ namespace MapsExtended.Editor
         public bool Resize(Vector3 mouseDelta, int resizeDirection)
         {
             float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().gridSize;
-            bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().SnapToGrid;
+            bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().snapToGrid;
 
             var scaleMulti = Editor.TogglePosition.directionMultipliers[resizeDirection];
 

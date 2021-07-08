@@ -1,9 +1,11 @@
 ﻿using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Sirenix.Serialization;
 using MapsExtended.UI;
 using MapsExtended.Visualizers;
+using UnboundLib;
 using UnboundLib.GameModes;
 
 namespace MapsExtended.Editor
@@ -14,8 +16,7 @@ namespace MapsExtended.Editor
         public float gridSize;
         public string currentMapName;
         public bool isSimulating;
-
-        public bool SnapToGrid { get; private set; }
+        public bool snapToGrid;
 
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
@@ -32,8 +33,8 @@ namespace MapsExtended.Editor
         public void Awake()
         {
             this.selectedMapObjects = new List<GameObject>();
-            this.gridSize = 2.0f;
-            this.SnapToGrid = true;
+            this.gridSize = 1.0f;
+            this.snapToGrid = true;
             this.isCreatingSelection = false;
             this.isDraggingMapObjects = false;
             this.isResizingMapObject = false;
@@ -53,16 +54,6 @@ namespace MapsExtended.Editor
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.LeftShift))
-            {
-                this.SnapToGrid = false;
-            }
-
-            if (Input.GetKeyUp(KeyCode.LeftShift))
-            {
-                this.SnapToGrid = true;
-            }
-
             if (this.isDraggingMapObjects)
             {
                 this.DragMapObjects();
@@ -130,12 +121,42 @@ namespace MapsExtended.Editor
             mapObject.transform.position = Vector3.zero;
         }
 
+        public void OnToggleSnapToGrid(bool enabled)
+        {
+            this.snapToGrid = enabled;
+        }
+
+        public void OnDeleteSelectedMapObjects()
+        {
+            foreach (var obj in this.selectedMapObjects)
+            {
+                GameObject.Destroy(obj);
+            }
+
+            // Reset spawn IDs
+            this.ExecuteAfterFrames(1, () =>
+            {
+                var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>().Reverse().ToList();
+                for (int i = 0; i < spawns.Count; i++)
+                {
+                    spawns[i].ID = i;
+                    spawns[i].TEAMID = i;
+                    spawns[i].gameObject.name = $"SPAWN POINT {i}";
+                    spawns[i].transform.SetAsFirstSibling();
+                }
+            });
+
+            this.ClearSelected();
+        }
+
         public void OnStartSimulation()
         {
             if (this.gameObject.GetComponentsInChildren<SpawnPoint>().Length == 0)
             {
                 return;
             }
+
+            this.ClearSelected();
 
             this.isSimulating = true;
             this.SaveMap(null);
@@ -214,9 +235,8 @@ namespace MapsExtended.Editor
             if (this.selectionRect.width > 2 && this.selectionRect.height > 2)
             {
                 var list = EditorUtils.GetContainedMapObjects(UIUtils.GUIToWorldRect(this.selectionRect));
-                this.selectedMapObjects.Clear();
-                this.selectedMapObjects.AddRange(list);
-                this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
+                this.ClearSelected();
+                this.AddSelected(list);
             }
 
             this.isCreatingSelection = false;
@@ -256,37 +276,24 @@ namespace MapsExtended.Editor
                 }
             }
 
+            int previouslySelectedCount = this.selectedMapObjects.Count;
+            this.ClearSelected();
+
             if (mapObject == null)
             {
-                this.selectedMapObjects.Clear();
-                this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
                 return;
             }
 
-            if (this.IsMapObjectSelected(mapObject))
+            bool changeMultiSelectionToSingle = this.IsMapObjectSelected(mapObject) && previouslySelectedCount > 1;
+            bool selectUnselected = !this.IsMapObjectSelected(mapObject);
+
+            if (changeMultiSelectionToSingle || selectUnselected)
             {
-                if (this.selectedMapObjects.Count > 1)
-                {
-                    this.selectedMapObjects.Clear();
-                    this.selectedMapObjects.Add(mapObject);
-                    this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
-                }
-                else
-                {
-                    this.selectedMapObjects.Clear();
-                    this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
-                }
-            }
-            else
-            {
-                // GameObject is not part of a selection group, so we want to select only this object
-                this.selectedMapObjects.Clear();
-                this.selectedMapObjects.Add(mapObject);
-                this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
+                this.AddSelected(mapObject);
             }
         }
 
-        public void OnResizeStart(GameObject mapObject, int resizeDirection)
+        public void OnResizeStart(int resizeDirection)
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
@@ -301,7 +308,7 @@ namespace MapsExtended.Editor
             this.isResizingMapObject = false;
         }
 
-        public void OnRotateStart(GameObject mapObject)
+        public void OnRotateStart()
         {
             var mousePos = Input.mousePosition;
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
@@ -343,7 +350,7 @@ namespace MapsExtended.Editor
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
             var delta = mouseWorldPos - this.prevMouse;
 
-            if (this.SnapToGrid)
+            if (this.snapToGrid)
             {
                 delta = EditorUtils.SnapToGrid(delta, this.gridSize);
             }
@@ -362,7 +369,7 @@ namespace MapsExtended.Editor
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
             var mouseDelta = mouseWorldPos - this.prevMouse;
 
-            if (this.SnapToGrid)
+            if (this.snapToGrid)
             {
                 mouseDelta = EditorUtils.SnapToGrid(mouseDelta, this.gridSize);
             }
@@ -395,13 +402,31 @@ namespace MapsExtended.Editor
 
                 float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
 
-                if (this.SnapToGrid)
+                if (this.snapToGrid)
                 {
                     angle = EditorUtils.Snap(angle, 15f);
                 }
 
                 mapObject.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
             }
+        }
+
+        private void ClearSelected()
+        {
+            this.selectedMapObjects.Clear();
+            this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
+        }
+
+        private void AddSelected(IEnumerable<GameObject> list)
+        {
+            this.selectedMapObjects.AddRange(list);
+            this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
+        }
+
+        private void AddSelected(GameObject obj)
+        {
+            this.selectedMapObjects.Add(obj);
+            this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
         }
     }
 }

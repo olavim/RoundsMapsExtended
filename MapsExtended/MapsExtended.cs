@@ -147,7 +147,7 @@ namespace MapsExtended
             if (data == null)
             {
                 int id = map.gameObject.GetComponentsInChildren<SpawnPoint>().Length;
-                int teamID = id % 2;
+                int teamID = id;
                 data = new SpawnPointData(id, teamID, Vector3.zero);
             }
 
