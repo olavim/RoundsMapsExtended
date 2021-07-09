@@ -31,6 +31,8 @@ namespace MapsExtended.UI
             var bg = wrapperGo.AddComponent<Image>();
             wrapperGo.AddComponent<GraphicRaycaster>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 500;
 
             bg.color = new Color32(0, 0, 0, 200);
 

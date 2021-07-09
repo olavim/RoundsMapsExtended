@@ -36,6 +36,7 @@ namespace MapsExtended.Visualizers
 
             this.canvas = canvasGo.AddComponent<Canvas>();
             this.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            this.canvas.sortingOrder = 1;
 
             var imageGo = new GameObject("Image");
             imageGo.transform.SetParent(canvasGo.transform);
@@ -62,9 +63,6 @@ namespace MapsExtended.Visualizers
 
             this.positionIndicator = pointCanvasGo.AddComponent<Image>();
             this.positionIndicator.rectTransform.sizeDelta = UIUtils.WorldToScreenRect(new Rect(0, 0, 0.5f, 0.5f)).size;
-
-            canvasGo.GetComponent<Canvas>().overrideSorting = true;
-            canvasGo.GetComponent<Canvas>().sortingOrder = 999;
         }
 
         public void OnDisable()
