@@ -451,9 +451,11 @@ namespace MapsExtended.Editor
             var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
             var mouseCell = this.grid.WorldToCell(mouseWorldPos);
             var mouseDelta = mouseWorldPos - this.prevMouse;
-            var cellDelta = mouseCell - this.prevCell;
+            Vector3 cellDelta = mouseCell - this.prevCell;
 
-            var sizeDelta = this.snapToGrid ? cellDelta : Quaternion.Inverse(this.grid.transform.rotation) * mouseDelta;
+            var sizeDelta = this.snapToGrid 
+                ? cellDelta * this.GridSize 
+                : Quaternion.Inverse(this.grid.transform.rotation) * mouseDelta;
 
             if (sizeDelta != Vector3.zero)
             {
