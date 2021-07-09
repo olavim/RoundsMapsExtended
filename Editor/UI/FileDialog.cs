@@ -15,10 +15,6 @@ namespace MapsExtended.UI
         static FileDialog()
         {
             FileDialog.bundle = AssetUtils.LoadAssetBundleFromResources("uielements", typeof(FileDialog).Assembly);
-            foreach (var n in bundle.GetAllAssetNames())
-            {
-                UnityEngine.Debug.Log(n);
-            }
         }
 
         public static void OpenDialog(Action<string> cb)

@@ -131,9 +131,11 @@ namespace MapsExtended.Editor
 
         public void SpawnMapObject(string mapObjectName)
         {
-            var mapObject = EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), mapObjectName);
-            mapObject.transform.localScale = EditorUtils.SnapToGrid(mapObject.transform.localScale, this.GridSize);
-            mapObject.transform.position = Vector3.zero;
+            EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), mapObjectName, instance =>
+            {
+                instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize);
+                instance.transform.position = Vector3.zero;
+            });
         }
 
         public void AddSpawn()

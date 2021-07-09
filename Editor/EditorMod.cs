@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -103,17 +104,19 @@ namespace MapsExtended.Editor
             });
         }
 
-        public GameObject SpawnObject(Map map, string mapObjectName)
+        public void SpawnObject(Map map, string mapObjectName, Action<GameObject> cb)
         {
-            GameObject instance = MapsExtended.SpawnMapObject(map, mapObjectName, true);
-            this.SetupMapObject(map, instance);
-
-            this.ExecuteAfterFrames(1, () =>
+            MapsExtended.SpawnMapObject(map, mapObjectName, true, instance =>
             {
-                this.SetMapObjectPhysicsActive(instance, false);
-            });
+                this.SetupMapObject(map, instance);
 
-            return instance;
+                this.ExecuteAfterFrames(1, () =>
+                {
+                    this.SetMapObjectPhysicsActive(instance, false);
+                });
+
+                cb(instance);
+            });
         }
 
         public GameObject AddSpawn(Map map)

@@ -9,6 +9,7 @@ using Jotunn.Utils;
 using UnityEngine.SceneManagement;
 using Sirenix.Serialization;
 using UnityEngine;
+using UnityEngine.UI;
 using UnboundLib;
 using Photon.Pun;
 
@@ -21,9 +22,16 @@ namespace MapsExtended
         private const string ModId = "io.olavim.rounds.mapsextended";
         public const string Version = "1.0.0";
 
+#if DEBUG
+        public static readonly bool DEBUG = true;
+#else
+        public static readonly bool DEBUG = false;
+#endif
+
         public static MapsExtended instance;
 
         public List<string> mapFiles;
+        public bool forceCustomMaps = false;
 
         internal Dictionary<string, string> mapFolderPrefixes = new Dictionary<string, string>();
         internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
@@ -52,6 +60,16 @@ namespace MapsExtended
         public void Start()
         {
             this.UpdateMapFiles();
+
+            if (MapsExtended.DEBUG)
+            {
+                Unbound.RegisterGUI("MapsExtended Debug", this.DrawDebugGUI);
+            }
+        }
+
+        public void DrawDebugGUI()
+        {
+            this.forceCustomMaps = GUILayout.Toggle(this.forceCustomMaps, "Force Custom Maps");
         }
 
         public void UpdateMapFiles()
@@ -92,10 +110,12 @@ namespace MapsExtended
 
             foreach (var mapObject in mapData.mapObjects)
             {
-                var instance = MapsExtended.SpawnMapObject(mapBase, mapObject.mapObjectName, isDelayedLoad);
-                instance.transform.position = mapObject.position;
-                instance.transform.localScale = mapObject.scale;
-                instance.transform.rotation = mapObject.rotation;
+                MapsExtended.SpawnMapObject(mapBase, mapObject.mapObjectName, isDelayedLoad, instance =>
+                {
+                    instance.transform.position = mapObject.position;
+                    instance.transform.localScale = mapObject.scale;
+                    instance.transform.rotation = mapObject.rotation;
+                });
             }
 
             foreach (var spawn in mapData.spawns)
@@ -104,7 +124,7 @@ namespace MapsExtended
             }
         }
 
-        public static GameObject SpawnMapObject(Map map, string mapObjectName, bool isDelayedSpawn = false)
+        public static void SpawnMapObject(Map map, string mapObjectName, bool isDelayedSpawn, Action<GameObject> cb)
         {
             var prefab = MapObjectManager.instance.GetMapObject(mapObjectName);
             GameObject instance;
@@ -132,6 +152,7 @@ namespace MapsExtended
                     MapsExtended.instance.OnPhotonMapObjectInstantiate(photonMapObject, networkInstance =>
                     {
                         MapObjectManager.instance.AddMapObjectComponents(mapObjectName, networkInstance);
+                        cb(networkInstance);
                     });
                 }
             }
@@ -139,7 +160,7 @@ namespace MapsExtended
             MapObjectManager.instance.AddMapObjectComponents(mapObjectName, instance);
 
             instance.name = prefab.name;
-            return instance;
+            cb(instance);
         }
 
         public static GameObject AddSpawn(Map map, SpawnPointData data = null)
@@ -173,11 +194,6 @@ namespace MapsExtended
             SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
             MapsExtended.LoadMap(map, MapManagerPatch.mapToLoad);
-
-            map.mapIsReadyAction += () =>
-            {
-
-            };
         }
 
         public static void Prefix(ref string sceneName)
@@ -192,6 +208,24 @@ namespace MapsExtended
                 sceneName = "NewMap";
                 SceneManager.sceneLoaded += MapManagerPatch.OnLevelFinishedLoading;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(MapManager), "GetRandomMap")]
+    class MapManagerDebugPatch
+    {
+        public static bool Prefix(ref string __result)
+        {
+            if (!MapsExtended.instance.forceCustomMaps)
+            {
+                return true;
+            }
+
+            var customMaps = MapsExtended.instance.mapFiles;
+
+            int index = UnityEngine.Random.Range(0, customMaps.Count);
+            __result = customMaps[index];
+            return false;
         }
     }
 
