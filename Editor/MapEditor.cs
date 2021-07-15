@@ -34,8 +34,9 @@ namespace MapsExtended.Editor
         private string temporaryFile;
         private Dictionary<GameObject, Vector3> selectionGroupGridOffsets;
         private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
-        private Grid grid;
+        private InteractionTimeline timeline;
 
+        private Grid grid;
         private MapEditorUI gui;
 
         public void Awake()
@@ -51,6 +52,7 @@ namespace MapsExtended.Editor
             this.isSimulating = false;
             this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
             this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
+            this.timeline = new InteractionTimeline();
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
 
@@ -133,15 +135,44 @@ namespace MapsExtended.Editor
         {
             EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), mapObjectName, instance =>
             {
+                instance.SetActive(false);
                 instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize);
                 instance.transform.position = Vector3.zero;
+
+                this.timeline.BeginInteraction(instance, true);
+                instance.SetActive(true);
+                this.timeline.EndInteraction();
             });
         }
 
         public void AddSpawn()
         {
             var spawn = EditorMod.instance.AddSpawn(this.gameObject.GetComponent<Map>());
+            spawn.SetActive(false);
             spawn.transform.position = Vector3.zero;
+
+            this.timeline.BeginInteraction(spawn, true);
+            spawn.SetActive(true);
+            this.timeline.EndInteraction();
+        }
+
+        public void OnUndo()
+        {
+            if (this.timeline.Undo())
+            {
+                this.ResetSpawnLabels();
+                this.ClearSelected();
+            }
+
+        }
+
+        public void OnRedo()
+        {
+            if (this.timeline.Redo())
+            {
+                this.ResetSpawnLabels();
+                this.ClearSelected();
+            }
         }
 
         public void OnToggleSnapToGrid(bool enabled)
@@ -151,20 +182,14 @@ namespace MapsExtended.Editor
 
         public void OnDeleteSelectedMapObjects()
         {
+            this.timeline.BeginInteraction(this.selectedMapObjects);
             foreach (var obj in this.selectedMapObjects)
             {
-                GameObject.Destroy(obj);
+                obj.SetActive(false);
             }
+            this.timeline.EndInteraction();
 
-            // Reset spawn IDs
-            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>().Reverse().ToList();
-            for (int i = 0; i < spawns.Count; i++)
-            {
-                spawns[i].ID = i;
-                spawns[i].TEAMID = i;
-                spawns[i].gameObject.name = $"SPAWN POINT {i}";
-            }
-
+            this.ResetSpawnLabels();
             this.ClearSelected();
         }
 
@@ -320,11 +345,13 @@ namespace MapsExtended.Editor
             }
 
             this.prevCell = this.grid.WorldToCell(mouseWorldPos);
+            this.timeline.BeginInteraction(this.selectedMapObjects);
         }
 
         public void OnDragEnd()
         {
             this.isDraggingMapObjects = false;
+            this.timeline.EndInteraction();
         }
 
         public void OnClickMapObjects(List<GameObject> mapObjects)
@@ -375,11 +402,14 @@ namespace MapsExtended.Editor
             this.resizeDirection = resizeDirection;
             this.prevMouse = mouseWorldPos;
             this.prevCell = this.grid.WorldToCell(mouseWorldPos);
+
+            this.timeline.BeginInteraction(this.selectedMapObjects);
         }
 
         public void OnResizeEnd()
         {
             this.isResizingMapObject = false;
+            this.timeline.EndInteraction();
         }
 
         public void OnRotateStart()
@@ -389,11 +419,14 @@ namespace MapsExtended.Editor
 
             this.isRotatingMapObject = true;
             this.prevMouse = mouseWorldPos;
+
+            this.timeline.BeginInteraction(this.selectedMapObjects);
         }
 
         public void OnRotateEnd()
         {
             this.isRotatingMapObject = false;
+            this.timeline.EndInteraction();
         }
 
         public bool IsMapObjectSelected(GameObject obj)
@@ -513,6 +546,17 @@ namespace MapsExtended.Editor
         {
             this.selectedMapObjects.Add(obj);
             this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
+        }
+
+        private void ResetSpawnLabels()
+        {
+            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>().ToList();
+            for (int i = 0; i < spawns.Count; i++)
+            {
+                spawns[i].ID = i;
+                spawns[i].TEAMID = i;
+                spawns[i].gameObject.name = $"SPAWN POINT {i}";
+            }
         }
     }
 }

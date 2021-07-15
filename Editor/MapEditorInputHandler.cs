@@ -24,6 +24,11 @@ namespace MapsExtended.Editor
 
         public void Update()
         {
+            if (this.editor.isSimulating)
+            {
+                return;
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 this.HandleMouseDown();
@@ -48,11 +53,21 @@ namespace MapsExtended.Editor
             {
                 this.editor.OnDeleteSelectedMapObjects();
             }
+
+            if (Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Z))
+            {
+                this.editor.OnUndo();
+            }
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Z))
+            {
+                this.editor.OnRedo();
+            }
         }
 
         private void HandleMouseDown()
         {
-            if (this.editor.isSimulating || EventSystem.current.IsPointerOverGameObject())
+            if (EventSystem.current.IsPointerOverGameObject())
             {
                 return;
             }
