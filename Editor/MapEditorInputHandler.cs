@@ -63,6 +63,16 @@ namespace MapsExtended.Editor
             {
                 this.editor.OnRedo();
             }
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
+            {
+                this.editor.OnCopy();
+            }
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
+            {
+                this.editor.OnPaste();
+            }
         }
 
         private void HandleMouseDown()

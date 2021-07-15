@@ -1,10 +1,12 @@
 ﻿using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Sirenix.Serialization;
 using MapsExtended.UI;
 using MapsExtended.Visualizers;
+using UnboundLib;
 using UnboundLib.GameModes;
 
 namespace MapsExtended.Editor
@@ -31,10 +33,11 @@ namespace MapsExtended.Editor
         private Rect selectionRect;
         private Vector3 prevMouse;
         private Vector3Int prevCell;
-        private string temporaryFile;
         private Dictionary<GameObject, Vector3> selectionGroupGridOffsets;
         private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
         private InteractionTimeline timeline;
+        private List<MapObjectData> clipboardMapObjects;
+        private List<SpawnPointData> clipboardSpawns;
 
         private Grid grid;
         private MapEditorUI gui;
@@ -48,7 +51,6 @@ namespace MapsExtended.Editor
             this.isResizingMapObject = false;
             this.isRotatingMapObject = false;
             this.currentMapName = null;
-            this.temporaryFile = null;
             this.isSimulating = false;
             this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
             this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
@@ -92,7 +94,7 @@ namespace MapsExtended.Editor
             }
         }
 
-        public void SaveMap(string filename)
+        public void SaveMap(string filename, bool includeInactiveObjects = false)
         {
             var mapData = new CustomMap
             {
@@ -100,8 +102,8 @@ namespace MapsExtended.Editor
                 spawns = new List<SpawnPointData>()
             };
 
-            var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>();
-            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>();
+            var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>(includeInactiveObjects);
+            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>(includeInactiveObjects);
 
             foreach (var mapObject in mapObjects)
             {
@@ -121,14 +123,7 @@ namespace MapsExtended.Editor
 
             File.WriteAllBytes(path, bytes);
 
-            if (filename == null)
-            {
-                this.temporaryFile = path;
-            }
-            else
-            {
-                this.currentMapName = filename;
-            }
+            this.currentMapName = filename;
         }
 
         public void SpawnMapObject(string mapObjectName)
@@ -175,6 +170,85 @@ namespace MapsExtended.Editor
             }
         }
 
+        public void OnCopy()
+        {
+            this.clipboardMapObjects = new List<MapObjectData>();
+            this.clipboardSpawns = new List<SpawnPointData>();
+
+            foreach (var obj in this.selectedMapObjects)
+            {
+                var mapObject = obj.GetComponent<MapObject>();
+                var spawn = obj.GetComponent<SpawnPoint>();
+
+                if (mapObject)
+                {
+                    this.clipboardMapObjects.Add(new MapObjectData(mapObject));
+                }
+
+                if (spawn)
+                {
+                    this.clipboardSpawns.Add(new SpawnPointData(spawn));
+                }
+            }
+        }
+
+        public void OnPaste()
+        {
+            if (this.clipboardMapObjects == null || 
+                this.clipboardSpawns == null || 
+                (this.clipboardMapObjects.Count == 0 && this.clipboardSpawns.Count == 0))
+            {
+                return;
+            }
+
+            this.ClearSelected();
+
+            this.StartCoroutine(this.SpawnClipboardObjects());
+        }
+
+        private IEnumerator SpawnClipboardObjects()
+        {
+            int waitingForSpawns = this.clipboardMapObjects.Count + this.clipboardSpawns.Count;
+
+            foreach (var data in this.clipboardMapObjects)
+            {
+                EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), data.mapObjectName, instance =>
+                {
+                    instance.SetActive(false);
+                    instance.transform.position = data.position + new Vector3(1, -1, 0);
+                    instance.transform.localScale = data.scale;
+                    instance.transform.rotation = data.rotation;
+
+                    this.AddSelected(instance);
+                    waitingForSpawns--;
+                });
+            }
+
+            foreach (var data in this.clipboardSpawns)
+            {
+                var instance = EditorMod.instance.AddSpawn(this.gameObject.GetComponent<Map>());
+                instance.SetActive(false);
+                instance.transform.position = data.position + new Vector3(1, -1, 0);
+
+                this.AddSelected(instance);
+                waitingForSpawns--;
+            }
+
+            while (waitingForSpawns > 0)
+            {
+                yield return null;
+            }
+
+            this.timeline.BeginInteraction(this.selectedMapObjects, true);
+            foreach (var obj in this.selectedMapObjects)
+            {
+                obj.SetActive(true);
+            }
+            this.timeline.EndInteraction();
+
+            this.ResetSpawnLabels();
+        }
+
         public void OnToggleSnapToGrid(bool enabled)
         {
             this.snapToGrid = enabled;
@@ -203,7 +277,13 @@ namespace MapsExtended.Editor
             this.ClearSelected();
 
             this.isSimulating = true;
-            this.SaveMap(null);
+            this.isCreatingSelection = false;
+
+            var objects = new List<GameObject>();
+            objects.AddRange(this.gameObject.GetComponentsInChildren<MapObject>(true).Select(o => o.gameObject));
+            objects.AddRange(this.gameObject.GetComponentsInChildren<SpawnPoint>(true).Select(o => o.gameObject));
+
+            MapObjectInteraction.BeginInteraction(objects);
 
             EditorMod.instance.SetMapPhysicsActive(this.gameObject.GetComponent<Map>(), true);
             GameModeManager.SetGameMode("Sandbox");
@@ -229,7 +309,17 @@ namespace MapsExtended.Editor
             GameModeManager.SetGameMode(null);
             PlayerManager.instance.RemovePlayers();
             CardBarHandler.instance.ResetCardBards();
-            this.LoadMap(this.temporaryFile);
+
+            EditorMod.instance.SetMapPhysicsActive(this.gameObject.GetComponent<Map>(), false);
+
+            var visualizers = this.gameObject.GetComponentsInChildren<IMapObjectVisualizer>();
+            foreach (var viz in visualizers)
+            {
+                viz.SetEnabled(true);
+            }
+
+            var interaction = MapObjectInteraction.EndInteraction();
+            interaction.Undo();
         }
 
         public void OnClickOpen()
@@ -259,7 +349,7 @@ namespace MapsExtended.Editor
 
         public void OnClickSaveAs()
         {
-            FileDialog.SaveDialog(this.SaveMap);
+            FileDialog.SaveDialog(filename => this.SaveMap(filename));
         }
 
         public void OnClickSave()

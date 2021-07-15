@@ -215,6 +215,8 @@ namespace MapsExtended.Editor
             var rig = mapObject.GetComponent<Rigidbody2D>();
             if (rig)
             {
+                rig.velocity = Vector2.zero;
+                rig.angularVelocity = 0;
                 rig.simulated = true;
                 rig.isKinematic = !active;
             }

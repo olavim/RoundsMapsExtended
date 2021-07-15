@@ -115,6 +115,7 @@ namespace MapsExtended
                     instance.transform.position = mapObject.position;
                     instance.transform.localScale = mapObject.scale;
                     instance.transform.rotation = mapObject.rotation;
+                    instance.SetActive(mapObject.active);
                 });
             }
 
@@ -169,10 +170,11 @@ namespace MapsExtended
             {
                 int id = map.gameObject.GetComponentsInChildren<SpawnPoint>().Length;
                 int teamID = id;
-                data = new SpawnPointData(id, teamID, Vector3.zero);
+                data = new SpawnPointData(id, teamID, Vector3.zero, true);
             }
 
             var spawnGo = new GameObject($"SPAWN POINT {data.id}");
+            spawnGo.SetActive(data.active);
             spawnGo.transform.SetParent(map.transform);
             spawnGo.transform.position = data.position;
 

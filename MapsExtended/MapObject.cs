@@ -10,6 +10,7 @@ namespace MapsExtended
         public Vector3 position;
         public Vector3 scale;
         public Quaternion rotation;
+        public bool active;
 
         public MapObjectData(MapObject obj)
         {
@@ -17,6 +18,7 @@ namespace MapsExtended
             this.position = obj.transform.position;
             this.scale = obj.transform.localScale;
             this.rotation = obj.transform.rotation;
+            this.active = obj.gameObject.activeSelf;
         }
     }
 

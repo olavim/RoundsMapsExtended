@@ -8,10 +8,10 @@ namespace MapsExtended
     public class InteractionTimeline
     {
         private readonly List<MapObjectInteraction> interactionStack = new List<MapObjectInteraction>();
-        private readonly Dictionary<int, IEnumerable<GameObject>> interactionIndexGameObjects = new Dictionary<int, IEnumerable<GameObject>>();
+        private readonly Dictionary<int, GameObject[]> interactionIndexGameObjects = new Dictionary<int, GameObject[]>();
 
         private int interactionIndex = -1;
-        private IEnumerable<GameObject> interactionGameObjects;
+        private GameObject[] interactionGameObjects;
 
         public void BeginInteraction(GameObject obj, bool isCreateInteraction = false)
         {
@@ -21,7 +21,7 @@ namespace MapsExtended
         public void BeginInteraction(IEnumerable<GameObject> objects, bool isCreateInteraction = false)
         {
             MapObjectInteraction.BeginInteraction(objects);
-            this.interactionGameObjects = isCreateInteraction ? objects : null;
+            this.interactionGameObjects = isCreateInteraction ? objects.ToArray() : null;
         }
 
         public void EndInteraction()
@@ -38,7 +38,7 @@ namespace MapsExtended
                  */
                 for (int i = removeFrom; i < removeFrom + removeCount; i++)
                 {
-                    if (this.interactionIndexGameObjects.TryGetValue(i, out IEnumerable<GameObject> list))
+                    if (this.interactionIndexGameObjects.TryGetValue(i, out GameObject[] list))
                     {
                         foreach (var obj in list)
                         {
