@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -36,6 +37,9 @@ namespace MapsExtended.Editor
             };
 
             Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
+
+            string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}MapsExtended.Editor.UI.dll");
         }
 
         public void Start()

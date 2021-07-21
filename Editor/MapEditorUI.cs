@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
+using MapsExtended.UI;
 
 namespace MapsExtended.Editor
 {
@@ -37,12 +39,10 @@ namespace MapsExtended.Editor
         private bool isResizing;
         private bool isRotating;
 
-        private Vector2 scrollPos;
         private List<GameObject> selectedMapObjects;
 
         public void Awake()
         {
-            this.scrollPos = Vector2.zero;
             this.selectedMapObjects = new List<GameObject>();
             this.isResizing = false;
             this.isRotating = false;
@@ -51,8 +51,74 @@ namespace MapsExtended.Editor
             var scaler = this.gameObject.AddComponent<CanvasScaler>();
             this.gameObject.AddComponent<GraphicRaycaster>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.pixelPerfect = false;
+            canvas.pixelPerfect = true;
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
+
+            var toolbarGo = GameObject.Instantiate(Assets.ToolbarPrefab, this.transform);
+            toolbarGo.name = "Toolbar";
+
+            var toolbar = toolbarGo.GetComponent<Toolbar>();
+
+            var ctrlKey = new NamedKeyCode(KeyCode.LeftControl, "Ctrl");
+            var shiftKey = new NamedKeyCode(KeyCode.LeftShift, "Shift");
+            var sKey = new NamedKeyCode(KeyCode.S, "S");
+            var oKey = new NamedKeyCode(KeyCode.O, "O");
+            var cKey = new NamedKeyCode(KeyCode.C, "C");
+            var vKey = new NamedKeyCode(KeyCode.V, "V");
+            var zKey = new NamedKeyCode(KeyCode.Z, "Z");
+
+            var openItem = new MenuItem("Open...", this.editor.OnClickOpen, oKey, ctrlKey);
+            var saveItem = new MenuItem("Save", this.editor.OnClickSave, sKey, ctrlKey);
+            var saveAsItem = new MenuItem("Save As...", this.editor.OnClickSaveAs, sKey, ctrlKey, shiftKey);
+
+            toolbar.fileMenu.AddMenuItem(openItem);
+            toolbar.fileMenu.AddMenuItem(saveItem);
+            toolbar.fileMenu.AddMenuItem(saveAsItem);
+
+            var undoItem = new MenuItem("Undo", this.editor.OnUndo, zKey, ctrlKey);
+            var redoItem = new MenuItem("Redo", this.editor.OnRedo, zKey, ctrlKey, shiftKey);
+            var copyItem = new MenuItem("Copy", this.editor.OnCopy, cKey, ctrlKey);
+            var pasteItem = new MenuItem("Paste", this.editor.OnPaste, vKey, ctrlKey);
+
+            toolbar.editMenu.AddMenuItem(undoItem);
+            toolbar.editMenu.AddMenuItem(redoItem);
+            toolbar.editMenu.AddMenuItem(copyItem);
+            toolbar.editMenu.AddMenuItem(pasteItem);
+
+            var objGroundItem = new MenuItem("Ground", () => this.editor.SpawnMapObject("Ground"));
+            var objSawItem = new MenuItem("Saw", () => this.editor.SpawnMapObject("Saw"));
+
+            var objBoxItem = new MenuItem("Box", () => this.editor.SpawnMapObject("Box"));
+            var objBoxDestructibleItem = new MenuItem("Box (Destructible)", () => this.editor.SpawnMapObject("Destructible Box"));
+            var objBoxBgItem = new MenuItem("Box (Background)", () => this.editor.SpawnMapObject("Background Box"));
+
+            var staticGroupItem = new MenuItem("Static", new MenuItem[] { objGroundItem, objSawItem });
+            var dynamicGroupItem = new MenuItem("Dynamic", new MenuItem[] { objBoxItem, objBoxDestructibleItem, objBoxBgItem });
+            var spawnItem = new MenuItem("Spawn Point", this.editor.AddSpawn);
+
+            toolbar.mapObjectMenu.AddMenuItem(staticGroupItem);
+            toolbar.mapObjectMenu.AddMenuItem(dynamicGroupItem);
+            toolbar.mapObjectMenu.AddMenuItem(spawnItem);
+
+            toolbar.gridSizeSlider.value = this.editor.GridSize;
+            toolbar.gridSizeSlider.onValueChanged.AddListener(val => this.editor.GridSize = val);
+
+            toolbar.onToggleSimulation += simulated =>
+            {
+                if (simulated)
+                {
+                    this.editor.OnStartSimulation();
+                }
+                else
+                {
+                    this.editor.OnStopSimulation();
+                }
+
+                toolbar.fileMenu.gameObject.SetActive(!simulated);
+                toolbar.editMenu.gameObject.SetActive(!simulated);
+                toolbar.mapObjectMenu.gameObject.SetActive(!simulated);
+                toolbar.gridSizeSlider.transform.parent.parent.gameObject.SetActive(!simulated);
+            };
         }
 
         public void Update()
@@ -84,6 +150,11 @@ namespace MapsExtended.Editor
         {
             foreach (Transform child in this.transform)
             {
+                if (child.name == "Toolbar")
+                {
+                    continue;
+                }
+
                 GameObject.Destroy(child.gameObject);
             }
 
@@ -216,88 +287,10 @@ namespace MapsExtended.Editor
 
         public void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(10, 10, 200, 400));
-
-            GUILayout.BeginVertical();
-
             if (this.editor.isSimulating)
             {
                 GUI.enabled = false;
             }
-
-            if (GUILayout.Button("Open..."))
-            {
-                this.editor.OnClickOpen();
-            }
-
-            if (GUILayout.Button("Save As..."))
-            {
-                this.editor.OnClickSaveAs();
-            }
-
-            if (this.editor.currentMapName == null)
-            {
-                GUI.enabled = false;
-            }
-
-            if (GUILayout.Button("Save"))
-            {
-                this.editor.OnClickSave();
-            }
-            GUI.enabled = true;
-
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical();
-
-            this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, GUILayout.Width(200), GUILayout.Height(200));
-            GUILayout.BeginVertical();
-
-            if (this.editor.isSimulating)
-            {
-                GUI.enabled = false;
-            }
-
-            if (GUILayout.Button("Spawn Point"))
-            {
-                this.editor.AddSpawn();
-            }
-
-            foreach (string objectName in MapObjectManager.instance.GetMapObjects())
-            {
-                if (GUILayout.Button(objectName))
-                {
-                    this.editor.SpawnMapObject(objectName);
-                }
-            }
-
-            GUILayout.Label("Grid size: " + this.editor.GridSize);
-            this.editor.GridSize = EditorUtils.Snap(GUILayout.HorizontalSlider(this.editor.GridSize, 0.5f, 4f), 0.5f);
-
-            GUILayout.EndVertical();
-            GUILayout.EndScrollView();
-
-            GUILayout.BeginVertical();
-            
-            if (this.editor.isSimulating)
-            {
-                GUI.enabled = true;
-                if (GUILayout.Button("Stop Testing"))
-                {
-                    this.editor.OnStopSimulation();
-                }
-                GUI.enabled = false;
-            }
-
-            if (!this.editor.isSimulating && GUILayout.Button("Test Map"))
-            {
-                this.editor.OnStartSimulation();
-            }
-
-            GUILayout.EndVertical();
-
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
 
             var selectionStyle = new GUIStyle(GUI.skin.box);
             selectionStyle.normal.background = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));

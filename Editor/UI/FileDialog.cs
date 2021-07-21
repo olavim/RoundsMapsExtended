@@ -8,22 +8,8 @@ namespace MapsExtended.UI
 {
     public class FileDialog : MonoBehaviour
     {
-        private static readonly AssetBundle bundle;
-        private static GameObject openDialogPrefab;
-        private static GameObject saveDialogPrefab;
-
-        static FileDialog()
-        {
-            FileDialog.bundle = AssetUtils.LoadAssetBundleFromResources("uielements", typeof(FileDialog).Assembly);
-        }
-
         public static void OpenDialog(Action<string> cb)
         {
-            if (!FileDialog.openDialogPrefab)
-            {
-                FileDialog.openDialogPrefab = FileDialog.bundle.LoadAsset<GameObject>("assets/prefabs/file browser.prefab");
-            }
-
             var wrapperGo = new GameObject("Open Dialog");
             DontDestroyOnLoad(wrapperGo);
 
@@ -36,7 +22,7 @@ namespace MapsExtended.UI
 
             bg.color = new Color32(0, 0, 0, 200);
 
-            var fileBrowserGo = GameObject.Instantiate(FileDialog.openDialogPrefab, wrapperGo.transform);
+            var fileBrowserGo = GameObject.Instantiate(Assets.OpenDialogPrefab, wrapperGo.transform);
             var fileBrowser = fileBrowserGo.GetComponent<FileBrowser>();
 
             string inactivePath = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
@@ -68,11 +54,6 @@ namespace MapsExtended.UI
 
         public static void SaveDialog(Action<string> cb)
         {
-            if (!FileDialog.saveDialogPrefab)
-            {
-                FileDialog.saveDialogPrefab = FileDialog.bundle.LoadAsset<GameObject>("assets/prefabs/save dialog.prefab");
-            }
-
             var wrapperGo = new GameObject("Save Dialog");
             DontDestroyOnLoad(wrapperGo);
 
@@ -83,7 +64,7 @@ namespace MapsExtended.UI
 
             bg.color = new Color32(0, 0, 0, 200);
 
-            var saveDialogGo = GameObject.Instantiate(FileDialog.saveDialogPrefab, wrapperGo.transform);
+            var saveDialogGo = GameObject.Instantiate(Assets.SaveDialogPrefab, wrapperGo.transform);
             var saveDialog = saveDialogGo.GetComponent<SaveDialog>();
 
             saveDialog.title.text = "Save As...";

@@ -53,26 +53,6 @@ namespace MapsExtended.Editor
             {
                 this.editor.OnDeleteSelectedMapObjects();
             }
-
-            if (Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Z))
-            {
-                this.editor.OnUndo();
-            }
-
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Z))
-            {
-                this.editor.OnRedo();
-            }
-
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
-            {
-                this.editor.OnCopy();
-            }
-
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
-            {
-                this.editor.OnPaste();
-            }
         }
 
         private void HandleMouseDown()

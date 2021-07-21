@@ -58,17 +58,19 @@ namespace MapsExtended.Editor
 
             this.gameObject.AddComponent<MapEditorInputHandler>();
 
-            var uiGo = new GameObject("MapEditorUI");
-            uiGo.transform.SetParent(this.transform);
-
-            this.gui = uiGo.AddComponent<MapEditorUI>();
-            this.gui.editor = this;
-
             var gridGo = new GameObject("MapEditorGrid");
             gridGo.transform.SetParent(this.transform);
 
             this.grid = gridGo.AddComponent<Grid>();
             this.grid.cellSize = Vector3.one;
+
+            var uiGo = new GameObject("MapEditorUI");
+            uiGo.transform.SetParent(this.transform);
+
+            uiGo.SetActive(false);
+            this.gui = uiGo.AddComponent<MapEditorUI>();
+            this.gui.editor = this;
+            uiGo.SetActive(true);
         }
 
         public void Update()
@@ -94,7 +96,7 @@ namespace MapsExtended.Editor
             }
         }
 
-        public void SaveMap(string filename, bool includeInactiveObjects = false)
+        public void SaveMap(string filename)
         {
             var mapData = new CustomMap
             {
@@ -102,8 +104,8 @@ namespace MapsExtended.Editor
                 spawns = new List<SpawnPointData>()
             };
 
-            var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>(includeInactiveObjects);
-            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>(includeInactiveObjects);
+            var mapObjects = this.gameObject.GetComponentsInChildren<MapObject>();
+            var spawns = this.gameObject.GetComponentsInChildren<SpawnPoint>();
 
             foreach (var mapObject in mapObjects)
             {
@@ -131,7 +133,7 @@ namespace MapsExtended.Editor
             EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), mapObjectName, instance =>
             {
                 instance.SetActive(false);
-                instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize);
+                instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize * 2f);
                 instance.transform.position = Vector3.zero;
 
                 this.timeline.BeginInteraction(instance, true);
@@ -357,6 +359,10 @@ namespace MapsExtended.Editor
             if (this.currentMapName?.Length > 0)
             {
                 this.SaveMap(this.currentMapName);
+            }
+            else
+            {
+                this.OnClickSaveAs();
             }
         }
 
