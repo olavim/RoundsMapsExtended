@@ -41,6 +41,8 @@ namespace MapsExtended.Editor
         private Toolbar toolbar;
 
         private List<GameObject> selectedMapObjects;
+        private Window mapObjectWindow;
+        private bool mapObjectWindowWasOpen;
 
         public void Awake()
         {
@@ -103,6 +105,10 @@ namespace MapsExtended.Editor
             this.toolbar.mapObjectMenu.AddItem(dynamicGroupItem);
             this.toolbar.mapObjectMenu.AddItem(spawnItem);
 
+            var mapObjectsWindowItem = new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow).Item();
+
+            this.toolbar.windowMenu.AddItem(mapObjectsWindowItem);
+
             this.toolbar.gridSizeSlider.value = this.editor.GridSize;
             this.toolbar.gridSizeSlider.onValueChanged.AddListener(val => this.editor.GridSize = val);
 
@@ -111,18 +117,95 @@ namespace MapsExtended.Editor
                 if (simulated)
                 {
                     this.editor.OnStartSimulation();
+                    this.mapObjectWindowWasOpen = this.mapObjectWindow.gameObject.activeSelf;
+                    this.mapObjectWindow.gameObject.SetActive(false);
                 }
                 else
                 {
                     this.editor.OnStopSimulation();
+
+                    if (mapObjectWindowWasOpen)
+                    {
+                        this.mapObjectWindow.gameObject.SetActive(true);
+                    }
                 }
 
                 var menuState = simulated ? Menu.MenuState.DISABLED : Menu.MenuState.INACTIVE;
                 this.toolbar.fileMenu.SetState(menuState);
                 this.toolbar.editMenu.SetState(menuState);
                 this.toolbar.mapObjectMenu.SetState(menuState);
+                this.toolbar.windowMenu.SetState(menuState);
                 this.toolbar.gridSizeSlider.transform.parent.parent.gameObject.SetActive(!simulated);
             };
+
+            this.mapObjectWindow = GameObject.Instantiate(Assets.WindowPrefab, this.transform).GetComponent<Window>();
+            this.mapObjectWindow.title.text = "Map Objects";
+
+            var windowSize = this.mapObjectWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
+            this.mapObjectWindow.transform.position = new Vector3(Screen.width - (windowSize.x / 2f) - 5, Screen.height - (windowSize.y / 2f) - 35, 0);
+
+            GameObject CreateButton(MenuItem item)
+            {
+                var go = new GameObject("Button");
+
+                var image = go.AddComponent<Image>();
+                image.color = Color.white;
+
+                var button = go.AddComponent<Button>();
+                button.onClick.AddListener(() => item.action?.Invoke());
+                button.targetGraphic = image;
+                button.colors = new ColorBlock
+                {
+                    normalColor = new Color32(40, 40, 40, 255),
+                    highlightedColor = new Color32(50, 50, 50, 255),
+                    pressedColor = new Color32(60, 60, 60, 255),
+                    fadeDuration = 0.1f,
+                    colorMultiplier = 1
+                };
+                button.navigation = new Navigation { mode = Navigation.Mode.None };
+
+                var layout = go.AddComponent<LayoutElement>();
+                layout.preferredHeight = 20;
+
+                var layoutGroup = go.AddComponent<HorizontalLayoutGroup>();
+                layoutGroup.padding = new RectOffset(6, 0, 0, 0);
+                layoutGroup.childAlignment = TextAnchor.MiddleLeft;
+                layoutGroup.childControlWidth = true;
+                layoutGroup.childControlHeight = true;
+                layoutGroup.childForceExpandWidth = true;
+                layoutGroup.childForceExpandHeight = false;
+
+                var textGo = new GameObject("Text");
+                textGo.transform.SetParent(go.transform);
+
+                var text = textGo.AddComponent<Text>();
+                text.fontSize = 12;
+                text.font = Font.CreateDynamicFontFromOSFont("Arial", 12);
+                text.color = new Color32(200, 200, 200, 255);
+                text.text = item.label;
+
+                return go;
+            }
+
+            foreach (var item in this.toolbar.mapObjectMenu.items)
+            {
+                if (item.items == null)
+                {
+                    var button = CreateButton(item);
+                    button.transform.SetParent(this.mapObjectWindow.content.transform);
+                }
+                else
+                {
+                    var foldout = GameObject.Instantiate(Assets.FoldoutPrefab, this.mapObjectWindow.content.transform).GetComponent<Foldout>();
+                    foldout.label.text = item.label;
+
+                    foreach (var subitem in item.items)
+                    {
+                        var button = CreateButton(subitem);
+                        button.transform.SetParent(foldout.content.transform);
+                    }
+                }
+            }
         }
 
         public void Update()
@@ -153,11 +236,16 @@ namespace MapsExtended.Editor
             this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.timeline.CanRedo());
         }
 
+        private void OpenMapObjectWindow()
+        {
+            this.mapObjectWindow.gameObject.SetActive(true);
+        }
+
         public void OnChangeSelectedObjects(List<GameObject> list)
         {
             foreach (Transform child in this.transform)
             {
-                if (child.name == "Toolbar")
+                if (child == this.toolbar.transform || child == this.mapObjectWindow.transform)
                 {
                     continue;
                 }

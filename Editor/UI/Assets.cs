@@ -31,6 +31,22 @@ namespace MapsExtended.UI
             }
         }
 
+        public static GameObject WindowPrefab
+        {
+            get
+            {
+                return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/window.prefab");
+            }
+        }
+
+        public static GameObject FoldoutPrefab
+        {
+            get
+            {
+                return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/foldout.prefab");
+            }
+        }
+
         static Assets()
         {
             Assets.bundle = AssetUtils.LoadAssetBundleFromResources("uielements", typeof(FileDialog).Assembly);

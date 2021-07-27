@@ -11,6 +11,7 @@ namespace MapsExtended.UI
         public Menu fileMenu;
         public Menu editMenu;
         public Menu mapObjectMenu;
+        public Menu windowMenu;
         public Button simulateButton;
         public Slider gridSizeSlider;
         public Text gridSizeValueLabel;
@@ -25,7 +26,7 @@ namespace MapsExtended.UI
             this.SetGridSize(gridStep);
             this.simulationEnabled = false;
 
-            var menus = new Menu[] { this.fileMenu, this.editMenu, this.mapObjectMenu };
+            var menus = new Menu[] { this.fileMenu, this.editMenu, this.mapObjectMenu, this.windowMenu };
 
             foreach (var menu in menus)
             {
