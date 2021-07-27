@@ -22,6 +22,13 @@ namespace MapsExtended.UI
             this.button.onClick.RemoveListener(this.ToggleGraphic);
         }
 
+        public void Update()
+        {
+            var color = this.currentGraphic.color;
+            color.a = this.button.interactable ? 1 : 0.5f;
+            this.currentGraphic.color = color;
+        }
+
         private void ToggleGraphic()
         {
             this.currentGraphic.gameObject.SetActive(false);

@@ -38,6 +38,7 @@ namespace MapsExtended.Editor
         private int resizeDirection;
         private bool isResizing;
         private bool isRotating;
+        private Toolbar toolbar;
 
         private List<GameObject> selectedMapObjects;
 
@@ -57,7 +58,7 @@ namespace MapsExtended.Editor
             var toolbarGo = GameObject.Instantiate(Assets.ToolbarPrefab, this.transform);
             toolbarGo.name = "Toolbar";
 
-            var toolbar = toolbarGo.GetComponent<Toolbar>();
+            this.toolbar = toolbarGo.GetComponent<Toolbar>();
 
             var ctrlKey = new NamedKeyCode(KeyCode.LeftControl, "Ctrl");
             var shiftKey = new NamedKeyCode(KeyCode.LeftShift, "Shift");
@@ -67,43 +68,45 @@ namespace MapsExtended.Editor
             var vKey = new NamedKeyCode(KeyCode.V, "V");
             var zKey = new NamedKeyCode(KeyCode.Z, "Z");
 
-            var openItem = new MenuItem("Open...", this.editor.OnClickOpen, oKey, ctrlKey);
-            var saveItem = new MenuItem("Save", this.editor.OnClickSave, sKey, ctrlKey);
-            var saveAsItem = new MenuItem("Save As...", this.editor.OnClickSaveAs, sKey, ctrlKey, shiftKey);
+            var openItem = new MenuItemBuilder().Label("Open...").Action(this.editor.OnClickOpen).KeyBinding(oKey, ctrlKey).Item();
+            var saveItem = new MenuItemBuilder().Label("Save").Action(this.editor.OnClickSave).KeyBinding(sKey, ctrlKey).Item();
+            var saveAsItem = new MenuItemBuilder().Label("Save As...").Action(this.editor.OnClickSaveAs).KeyBinding(sKey, ctrlKey, shiftKey).Item();
 
-            toolbar.fileMenu.AddMenuItem(openItem);
-            toolbar.fileMenu.AddMenuItem(saveItem);
-            toolbar.fileMenu.AddMenuItem(saveAsItem);
+            this.toolbar.fileMenu.AddItem(openItem);
+            this.toolbar.fileMenu.AddItem(saveItem);
+            this.toolbar.fileMenu.AddItem(saveAsItem);
 
-            var undoItem = new MenuItem("Undo", this.editor.OnUndo, zKey, ctrlKey);
-            var redoItem = new MenuItem("Redo", this.editor.OnRedo, zKey, ctrlKey, shiftKey);
-            var copyItem = new MenuItem("Copy", this.editor.OnCopy, cKey, ctrlKey);
-            var pasteItem = new MenuItem("Paste", this.editor.OnPaste, vKey, ctrlKey);
+            var undoItem = new MenuItemBuilder().Label("Undo").Action(this.editor.OnUndo).KeyBinding(zKey, ctrlKey).Item();
+            var redoItem = new MenuItemBuilder().Label("Redo").Action(this.editor.OnRedo).KeyBinding(zKey, ctrlKey, shiftKey).Item();
+            var copyItem = new MenuItemBuilder().Label("Copy").Action(this.editor.OnCopy).KeyBinding(cKey, ctrlKey).Item();
+            var pasteItem = new MenuItemBuilder().Label("Paste").Action(this.editor.OnPaste).KeyBinding(vKey, ctrlKey).Item();
 
-            toolbar.editMenu.AddMenuItem(undoItem);
-            toolbar.editMenu.AddMenuItem(redoItem);
-            toolbar.editMenu.AddMenuItem(copyItem);
-            toolbar.editMenu.AddMenuItem(pasteItem);
+            this.toolbar.editMenu.AddItem(undoItem);
+            this.toolbar.editMenu.AddItem(redoItem);
+            this.toolbar.editMenu.AddItem(copyItem);
+            this.toolbar.editMenu.AddItem(pasteItem);
 
-            var objGroundItem = new MenuItem("Ground", () => this.editor.SpawnMapObject("Ground"));
-            var objSawItem = new MenuItem("Saw", () => this.editor.SpawnMapObject("Saw"));
+            var staticGroupItem = new MenuItemBuilder().Label("Static")
+                .SubItem(builder => builder.Label("Ground").Action(() => this.editor.SpawnMapObject("Ground")))
+                .SubItem(builder => builder.Label("Saw").Action(() => this.editor.SpawnMapObject("Saw")))
+                .Item();
 
-            var objBoxItem = new MenuItem("Box", () => this.editor.SpawnMapObject("Box"));
-            var objBoxDestructibleItem = new MenuItem("Box (Destructible)", () => this.editor.SpawnMapObject("Destructible Box"));
-            var objBoxBgItem = new MenuItem("Box (Background)", () => this.editor.SpawnMapObject("Background Box"));
+            var dynamicGroupItem = new MenuItemBuilder().Label("Dynamic")
+                .SubItem(builder => builder.Label("Box").Action(() => this.editor.SpawnMapObject("Box")))
+                .SubItem(builder => builder.Label("Box (Destructible)").Action(() => this.editor.SpawnMapObject("Destructible Box")))
+                .SubItem(builder => builder.Label("Box (Background)").Action(() => this.editor.SpawnMapObject("Background Box")))
+                .Item();
 
-            var staticGroupItem = new MenuItem("Static", new MenuItem[] { objGroundItem, objSawItem });
-            var dynamicGroupItem = new MenuItem("Dynamic", new MenuItem[] { objBoxItem, objBoxDestructibleItem, objBoxBgItem });
-            var spawnItem = new MenuItem("Spawn Point", this.editor.AddSpawn);
+            var spawnItem = new MenuItemBuilder().Label("Spawn Point").Action(this.editor.AddSpawn).Item();
 
-            toolbar.mapObjectMenu.AddMenuItem(staticGroupItem);
-            toolbar.mapObjectMenu.AddMenuItem(dynamicGroupItem);
-            toolbar.mapObjectMenu.AddMenuItem(spawnItem);
+            this.toolbar.mapObjectMenu.AddItem(staticGroupItem);
+            this.toolbar.mapObjectMenu.AddItem(dynamicGroupItem);
+            this.toolbar.mapObjectMenu.AddItem(spawnItem);
 
-            toolbar.gridSizeSlider.value = this.editor.GridSize;
-            toolbar.gridSizeSlider.onValueChanged.AddListener(val => this.editor.GridSize = val);
+            this.toolbar.gridSizeSlider.value = this.editor.GridSize;
+            this.toolbar.gridSizeSlider.onValueChanged.AddListener(val => this.editor.GridSize = val);
 
-            toolbar.onToggleSimulation += simulated =>
+            this.toolbar.onToggleSimulation += simulated =>
             {
                 if (simulated)
                 {
@@ -114,10 +117,11 @@ namespace MapsExtended.Editor
                     this.editor.OnStopSimulation();
                 }
 
-                toolbar.fileMenu.gameObject.SetActive(!simulated);
-                toolbar.editMenu.gameObject.SetActive(!simulated);
-                toolbar.mapObjectMenu.gameObject.SetActive(!simulated);
-                toolbar.gridSizeSlider.transform.parent.parent.gameObject.SetActive(!simulated);
+                var menuState = simulated ? Menu.MenuState.DISABLED : Menu.MenuState.INACTIVE;
+                this.toolbar.fileMenu.SetState(menuState);
+                this.toolbar.editMenu.SetState(menuState);
+                this.toolbar.mapObjectMenu.SetState(menuState);
+                this.toolbar.gridSizeSlider.transform.parent.parent.gameObject.SetActive(!simulated);
             };
         }
 
@@ -144,6 +148,9 @@ namespace MapsExtended.Editor
                 this.isRotating = false;
                 this.editor.OnRotateEnd();
             }
+
+            this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.timeline.CanUndo());
+            this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.timeline.CanRedo());
         }
 
         public void OnChangeSelectedObjects(List<GameObject> list)

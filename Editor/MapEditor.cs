@@ -17,6 +17,7 @@ namespace MapsExtended.Editor
         public string currentMapName;
         public bool isSimulating;
         public bool snapToGrid;
+        public InteractionTimeline timeline;
 
         public float GridSize
         {
@@ -35,12 +36,12 @@ namespace MapsExtended.Editor
         private Vector3Int prevCell;
         private Dictionary<GameObject, Vector3> selectionGroupGridOffsets;
         private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
-        private InteractionTimeline timeline;
         private List<MapObjectData> clipboardMapObjects;
         private List<SpawnPointData> clipboardSpawns;
 
         private Grid grid;
         private MapEditorUI gui;
+        private GameObject tempSpawn;
 
         public void Awake()
         {
@@ -271,12 +272,8 @@ namespace MapsExtended.Editor
 
         public void OnStartSimulation()
         {
-            if (this.gameObject.GetComponentsInChildren<SpawnPoint>().Length == 0)
-            {
-                return;
-            }
-
             this.ClearSelected();
+            this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
 
             this.isSimulating = true;
             this.isCreatingSelection = false;
@@ -284,6 +281,12 @@ namespace MapsExtended.Editor
             var objects = new List<GameObject>();
             objects.AddRange(this.gameObject.GetComponentsInChildren<MapObject>(true).Select(o => o.gameObject));
             objects.AddRange(this.gameObject.GetComponentsInChildren<SpawnPoint>(true).Select(o => o.gameObject));
+
+            if (this.gameObject.GetComponentsInChildren<SpawnPoint>().Length == 0)
+            {
+                this.tempSpawn = EditorMod.instance.AddSpawn(this.gameObject.GetComponent<Map>());
+                this.tempSpawn.transform.position = Vector3.zero;
+            }
 
             MapObjectInteraction.BeginInteraction(objects);
 
@@ -322,6 +325,12 @@ namespace MapsExtended.Editor
 
             var interaction = MapObjectInteraction.EndInteraction();
             interaction.Undo();
+
+            if (this.tempSpawn != null)
+            {
+                GameObject.Destroy(this.tempSpawn);
+                this.tempSpawn = null;
+            }
         }
 
         public void OnClickOpen()

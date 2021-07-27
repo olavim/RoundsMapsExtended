@@ -42,14 +42,16 @@ namespace MapsExtended.UI
         {
             INACTIVE,
             HIGHLIGHTED,
-            ACTIVE
+            ACTIVE,
+            DISABLED
         }
 
+        private Dictionary<string, MenuItem> itemsByKey = new Dictionary<string, MenuItem>();
         private GameObject content;
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (this.openTrigger == MenuTrigger.HOVER)
+            if (this.state == MenuState.DISABLED || this.openTrigger == MenuTrigger.HOVER)
             {
                 return;
             }
@@ -62,7 +64,7 @@ namespace MapsExtended.UI
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (this.openTrigger == MenuTrigger.HOVER)
+            if (this.state == MenuState.DISABLED || this.openTrigger == MenuTrigger.HOVER)
             {
                 return;
             }
@@ -75,7 +77,7 @@ namespace MapsExtended.UI
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (this.openTrigger == MenuTrigger.HOVER)
+            if (this.state == MenuState.DISABLED || this.openTrigger == MenuTrigger.HOVER)
             {
                 return;
             }
@@ -101,6 +103,7 @@ namespace MapsExtended.UI
 
             this.state = state;
             Color newGraphicColor = this.normal;
+            Color newLabelColor = Color.white;
 
             if (state == MenuState.INACTIVE)
             {
@@ -120,9 +123,20 @@ namespace MapsExtended.UI
                 this.content.SetActive(true);
             }
 
+            if (state == MenuState.DISABLED)
+            {
+                newLabelColor.a = 0.3f;
+                this.content.SetActive(false);
+            }
+
             if (this.graphic != null)
             {
                 this.graphic.color = newGraphicColor;
+            }
+
+            if (this.label != null)
+            {
+                this.label.color = newLabelColor;
             }
 
             if (wasOpened)
@@ -170,6 +184,11 @@ namespace MapsExtended.UI
 
         public void Update()
         {
+            if (this.state == MenuState.DISABLED)
+            {
+                return;
+            }
+
             bool isHovered = this.IsMouseInsideMenu();
 
             if (this.openTrigger == MenuTrigger.CLICK && Input.GetMouseButtonDown(0) && !isHovered)
@@ -182,7 +201,10 @@ namespace MapsExtended.UI
                 this.SetState(isHovered ? MenuState.ACTIVE : MenuState.INACTIVE);
             }
 
-            var sortedItems = this.items.Where(item => item.keyBinding != null && item.keyBinding.key != null && item.keyBinding.key.code != KeyCode.None).ToList();
+            var sortedItems = this.items
+                .Where(item => item.keyBinding != null && item.keyBinding.key != null && item.keyBinding.key.code != KeyCode.None)
+                .ToList();
+
             sortedItems.Sort((a, b) =>
             {
                 return b.keyBinding.modifiers.Length - a.keyBinding.modifiers.Length;
@@ -193,7 +215,7 @@ namespace MapsExtended.UI
                 return Input.GetKeyDown(item.keyBinding.key.code) && item.keyBinding.modifiers.All(m => Input.GetKey(m.code));
             });
 
-            if (calledItem != null)
+            if (calledItem != null && !calledItem.disabled)
             {
                 calledItem.action?.Invoke();
             }
@@ -206,11 +228,24 @@ namespace MapsExtended.UI
             return rectTransforms.Any(rt => RectTransformUtility.RectangleContainsScreenPoint(rt, Input.mousePosition));
         }
 
-        public void AddMenuItem(MenuItem item)
+        public void AddItem(MenuItem item)
         {
             this.PatchMenuItemActions(item);
+            this.RegisterItem(item);
             this.items.Add(item);
             this.RedrawContent();
+        }
+
+        public void SetItemEnabled(string key, bool enabled)
+        {
+            if (this.itemsByKey.TryGetValue(key, out MenuItem item))
+            {
+                if (item.disabled == enabled)
+                {
+                    item.disabled = !enabled;
+                    this.RedrawContent();
+                }
+            }
         }
 
         private void PatchMenuItemActions(MenuItem item)
@@ -225,10 +260,25 @@ namespace MapsExtended.UI
                 };
             }
 
-            var subitems = item.items ?? new MenuItem[] { };
+            var subitems = item.items ?? new List<MenuItem>() { };
             foreach (var subitem in subitems)
             {
                 this.PatchMenuItemActions(subitem);
+            }
+        }
+
+        private void RegisterItem(MenuItem item, string key = "")
+        {
+            key += item.label;
+            this.itemsByKey.Add(key, item);
+
+            if (item.items != null)
+            {
+                key += ".";
+                foreach (var subitem in item.items)
+                {
+                    this.RegisterItem(subitem, key);
+                }
             }
         }
 
@@ -259,9 +309,24 @@ namespace MapsExtended.UI
                 {
                     this.itemHotkeyLabel.text = "<color=#aaaaaa>></color>";
                 }
+                else
+                {
+                    this.itemHotkeyLabel.text = "";
+                }
+
+                var icol = this.itemLabel.color;
+                var hcol = this.itemHotkeyLabel.color;
+                this.itemLabel.color = item.disabled ? new Color(icol.r, icol.g, icol.b, 0.5f) : new Color(icol.r, icol.g, icol.b, 1);
+                this.itemHotkeyLabel.color = item.disabled ? new Color(hcol.r, hcol.g, hcol.b, 0.5f) : new Color(hcol.r, hcol.g, hcol.b, 1);
+                this.itemButton.interactable = !item.disabled;
 
                 var instance = GameObject.Instantiate(this.itemButton.gameObject, this.content.transform);
                 instance.SetActive(true);
+
+                if (item.disabled)
+                {
+                    continue;
+                }
 
                 var button = instance.GetComponent<Button>();
                 button.onClick.AddListener(() => item.action?.Invoke());
@@ -296,26 +361,67 @@ namespace MapsExtended.UI
         public string label;
         public Action action;
         public KeyCombination keyBinding;
-        public IEnumerable<MenuItem> items;
+        public List<MenuItem> items;
+        public bool disabled;
 
-        public MenuItem(string label, Action action = null, NamedKeyCode hotkey = null, params NamedKeyCode[] modifiers)
+        public MenuItem()
         {
-            this.label = label;
-            this.action = action;
-            this.keyBinding = new KeyCombination
+            this.label = null;
+            this.action = null;
+            this.keyBinding = null;
+            this.items = null;
+            this.disabled = false;
+        }
+    }
+
+    public class MenuItemBuilder
+    {
+        private readonly MenuItem item;
+
+        public MenuItemBuilder()
+        {
+            this.item = new MenuItem();
+        }
+
+        public MenuItemBuilder Label(string label)
+        {
+            this.item.label = label;
+            return this;
+        }
+
+        public MenuItemBuilder Action(Action action)
+        {
+            this.item.action = action;
+            return this;
+        }
+
+        public MenuItemBuilder KeyBinding(NamedKeyCode hotkey, params NamedKeyCode[] modifiers)
+        {
+            this.item.keyBinding = new KeyCombination
             {
                 key = hotkey,
                 modifiers = modifiers
             };
-            this.items = null;
+            return this;
         }
 
-        public MenuItem(string label, IEnumerable<MenuItem> items)
+        public MenuItem Item()
         {
-            this.label = label;
-            this.action = null;
-            this.keyBinding = null;
-            this.items = items;
+            return this.item;
+        }
+
+        public MenuItemBuilder SubItem(Action<MenuItemBuilder> cb)
+        {
+            var subBuilder = new MenuItemBuilder();
+            cb(subBuilder);
+
+            if (this.item.items == null)
+            {
+                this.item.items = new List<MenuItem>();
+            }
+
+            this.item.items.Add(subBuilder.Item());
+            return this;
         }
     }
 

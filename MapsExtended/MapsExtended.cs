@@ -83,11 +83,6 @@ namespace MapsExtended
 
             Logger.LogMessage($"Loaded {mapFiles.Count} custom maps");
 
-            foreach (string f in this.mapFiles)
-            {
-                UnityEngine.Debug.Log("Loaded: " + f);
-            }
-
             Unbound.RegisterMaps(this.mapFiles);
         }
 

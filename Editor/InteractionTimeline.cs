@@ -61,9 +61,19 @@ namespace MapsExtended
             }
         }
 
+        public bool CanUndo()
+        {
+            return this.interactionIndex >= 0;
+        }
+
+        public bool CanRedo()
+        {
+            return this.interactionIndex < this.interactionStack.Count - 1;
+        }
+
         public bool Undo()
         {
-            if (this.interactionIndex == -1)
+            if (!this.CanUndo())
             {
                 return false;
             }
@@ -76,7 +86,7 @@ namespace MapsExtended
 
         public bool Redo()
         {
-            if (this.interactionIndex == this.interactionStack.Count - 1)
+            if (!this.CanRedo())
             {
                 return false;
             }
