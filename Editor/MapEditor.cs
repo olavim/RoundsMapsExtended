@@ -534,6 +534,21 @@ namespace MapsExtended.Editor
             this.timeline.EndInteraction();
         }
 
+        public void OnNudgeSelectedMapObjects(Vector2 delta)
+        {
+            if (this.selectedMapObjects.Count > 0)
+            {
+                this.timeline.BeginInteraction(this.selectedMapObjects);
+
+                foreach (var obj in this.selectedMapObjects)
+                {
+                    obj.transform.position += new Vector3(delta.x, delta.y, 0);
+                }
+
+                this.timeline.EndInteraction();
+            }
+        }
+
         public bool IsMapObjectSelected(GameObject obj)
         {
             return this.selectedMapObjects.Contains(obj);
