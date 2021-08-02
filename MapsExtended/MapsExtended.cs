@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -32,6 +33,8 @@ namespace MapsExtended
 
         public List<string> mapFiles;
         public bool forceCustomMaps = false;
+        public string loadedMapName;
+        public string loadedMapSceneName;
 
         internal Dictionary<string, string> mapFolderPrefixes = new Dictionary<string, string>();
         internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
@@ -182,15 +185,13 @@ namespace MapsExtended
     }
 
     [HarmonyPatch(typeof(MapManager), "RPCA_LoadLevel")]
-    class MapManagerPatch
+    class MapManagerPatch_LoadLevel
     {
-        private static string mapToLoad;
-
         private static void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
-            SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
+            SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
-            MapsExtended.LoadMap(map, MapManagerPatch.mapToLoad);
+            MapsExtended.LoadMap(map, MapsExtended.instance.loadedMapName);
         }
 
         public static void Prefix(ref string sceneName)
@@ -201,10 +202,27 @@ namespace MapsExtended
                 string filename = sceneName.Substring(prefix.Length + 1);
                 string basePath = MapsExtended.instance.mapFolderPrefixes[prefix];
 
-                MapManagerPatch.mapToLoad = basePath + filename;
+                MapsExtended.instance.loadedMapName = basePath + filename;
+                MapsExtended.instance.loadedMapSceneName = sceneName;
+
                 sceneName = "NewMap";
-                SceneManager.sceneLoaded += MapManagerPatch.OnLevelFinishedLoading;
+                SceneManager.sceneLoaded += MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(MapManager), "GetIDFromScene")]
+    class MapManagerPatch_GetIDFromScene
+    {
+        public static bool Prefix(Scene scene, MapManager __instance, ref int __result)
+        {
+            if (scene.name == "NewMap")
+            {
+                __result = __instance.levels.ToList().IndexOf(MapsExtended.instance.loadedMapSceneName);
+                return false;
+            }
+
+            return true;
         }
     }
 

@@ -212,35 +212,37 @@ namespace MapsExtended.Editor
         private IEnumerator SpawnClipboardObjects()
         {
             int waitingForSpawns = this.clipboardMapObjects.Count + this.clipboardSpawns.Count;
+            var map = this.gameObject.GetComponent<Map>();
+            var newInstances = new List<GameObject>();
 
             foreach (var data in this.clipboardMapObjects)
             {
-                EditorMod.instance.SpawnObject(this.gameObject.GetComponent<Map>(), data.mapObjectName, instance =>
+                EditorMod.instance.SpawnObject(map, data.mapObjectName, instance =>
                 {
                     instance.SetActive(false);
                     instance.transform.position = data.position + new Vector3(1, -1, 0);
                     instance.transform.localScale = data.scale;
                     instance.transform.rotation = data.rotation;
 
-                    this.AddSelected(instance);
-                    waitingForSpawns--;
+                    newInstances.Add(instance);
                 });
             }
 
             foreach (var data in this.clipboardSpawns)
             {
-                var instance = EditorMod.instance.AddSpawn(this.gameObject.GetComponent<Map>());
+                var instance = EditorMod.instance.AddSpawn(map);
                 instance.SetActive(false);
                 instance.transform.position = data.position + new Vector3(1, -1, 0);
 
-                this.AddSelected(instance);
-                waitingForSpawns--;
+                newInstances.Add(instance);
             }
 
-            while (waitingForSpawns > 0)
+            while (newInstances.Count != waitingForSpawns)
             {
                 yield return null;
             }
+
+            this.AddSelected(newInstances);
 
             this.timeline.BeginInteraction(this.selectedMapObjects, true);
             foreach (var obj in this.selectedMapObjects)
