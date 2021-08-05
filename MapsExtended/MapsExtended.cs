@@ -161,7 +161,12 @@ namespace MapsExtended
                     MapsExtended.instance.OnPhotonMapObjectInstantiate(photonMapObject, networkInstance =>
                     {
                         MapObjectManager.instance.AddMapObjectComponents(mapObjectName, networkInstance);
-                        networkInstance.transform.SetParent(container.transform);
+
+                        MapsExtended.instance.ExecuteAfterFrames(1, () =>
+                        {
+                            networkInstance.transform.SetParent(container.transform);
+                        });
+
                         cb(networkInstance);
                     });
                 }
