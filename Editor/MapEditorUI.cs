@@ -73,10 +73,12 @@ namespace MapsExtended.Editor
             var openItem = new MenuItemBuilder().Label("Open...").Action(this.editor.OnClickOpen).KeyBinding(oKey, ctrlKey).Item();
             var saveItem = new MenuItemBuilder().Label("Save").Action(this.editor.OnClickSave).KeyBinding(sKey, ctrlKey).Item();
             var saveAsItem = new MenuItemBuilder().Label("Save As...").Action(this.editor.OnClickSaveAs).KeyBinding(sKey, ctrlKey, shiftKey).Item();
+            var openMapFolderItem = new MenuItemBuilder().Label("Open Map Folder").Action(this.OpenMapFolder).Item();
 
             this.toolbar.fileMenu.AddItem(openItem);
             this.toolbar.fileMenu.AddItem(saveItem);
             this.toolbar.fileMenu.AddItem(saveAsItem);
+            this.toolbar.fileMenu.AddItem(openMapFolderItem);
 
             var undoItem = new MenuItemBuilder().Label("Undo").Action(this.editor.OnUndo).KeyBinding(zKey, ctrlKey).Item();
             var redoItem = new MenuItemBuilder().Label("Redo").Action(this.editor.OnRedo).KeyBinding(zKey, ctrlKey, shiftKey).Item();
@@ -234,6 +236,11 @@ namespace MapsExtended.Editor
 
             this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.timeline.CanUndo());
             this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.timeline.CanRedo());
+        }
+
+        private void OpenMapFolder()
+        {
+            Application.OpenURL($"file://{BepInEx.Paths.GameRootPath}/maps");
         }
 
         private void OpenMapObjectWindow()
