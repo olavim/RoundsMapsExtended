@@ -101,10 +101,12 @@ namespace MapsExtended.Editor
                 .SubItem(builder => builder.Label("Box (Background)").Action(() => this.editor.SpawnMapObject("Background Box")))
                 .Item();
 
+            var ropeItem = new MenuItemBuilder().Label("Rope").Action(this.editor.AddRope).Item();
             var spawnItem = new MenuItemBuilder().Label("Spawn Point").Action(this.editor.AddSpawn).Item();
 
             this.toolbar.mapObjectMenu.AddItem(staticGroupItem);
             this.toolbar.mapObjectMenu.AddItem(dynamicGroupItem);
+            this.toolbar.mapObjectMenu.AddItem(ropeItem);
             this.toolbar.mapObjectMenu.AddItem(spawnItem);
 
             var mapObjectsWindowItem = new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow).Item();

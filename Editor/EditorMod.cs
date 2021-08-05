@@ -85,18 +85,18 @@ namespace MapsExtended.Editor
             ArtHandler.instance.NextArt();
         }
 
-        public void LoadMap(Map mapBase, string mapFilePath)
+        public void LoadMap(GameObject container, string mapFilePath)
         {
-            MapsExtended.LoadMap(mapBase, mapFilePath, true);
+            MapsExtended.LoadMap(container, mapFilePath, true);
 
             this.ExecuteAfterFrames(1, () =>
             {
-                var mapObjects = mapBase.GetComponentsInChildren<MapObject>();
-                var spawns = mapBase.GetComponentsInChildren<SpawnPoint>();
+                var mapObjects = container.GetComponentsInChildren<MapObject>();
+                var spawns = container.GetComponentsInChildren<SpawnPoint>();
 
                 foreach (var mapObject in mapObjects)
                 {
-                    this.SetupMapObject(mapBase, mapObject.gameObject);
+                    this.SetupMapObject(container, mapObject.gameObject);
                 }
 
                 foreach (var spawn in spawns)
@@ -104,15 +104,15 @@ namespace MapsExtended.Editor
                     this.SetupSpawn(spawn.gameObject);
                 }
 
-                this.SetMapPhysicsActive(mapBase, false);
+                this.SetMapPhysicsActive(container, false);
             });
         }
 
-        public void SpawnObject(Map map, string mapObjectName, Action<GameObject> cb)
+        public void SpawnObject(GameObject container, string mapObjectName, Action<GameObject> cb)
         {
-            MapsExtended.SpawnMapObject(map, mapObjectName, true, instance =>
+            MapsExtended.SpawnMapObject(container, mapObjectName, true, instance =>
             {
-                this.SetupMapObject(map, instance);
+                this.SetupMapObject(container, instance);
 
                 this.ExecuteAfterFrames(1, () =>
                 {
@@ -123,9 +123,32 @@ namespace MapsExtended.Editor
             });
         }
 
-        public GameObject AddSpawn(Map map)
+        public GameObject AddRope(GameObject container)
         {
-            var spawn = MapsExtended.AddSpawn(map);
+            var ropeGo = new GameObject("Rope");
+            ropeGo.transform.SetParent(container.transform);
+
+            var ropeStartGo = new GameObject("Rope Start");
+            ropeStartGo.transform.SetParent(ropeGo.transform);
+            ropeStartGo.transform.position = new Vector3(0, 1, 0);
+            ropeStartGo.AddComponent<RopeActionHandler>();
+
+            var ropeEndGo = new GameObject("Rope End");
+            ropeEndGo.transform.SetParent(ropeGo.transform);
+            ropeEndGo.transform.position = new Vector3(0, -1, 0);
+            ropeEndGo.AddComponent<RopeActionHandler>();
+
+            var ropeViz = ropeGo.AddComponent<Visualizers.RopeVisualizer>();
+            ropeViz.start = ropeStartGo;
+            ropeViz.end = ropeEndGo;
+            ropeViz.Initialize();
+
+            return ropeGo;
+        }
+
+        public GameObject AddSpawn(GameObject container)
+        {
+            var spawn = MapsExtended.AddSpawn(container);
             this.SetupSpawn(spawn);
             return spawn;
         }
@@ -157,7 +180,7 @@ namespace MapsExtended.Editor
             spawn.transform.SetAsLastSibling();
         }
 
-        private void SetupMapObject(Map map, GameObject go)
+        private void SetupMapObject(GameObject container, GameObject go)
         {
             if (go.GetComponent<CodeAnimation>())
             {
@@ -165,7 +188,7 @@ namespace MapsExtended.Editor
                 var originalScale = go.transform.localScale;
 
                 var wrapper = new GameObject(go.name + "Wrapper");
-                wrapper.transform.SetParent(map.transform);
+                wrapper.transform.SetParent(container.transform);
                 go.transform.SetParent(wrapper.transform);
                 go.transform.localPosition = Vector3.zero;
                 go.transform.localScale = Vector3.one;
@@ -201,13 +224,13 @@ namespace MapsExtended.Editor
 
             this.ExecuteAfterFrames(1, () =>
             {
-                this.ResetAnimations(map.gameObject);
+                this.ResetAnimations(container);
             });
         }
 
-        public void SetMapPhysicsActive(Map map, bool active)
+        public void SetMapPhysicsActive(GameObject container, bool active)
         {
-            var mapObjects = map.gameObject.GetComponentsInChildren<MapObject>();
+            var mapObjects = container.GetComponentsInChildren<MapObject>();
             foreach (var mapObject in mapObjects)
             {
                 this.SetMapObjectPhysicsActive(mapObject.gameObject, active);

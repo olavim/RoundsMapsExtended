@@ -8,5 +8,6 @@ namespace MapsExtended
     {
         public List<MapObjectData> mapObjects;
         public List<SpawnPointData> spawns;
+        public List<RopeData> ropes;
     }
 }

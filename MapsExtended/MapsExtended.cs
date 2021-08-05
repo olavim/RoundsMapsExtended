@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -10,7 +9,6 @@ using Jotunn.Utils;
 using UnityEngine.SceneManagement;
 using Sirenix.Serialization;
 using UnityEngine;
-using UnityEngine.UI;
 using UnboundLib;
 using Photon.Pun;
 
@@ -94,21 +92,23 @@ namespace MapsExtended
             this.photonInstantiationListeners.Add(mapObject, callback);
         }
 
-        public static void LoadMap(Map mapBase, string mapFilePath, bool isDelayedLoad = false)
+        public static void LoadMap(GameObject container, string mapFilePath, bool isDelayedLoad = false)
         {
             var bytes = File.ReadAllBytes(mapFilePath);
             var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
+            MapsExtended.LoadMap(container, mapData, isDelayedLoad);
+        }
 
-            mapBase.SetFieldValue("spawnPoints", null);
-
-            foreach (Transform child in mapBase.transform)
+        public static void LoadMap(GameObject container, CustomMap mapData, bool isDelayedLoad = false)
+        {
+            foreach (Transform child in container.transform)
             {
                 GameObject.Destroy(child.gameObject);
             }
 
             foreach (var mapObject in mapData.mapObjects)
             {
-                MapsExtended.SpawnMapObject(mapBase, mapObject.mapObjectName, isDelayedLoad, instance =>
+                MapsExtended.SpawnMapObject(container, mapObject.mapObjectName, isDelayedLoad, instance =>
                 {
                     instance.transform.position = mapObject.position;
                     instance.transform.localScale = mapObject.scale;
@@ -119,11 +119,16 @@ namespace MapsExtended
 
             foreach (var spawn in mapData.spawns)
             {
-                MapsExtended.AddSpawn(mapBase, spawn);
+                MapsExtended.AddSpawn(container, spawn);
+            }
+
+            foreach (var rope in mapData.ropes)
+            {
+                var go = MapsExtended.AddRope(container, rope);
             }
         }
 
-        public static void SpawnMapObject(Map map, string mapObjectName, bool isDelayedSpawn, Action<GameObject> cb)
+        public static void SpawnMapObject(GameObject container, string mapObjectName, bool isDelayedSpawn, Action<GameObject> cb)
         {
             var prefab = MapObjectManager.instance.GetMapObject(mapObjectName);
             GameObject instance;
@@ -134,10 +139,15 @@ namespace MapsExtended
                  * after the map transition has already been done.
                  */
                 instance = PhotonNetwork.Instantiate($"4 Map Objects/{prefab.name}", Vector3.zero, Quaternion.identity);
+
+                MapsExtended.instance.ExecuteAfterFrames(1, () =>
+                {
+                    instance.transform.SetParent(container.transform);
+                });
             }
             else
             {
-                instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, map.transform);
+                instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, container.transform);
 
                 var photonMapObject = instance.GetComponent<PhotonMapObject>();
                 if (photonMapObject)
@@ -151,6 +161,7 @@ namespace MapsExtended
                     MapsExtended.instance.OnPhotonMapObjectInstantiate(photonMapObject, networkInstance =>
                     {
                         MapObjectManager.instance.AddMapObjectComponents(mapObjectName, networkInstance);
+                        networkInstance.transform.SetParent(container.transform);
                         cb(networkInstance);
                     });
                 }
@@ -162,18 +173,48 @@ namespace MapsExtended
             cb(instance);
         }
 
-        public static GameObject AddSpawn(Map map, SpawnPointData data = null)
+        public static GameObject AddRope(GameObject container, RopeData data = null)
         {
             if (data == null)
             {
-                int id = map.gameObject.GetComponentsInChildren<SpawnPoint>().Length;
+                data = new RopeData(new Vector3(0, 1, 0), new Vector3(0, -1, 0), true);
+            }
+
+            var ropeGo = new GameObject("Rope");
+            ropeGo.SetActive(false);
+            ropeGo.transform.SetParent(container.transform);
+            ropeGo.transform.position = data.startPosition;
+
+            var ropeEndGo = new GameObject("Rope End");
+            ropeEndGo.transform.SetParent(ropeGo.transform);
+            ropeEndGo.transform.position = data.endPosition;
+
+            var renderer = ropeGo.AddComponent<LineRenderer>();
+            renderer.material = new Material(Shader.Find("Sprites/Default"));
+            renderer.startColor = new Color(0.039f, 0.039f, 0.039f, 1f);
+            renderer.endColor = renderer.startColor;
+            renderer.startWidth = 0.2f;
+            renderer.endWidth = 0.2f;
+
+            var rope = ropeGo.AddComponent<MapObjet_Rope>();
+            rope.jointType = MapObjet_Rope.JointType.Distance;
+
+            ropeGo.SetActive(data.active);
+            return ropeGo;
+        }
+
+        public static GameObject AddSpawn(GameObject container, SpawnPointData data = null)
+        {
+            if (data == null)
+            {
+                int id = container.GetComponentsInChildren<SpawnPoint>().Length;
                 int teamID = id;
                 data = new SpawnPointData(id, teamID, Vector3.zero, true);
             }
 
             var spawnGo = new GameObject($"SPAWN POINT {data.id}");
             spawnGo.SetActive(data.active);
-            spawnGo.transform.SetParent(map.transform);
+            spawnGo.transform.SetParent(container.transform);
             spawnGo.transform.position = data.position;
 
             var spawn = spawnGo.AddComponent<SpawnPoint>();
@@ -191,7 +232,7 @@ namespace MapsExtended
         {
             SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
-            MapsExtended.LoadMap(map, MapsExtended.instance.loadedMapName);
+            MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMapName);
         }
 
         public static void Prefix(ref string sceneName)
