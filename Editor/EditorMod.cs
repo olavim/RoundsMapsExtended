@@ -131,17 +131,17 @@ namespace MapsExtended.Editor
             var ropeStartGo = new GameObject("Rope Start");
             ropeStartGo.transform.SetParent(ropeGo.transform);
             ropeStartGo.transform.position = new Vector3(0, 1, 0);
+            ropeStartGo.AddComponent<RopeAnchor>();
             ropeStartGo.AddComponent<RopeActionHandler>();
 
             var ropeEndGo = new GameObject("Rope End");
             ropeEndGo.transform.SetParent(ropeGo.transform);
             ropeEndGo.transform.position = new Vector3(0, -1, 0);
+            ropeEndGo.AddComponent<RopeAnchor>();
             ropeEndGo.AddComponent<RopeActionHandler>();
 
-            var ropeViz = ropeGo.AddComponent<Visualizers.RopeVisualizer>();
-            ropeViz.start = ropeStartGo;
-            ropeViz.end = ropeEndGo;
-            ropeViz.Initialize();
+            ropeGo.AddComponent<Rope>();
+            ropeGo.AddComponent<Visualizers.RopeVisualizer>();
 
             return ropeGo;
         }

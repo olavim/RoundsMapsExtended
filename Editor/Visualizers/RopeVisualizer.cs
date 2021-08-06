@@ -6,35 +6,23 @@ namespace MapsExtended.Visualizers
 {
     public class RopeVisualizer : MonoBehaviour, IMapObjectVisualizer
     {
-        public GameObject start;
-        public GameObject end;
-
-        public Vector3 startOffset = Vector3.zero;
-        public Vector3 endOffset = Vector3.zero;
-
+        private Rope rope;
         private LineRenderer renderer;
         private Graphic startGraphic;
         private Graphic endGraphic;
-        private bool initialized = false;
 
         public void SetEnabled(bool enabled)
         {
             this.enabled = enabled;
         }
 
-        public void Initialize()
+        public void Start()
         {
-            this.initialized = true;
-            this.OnEnable();
+            this.rope = this.gameObject.GetComponent<Rope>();
         }
 
         public void OnEnable()
         {
-            if (!this.initialized)
-            {
-                return;
-            }
-
             this.renderer = this.gameObject.AddComponent<LineRenderer>();
             this.renderer.material = new Material(Shader.Find("Sprites/Default"));
             this.renderer.startColor = new Color(0.039f, 0.039f, 0.039f, 1f);
@@ -94,30 +82,15 @@ namespace MapsExtended.Visualizers
                 return;
             }
 
-            this.renderer.SetPositions(new Vector3[] { this.start.transform.position + this.startOffset, this.end.transform.position + this.endOffset });
+            var pos1 = this.rope.GetAnchor(0).GetPosition();
+            var pos2 = this.rope.GetAnchor(1).GetPosition();
 
-            this.startGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(this.start.transform.position + this.startOffset);
-            this.endGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(this.end.transform.position + this.endOffset);
+            this.renderer.SetPositions(new Vector3[] { pos1, pos2 });
+            this.startGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(pos1);
+            this.endGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(pos2);
 
-            if (this.start != this.transform.GetChild(0).gameObject)
-            {
-                this.transform.GetChild(0).position = this.start.transform.position + this.startOffset;
-                this.startGraphic.color = new Color(0, 0.5f, 1);
-            }
-            else
-            {
-                this.startGraphic.color = new Color(1, 1, 1);
-            }
-
-            if (this.end != this.transform.GetChild(1).gameObject)
-            {
-                this.transform.GetChild(1).position = this.end.transform.position + this.endOffset;
-                this.endGraphic.color = new Color(0, 0.5f, 1);
-            }
-            else
-            {
-                this.endGraphic.color = new Color(1, 1, 1);
-            }
+            this.startGraphic.color = this.rope.GetAnchor(0).IsAttached() ? new Color(0, 0.5f, 1) : new Color(1, 1, 1);
+            this.endGraphic.color = this.rope.GetAnchor(1).IsAttached() ? new Color(0, 0.5f, 1) : new Color(1, 1, 1);
         }
     }
 }

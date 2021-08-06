@@ -130,7 +130,7 @@ namespace MapsExtended.Editor
 
             var mapObjects = this.content.GetComponentsInChildren<MapObject>();
             var spawns = this.content.GetComponentsInChildren<SpawnPoint>();
-            var ropes = this.content.GetComponentsInChildren<RopeVisualizer>();
+            var ropes = this.content.GetComponentsInChildren<Rope>();
 
             foreach (var mapObject in mapObjects)
             {
@@ -144,8 +144,8 @@ namespace MapsExtended.Editor
 
             foreach (var rope in ropes)
             {
-                var startPos = rope.start.transform.position + rope.startOffset;
-                var endPos = rope.end.transform.position + rope.endOffset;
+                var startPos = rope.GetAnchor(0).GetPosition();
+                var endPos = rope.GetAnchor(1).GetPosition();
                 mapData.ropes.Add(new RopeData(startPos, endPos, rope.gameObject.activeSelf));
             }
 
@@ -185,8 +185,6 @@ namespace MapsExtended.Editor
                 this.timeline.BeginInteraction(rope, true);
                 rope.SetActive(true);
                 this.timeline.EndInteraction();
-
-                this.UpdateRopeAttachments();
             });
         }
 
@@ -740,69 +738,21 @@ namespace MapsExtended.Editor
 
         private void UpdateRopeAttachments()
         {
-            var ropeVisualizers = this.content.GetComponentsInChildren<RopeVisualizer>();
-
-            foreach (var viz in ropeVisualizers)
+            foreach (var rope in this.content.GetComponentsInChildren<Rope>())
             {
-                var startPos = viz.start.transform.position;
-                var endPos = viz.end.transform.position;
-
-                var startColliders = Physics2D.OverlapPointAll(startPos);
-                var endColliders = Physics2D.OverlapPointAll(endPos);
-
-                var startCollider =
-                    startColliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObject>() != null && c.gameObject == viz.start) ??
-                    startColliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObject>() != null);
-                var endCollider =
-                    endColliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObject>() != null && c.gameObject == viz.end) ??
-                    endColliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObject>() != null);
-
-                if (startCollider == null)
-                {
-                    viz.start = viz.transform.GetChild(0).gameObject;
-                    viz.startOffset = Vector3.zero;
-                }
-                else if (viz.start != startCollider.gameObject)
-                {
-                    viz.startOffset = viz.start.transform.position - startCollider.transform.position;
-                    viz.start = startCollider.gameObject;
-                }
-
-                if (endCollider == null)
-                {
-                    viz.end = viz.transform.GetChild(1).gameObject;
-                    viz.endOffset = Vector3.zero;
-                }
-                else if (viz.end != endCollider.gameObject)
-                {
-                    viz.endOffset = viz.end.transform.position - endCollider.transform.position;
-                    viz.end = endCollider.gameObject;
-                }
+                rope.UpdateAttachments();
             }
         }
 
         private void DetachSelectedRopes()
         {
-            var ropeHandlers = this.selectedMapObjects
-                .Select(obj => obj.GetComponent<RopeActionHandler>())
+            var anchors = this.selectedMapObjects
+                .Select(obj => obj.GetComponent<RopeAnchor>())
                 .Where(handler => handler != null);
 
-            foreach (var handler in ropeHandlers)
+            foreach (var anchor in anchors)
             {
-                var go = handler.gameObject;
-                var viz = handler.gameObject.GetComponentInParent<RopeVisualizer>();
-
-                if (go == viz.transform.GetChild(0).gameObject)
-                {
-                    viz.start = viz.transform.GetChild(0).gameObject;
-                    viz.startOffset = Vector3.zero;
-                }
-
-                if (go == viz.transform.GetChild(1).gameObject)
-                {
-                    viz.end = viz.transform.GetChild(1).gameObject;
-                    viz.endOffset = Vector3.zero;
-                }
+                anchor.Detach();
             }
         }
     }
