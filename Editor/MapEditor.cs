@@ -343,7 +343,7 @@ namespace MapsExtended.Editor
             var mapData = this.GetMapData();
             this.content.SetActive(false);
             this.tempContent.SetActive(true);
-            MapsExtended.LoadMap(this.tempContent, mapData, true);
+            MapsExtended.LoadMap(this.tempContent, mapData);
 
             GameModeManager.SetGameMode("Sandbox");
             GameModeManager.CurrentHandler.StartGame();

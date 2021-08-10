@@ -44,7 +44,8 @@ namespace MapsExtended
 
             AssetUtils.LoadAssetBundleFromResources("mapbase", typeof(MapsExtended).Assembly);
 
-            this.gameObject.AddComponent<MapObjectManager>();
+            var mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
+            mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
 
             SceneManager.sceneLoaded += (scene, mode) =>
             {
@@ -92,14 +93,14 @@ namespace MapsExtended
             this.photonInstantiationListeners.Add(mapObject, callback);
         }
 
-        public static void LoadMap(GameObject container, string mapFilePath, bool isDelayedLoad = false)
+        public static void LoadMap(GameObject container, string mapFilePath)
         {
             var bytes = File.ReadAllBytes(mapFilePath);
             var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
-            MapsExtended.LoadMap(container, mapData, isDelayedLoad);
+            MapsExtended.LoadMap(container, mapData);
         }
 
-        public static void LoadMap(GameObject container, CustomMap mapData, bool isDelayedLoad = false)
+        public static void LoadMap(GameObject container, CustomMap mapData)
         {
             foreach (Transform child in container.transform)
             {
@@ -108,7 +109,7 @@ namespace MapsExtended
 
             foreach (var mapObject in mapData.mapObjects)
             {
-                MapsExtended.SpawnMapObject(container, mapObject.mapObjectName, isDelayedLoad, instance =>
+                MapObjectManager.instance.Instantiate(mapObject.mapObjectName, container.transform, instance =>
                 {
                     instance.transform.position = mapObject.position;
                     instance.transform.localScale = mapObject.scale;
@@ -126,56 +127,6 @@ namespace MapsExtended
             {
                 var go = MapsExtended.AddRope(container, rope);
             }
-        }
-
-        public static void SpawnMapObject(GameObject container, string mapObjectName, bool isDelayedSpawn, Action<GameObject> cb)
-        {
-            var prefab = MapObjectManager.instance.GetMapObject(mapObjectName);
-            GameObject instance;
-
-            if (isDelayedSpawn && prefab.GetComponent<PhotonMapObject>())
-            {
-                /* We don't need to care about the photon instantiation dance (see below comment) when instantiating PhotonMapObjects
-                 * after the map transition has already been done.
-                 */
-                instance = PhotonNetwork.Instantiate($"4 Map Objects/{prefab.name}", Vector3.zero, Quaternion.identity);
-
-                MapsExtended.instance.ExecuteAfterFrames(1, () =>
-                {
-                    instance.transform.SetParent(container.transform);
-                });
-            }
-            else
-            {
-                instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, container.transform);
-
-                var photonMapObject = instance.GetComponent<PhotonMapObject>();
-                if (photonMapObject)
-                {
-                    /* PhotonMapObjects (networked map objects like movable boxes) are first instantiated client-side, which is what we
-                     * see during the map transition animation. After the transition is done, the client-side instance is removed and a
-                     * networked (photon instantiated) version is spawned in its place. This means we need to do weird shit to get the
-                     * "actual" map object instance, since the instance we get from `GameObject.Instantiate` above is in this case not
-                     * the instance we care about.
-                     */
-                    MapsExtended.instance.OnPhotonMapObjectInstantiate(photonMapObject, networkInstance =>
-                    {
-                        MapObjectManager.instance.AddMapObjectComponents(mapObjectName, networkInstance);
-
-                        MapsExtended.instance.ExecuteAfterFrames(1, () =>
-                        {
-                            networkInstance.transform.SetParent(container.transform);
-                        });
-
-                        cb(networkInstance);
-                    });
-                }
-            }
-
-            MapObjectManager.instance.AddMapObjectComponents(mapObjectName, instance);
-
-            instance.name = prefab.name;
-            cb(instance);
         }
 
         public static GameObject AddRope(GameObject container, RopeData data = null)
@@ -235,6 +186,11 @@ namespace MapsExtended
     {
         private static void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
+            if (MapManager.instance.currentMap != null)
+            {
+                MapManager.instance.currentMap.Map.wasSpawned = false;
+            }
+
             SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
             MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMapName);

@@ -87,7 +87,7 @@ namespace MapsExtended.Editor
 
         public void LoadMap(GameObject container, string mapFilePath)
         {
-            MapsExtended.LoadMap(container, mapFilePath, true);
+            MapsExtended.LoadMap(container, mapFilePath);
 
             this.ExecuteAfterFrames(1, () =>
             {
@@ -110,7 +110,7 @@ namespace MapsExtended.Editor
 
         public void SpawnObject(GameObject container, string mapObjectName, Action<GameObject> cb)
         {
-            MapsExtended.SpawnMapObject(container, mapObjectName, true, instance =>
+            MapObjectManager.instance.Instantiate(mapObjectName, container.transform, instance =>
             {
                 this.SetupMapObject(container, instance);
 
