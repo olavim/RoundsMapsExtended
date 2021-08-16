@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Jotunn.Utils;
 
-namespace MapsExtended.UI
+namespace MapsExt.UI
 {
     public class FileDialog : MonoBehaviour
     {

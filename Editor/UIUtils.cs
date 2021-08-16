@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public static class UIUtils
     {

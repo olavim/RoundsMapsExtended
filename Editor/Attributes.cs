@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class MapsExtendedEditorMapObject : Attribute

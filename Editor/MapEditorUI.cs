@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
-using MapsExtended.UI;
-using MapsExtended.MapObjects;
+using MapsExt.UI;
+using MapsExt.MapObjects;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public static class TogglePosition
     {
@@ -93,7 +93,7 @@ namespace MapsExtended.Editor
 
             var staticGroupItem = new MenuItemBuilder().Label("Static")
                 .SubItem(builder => builder.Label("Ground").Action(() => this.editor.SpawnMapObject(new Ground())))
-                .SubItem(builder => builder.Label("Saw").Action(() => this.editor.SpawnMapObject(new MapObjects.Saw())))
+                .SubItem(builder => builder.Label("Saw").Action(() => this.editor.SpawnMapObject(new MapsExt.MapObjects.Saw())))
                 .Item();
 
             var dynamicGroupItem = new MenuItemBuilder().Label("Dynamic")

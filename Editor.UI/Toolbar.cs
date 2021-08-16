@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MapsExtended.UI
+namespace MapsExt.UI
 {
     public class Toolbar : MonoBehaviour
     {

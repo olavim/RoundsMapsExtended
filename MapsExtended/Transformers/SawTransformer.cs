@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace MapsExtended.Transformers
+namespace MapsExt.Transformers
 {
     public class SawTransformer : MonoBehaviour
     {

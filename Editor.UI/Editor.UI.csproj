@@ -5,7 +5,7 @@
     <ProjectGuid>{58E06B9E-FAE5-4ADB-A323-8E80C668F839}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MapsExtended</RootNamespace>
+    <RootNamespace>MapsExt</RootNamespace>
     <AssemblyName>MapsExtended.Editor.UI</AssemblyName>
     <Authors>olavim</Authors>
     <TargetFramework>net462</TargetFramework>

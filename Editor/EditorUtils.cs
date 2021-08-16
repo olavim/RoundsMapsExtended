@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public static class EditorUtils
     {

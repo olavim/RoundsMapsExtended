@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapsExtended
+namespace MapsExt
 {
     public class TargetSyncedStore<T> where T : IEquatable<T>
     {

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using HarmonyLib;
 
-namespace MapsExtended.MapObjects
+namespace MapsExt.MapObjects
 {
     public abstract class PhysicalMapObject : MapObject
     {

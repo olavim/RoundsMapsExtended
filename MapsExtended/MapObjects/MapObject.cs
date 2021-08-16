@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace MapsExtended.MapObjects
+namespace MapsExt.MapObjects
 {
     public class MapObject
     {

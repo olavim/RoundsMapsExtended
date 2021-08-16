@@ -1,7 +1,7 @@
 ﻿using Photon.Pun;
 using UnboundLib;
 
-namespace MapsExtended
+namespace MapsExt
 {
     public class NetworkedBehaviour : MonoBehaviourPunCallbacks
     {

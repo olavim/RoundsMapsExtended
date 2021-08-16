@@ -1,9 +1,9 @@
-﻿using MapsExtended.MapObjects;
+﻿using MapsExt.MapObjects;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor.MapObjects
 {
     [MapsExtendedEditorMapObject(typeof(Rope))]
     public class EditorRope : MapObjectSpecification<Rope>

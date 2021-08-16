@@ -1,4 +1,4 @@
-﻿namespace MapsExtended.Visualizers
+﻿namespace MapsExt.Visualizers
 {
     interface IMapObjectVisualizer
     {

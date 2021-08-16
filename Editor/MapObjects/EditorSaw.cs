@@ -1,12 +1,12 @@
-﻿using MapsExtended.MapObjects;
+﻿using MapsExt.MapObjects;
 using UnityEngine;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor.MapObjects
 {
-    [MapsExtendedEditorMapObject(typeof(MapObjects.Saw))]
+    [MapsExtendedEditorMapObject(typeof(MapsExt.MapObjects.Saw))]
     public class EditorSaw : SawSpecification
     {
-        protected override void Deserialize(MapObjects.Saw data, GameObject target)
+        protected override void Deserialize(MapsExt.MapObjects.Saw data, GameObject target)
         {
             base.Deserialize(data, target);
             target.AddComponent<BoxActionHandler>();

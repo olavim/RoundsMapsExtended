@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MapsExtended
+namespace MapsExt
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class MapsExtendedMapObject : Attribute

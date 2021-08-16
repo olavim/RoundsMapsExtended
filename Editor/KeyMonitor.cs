@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public class KeyMonitor : MonoBehaviour
     {

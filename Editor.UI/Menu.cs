@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace MapsExtended.UI
+namespace MapsExt.UI
 {
     public enum MenuPosition
     {

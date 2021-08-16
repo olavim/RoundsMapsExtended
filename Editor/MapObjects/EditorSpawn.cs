@@ -1,7 +1,7 @@
-﻿using MapsExtended.MapObjects;
+﻿using MapsExt.MapObjects;
 using UnityEngine;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor.MapObjects
 {
     [MapsExtendedEditorMapObject(typeof(Spawn))]
     public class EditorSpawnSpecification : SpawnSpecification

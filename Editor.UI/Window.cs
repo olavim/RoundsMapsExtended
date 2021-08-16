@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace MapsExtended.UI
+namespace MapsExt.UI
 {
     public class Window : MonoBehaviour
     {

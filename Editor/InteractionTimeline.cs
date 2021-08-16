@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace MapsExtended
+namespace MapsExt
 {
     // An InteractionTimeline forms a one-dimensional timeline of MapObjectInteractions that can be traversed by "undoing" and "redoing".
     public class InteractionTimeline

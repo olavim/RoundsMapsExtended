@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Sirenix.Serialization;
-using MapsExtended.UI;
-using MapsExtended.Visualizers;
+using MapsExt.UI;
+using MapsExt.Visualizers;
 using UnboundLib;
 using UnboundLib.GameModes;
-using MapsExtended.MapObjects;
+using MapsExt.MapObjects;
+using MapsExt.Editor.MapObjects;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public class MapEditor : MonoBehaviour
     {

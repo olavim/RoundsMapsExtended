@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MapsExtended.Editor.UI
+namespace MapsExt.Editor.UI
 {
     class UIAligner : MonoBehaviour
     {

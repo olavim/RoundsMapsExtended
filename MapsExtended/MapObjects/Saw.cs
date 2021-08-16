@@ -1,7 +1,7 @@
-﻿using MapsExtended.Transformers;
+﻿using MapsExt.Transformers;
 using UnityEngine;
 
-namespace MapsExtended.MapObjects
+namespace MapsExt.MapObjects
 {
     public class Saw : PhysicalMapObject { }
 

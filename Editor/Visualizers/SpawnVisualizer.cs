@@ -2,9 +2,9 @@
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 using TMPro;
-using MapsExtended.Editor;
+using MapsExt.Editor;
 
-namespace MapsExtended.Visualizers
+namespace MapsExt.Visualizers
 {
     public class SpawnVisualizer : MonoBehaviour, IMapObjectVisualizer
     {

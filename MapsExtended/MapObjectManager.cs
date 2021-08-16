@@ -6,10 +6,10 @@ using UnityEngine;
 using UnboundLib;
 using HarmonyLib;
 using Jotunn.Utils;
-using MapsExtended.MapObjects;
+using MapsExt.MapObjects;
 using Photon.Pun;
 
-namespace MapsExtended
+namespace MapsExt
 {
     public class MapObjectManager : NetworkedBehaviour
     {

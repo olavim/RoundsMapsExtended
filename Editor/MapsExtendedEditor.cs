@@ -7,9 +7,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using HarmonyLib;
 using UnboundLib;
-using MapsExtended.MapObjects;
+using MapsExt.MapObjects;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     [BepInDependency("com.willis.rounds.unbound", "2.2.0")]
     [BepInDependency("io.olavim.rounds.mapsextended", "1.0.0")]

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Jotunn.Utils;
 
-namespace MapsExtended.UI
+namespace MapsExt.UI
 {
     public static class Assets
     {

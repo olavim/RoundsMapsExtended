@@ -1,8 +1,8 @@
-﻿using MapsExtended.MapObjects;
+﻿using MapsExt.MapObjects;
 using System;
 using System.Collections.Generic;
 
-namespace MapsExtended
+namespace MapsExt
 {
     [Serializable]
     public class CustomMap

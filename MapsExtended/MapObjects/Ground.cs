@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MapsExtended.MapObjects
+namespace MapsExt.MapObjects
 {
     public class Ground : PhysicalMapObject { }
 

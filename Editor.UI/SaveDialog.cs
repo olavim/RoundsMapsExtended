@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using TMPro;
 
-namespace MapsExtended.UI
+namespace MapsExt.UI
 {
     public class SaveDialog : MonoBehaviour
     {

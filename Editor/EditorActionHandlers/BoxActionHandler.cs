@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public class BoxActionHandler : MonoBehaviour, IEditorActionHandler
     {

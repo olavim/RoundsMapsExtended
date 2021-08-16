@@ -1,9 +1,9 @@
-﻿using MapsExtended.Editor;
+﻿using MapsExt.Editor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 
-namespace MapsExtended.Visualizers
+namespace MapsExt.Visualizers
 {
     public class RopeVisualizer : MonoBehaviour, IMapObjectVisualizer
     {

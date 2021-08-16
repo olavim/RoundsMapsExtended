@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace MapsExtended.Editor
+namespace MapsExt.Editor
 {
     public class MapEditorInputHandler : MonoBehaviour
     {

@@ -11,5 +11,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("43885cdf-da4e-421d-8fe9-943ffa8a9c96")]
-[assembly: AssemblyVersion(MapsExtended.Editor.MapsExtendedEditor.Version)]
-[assembly: AssemblyFileVersion(MapsExtended.Editor.MapsExtendedEditor.Version)]
+[assembly: AssemblyVersion(MapsExt.Editor.MapsExtendedEditor.Version)]
+[assembly: AssemblyFileVersion(MapsExt.Editor.MapsExtendedEditor.Version)]

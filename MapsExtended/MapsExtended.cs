@@ -13,9 +13,9 @@ using UnityEngine;
 using UnboundLib;
 using Photon.Pun;
 using System.Collections;
-using MapsExtended.MapObjects;
+using MapsExt.MapObjects;
 
-namespace MapsExtended
+namespace MapsExt
 {
     [BepInDependency("com.willis.rounds.unbound", "2.2.0")]
     [BepInPlugin(ModId, "MapsExtended", Version)]
