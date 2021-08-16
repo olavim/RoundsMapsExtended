@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx;
 using HarmonyLib;
@@ -11,6 +12,8 @@ using Sirenix.Serialization;
 using UnityEngine;
 using UnboundLib;
 using Photon.Pun;
+using System.Collections;
+using MapsExtended.MapObjects;
 
 namespace MapsExtended
 {
@@ -29,6 +32,7 @@ namespace MapsExtended
 
         public static MapsExtended instance;
 
+        public MapObjectManager mapObjectManager;
         public List<string> mapFiles;
         public bool forceCustomMaps = false;
         public string loadedMapName;
@@ -44,8 +48,8 @@ namespace MapsExtended
 
             AssetUtils.LoadAssetBundleFromResources("mapbase", typeof(MapsExtended).Assembly);
 
-            var mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
-            mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
+            this.mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
+            this.mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
 
             SceneManager.sceneLoaded += (scene, mode) =>
             {
@@ -57,6 +61,8 @@ namespace MapsExtended
 
             this.mapFolderPrefixes.Add("0", BepInEx.Paths.PluginPath);
             this.mapFolderPrefixes.Add("1", BepInEx.Paths.GameRootPath);
+
+            this.RegisterMapObjects(Assembly.GetExecutingAssembly());
         }
 
         public void Start()
@@ -66,6 +72,26 @@ namespace MapsExtended
             if (MapsExtended.DEBUG)
             {
                 Unbound.RegisterGUI("MapsExtended Debug", this.DrawDebugGUI);
+            }
+        }
+
+        public void RegisterMapObjects(Assembly assembly)
+        {
+            var types = assembly.GetTypes();
+            var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapsExtendedMapObject>() != null);
+
+            foreach (var type in typesWithAttribute)
+            {
+                try
+                {
+                    var attr = type.GetCustomAttribute<MapsExtendedMapObject>();
+                    var instance = (MapObjectSpecification) AccessTools.CreateInstance(type);
+                    this.mapObjectManager.RegisterSpecification(attr.dataType, instance);
+                }
+                catch (Exception ex)
+                {
+                    UnityEngine.Debug.LogError(ex);
+                }
             }
         }
 
@@ -93,91 +119,38 @@ namespace MapsExtended
             this.photonInstantiationListeners.Add(mapObject, callback);
         }
 
-        public static void LoadMap(GameObject container, string mapFilePath)
+        public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
         {
             var bytes = File.ReadAllBytes(mapFilePath);
             var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
-            MapsExtended.LoadMap(container, mapData);
+            MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
         }
 
-        public static void LoadMap(GameObject container, CustomMap mapData)
+        public static void LoadMap(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
+        {
+            MapsExtended.instance.StartCoroutine(MapsExtended.LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
+        }
+
+        private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
         {
             foreach (Transform child in container.transform)
             {
                 GameObject.Destroy(child.gameObject);
             }
 
+            int toLoad = mapData.mapObjects.Count;
+
             foreach (var mapObject in mapData.mapObjects)
             {
-                MapObjectManager.instance.Instantiate(mapObject.mapObjectName, container.transform, instance =>
-                {
-                    instance.transform.position = mapObject.position;
-                    instance.transform.localScale = mapObject.scale;
-                    instance.transform.rotation = mapObject.rotation;
-                    instance.SetActive(mapObject.active);
-                });
+                mapObjectManager.Instantiate(mapObject, container.transform, instance => toLoad--);
             }
 
-            foreach (var spawn in mapData.spawns)
+            while (toLoad > 0)
             {
-                MapsExtended.AddSpawn(container, spawn);
+                yield return null;
             }
 
-            foreach (var rope in mapData.ropes)
-            {
-                var go = MapsExtended.AddRope(container, rope);
-            }
-        }
-
-        public static GameObject AddRope(GameObject container, RopeData data = null)
-        {
-            if (data == null)
-            {
-                data = new RopeData(new Vector3(0, 1, 0), new Vector3(0, -1, 0), true);
-            }
-
-            var ropeGo = new GameObject("Rope");
-            ropeGo.SetActive(false);
-            ropeGo.transform.SetParent(container.transform);
-            ropeGo.transform.position = data.startPosition;
-
-            var ropeEndGo = new GameObject("Rope End");
-            ropeEndGo.transform.SetParent(ropeGo.transform);
-            ropeEndGo.transform.position = data.endPosition;
-
-            var renderer = ropeGo.AddComponent<LineRenderer>();
-            renderer.material = new Material(Shader.Find("Sprites/Default"));
-            renderer.startColor = new Color(0.039f, 0.039f, 0.039f, 1f);
-            renderer.endColor = renderer.startColor;
-            renderer.startWidth = 0.2f;
-            renderer.endWidth = 0.2f;
-
-            var rope = ropeGo.AddComponent<MapObjet_Rope>();
-            rope.jointType = MapObjet_Rope.JointType.Distance;
-
-            ropeGo.SetActive(data.active);
-            return ropeGo;
-        }
-
-        public static GameObject AddSpawn(GameObject container, SpawnPointData data = null)
-        {
-            if (data == null)
-            {
-                int id = container.GetComponentsInChildren<SpawnPoint>().Length;
-                int teamID = id;
-                data = new SpawnPointData(id, teamID, Vector3.zero, true);
-            }
-
-            var spawnGo = new GameObject($"SPAWN POINT {data.id}");
-            spawnGo.SetActive(data.active);
-            spawnGo.transform.SetParent(container.transform);
-            spawnGo.transform.position = data.position;
-
-            var spawn = spawnGo.AddComponent<SpawnPoint>();
-            spawn.ID = data.id;
-            spawn.TEAMID = data.teamID;
-
-            return spawnGo;
+            onLoad?.Invoke();
         }
     }
 
@@ -193,7 +166,7 @@ namespace MapsExtended
 
             SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
-            MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMapName);
+            MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMapName, MapsExtended.instance.mapObjectManager);
         }
 
         public static void Prefix(ref string sceneName)

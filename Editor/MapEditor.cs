@@ -8,6 +8,7 @@ using MapsExtended.UI;
 using MapsExtended.Visualizers;
 using UnboundLib;
 using UnboundLib.GameModes;
+using MapsExtended.MapObjects;
 
 namespace MapsExtended.Editor
 {
@@ -37,8 +38,7 @@ namespace MapsExtended.Editor
         private Vector3Int prevCell;
         private Dictionary<GameObject, Vector3> selectionGroupGridOffsets;
         private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
-        private List<MapObjectData> clipboardMapObjects;
-        private List<SpawnPointData> clipboardSpawns;
+        private List<MapObject> clipboardMapObjects;
 
         private Grid grid;
         private MapEditorUI gui;
@@ -121,40 +121,20 @@ namespace MapsExtended.Editor
 
         private CustomMap GetMapData()
         {
-            var mapData = new CustomMap
-            {
-                mapObjects = new List<MapObjectData>(),
-                spawns = new List<SpawnPointData>(),
-                ropes = new List<RopeData>()
-            };
-
-            var mapObjects = this.content.GetComponentsInChildren<MapObject>();
-            var spawns = this.content.GetComponentsInChildren<SpawnPoint>();
-            var ropes = this.content.GetComponentsInChildren<Rope>();
+            var mapData = new CustomMap { mapObjects = new List<MapObject>() };
+            var mapObjects = this.content.GetComponentsInChildren<MapObjectInstance>();
 
             foreach (var mapObject in mapObjects)
             {
-                mapData.mapObjects.Add(new MapObjectData(mapObject));
-            }
-
-            foreach (var spawn in spawns)
-            {
-                mapData.spawns.Add(new SpawnPointData(spawn));
-            }
-
-            foreach (var rope in ropes)
-            {
-                var startPos = rope.GetAnchor(0).GetPosition();
-                var endPos = rope.GetAnchor(1).GetPosition();
-                mapData.ropes.Add(new RopeData(startPos, endPos, rope.gameObject.activeSelf));
+                mapData.mapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject));
             }
 
             return mapData;
         }
 
-        public void SpawnMapObject(string mapObjectName)
+        public void SpawnMapObject(MapObject data)
         {
-            EditorMod.instance.SpawnObject(this.content, mapObjectName, instance =>
+            MapsExtendedEditor.instance.SpawnObject(this.content, data, instance =>
             {
                 instance.SetActive(false);
                 instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize * 2f);
@@ -176,27 +156,26 @@ namespace MapsExtended.Editor
 
         public void AddRope()
         {
-            var rope = EditorMod.instance.AddRope(this.content);
-            rope.SetActive(false);
-            rope.transform.position = Vector3.zero;
-
-            this.ExecuteAfterFrames(1, () =>
+            MapsExtendedEditor.instance.SpawnObject(this.content, new Rope(), instance =>
             {
-                this.timeline.BeginInteraction(rope, true);
-                rope.SetActive(true);
+                instance.SetActive(false);
+
+                this.timeline.BeginInteraction(instance, true);
+                instance.SetActive(true);
                 this.timeline.EndInteraction();
             });
         }
 
         public void AddSpawn()
         {
-            var spawn = EditorMod.instance.AddSpawn(this.content);
-            spawn.SetActive(false);
-            spawn.transform.position = Vector3.zero;
+            MapsExtendedEditor.instance.SpawnObject(this.content, new Spawn(), instance =>
+            {
+                instance.SetActive(false);
 
-            this.timeline.BeginInteraction(spawn, true);
-            spawn.SetActive(true);
-            this.timeline.EndInteraction();
+                this.timeline.BeginInteraction(instance, true);
+                instance.SetActive(true);
+                this.timeline.EndInteraction();
+            });
         }
 
         public void OnUndo()
@@ -221,65 +200,42 @@ namespace MapsExtended.Editor
 
         public void OnCopy()
         {
-            this.clipboardMapObjects = new List<MapObjectData>();
-            this.clipboardSpawns = new List<SpawnPointData>();
+            this.clipboardMapObjects = new List<MapObject>();
 
             foreach (var obj in this.selectedMapObjects)
             {
-                var mapObject = obj.GetComponent<MapObject>();
-                var spawn = obj.GetComponent<SpawnPoint>();
-
-                if (mapObject)
+                var mapObjectInstance = obj.GetComponent<MapObjectInstance>();
+                if (mapObjectInstance)
                 {
-                    this.clipboardMapObjects.Add(new MapObjectData(mapObject));
-                }
-
-                if (spawn)
-                {
-                    this.clipboardSpawns.Add(new SpawnPointData(spawn));
+                    this.clipboardMapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObjectInstance));
                 }
             }
         }
 
         public void OnPaste()
         {
-            if (this.clipboardMapObjects == null || 
-                this.clipboardSpawns == null || 
-                (this.clipboardMapObjects.Count == 0 && this.clipboardSpawns.Count == 0))
+            if (this.clipboardMapObjects == null || this.clipboardMapObjects.Count == 0)
             {
                 return;
             }
 
             this.ClearSelected();
-
             this.StartCoroutine(this.SpawnClipboardObjects());
         }
 
         private IEnumerator SpawnClipboardObjects()
         {
-            int waitingForSpawns = this.clipboardMapObjects.Count + this.clipboardSpawns.Count;
+            int waitingForSpawns = this.clipboardMapObjects.Count;
             var newInstances = new List<GameObject>();
 
             foreach (var data in this.clipboardMapObjects)
             {
-                EditorMod.instance.SpawnObject(this.content, data.mapObjectName, instance =>
+                MapsExtendedEditor.instance.SpawnObject(this.content, data, instance =>
                 {
                     instance.SetActive(false);
-                    instance.transform.position = data.position + new Vector3(1, -1, 0);
-                    instance.transform.localScale = data.scale;
-                    instance.transform.rotation = data.rotation;
-
+                    instance.transform.position = instance.transform.position + new Vector3(1, -1, 0);
                     newInstances.Add(instance);
                 });
-            }
-
-            foreach (var data in this.clipboardSpawns)
-            {
-                var instance = EditorMod.instance.AddSpawn(this.content);
-                instance.SetActive(false);
-                instance.transform.position = data.position + new Vector3(1, -1, 0);
-
-                newInstances.Add(instance);
             }
 
             while (newInstances.Count != waitingForSpawns)
@@ -336,32 +292,42 @@ namespace MapsExtended.Editor
 
             if (this.content.GetComponentsInChildren<SpawnPoint>().Length == 0)
             {
-                this.tempSpawn = EditorMod.instance.AddSpawn(this.content);
-                this.tempSpawn.transform.position = Vector3.zero;
+                MapsExtendedEditor.instance.SpawnObject(this.content, new Spawn(), instance =>
+                {
+                    this.tempSpawn = instance;
+                    this.DoStartSimulation();
+                });
             }
-
-            var mapData = this.GetMapData();
+            else
+            {
+                this.DoStartSimulation();
+            }
+        }
+        private void DoStartSimulation()
+        {
             this.content.SetActive(false);
             this.tempContent.SetActive(true);
-            MapsExtended.LoadMap(this.tempContent, mapData);
 
-            GameModeManager.SetGameMode("Sandbox");
-            GameModeManager.CurrentHandler.StartGame();
-
-            var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
-            gm.testMap = true;
-            gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = false;
-
-            this.ExecuteAfterFrames(1, () =>
+            MapsExtended.LoadMap(this.tempContent, this.GetMapData(), MapsExtended.instance.mapObjectManager, () =>
             {
-                EditorMod.instance.SetMapPhysicsActive(this.tempContent, true);
-                this.gameObject.GetComponent<Map>().allRigs = this.tempContent.GetComponentsInChildren<Rigidbody2D>();
+                GameModeManager.SetGameMode("Sandbox");
+                GameModeManager.CurrentHandler.StartGame();
 
-                var ropes = this.tempContent.GetComponentsInChildren<MapObjet_Rope>();
-                foreach (var rope in ropes)
+                var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
+                gm.testMap = true;
+                gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = false;
+
+                this.ExecuteAfterFrames(1, () =>
                 {
-                    rope.Go();
-                }
+                    MapsExtendedEditor.instance.SetMapPhysicsActive(this.tempContent, true);
+                    this.gameObject.GetComponent<Map>().allRigs = this.tempContent.GetComponentsInChildren<Rigidbody2D>();
+
+                    var ropes = this.tempContent.GetComponentsInChildren<MapObjet_Rope>();
+                    foreach (var rope in ropes)
+                    {
+                        rope.Go();
+                    }
+                });
             });
         }
 
@@ -403,7 +369,7 @@ namespace MapsExtended.Editor
             this.gui.transform.SetParent(null);
             this.grid.transform.SetParent(null);
 
-            EditorMod.instance.LoadMap(this.content, file);
+            MapsExtendedEditor.instance.LoadMap(this.content, file);
 
             this.gui.transform.SetParent(this.transform);
             this.grid.transform.SetParent(this.transform);
@@ -738,7 +704,7 @@ namespace MapsExtended.Editor
 
         private void UpdateRopeAttachments()
         {
-            foreach (var rope in this.content.GetComponentsInChildren<Rope>())
+            foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
             {
                 rope.UpdateAttachments();
             }
@@ -747,7 +713,7 @@ namespace MapsExtended.Editor
         private void DetachSelectedRopes()
         {
             var anchors = this.selectedMapObjects
-                .Select(obj => obj.GetComponent<RopeAnchor>())
+                .Select(obj => obj.GetComponent<EditorRopeAnchor>())
                 .Where(handler => handler != null);
 
             foreach (var anchor in anchors)

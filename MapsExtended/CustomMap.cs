@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapsExtended.MapObjects;
+using System;
 using System.Collections.Generic;
 
 namespace MapsExtended
@@ -6,8 +7,6 @@ namespace MapsExtended
     [Serializable]
     public class CustomMap
     {
-        public List<MapObjectData> mapObjects;
-        public List<SpawnPointData> spawns;
-        public List<RopeData> ropes;
+        public List<MapObject> mapObjects;
     }
 }

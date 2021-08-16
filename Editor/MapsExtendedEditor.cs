@@ -1,31 +1,35 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using HarmonyLib;
 using UnboundLib;
+using MapsExtended.MapObjects;
 
 namespace MapsExtended.Editor
 {
     [BepInDependency("com.willis.rounds.unbound", "2.2.0")]
     [BepInDependency("io.olavim.rounds.mapsextended", "1.0.0")]
     [BepInPlugin(ModId, "MapsExtended.Editor", Version)]
-    public class EditorMod : BaseUnityPlugin
+    public class MapsExtendedEditor : BaseUnityPlugin
     {
         private const string ModId = "io.olavim.rounds.mapsextended.editor";
         public const string Version = "1.0.0";
 
-        public static EditorMod instance;
+        public static MapsExtendedEditor instance;
 
         public bool editorActive = false;
 
+        internal MapObjectManager mapObjectManager;
+
         public void Awake()
         {
-            EditorMod.instance = this;
+            MapsExtendedEditor.instance = this;
 
-            var harmony = new Harmony(EditorMod.ModId);
+            var harmony = new Harmony(MapsExtendedEditor.ModId);
             harmony.PatchAll();
 
             SceneManager.sceneLoaded += (scene, mode) =>
@@ -40,15 +44,31 @@ namespace MapsExtended.Editor
 
             string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}MapsExtended.Editor.UI.dll");
+
+            this.mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
+            this.mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
+
+            this.RegisterMapObjects(Assembly.GetExecutingAssembly());
         }
 
-        public void Start()
+        public void RegisterMapObjects(Assembly assembly)
         {
-            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Ground", c => c.enabled = this.editorActive);
-            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Box", c => c.enabled = this.editorActive);
-            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Destructible Box", c => c.enabled = this.editorActive);
-            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Background Box", c => c.enabled = this.editorActive);
-            MapObjectManager.instance.RegisterMapObjectComponent<BoxActionHandler>("Saw", c => c.enabled = this.editorActive);
+            var types = assembly.GetTypes();
+            var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapsExtendedEditorMapObject>() != null);
+
+            foreach (var type in typesWithAttribute)
+            {
+                try
+                {
+                    var attr = type.GetCustomAttribute<MapsExtendedEditorMapObject>();
+                    var instance = (MapObjectSpecification) AccessTools.CreateInstance(type);
+                    this.mapObjectManager.RegisterSpecification(attr.dataType, instance);
+                }
+                catch (Exception ex)
+                {
+                    UnityEngine.Debug.LogError(ex);
+                }
+            }
         }
 
         public void Update()
@@ -87,70 +107,35 @@ namespace MapsExtended.Editor
 
         public void LoadMap(GameObject container, string mapFilePath)
         {
-            MapsExtended.LoadMap(container, mapFilePath);
+            MapsExtended.LoadMap(container, mapFilePath, this.mapObjectManager);
 
             this.ExecuteAfterFrames(1, () =>
             {
-                var mapObjects = container.GetComponentsInChildren<MapObject>();
-                var spawns = container.GetComponentsInChildren<SpawnPoint>();
+                var mapObjects = container.GetComponentsInChildren<MapObjectInstance>();
 
                 foreach (var mapObject in mapObjects)
                 {
                     this.SetupMapObject(container, mapObject.gameObject);
                 }
 
-                foreach (var spawn in spawns)
-                {
-                    this.SetupSpawn(spawn.gameObject);
-                }
-
                 this.SetMapPhysicsActive(container, false);
             });
         }
 
-        public void SpawnObject(GameObject container, string mapObjectName, Action<GameObject> cb)
+        public void SpawnObject(GameObject container, MapObject data, Action<GameObject> cb)
         {
-            MapObjectManager.instance.Instantiate(mapObjectName, container.transform, instance =>
+            this.mapObjectManager.Instantiate(data, container.transform, instance =>
             {
                 this.SetupMapObject(container, instance);
 
-                this.ExecuteAfterFrames(1, () =>
+                var rig = instance.GetComponent<Rigidbody2D>();
+                if (rig)
                 {
-                    this.SetMapObjectPhysicsActive(instance, false);
-                });
+                    this.ExecuteAfterFrames(1, () => this.SetPhysicsActive(rig, false));
+                }
 
                 cb(instance);
             });
-        }
-
-        public GameObject AddRope(GameObject container)
-        {
-            var ropeGo = new GameObject("Rope");
-            ropeGo.transform.SetParent(container.transform);
-
-            var ropeStartGo = new GameObject("Rope Start");
-            ropeStartGo.transform.SetParent(ropeGo.transform);
-            ropeStartGo.transform.position = new Vector3(0, 1, 0);
-            ropeStartGo.AddComponent<RopeAnchor>();
-            ropeStartGo.AddComponent<RopeActionHandler>();
-
-            var ropeEndGo = new GameObject("Rope End");
-            ropeEndGo.transform.SetParent(ropeGo.transform);
-            ropeEndGo.transform.position = new Vector3(0, -1, 0);
-            ropeEndGo.AddComponent<RopeAnchor>();
-            ropeEndGo.AddComponent<RopeActionHandler>();
-
-            ropeGo.AddComponent<Rope>();
-            ropeGo.AddComponent<Visualizers.RopeVisualizer>();
-
-            return ropeGo;
-        }
-
-        public GameObject AddSpawn(GameObject container)
-        {
-            var spawn = MapsExtended.AddSpawn(container);
-            this.SetupSpawn(spawn);
-            return spawn;
         }
 
         public void ResetAnimations(GameObject go)
@@ -171,13 +156,6 @@ namespace MapsExtended.Editor
             {
                 this.ResetAnimations(child.gameObject);
             }
-        }
-
-        private void SetupSpawn(GameObject spawn)
-        {
-            spawn.AddComponent<Visualizers.SpawnVisualizer>();
-            spawn.AddComponent<SpawnActionHandler>();
-            spawn.transform.SetAsLastSibling();
         }
 
         private void SetupMapObject(GameObject container, GameObject go)
@@ -230,23 +208,19 @@ namespace MapsExtended.Editor
 
         public void SetMapPhysicsActive(GameObject container, bool active)
         {
-            var mapObjects = container.GetComponentsInChildren<MapObject>();
-            foreach (var mapObject in mapObjects)
+            var rigs = container.GetComponentsInChildren<Rigidbody2D>();
+            foreach (var rig in rigs)
             {
-                this.SetMapObjectPhysicsActive(mapObject.gameObject, active);
+                this.SetPhysicsActive(rig, active);
             }
         }
 
-        public void SetMapObjectPhysicsActive(GameObject mapObject, bool active)
+        private void SetPhysicsActive(Rigidbody2D rig, bool active)
         {
-            var rig = mapObject.GetComponent<Rigidbody2D>();
-            if (rig)
-            {
-                rig.velocity = Vector2.zero;
-                rig.angularVelocity = 0;
-                rig.simulated = true;
-                rig.isKinematic = !active;
-            }
+            rig.velocity = Vector2.zero;
+            rig.angularVelocity = 0;
+            rig.simulated = true;
+            rig.isKinematic = !active;
         }
     }
 
@@ -255,7 +229,7 @@ namespace MapsExtended.Editor
     {
         public static bool Prefix()
         {
-            return !EditorMod.instance.editorActive;
+            return !MapsExtendedEditor.instance.editorActive;
         }
     }
 }

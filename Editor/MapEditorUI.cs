@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 using MapsExtended.UI;
+using MapsExtended.MapObjects;
 
 namespace MapsExtended.Editor
 {
@@ -91,14 +92,14 @@ namespace MapsExtended.Editor
             this.toolbar.editMenu.AddItem(pasteItem);
 
             var staticGroupItem = new MenuItemBuilder().Label("Static")
-                .SubItem(builder => builder.Label("Ground").Action(() => this.editor.SpawnMapObject("Ground")))
-                .SubItem(builder => builder.Label("Saw").Action(() => this.editor.SpawnMapObject("Saw")))
+                .SubItem(builder => builder.Label("Ground").Action(() => this.editor.SpawnMapObject(new Ground())))
+                .SubItem(builder => builder.Label("Saw").Action(() => this.editor.SpawnMapObject(new MapObjects.Saw())))
                 .Item();
 
             var dynamicGroupItem = new MenuItemBuilder().Label("Dynamic")
-                .SubItem(builder => builder.Label("Box").Action(() => this.editor.SpawnMapObject("Box")))
-                .SubItem(builder => builder.Label("Box (Destructible)").Action(() => this.editor.SpawnMapObject("Destructible Box")))
-                .SubItem(builder => builder.Label("Box (Background)").Action(() => this.editor.SpawnMapObject("Background Box")))
+                .SubItem(builder => builder.Label("Box").Action(() => this.editor.SpawnMapObject(new Box())))
+                .SubItem(builder => builder.Label("Box (Destructible)").Action(() => this.editor.SpawnMapObject(new BoxDestructible())))
+                .SubItem(builder => builder.Label("Box (Background)").Action(() => this.editor.SpawnMapObject(new BoxBackground())))
                 .Item();
 
             var ropeItem = new MenuItemBuilder().Label("Rope").Action(this.editor.AddRope).Item();
@@ -391,22 +392,18 @@ namespace MapsExtended.Editor
 
         public void OnGUI()
         {
-            if (this.editor.isSimulating)
+            if (!this.editor.isSimulating)
             {
-                GUI.enabled = false;
+                var selectionStyle = new GUIStyle(GUI.skin.box);
+                selectionStyle.normal.background = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
+
+                var selectionRect = this.editor.GetSelection();
+
+                if (selectionRect.width > 11 && selectionRect.height > 11)
+                {
+                    GUI.Box(selectionRect, GUIContent.none, selectionStyle);
+                }
             }
-
-            var selectionStyle = new GUIStyle(GUI.skin.box);
-            selectionStyle.normal.background = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
-
-            var selectionRect = this.editor.GetSelection();
-
-            if (selectionRect.width > 11 && selectionRect.height > 11)
-            {
-                GUI.Box(selectionRect, GUIContent.none, selectionStyle);
-            }
-
-            GUI.enabled = true;
         }
     }
 }

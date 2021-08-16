@@ -4,108 +4,87 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnboundLib;
-using UnboundLib.Networking;
+using HarmonyLib;
 using Jotunn.Utils;
-using MapsExtended.Transformers;
+using MapsExtended.MapObjects;
 using Photon.Pun;
 
 namespace MapsExtended
 {
     public class MapObjectManager : NetworkedBehaviour
     {
-        public static MapObjectManager instance;
+        private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
 
-        private readonly string prefabPrefix = "MapsExtended:";
-        private readonly Dictionary<string, GameObject> mapObjects = new Dictionary<string, GameObject>();
-        private readonly Dictionary<string, List<Tuple<Type, Action<object>>>> mapObjectComponents = new Dictionary<string, List<Tuple<Type, Action<object>>>>();
+        public static T LoadCustomAsset<T>(string name) where T : UnityEngine.Object
+        {
+            return MapObjectManager.mapObjectBundle.LoadAsset<T>(name);
+        }
+
+        private readonly Dictionary<Type, MapObjectSpecification> specs = new Dictionary<Type, MapObjectSpecification>();
         private readonly TargetSyncedStore<int> syncedInstantiations = new TargetSyncedStore<int>();
 
-        public void Awake()
+        public void RegisterSpecification(Type dataType, MapObjectSpecification spec)
         {
-            MapObjectManager.instance = this;
-
-            var objectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
-            this.RegisterMapObject("Ground", objectBundle.LoadAsset<GameObject>("Ground"));
-            this.RegisterMapObject("Box", Resources.Load<GameObject>("4 Map Objects/Box"));
-            this.RegisterMapObject("Destructible Box", Resources.Load<GameObject>("4 Map Objects/Box_Destructible"));
-            this.RegisterMapObject("Background Box", Resources.Load<GameObject>("4 Map Objects/Box_BG"));
-            this.RegisterMapObject("Saw", Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat"));
-
-            this.RegisterMapObjectComponent<SawTransformer>("Saw");
-        }
-
-        public void RegisterMapObject(string mapObjectName, GameObject prefab)
-        {
-            mapObjectName = mapObjectName.Replace(" ", "_");
-
-            this.mapObjects.Add(mapObjectName, prefab);
-            this.RegisterMapObjectComponent<MapObject>(mapObjectName, c => c.mapObjectName = mapObjectName);
-
-            if (prefab.GetComponent<PhotonMapObject>())
+            if (!typeof(MapObject).IsAssignableFrom(dataType))
             {
-                PhotonNetwork.PrefabPool.RegisterPrefab(prefabPrefix + mapObjectName, prefab);
+                throw new ArgumentException($"Invalid data type '{dataType.FullName}': data type must be assignable from '{typeof(MapObject).FullName}'");
+            }
+
+            this.specs.Add(dataType, spec);
+
+            if (spec.Prefab.GetComponent<PhotonMapObject>())
+            {
+                PhotonNetwork.PrefabPool.RegisterPrefab(this.GetInstanceName(dataType), spec.Prefab);
 
                 // PhotonMapObject has a hard-coded prefab name prefix / resource location
-                PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + prefabPrefix + mapObjectName, prefab);
+                PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), spec.Prefab);
             }
         }
 
-        public void RegisterMapObjectComponent<T>(string mapObjectName, Action<T> onInstantiate = null) where T : Component
+        private string GetInstanceName(Type type)
         {
-            mapObjectName = mapObjectName.Replace(" ", "_");
+            return $"{this.NetworkID}/{type.FullName}";
+        }
 
-            if (!this.mapObjectComponents.ContainsKey(mapObjectName))
+        public MapObject Serialize(MapObjectInstance mapObjectInstance)
+        {
+            if (mapObjectInstance.dataType == null)
             {
-                this.mapObjectComponents.Add(mapObjectName, new List<Tuple<Type, Action<object>>>());
+                throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}) because it's missing a dataType");
             }
 
-            Action<object> middleware = obj => onInstantiate?.Invoke((T) obj);
-            var tuple = new Tuple<Type, Action<object>>(typeof(T), middleware);
-            this.mapObjectComponents[mapObjectName].Add(tuple);
-        }
-
-        public GameObject GetMapObject(string mapObjectName)
-        {
-            mapObjectName = mapObjectName.Replace(" ", "_");
-            return this.mapObjects[mapObjectName];
-        }
-
-        private void AddMapObjectComponents(string mapObjectName, GameObject instance)
-        {
-            mapObjectName = mapObjectName.Replace(" ", "_");
-
-            if (this.mapObjectComponents.ContainsKey(mapObjectName))
+            if (this.specs.TryGetValue(mapObjectInstance.dataType, out MapObjectSpecification spec))
             {
-                instance.SetActive(false);
-                foreach (var tuple in this.mapObjectComponents[mapObjectName])
+                try
                 {
-                    var c = instance.AddComponent(tuple.Item1);
-                    var action = tuple.Item2;
-                    action.Invoke(c);
+                    return spec.SerializeInternal(mapObjectInstance.gameObject);
                 }
-                instance.SetActive(true);
+                catch (Exception ex)
+                {
+                    UnityEngine.Debug.LogError($"Could not serialize map object instance with specification: {spec.GetType()}");
+                    throw ex;
+                }
+            }
+            else
+            {
+                throw new ArgumentException($"Specification not found for type {mapObjectInstance.dataType}");
             }
         }
 
-        public string[] GetMapObjects()
+        public void Instantiate(MapObject data, Transform parent, Action<GameObject> onInstantiate = null)
         {
-            return this.mapObjects.Keys.ToArray();
-        }
+            var spec = this.specs[data.GetType()];
 
-        public void Instantiate(string mapObjectName, Transform parent, Action<GameObject> onInstantiate)
-        {
-            mapObjectName = mapObjectName.Replace(" ", "_");
             int instantiationID = this.syncedInstantiations.Allocate(parent);
 
-            var prefab = this.GetMapObject(mapObjectName);
-            bool isMapObjectNetworked = prefab.GetComponent<PhotonMapObject>() != null;
+            bool isMapObjectNetworked = spec.Prefab.GetComponent<PhotonMapObject>() != null;
             bool isMapSpawned = MapManager.instance.currentMap?.Map.wasSpawned == true;
 
             GameObject instance;
 
             if (!isMapSpawned || !isMapObjectNetworked)
             {
-                instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
+                instance = GameObject.Instantiate(spec.Prefab, Vector3.zero, Quaternion.identity, parent);
 
                 if (isMapObjectNetworked)
                 {
@@ -125,8 +104,8 @@ namespace MapsExtended
                     {
                         MapsExtended.instance.OnPhotonMapObjectInstantiate(instance.GetComponent<PhotonMapObject>(), networkInstance =>
                         {
-                            this.AddMapObjectComponents(mapObjectName, networkInstance);
-                            onInstantiate(networkInstance);
+                            spec.DeserializeInternal(data, networkInstance);
+                            onInstantiate?.Invoke(networkInstance);
 
                             int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
 
@@ -137,7 +116,7 @@ namespace MapsExtended
                     else
                     {
                         // Call onInstantiate once the master client has communicated the photon instantiated map object
-                        this.StartCoroutine(this.SyncInstantiation(parent, instantiationID, mapObjectName, onInstantiate));
+                        this.StartCoroutine(this.SyncInstantiation(parent, instantiationID, data, onInstantiate));
                     }
                 }
             }
@@ -146,7 +125,7 @@ namespace MapsExtended
                 /* We don't need to care about the photon instantiation dance (see above comment) when instantiating PhotonMapObjects
                  * after the map transition has already been done.
                  */
-                instance = PhotonNetwork.Instantiate(prefabPrefix + mapObjectName, Vector3.zero, Quaternion.identity);
+                instance = PhotonNetwork.Instantiate(this.GetInstanceName(data.GetType()), Vector3.zero, Quaternion.identity);
 
                 MapsExtended.instance.ExecuteAfterFrames(1, () =>
                 {
@@ -155,14 +134,15 @@ namespace MapsExtended
             }
 
 
-            instance.name = prefabPrefix + mapObjectName;
+            instance.name = this.GetInstanceName(data.GetType());
+
+            spec.DeserializeInternal(data, instance);
 
             // The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
-            this.AddMapObjectComponents(mapObjectName, instance);
-            onInstantiate(instance);
+            onInstantiate?.Invoke(instance);
         }
 
-        private IEnumerator SyncInstantiation(object target, int instantiationID, string mapObjectName, Action<GameObject> onInstantiate)
+        private IEnumerator SyncInstantiation(object target, int instantiationID, MapObject data, Action<GameObject> onInstantiate)
         {
             yield return this.syncedInstantiations.WaitForValue(target, instantiationID);
 
@@ -171,8 +151,10 @@ namespace MapsExtended
                 int viewID = this.syncedInstantiations.Get(instantiationID);
                 var networkInstance = PhotonNetwork.GetPhotonView(viewID).gameObject;
 
-                this.AddMapObjectComponents(mapObjectName, networkInstance);
-                onInstantiate(networkInstance);
+                var spec = this.specs[data.GetType()];
+                spec.DeserializeInternal(data, networkInstance);
+
+                onInstantiate?.Invoke(networkInstance);
             }
         }
 

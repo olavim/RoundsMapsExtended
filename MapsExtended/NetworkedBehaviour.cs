@@ -26,13 +26,17 @@ namespace MapsExtended
         {
             if (PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RegisterEvent(NetworkedBehaviour.RequestViewID, this.HandleViewIDRequest);
-                PhotonNetwork.AllocateViewID(this.photonView);
+                NetworkingManager.RegisterEvent(this.NetworkID + NetworkedBehaviour.RequestViewID, this.HandleViewIDRequest);
+
+                if (this.photonView.ViewID == 0)
+                {
+                    PhotonNetwork.AllocateViewID(this.photonView);
+                }
             }
             else
             {
-                NetworkingManager.RegisterEvent(NetworkedBehaviour.AllocateViewID, this.HandleViewIDAllocation);
-                NetworkingManager.RaiseEvent(NetworkedBehaviour.RequestViewID, this.NetworkID);
+                NetworkingManager.RegisterEvent(this.NetworkID + NetworkedBehaviour.AllocateViewID, this.HandleViewIDAllocation);
+                NetworkingManager.RaiseEvent(this.NetworkID + NetworkedBehaviour.RequestViewID, this.NetworkID);
             }
         }
 
@@ -42,7 +46,7 @@ namespace MapsExtended
 
             if (this.NetworkID == requesterInstanceID)
             {
-                NetworkingManager.RaiseEvent(NetworkedBehaviour.AllocateViewID, this.NetworkID, this.photonView.ViewID);
+                NetworkingManager.RaiseEvent(this.NetworkID + NetworkedBehaviour.AllocateViewID, this.NetworkID, this.photonView.ViewID);
             }
         }
 

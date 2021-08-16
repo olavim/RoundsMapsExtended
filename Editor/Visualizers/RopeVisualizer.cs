@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using MapsExtended.Editor;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 
@@ -6,7 +7,7 @@ namespace MapsExtended.Visualizers
 {
     public class RopeVisualizer : MonoBehaviour, IMapObjectVisualizer
     {
-        private Rope rope;
+        private EditorRopeInstance rope;
         private LineRenderer renderer;
         private Graphic startGraphic;
         private Graphic endGraphic;
@@ -18,12 +19,12 @@ namespace MapsExtended.Visualizers
 
         public void Start()
         {
-            this.rope = this.gameObject.GetComponent<Rope>();
+            this.rope = this.gameObject.GetComponent<EditorRopeInstance>();
         }
 
         public void OnEnable()
         {
-            this.renderer = this.gameObject.AddComponent<LineRenderer>();
+            this.renderer = this.gameObject.GetComponent<LineRenderer>();
             this.renderer.material = new Material(Shader.Find("Sprites/Default"));
             this.renderer.startColor = new Color(0.039f, 0.039f, 0.039f, 1f);
             this.renderer.endColor = this.renderer.startColor;
@@ -65,7 +66,6 @@ namespace MapsExtended.Visualizers
 
         public void OnDisable()
         {
-            GameObject.Destroy(this.gameObject.GetComponent<LineRenderer>());
             this.renderer = null;
             this.startGraphic = null;
             this.endGraphic = null;
