@@ -33,12 +33,11 @@ namespace MapsExt
         public static MapsExtended instance;
 
         public MapObjectManager mapObjectManager;
-        public List<string> mapFiles;
+        public List<CustomMap> maps;
         public bool forceCustomMaps = false;
-        public string loadedMapName;
+        public CustomMap loadedMap;
         public string loadedMapSceneName;
 
-        internal Dictionary<string, string> mapFolderPrefixes = new Dictionary<string, string>();
         internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
 
         public void Awake()
@@ -58,9 +57,6 @@ namespace MapsExt
                     this.UpdateMapFiles();
                 }
             };
-
-            this.mapFolderPrefixes.Add("0", BepInEx.Paths.PluginPath);
-            this.mapFolderPrefixes.Add("1", BepInEx.Paths.GameRootPath);
 
             this.RegisterMapObjects(Assembly.GetExecutingAssembly());
         }
@@ -105,13 +101,19 @@ namespace MapsExt
             var pluginPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
             var rootPaths = Directory.GetFiles(Path.Combine(BepInEx.Paths.GameRootPath, "maps"), "*.map", SearchOption.AllDirectories);
 
-            this.mapFiles = new List<string>();
-            this.mapFiles.AddRange(pluginPaths.Select(p => "0:" + p.Replace(BepInEx.Paths.PluginPath, "")));
-            this.mapFiles.AddRange(rootPaths.Select(p => "1:" + p.Replace(BepInEx.Paths.GameRootPath, "")));
+            this.maps = new List<CustomMap>();
+            this.maps.AddRange(pluginPaths.Select(MapsExtended.LoadMapData));
+            this.maps.AddRange(rootPaths.Select(MapsExtended.LoadMapData));
 
-            Logger.LogMessage($"Loaded {mapFiles.Count} custom maps");
+            Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
-            Unbound.RegisterMaps(this.mapFiles);
+            Unbound.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
+        }
+
+        private static CustomMap LoadMapData(string path)
+        {
+            var bytes = File.ReadAllBytes(path);
+            return SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
         }
 
         public void OnPhotonMapObjectInstantiate(PhotonMapObject mapObject, Action<GameObject> callback)
@@ -121,8 +123,7 @@ namespace MapsExt
 
         public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
         {
-            var bytes = File.ReadAllBytes(mapFilePath);
-            var mapData = SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
+            var mapData = MapsExtended.LoadMapData(mapFilePath);
             MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
         }
 
@@ -166,18 +167,17 @@ namespace MapsExt
 
             SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
             Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
-            MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMapName, MapsExtended.instance.mapObjectManager);
+            MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMap, MapsExtended.instance.mapObjectManager);
         }
 
         public static void Prefix(ref string sceneName)
         {
-            if (sceneName != null && sceneName.EndsWith(".map"))
+            if (sceneName != null && sceneName.StartsWith("MapsExtended:"))
             {
-                string prefix = sceneName.Split(':')[0];
-                string filename = sceneName.Substring(prefix.Length + 1);
-                string basePath = MapsExtended.instance.mapFolderPrefixes[prefix];
+                string id = sceneName.Split(':')[1];
+                UnityEngine.Debug.Log(sceneName + " - " + id);
 
-                MapsExtended.instance.loadedMapName = basePath + filename;
+                MapsExtended.instance.loadedMap = MapsExtended.instance.maps.First(m => m.id == id);
                 MapsExtended.instance.loadedMapSceneName = sceneName;
 
                 sceneName = "NewMap";
@@ -211,10 +211,10 @@ namespace MapsExt
                 return true;
             }
 
-            var customMaps = MapsExtended.instance.mapFiles;
+            var customMaps = MapsExtended.instance.maps;
 
             int index = UnityEngine.Random.Range(0, customMaps.Count);
-            __result = customMaps[index];
+            __result = customMaps[index].id;
             return false;
         }
     }

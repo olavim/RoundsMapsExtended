@@ -7,6 +7,8 @@ namespace MapsExt
     [Serializable]
     public class CustomMap
     {
+        public string id;
+        public string name;
         public List<MapObject> mapObjects;
     }
 }

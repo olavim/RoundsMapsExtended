@@ -110,7 +110,7 @@ namespace MapsExt.Editor
 
         public void SaveMap(string filename)
         {
-            var bytes = SerializationUtility.SerializeValue(this.GetMapData(), DataFormat.JSON);
+            var bytes = SerializationUtility.SerializeValue(this.GetMapData(filename), DataFormat.JSON);
 
             string path = filename == null
                 ? Path.GetTempFileName()
@@ -121,9 +121,13 @@ namespace MapsExt.Editor
             this.currentMapName = filename;
         }
 
-        private CustomMap GetMapData()
+        private CustomMap GetMapData(string name = null)
         {
-            var mapData = new CustomMap { mapObjects = new List<MapObject>() };
+            var mapData = new CustomMap {
+                id = Guid.NewGuid().ToString(),
+                name = name,
+                mapObjects = new List<MapObject>()
+            };
             var mapObjects = this.content.GetComponentsInChildren<MapObjectInstance>();
 
             foreach (var mapObject in mapObjects)

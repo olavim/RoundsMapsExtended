@@ -93,11 +93,9 @@ namespace MapsExt.Editor
             this.toolbar.editMenu.AddItem(copyItem);
             this.toolbar.editMenu.AddItem(pasteItem);
 
-            UnityEngine.Debug.Log(0);
             var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
             mapObjects.Add("", new List<Tuple<string, Type>>());
 
-            UnityEngine.Debug.Log(1);
             foreach (var attr in MapsExtendedEditor.instance.mapObjectAttributes)
             {
                 string category = attr.category ?? "";
@@ -110,7 +108,6 @@ namespace MapsExt.Editor
                 mapObjects[category].Add(new Tuple<string, Type>(attr.label, attr.dataType));
             }
 
-            UnityEngine.Debug.Log(2);
             foreach (var category in mapObjects.Keys.Where(k => k != ""))
             {
                 var builder = new MenuItemBuilder().Label(category);
@@ -124,7 +121,6 @@ namespace MapsExt.Editor
                 this.toolbar.mapObjectMenu.AddItem(builder.Item());
             }
 
-            UnityEngine.Debug.Log(3);
             foreach (var entry in mapObjects[""])
             {
                 Action action = () => this.editor.SpawnMapObject(entry.Item2);
