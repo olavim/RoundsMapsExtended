@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
 {
-    [MapsExtendedEditorMapObject(typeof(Rope))]
+    [MapsExtendedEditorMapObject(typeof(Rope), "Rope")]
     public class EditorRope : MapObjectSpecification<Rope>
     {
         public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
 
-        protected override void Deserialize(Rope data, GameObject target)
+        protected override void OnDeserialize(Rope data, GameObject target)
         {
             target.transform.GetChild(0).position = data.startPosition;
             target.transform.GetChild(1).position = data.endPosition;
@@ -25,7 +25,7 @@ namespace MapsExt.Editor.MapObjects
             target.AddComponent<Visualizers.RopeVisualizer>();
         }
 
-        protected override Rope Serialize(GameObject instance)
+        protected override Rope OnSerialize(GameObject instance)
         {
             var ropeInstance = instance.GetComponent<EditorRopeInstance>();
             return new Rope

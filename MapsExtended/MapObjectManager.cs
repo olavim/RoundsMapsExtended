@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnboundLib;
-using HarmonyLib;
 using Jotunn.Utils;
 using MapsExt.MapObjects;
 using Photon.Pun;
@@ -23,7 +21,7 @@ namespace MapsExt
         private readonly Dictionary<Type, MapObjectSpecification> specs = new Dictionary<Type, MapObjectSpecification>();
         private readonly TargetSyncedStore<int> syncedInstantiations = new TargetSyncedStore<int>();
 
-        public void RegisterSpecification(Type dataType, MapObjectSpecification spec)
+        public void RegisterSpecification(Type dataType, MapObjectSpecification spec, params object[] details)
         {
             if (!typeof(MapObject).IsAssignableFrom(dataType))
             {
@@ -57,7 +55,7 @@ namespace MapsExt
             {
                 try
                 {
-                    return spec.SerializeInternal(mapObjectInstance.gameObject);
+                    return spec.Serialize(mapObjectInstance.gameObject);
                 }
                 catch (Exception ex)
                 {
@@ -104,7 +102,7 @@ namespace MapsExt
                     {
                         MapsExtended.instance.OnPhotonMapObjectInstantiate(instance.GetComponent<PhotonMapObject>(), networkInstance =>
                         {
-                            spec.DeserializeInternal(data, networkInstance);
+                            spec.Deserialize(data, networkInstance);
                             onInstantiate?.Invoke(networkInstance);
 
                             int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
@@ -136,7 +134,7 @@ namespace MapsExt
 
             instance.name = this.GetInstanceName(data.GetType());
 
-            spec.DeserializeInternal(data, instance);
+            spec.Deserialize(data, instance);
 
             // The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
             onInstantiate?.Invoke(instance);
@@ -152,7 +150,7 @@ namespace MapsExt
                 var networkInstance = PhotonNetwork.GetPhotonView(viewID).gameObject;
 
                 var spec = this.specs[data.GetType()];
-                spec.DeserializeInternal(data, networkInstance);
+                spec.Deserialize(data, networkInstance);
 
                 onInstantiate?.Invoke(networkInstance);
             }

@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 using MapsExt.UI;
 using MapsExt.MapObjects;
+using System;
+using System.Linq;
+using HarmonyLib;
 
 namespace MapsExt.Editor
 {
@@ -91,24 +93,44 @@ namespace MapsExt.Editor
             this.toolbar.editMenu.AddItem(copyItem);
             this.toolbar.editMenu.AddItem(pasteItem);
 
-            var staticGroupItem = new MenuItemBuilder().Label("Static")
-                .SubItem(builder => builder.Label("Ground").Action(() => this.editor.SpawnMapObject(new Ground())))
-                .SubItem(builder => builder.Label("Saw").Action(() => this.editor.SpawnMapObject(new MapsExt.MapObjects.Saw())))
-                .Item();
+            UnityEngine.Debug.Log(0);
+            var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
+            mapObjects.Add("", new List<Tuple<string, Type>>());
 
-            var dynamicGroupItem = new MenuItemBuilder().Label("Dynamic")
-                .SubItem(builder => builder.Label("Box").Action(() => this.editor.SpawnMapObject(new Box())))
-                .SubItem(builder => builder.Label("Box (Destructible)").Action(() => this.editor.SpawnMapObject(new BoxDestructible())))
-                .SubItem(builder => builder.Label("Box (Background)").Action(() => this.editor.SpawnMapObject(new BoxBackground())))
-                .Item();
+            UnityEngine.Debug.Log(1);
+            foreach (var attr in MapsExtendedEditor.instance.mapObjectAttributes)
+            {
+                string category = attr.category ?? "";
+                
+                if (!mapObjects.ContainsKey(category))
+                {
+                    mapObjects.Add(category, new List<Tuple<string, Type>>());
+                }
 
-            var ropeItem = new MenuItemBuilder().Label("Rope").Action(this.editor.AddRope).Item();
-            var spawnItem = new MenuItemBuilder().Label("Spawn Point").Action(this.editor.AddSpawn).Item();
+                mapObjects[category].Add(new Tuple<string, Type>(attr.label, attr.dataType));
+            }
 
-            this.toolbar.mapObjectMenu.AddItem(staticGroupItem);
-            this.toolbar.mapObjectMenu.AddItem(dynamicGroupItem);
-            this.toolbar.mapObjectMenu.AddItem(ropeItem);
-            this.toolbar.mapObjectMenu.AddItem(spawnItem);
+            UnityEngine.Debug.Log(2);
+            foreach (var category in mapObjects.Keys.Where(k => k != ""))
+            {
+                var builder = new MenuItemBuilder().Label(category);
+
+                foreach (var entry in mapObjects[category])
+                {
+                    Action action = () => this.editor.SpawnMapObject(entry.Item2);
+                    builder.SubItem(b => b.Label(entry.Item1).Action(action));
+                }
+
+                this.toolbar.mapObjectMenu.AddItem(builder.Item());
+            }
+
+            UnityEngine.Debug.Log(3);
+            foreach (var entry in mapObjects[""])
+            {
+                Action action = () => this.editor.SpawnMapObject(entry.Item2);
+                var builder = new MenuItemBuilder().Label(entry.Item1).Action(action);
+                this.toolbar.mapObjectMenu.AddItem(builder.Item());
+            }
 
             var mapObjectsWindowItem = new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow).Item();
 

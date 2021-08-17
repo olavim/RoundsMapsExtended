@@ -14,7 +14,7 @@ namespace MapsExt.MapObjects
     {
         public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 
-        protected override void Deserialize(Spawn data, GameObject target)
+        protected override void OnDeserialize(Spawn data, GameObject target)
         {
             var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
             spawnPoint.ID = data.id;
@@ -22,7 +22,7 @@ namespace MapsExt.MapObjects
             target.transform.position = data.position;
         }
 
-        protected override Spawn Serialize(GameObject instance)
+        protected override Spawn OnSerialize(GameObject instance)
         {
             var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
             return new Spawn

@@ -10,6 +10,7 @@ using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
 using MapsExt.Editor.MapObjects;
+using System;
 
 namespace MapsExt.Editor
 {
@@ -133,9 +134,9 @@ namespace MapsExt.Editor
             return mapData;
         }
 
-        public void SpawnMapObject(MapObject data)
+        public void SpawnMapObject(Type type)
         {
-            MapsExtendedEditor.instance.SpawnObject(this.content, data, instance =>
+            MapsExtendedEditor.instance.SpawnObject(this.content, type, instance =>
             {
                 instance.SetActive(false);
                 instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize * 2f);
@@ -151,31 +152,11 @@ namespace MapsExt.Editor
                 instance.SetActive(true);
                 this.timeline.EndInteraction();
 
-                this.UpdateRopeAttachments();
-            });
-        }
-
-        public void AddRope()
-        {
-            MapsExtendedEditor.instance.SpawnObject(this.content, new Rope(), instance =>
-            {
-                instance.SetActive(false);
-
-                this.timeline.BeginInteraction(instance, true);
-                instance.SetActive(true);
-                this.timeline.EndInteraction();
-            });
-        }
-
-        public void AddSpawn()
-        {
-            MapsExtendedEditor.instance.SpawnObject(this.content, new Spawn(), instance =>
-            {
-                instance.SetActive(false);
-
-                this.timeline.BeginInteraction(instance, true);
-                instance.SetActive(true);
-                this.timeline.EndInteraction();
+                this.ExecuteAfterFrames(1, () =>
+                {
+                    this.ResetSpawnLabels();
+                    this.UpdateRopeAttachments();
+                });
             });
         }
 
@@ -374,6 +355,13 @@ namespace MapsExt.Editor
 
             this.gui.transform.SetParent(this.transform);
             this.grid.transform.SetParent(this.transform);
+
+            this.ExecuteAfterFrames(1, () =>
+            {
+                this.ResetSpawnLabels();
+                this.ClearSelected();
+                this.UpdateRopeAttachments();
+            });
         }
 
         public void OnClickSaveAs()

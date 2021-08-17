@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
 {
-    [MapsExtendedEditorMapObject(typeof(Spawn))]
+    [MapsExtendedEditorMapObject(typeof(Spawn), "Spawn")]
     public class EditorSpawnSpecification : SpawnSpecification
     {
-        protected override void Deserialize(Spawn data, GameObject target)
+        protected override void OnDeserialize(Spawn data, GameObject target)
         {
-            base.Deserialize(data, target);
+            base.OnDeserialize(data, target);
             target.gameObject.AddComponent<Visualizers.SpawnVisualizer>();
             target.gameObject.AddComponent<SpawnActionHandler>();
             target.transform.SetAsLastSibling();

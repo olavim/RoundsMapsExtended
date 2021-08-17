@@ -19,7 +19,7 @@ namespace MapsExt.MapObjects
     public abstract class PhysicalMapObjectSpecification<T> : MapObjectSpecification<T>
         where T : PhysicalMapObject
     {
-        protected override void Deserialize(T data, GameObject target)
+        protected override void OnDeserialize(T data, GameObject target)
         {
             /* PhysicalMapObjectInstance doesn't add any functionality, but it offers a convenient way
              * to find "physical" map objects from scene.
@@ -31,7 +31,7 @@ namespace MapsExt.MapObjects
             target.transform.rotation = data.rotation;
         }
 
-        protected override T Serialize(GameObject instance)
+        protected override T OnSerialize(GameObject instance)
         {
             var data = AccessTools.CreateInstance<T>();
             data.position = instance.transform.position;

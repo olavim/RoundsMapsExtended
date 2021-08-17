@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
 {
-    [MapsExtendedEditorMapObject(typeof(Box))]
+    [MapsExtendedEditorMapObject(typeof(Box), "Box", "Dynamic")]
     public class EditorBoxSpecification : BoxSpecification
     {
-        protected override void Deserialize(Box data, GameObject target)
+        protected override void OnDeserialize(Box data, GameObject target)
         {
-            base.Deserialize(data, target);
+            base.OnDeserialize(data, target);
             target.AddComponent<BoxActionHandler>();
         }
     }

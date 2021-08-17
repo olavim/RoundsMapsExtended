@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +23,7 @@ namespace MapsExt.Editor
         public static MapsExtendedEditor instance;
 
         public bool editorActive = false;
+        public List<MapsExtendedEditorMapObject> mapObjectAttributes = new List<MapsExtendedEditorMapObject>();
 
         internal MapObjectManager mapObjectManager;
 
@@ -62,7 +64,8 @@ namespace MapsExt.Editor
                 {
                     var attr = type.GetCustomAttribute<MapsExtendedEditorMapObject>();
                     var instance = (MapObjectSpecification) AccessTools.CreateInstance(type);
-                    this.mapObjectManager.RegisterSpecification(attr.dataType, instance);
+                    this.mapObjectManager.RegisterSpecification(attr.dataType, instance, attr.category);
+                    this.mapObjectAttributes.Add(attr);
                 }
                 catch (Exception ex)
                 {
@@ -120,6 +123,12 @@ namespace MapsExt.Editor
 
                 this.SetMapPhysicsActive(container, false);
             });
+        }
+
+        public void SpawnObject(GameObject container, Type type, Action<GameObject> cb)
+        {
+            var mapObject = (MapObject) AccessTools.CreateInstance(type);
+            this.SpawnObject(container, mapObject, cb);
         }
 
         public void SpawnObject(GameObject container, MapObject data, Action<GameObject> cb)

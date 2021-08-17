@@ -1,4 +1,4 @@
-﻿using MapsExt.Editor;
+﻿using MapsExt.Editor.MapObjects;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;

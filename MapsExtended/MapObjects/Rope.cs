@@ -13,13 +13,13 @@ namespace MapsExt.MapObjects
     {
         public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
-        protected override void Deserialize(Rope data, GameObject target)
+        protected override void OnDeserialize(Rope data, GameObject target)
         {
             target.transform.position = data.startPosition;
             target.transform.GetChild(0).position = data.endPosition;
         }
 
-        protected override Rope Serialize(GameObject instance)
+        protected override Rope OnSerialize(GameObject instance)
         {
             return new Rope
             {
