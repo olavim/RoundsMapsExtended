@@ -337,30 +337,19 @@ namespace MapsExt.Editor
         {
             FileDialog.OpenDialog(file =>
             {
-                this.LoadMap(file);
+                MapsExtendedEditor.instance.LoadMap(this.content, file);
 
                 string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
                 string mapName = file.Substring(0, file.Length - 4).Replace(personalFolder, "");
 
                 this.currentMapName = file.StartsWith(personalFolder) ? mapName : null;
-            });
-        }
 
-        private void LoadMap(string file)
-        {
-            this.gui.transform.SetParent(null);
-            this.grid.transform.SetParent(null);
-
-            MapsExtendedEditor.instance.LoadMap(this.content, file);
-
-            this.gui.transform.SetParent(this.transform);
-            this.grid.transform.SetParent(this.transform);
-
-            this.ExecuteAfterFrames(1, () =>
-            {
-                this.ResetSpawnLabels();
-                this.ClearSelected();
-                this.UpdateRopeAttachments();
+                this.ExecuteAfterFrames(1, () =>
+                {
+                    this.ResetSpawnLabels();
+                    this.ClearSelected();
+                    this.UpdateRopeAttachments();
+                });
             });
         }
 
