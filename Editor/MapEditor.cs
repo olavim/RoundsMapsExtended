@@ -295,11 +295,11 @@ namespace MapsExt.Editor
         }
         private void DoStartSimulation()
         {
-            this.content.SetActive(false);
-            this.tempContent.SetActive(true);
-
             MapsExtended.LoadMap(this.tempContent, this.GetMapData(), MapsExtended.instance.mapObjectManager, () =>
             {
+                this.content.SetActive(false);
+                this.tempContent.SetActive(true);
+
                 GameModeManager.SetGameMode("Sandbox");
                 GameModeManager.CurrentHandler.StartGame();
 
@@ -699,7 +699,7 @@ namespace MapsExt.Editor
         private void DetachSelectedRopes()
         {
             var anchors = this.selectedMapObjects
-                .Select(obj => obj.GetComponent<EditorRopeAnchor>())
+                .Select(obj => obj.GetComponent<MapObjectAnchor>())
                 .Where(handler => handler != null);
 
             foreach (var anchor in anchors)

@@ -31,11 +31,6 @@ namespace MapsExt.Visualizers
             this.renderer.startWidth = 0.2f;
             this.renderer.endWidth = 0.2f;
 
-            var startCollider = this.transform.GetChild(0).gameObject.AddComponent<BoxCollider2D>();
-            var endCollider = this.transform.GetChild(1).gameObject.AddComponent<BoxCollider2D>();
-            startCollider.size = Vector2.one * 1;
-            endCollider.size = Vector2.one * 1;
-
             var canvasGo = new GameObject("Canvas");
             canvasGo.transform.SetParent(this.transform);
 
@@ -71,11 +66,9 @@ namespace MapsExt.Visualizers
             this.endGraphic = null;
 
             GameObject.Destroy(this.transform.Find("Canvas").gameObject);
-            GameObject.Destroy(this.transform.GetChild(0).gameObject.GetComponent<BoxCollider2D>());
-            GameObject.Destroy(this.transform.GetChild(1).gameObject.GetComponent<BoxCollider2D>());
         }
 
-        public void Update()
+        public void LateUpdate()
         {
             if (!this.renderer || !this.startGraphic || !this.endGraphic)
             {

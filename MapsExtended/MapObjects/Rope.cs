@@ -6,6 +6,11 @@ namespace MapsExt.MapObjects
     {
         public Vector3 startPosition = Vector3.up;
         public Vector3 endPosition = Vector3.down;
+
+        public override string ToString()
+        {
+            return $"Rope[{this.startPosition}, {this.endPosition}]";
+        }
     }
 
     [MapsExtendedMapObject(typeof(Rope))]

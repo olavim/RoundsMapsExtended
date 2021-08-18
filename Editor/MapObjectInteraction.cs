@@ -67,6 +67,7 @@ namespace MapsExt
 
         private MapObjectInteraction(MapObjectManager mapObjectManager, List<StateTransition> stateTransitions)
         {
+            this.mapObjectManager = mapObjectManager;
             this.stateTransitions = stateTransitions;
         }
 
