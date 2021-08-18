@@ -43,7 +43,7 @@ namespace MapsExt.Editor
 
         public static bool IsDraggableGameObject(GameObject go)
         {
-            return go.GetComponent<IEditorActionHandler>() != null;
+            return go.GetComponent<EditorActionHandler>() != null;
         }
 
         public static Vector3 SnapToGrid(Vector3 pos, float gridSize)

@@ -1,4 +1,5 @@
 ﻿using MapsExt.MapObjects;
+using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
@@ -9,7 +10,7 @@ namespace MapsExt.Editor.MapObjects
         protected override void OnDeserialize(Box data, GameObject target)
         {
             base.OnDeserialize(data, target);
-            target.AddComponent<BoxActionHandler>();
+            target.GetOrAddComponent<BoxActionHandler>();
         }
     }
 }

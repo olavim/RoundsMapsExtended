@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
@@ -23,8 +24,7 @@ namespace MapsExt.MapObjects
         public override void Deserialize(MapObject data, GameObject target)
         {
             this.OnDeserialize((T) data, target);
-
-            var c = target.AddComponent<MapObjectInstance>();
+            var c = target.GetOrAddComponent<MapObjectInstance>();
             c.dataType = data.GetType();
             target.SetActive(data.active);
         }

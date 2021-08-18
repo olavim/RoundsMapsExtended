@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MapsExt.MapObjects;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -8,20 +9,36 @@ namespace MapsExt
     public class InteractionTimeline
     {
         private readonly List<MapObjectInteraction> interactionStack = new List<MapObjectInteraction>();
-        private readonly Dictionary<int, GameObject[]> interactionIndexGameObjects = new Dictionary<int, GameObject[]>();
+        private readonly Dictionary<int, MapObjectInstance[]> interactionIndexMapObjectInstances = new Dictionary<int, MapObjectInstance[]>();
 
         private int interactionIndex = -1;
-        private GameObject[] interactionGameObjects;
+        private MapObjectInstance[] interactionMapObjectInstances;
+        private MapObjectManager mapObjectManager;
+
+        public InteractionTimeline(MapObjectManager mapObjectManager)
+        {
+            this.mapObjectManager = mapObjectManager;
+        }
 
         public void BeginInteraction(GameObject obj, bool isCreateInteraction = false)
         {
-            this.BeginInteraction(new GameObject[] { obj }, isCreateInteraction);
+            this.BeginInteraction(obj.GetComponent<MapObjectInstance>(), isCreateInteraction);
+        }
+
+        public void BeginInteraction(MapObjectInstance instance, bool isCreateInteraction = false)
+        {
+            this.BeginInteraction(new MapObjectInstance[] { instance }, isCreateInteraction);
         }
 
         public void BeginInteraction(IEnumerable<GameObject> objects, bool isCreateInteraction = false)
         {
-            MapObjectInteraction.BeginInteraction(objects);
-            this.interactionGameObjects = isCreateInteraction ? objects.ToArray() : null;
+            this.BeginInteraction(objects.Select(obj => obj.GetComponent<MapObjectInstance>()), isCreateInteraction);
+        }
+
+        public void BeginInteraction(IEnumerable<MapObjectInstance> instances, bool isCreateInteraction = false)
+        {
+            MapObjectInteraction.BeginInteraction(mapObjectManager, instances);
+            this.interactionMapObjectInstances = isCreateInteraction ? instances.ToArray() : null;
         }
 
         public void EndInteraction()
@@ -38,14 +55,14 @@ namespace MapsExt
                  */
                 for (int i = removeFrom; i < removeFrom + removeCount; i++)
                 {
-                    if (this.interactionIndexGameObjects.TryGetValue(i, out GameObject[] list))
+                    if (this.interactionIndexMapObjectInstances.TryGetValue(i, out MapObjectInstance[] list))
                     {
                         foreach (var obj in list)
                         {
-                            GameObject.Destroy(obj);
+                            GameObject.Destroy(obj.gameObject);
                         }
 
-                        this.interactionIndexGameObjects.Remove(i);
+                        this.interactionIndexMapObjectInstances.Remove(i);
                     }
                 }
             }
@@ -54,10 +71,10 @@ namespace MapsExt
             this.interactionStack.Add(interaction);
             this.interactionIndex++;
 
-            if (this.interactionGameObjects != null)
+            if (this.interactionMapObjectInstances != null)
             {
-                this.interactionIndexGameObjects.Add(this.interactionIndex, this.interactionGameObjects);
-                this.interactionGameObjects = null;
+                this.interactionIndexMapObjectInstances.Add(this.interactionIndex, this.interactionMapObjectInstances);
+                this.interactionMapObjectInstances = null;
             }
         }
 

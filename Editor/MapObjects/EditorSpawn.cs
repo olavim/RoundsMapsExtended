@@ -1,5 +1,6 @@
 ﻿using MapsExt.MapObjects;
 using UnityEngine;
+using UnboundLib;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -9,8 +10,8 @@ namespace MapsExt.Editor.MapObjects
         protected override void OnDeserialize(Spawn data, GameObject target)
         {
             base.OnDeserialize(data, target);
-            target.gameObject.AddComponent<Visualizers.SpawnVisualizer>();
-            target.gameObject.AddComponent<SpawnActionHandler>();
+            target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
+            target.gameObject.GetOrAddComponent<SpawnActionHandler>();
             target.transform.SetAsLastSibling();
         }
     }

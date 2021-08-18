@@ -46,6 +46,11 @@ namespace MapsExt
 
         public MapObject Serialize(MapObjectInstance mapObjectInstance)
         {
+            if (mapObjectInstance == null)
+            {
+                throw new ArgumentException($"Cannot serialize null MapObjectInstance");
+            }
+
             if (mapObjectInstance.dataType == null)
             {
                 throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}) because it's missing a dataType");
@@ -60,13 +65,20 @@ namespace MapsExt
                 catch (Exception ex)
                 {
                     UnityEngine.Debug.LogError($"Could not serialize map object instance with specification: {spec.GetType()}");
-                    throw ex;
+                    ex.Rethrow();
+                    throw;
                 }
             }
             else
             {
                 throw new ArgumentException($"Specification not found for type {mapObjectInstance.dataType}");
             }
+        }
+
+        public void Deserialize(MapObject data, GameObject target)
+        {
+            var spec = this.specs[data.GetType()];
+            spec.Deserialize(data, target);
         }
 
         public void Instantiate(MapObject data, Transform parent, Action<GameObject> onInstantiate = null)
@@ -136,8 +148,11 @@ namespace MapsExt
 
             spec.Deserialize(data, instance);
 
-            // The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
-            onInstantiate?.Invoke(instance);
+            this.ExecuteAfterFrames(1, () =>
+            {
+                // The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
+                onInstantiate?.Invoke(instance);
+            });
         }
 
         private IEnumerator SyncInstantiation(object target, int instantiationID, MapObject data, Action<GameObject> onInstantiate)

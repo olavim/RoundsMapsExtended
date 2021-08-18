@@ -2,18 +2,18 @@
 
 namespace MapsExt.Editor
 {
-    public class BoxActionHandler : MonoBehaviour, IEditorActionHandler
+    public class BoxActionHandler : EditorActionHandler
     {
-        public bool CanRotate()
+        public override bool CanRotate()
         {
             return true;
         }
-        public bool CanResize(int resizeDirection)
+        public override bool CanResize(int resizeDirection)
         {
             return true;
         }
 
-        public bool Resize(Vector3 sizeDelta, int resizeDirection)
+        public override bool Resize(Vector3 sizeDelta, int resizeDirection)
         {
             float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().GridSize;
             bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().snapToGrid;

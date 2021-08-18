@@ -1,5 +1,6 @@
 ﻿using MapsExt.Transformers;
 using UnityEngine;
+using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
@@ -13,7 +14,7 @@ namespace MapsExt.MapObjects
         protected override void OnDeserialize(Saw data, GameObject target)
         {
             base.OnDeserialize(data, target);
-            target.AddComponent<SawTransformer>();
+            target.GetOrAddComponent<SawTransformer>();
         }
     }
 }

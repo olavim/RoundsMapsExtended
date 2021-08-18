@@ -1,6 +1,7 @@
 ﻿using MapsExt.MapObjects;
 using System.Collections.Generic;
 using System.Linq;
+using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
@@ -12,17 +13,19 @@ namespace MapsExt.Editor.MapObjects
 
         protected override void OnDeserialize(Rope data, GameObject target)
         {
+            target.transform.GetChild(0).gameObject.GetOrAddComponent<EditorRopeAnchor>();
+            target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeActionHandler>();
+
+            target.transform.GetChild(1).gameObject.GetOrAddComponent<EditorRopeAnchor>();
+            target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeActionHandler>();
+
+            var instance = target.GetOrAddComponent<EditorRopeInstance>();
+            target.GetOrAddComponent<Visualizers.RopeVisualizer>();
+
+            instance.Detach();
             target.transform.GetChild(0).position = data.startPosition;
             target.transform.GetChild(1).position = data.endPosition;
-
-            target.transform.GetChild(0).gameObject.AddComponent<EditorRopeAnchor>();
-            target.transform.GetChild(0).gameObject.AddComponent<RopeActionHandler>();
-
-            target.transform.GetChild(1).gameObject.AddComponent<EditorRopeAnchor>();
-            target.transform.GetChild(1).gameObject.AddComponent<RopeActionHandler>();
-
-            target.AddComponent<EditorRopeInstance>();
-            target.AddComponent<Visualizers.RopeVisualizer>();
+            instance.UpdateAttachments();
         }
 
         protected override Rope OnSerialize(GameObject instance)
@@ -40,10 +43,9 @@ namespace MapsExt.Editor.MapObjects
     {
         private List<EditorRopeAnchor> anchors;
 
-        private void Start()
+        private void Awake()
         {
             this.anchors = this.gameObject.GetComponentsInChildren<EditorRopeAnchor>().ToList();
-            this.UpdateAttachments();
         }
 
         public EditorRopeAnchor GetAnchor(int index)
@@ -58,12 +60,20 @@ namespace MapsExt.Editor.MapObjects
                 anchor.UpdateAttachment();
             }
         }
+
+        public void Detach()
+        {
+            foreach (var anchor in this.anchors)
+            {
+                anchor.Detach();
+            }
+        }
     }
 
     public class EditorRopeAnchor : MonoBehaviour
     {
-        public GameObject target;
-        public Vector3 offset;
+        private GameObject target;
+        private Vector3 offset;
 
         private void Awake()
         {
@@ -81,7 +91,9 @@ namespace MapsExt.Editor.MapObjects
 
         public Vector3 GetPosition()
         {
-            return this.target.transform.position + this.offset;
+            var dir = this.offset;
+            dir = this.target.transform.rotation * dir;
+            return this.target.transform.position - dir;
         }
 
         public bool IsAttached()
@@ -104,7 +116,8 @@ namespace MapsExt.Editor.MapObjects
             }
             else if (this.target != collider.gameObject)
             {
-                this.offset = this.target.transform.position - collider.transform.position;
+                this.offset = collider.transform.position - this.target.transform.position;
+                this.offset = Quaternion.Inverse(collider.transform.rotation) * this.offset;
                 this.target = collider.gameObject;
             }
         }

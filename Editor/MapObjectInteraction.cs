@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapsExt.MapObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,117 +8,92 @@ namespace MapsExt
 {
     public class MapObjectInteraction
     {
-        struct InteractionState
+        private struct StateTransition
         {
-            public GameObject mapObject;
-            public Vector3 position;
-            public Vector3 scale;
-            public Quaternion rotation;
-            public bool active;
+            public MapObject fromState;
+            public MapObject toState;
+            public MapObjectInstance target;
         }
 
-        private static List<InteractionState> startState;
+        private static List<Tuple<MapObjectInstance, MapObject>> startState;
+        private static MapObjectManager cachedMapObjectManager;
 
-        public static void BeginInteraction(IEnumerable<GameObject> objects)
+        public static void BeginInteraction(MapObjectManager mapObjectManager, IEnumerable<GameObject> objects)
         {
-            MapObjectInteraction.startState = new List<InteractionState>();
+            MapObjectInteraction.BeginInteraction(mapObjectManager, objects.Select(obj => obj.GetComponent<MapObjectInstance>()));
+        }
 
-            foreach (var obj in objects)
+        public static void BeginInteraction(MapObjectManager mapObjectManager, IEnumerable<MapObjectInstance> instances)
+        {
+            if (instances.Any(ins => ins == null))
             {
-                var state = new InteractionState()
-                {
-                    mapObject = obj,
-                    position = obj.transform.position,
-                    scale = obj.transform.localScale,
-                    rotation = obj.transform.rotation,
-                    active = obj.gameObject.activeSelf
-                };
+                throw new ArgumentException("Cannot begin interaction: MapObjectInstance must not be null");
+            }
 
-                MapObjectInteraction.startState.Add(state);
+            MapObjectInteraction.cachedMapObjectManager = mapObjectManager;
+            MapObjectInteraction.startState = new List<Tuple<MapObjectInstance, MapObject>>();
+
+            foreach (var instance in instances)
+            {
+                var state = mapObjectManager.Serialize(instance);
+                MapObjectInteraction.startState.Add(new Tuple<MapObjectInstance, MapObject>(instance, state));
             }
         }
 
         public static MapObjectInteraction EndInteraction()
         {
-            var statePairs = new List<Tuple<InteractionState, InteractionState>>();
+            var stateTransitions = new List<StateTransition>();
 
             foreach (var startState in MapObjectInteraction.startState)
             {
-                var endState = new InteractionState()
+                var mapObjectInstance = startState.Item1;
+                var toState = MapObjectInteraction.cachedMapObjectManager.Serialize(mapObjectInstance);
+
+                var st = new StateTransition
                 {
-                    mapObject = startState.mapObject,
-                    position = startState.mapObject.transform.position,
-                    scale = startState.mapObject.transform.localScale,
-                    rotation = startState.mapObject.transform.rotation,
-                    active = startState.mapObject.gameObject.activeSelf
+                    fromState = startState.Item2,
+                    toState = toState,
+                    target = mapObjectInstance
                 };
 
-                statePairs.Add(new Tuple<InteractionState, InteractionState>(startState, endState));
+                stateTransitions.Add(st);
             }
 
-            return new MapObjectInteraction(statePairs);
+            return new MapObjectInteraction(MapObjectInteraction.cachedMapObjectManager, stateTransitions);
         }
 
-        private readonly List<Tuple<InteractionState, InteractionState>> statePairs;
+        private readonly MapObjectManager mapObjectManager;
+        private readonly List<StateTransition> stateTransitions;
 
-        private MapObjectInteraction(List<Tuple<InteractionState, InteractionState>> statePairs)
+        private MapObjectInteraction(MapObjectManager mapObjectManager, List<StateTransition> stateTransitions)
         {
-            this.statePairs = statePairs;
+            this.stateTransitions = stateTransitions;
         }
 
         public List<GameObject> GetGameObjects()
         {
-            return this.statePairs.Select(p => p.Item1.mapObject).ToList();
+            return this.stateTransitions.Select(st => st.target.gameObject).ToList();
         }
 
         public void Undo()
         {
-            foreach (var statePair in this.statePairs)
+            foreach (var st in this.stateTransitions)
             {
-                var from = statePair.Item2;
-                var to = statePair.Item1;
-
-                if (!this.IsCurrentState(from))
-                {
-                    throw new InvalidOperationException("Cannot Undo: map object state does not match interaction state");
-                }
-
-                this.SetState(to);
+                this.SetState(st.fromState, st.target);
             }
         }
 
         public void Redo()
         {
-            foreach (var statePair in this.statePairs)
+            foreach (var st in this.stateTransitions)
             {
-                var from = statePair.Item1;
-                var to = statePair.Item2;
-
-                if (!this.IsCurrentState(from))
-                {
-                    throw new InvalidOperationException("Cannot Undo: map object state does not match interaction state");
-                }
-
-                this.SetState(to);
+                this.SetState(st.toState, st.target);
             }
         }
 
-        private void SetState(InteractionState state)
+        private void SetState(MapObject state, MapObjectInstance target)
         {
-            var mapObject = state.mapObject;
-            mapObject.transform.position = state.position;
-            mapObject.transform.localScale = state.scale;
-            mapObject.transform.rotation = state.rotation;
-            mapObject.SetActive(state.active);
-        }
-
-        private bool IsCurrentState(InteractionState state)
-        {
-            var obj = state.mapObject;
-            return state.position == obj.transform.position &&
-                state.scale == obj.transform.localScale &&
-                state.rotation == obj.transform.rotation &&
-                state.active == obj.gameObject.activeSelf;
+            this.mapObjectManager.Deserialize(state, target.gameObject);
         }
     }
 }

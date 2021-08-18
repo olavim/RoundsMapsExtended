@@ -240,7 +240,7 @@ namespace MapsExt
             var list = instructions.ToList();
             var newInstructions = new List<CodeInstruction>();
 
-            var m_instantiate = ExtensionMethods.GetMethodInfo(typeof(PhotonNetwork), "Instantiate");
+            var m_instantiate = UnboundLib.ExtensionMethods.GetMethodInfo(typeof(PhotonNetwork), "Instantiate");
 
             for (int i = 0; i < list.Count; i++)
             {

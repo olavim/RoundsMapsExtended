@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using HarmonyLib;
+using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
@@ -24,7 +25,7 @@ namespace MapsExt.MapObjects
             /* PhysicalMapObjectInstance doesn't add any functionality, but it offers a convenient way
              * to find "physical" map objects from scene.
              */
-            target.AddComponent<PhysicalMapObjectInstance>();
+            target.GetOrAddComponent<PhysicalMapObjectInstance>();
 
             target.transform.position = data.position;
             target.transform.localScale = data.scale;

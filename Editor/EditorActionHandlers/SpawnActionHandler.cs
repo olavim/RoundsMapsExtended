@@ -2,19 +2,19 @@
 
 namespace MapsExt.Editor
 {
-    public class SpawnActionHandler : MonoBehaviour, IEditorActionHandler
+    public class SpawnActionHandler : EditorActionHandler
     {
-        public bool CanRotate()
+        public override bool CanRotate()
         {
             return false;
         }
 
-        public bool CanResize(int resizeDirection)
+        public override bool CanResize(int resizeDirection)
         {
             return false;
         }
 
-        public bool Resize(Vector3 sizeDelta, int resizeDirection)
+        public override bool Resize(Vector3 sizeDelta, int resizeDirection)
         {
             return false;
         }

@@ -29,6 +29,11 @@ namespace MapsExt.Editor
             set { this.grid.cellSize = Vector3.one * value; }
         }
 
+        public IEnumerable<MapObjectInstance> SelectedMapObjectInstances
+        {
+            get { return this.selectedMapObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()); }
+        }
+
         private bool isCreatingSelection;
         private bool isDraggingMapObjects;
         private bool isResizingMapObject;
@@ -59,7 +64,7 @@ namespace MapsExt.Editor
             this.isSimulating = false;
             this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
             this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
-            this.timeline = new InteractionTimeline();
+            this.timeline = new InteractionTimeline(MapsExtendedEditor.instance.mapObjectManager);
 
             this.content = new GameObject("Content");
             this.content.transform.SetParent(this.transform);
@@ -152,12 +157,12 @@ namespace MapsExt.Editor
                     damageable.disabled = true;
                 }
 
-                this.timeline.BeginInteraction(instance, true);
-                instance.SetActive(true);
-                this.timeline.EndInteraction();
-
                 this.ExecuteAfterFrames(1, () =>
                 {
+                    this.timeline.BeginInteraction(instance, true);
+                    instance.SetActive(true);
+                    this.timeline.EndInteraction();
+
                     this.ResetSpawnLabels();
                     this.UpdateRopeAttachments();
                 });
@@ -187,14 +192,13 @@ namespace MapsExt.Editor
         public void OnCopy()
         {
             this.clipboardMapObjects = new List<MapObject>();
+            var mapObjectInstances = this.selectedMapObjects
+                .Select(obj => obj.GetComponent<MapObjectInstance>() ?? obj.GetComponentInParent<MapObjectInstance>())
+                .Distinct();
 
-            foreach (var obj in this.selectedMapObjects)
+            foreach (var instance in mapObjectInstances)
             {
-                var mapObjectInstance = obj.GetComponent<MapObjectInstance>();
-                if (mapObjectInstance)
-                {
-                    this.clipboardMapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObjectInstance));
-                }
+                this.clipboardMapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(instance));
             }
         }
 
@@ -229,17 +233,24 @@ namespace MapsExt.Editor
                 yield return null;
             }
 
-            this.AddSelected(newInstances);
+            var actionHandlers = newInstances
+                .SelectMany(obj => obj.GetComponentsInChildren<EditorActionHandler>())
+                .Select(h => h.gameObject);
 
-            this.timeline.BeginInteraction(this.selectedMapObjects, true);
-            foreach (var obj in this.selectedMapObjects)
+            this.AddSelected(actionHandlers);
+
+            this.timeline.BeginInteraction(newInstances, true);
+            foreach (var obj in newInstances)
             {
                 obj.SetActive(true);
             }
             this.timeline.EndInteraction();
 
-            this.ResetSpawnLabels();
-            this.UpdateRopeAttachments();
+            this.ExecuteAfterFrames(1, () =>
+            {
+                this.ResetSpawnLabels();
+                this.UpdateRopeAttachments();
+            });
         }
 
         public void OnToggleSnapToGrid(bool enabled)
@@ -249,17 +260,10 @@ namespace MapsExt.Editor
 
         public void OnDeleteSelectedMapObjects()
         {
-            var selectedNonRopes = this.selectedMapObjects.Where(obj => obj.GetComponent<RopeActionHandler>() == null);
-            var selectedRopes = this.selectedMapObjects.Where(obj => obj.GetComponent<RopeActionHandler>() != null);
-
-            var objectsToDelete = new List<GameObject>();
-            objectsToDelete.AddRange(selectedNonRopes);
-            objectsToDelete.AddRange(selectedRopes.Select(obj => obj.transform.parent.gameObject).Distinct());
-
-            this.timeline.BeginInteraction(objectsToDelete);
-            foreach (var obj in objectsToDelete)
+            this.timeline.BeginInteraction(this.SelectedMapObjectInstances);
+            foreach (var obj in this.SelectedMapObjectInstances)
             {
-                obj.SetActive(false);
+                obj.gameObject.SetActive(false);
             }
             this.timeline.EndInteraction();
 
@@ -449,7 +453,7 @@ namespace MapsExt.Editor
             }
 
             this.prevCell = this.grid.WorldToCell(mouseWorldPos);
-            this.timeline.BeginInteraction(this.selectedMapObjects);
+            this.timeline.BeginInteraction(this.SelectedMapObjectInstances);
 
             this.DetachSelectedRopes();
         }
@@ -511,7 +515,7 @@ namespace MapsExt.Editor
             this.prevMouse = mouseWorldPos;
             this.prevCell = this.grid.WorldToCell(mouseWorldPos);
 
-            this.timeline.BeginInteraction(this.selectedMapObjects);
+            this.timeline.BeginInteraction(this.SelectedMapObjectInstances);
         }
 
         public void OnResizeEnd()
@@ -530,7 +534,7 @@ namespace MapsExt.Editor
             this.isRotatingMapObject = true;
             this.prevMouse = mouseWorldPos;
 
-            this.timeline.BeginInteraction(this.selectedMapObjects);
+            this.timeline.BeginInteraction(this.SelectedMapObjectInstances);
         }
 
         public void OnRotateEnd()
@@ -543,7 +547,7 @@ namespace MapsExt.Editor
         {
             if (this.selectedMapObjects.Count > 0)
             {
-                this.timeline.BeginInteraction(this.selectedMapObjects);
+                this.timeline.BeginInteraction(this.SelectedMapObjectInstances);
 
                 foreach (var obj in this.selectedMapObjects)
                 {
@@ -622,7 +626,7 @@ namespace MapsExt.Editor
                 bool resized = false;
                 foreach (var mapObject in this.selectedMapObjects)
                 {
-                    resized |= mapObject.GetComponent<IEditorActionHandler>().Resize(sizeDelta, this.resizeDirection);
+                    resized |= mapObject.GetComponent<EditorActionHandler>().Resize(sizeDelta, this.resizeDirection);
                 }
 
                 if (resized)
