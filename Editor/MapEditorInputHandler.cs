@@ -60,6 +60,16 @@ namespace MapsExt.Editor
             {
                 this.editor.OnDeleteSelectedMapObjects();
             }
+
+            if (Input.mouseScrollDelta.y > 0 || Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.KeypadPlus))
+            {
+                this.editor.OnZoomIn();
+            }
+
+            if (Input.mouseScrollDelta.y < 0 || Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
+            {
+                this.editor.OnZoomOut();
+            }
         }
 
         private void HandleNudge(Vector2 nudge)

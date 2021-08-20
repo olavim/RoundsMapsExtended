@@ -23,6 +23,8 @@ namespace MapsExt.Editor
         public InteractionTimeline timeline;
         public GameObject content;
 
+        public readonly Material mat = new Material(Shader.Find("Sprites/Default"));
+
         public float GridSize
         {
             get { return this.grid.cellSize.x; }
@@ -88,6 +90,8 @@ namespace MapsExt.Editor
             this.gui = uiGo.AddComponent<MapEditorUI>();
             this.gui.editor = this;
             uiGo.SetActive(true);
+
+            this.gameObject.AddComponent<MapBorder>();
         }
 
         public void Update()
@@ -157,15 +161,12 @@ namespace MapsExt.Editor
                     damageable.disabled = true;
                 }
 
-                this.ExecuteAfterFrames(1, () =>
-                {
-                    this.timeline.BeginInteraction(instance, true);
-                    instance.SetActive(true);
-                    this.timeline.EndInteraction();
+                this.timeline.BeginInteraction(instance, true);
+                instance.SetActive(true);
+                this.timeline.EndInteraction();
 
-                    this.ResetSpawnLabels();
-                    this.UpdateRopeAttachments();
-                });
+                this.ResetSpawnLabels();
+                this.UpdateRopeAttachments();
             });
         }
 
@@ -211,6 +212,20 @@ namespace MapsExt.Editor
 
             this.ClearSelected();
             this.StartCoroutine(this.SpawnClipboardObjects());
+        }
+
+        public void OnZoomIn()
+        {
+            var map = this.gameObject.GetComponent<Map>();
+            float newSize = map.size - 2f;
+            map.size = Mathf.Max(2f, newSize);
+        }
+
+        public void OnZoomOut()
+        {
+            var map = this.gameObject.GetComponent<Map>();
+            float newSize = map.size + 2f;
+            map.size = Mathf.Min(50f, newSize);
         }
 
         private IEnumerator SpawnClipboardObjects()
