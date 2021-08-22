@@ -1,7 +1,7 @@
 ﻿namespace MapsExt.Visualizers
 {
-    interface IMapObjectVisualizer
-    {
-        void SetEnabled(bool enabled);
-    }
+	interface IMapObjectVisualizer
+	{
+		void SetEnabled(bool enabled);
+	}
 }

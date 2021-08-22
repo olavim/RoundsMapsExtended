@@ -2,35 +2,35 @@
 
 namespace MapsExt.MapObjects
 {
-    public class Rope : MapObject
-    {
-        public Vector3 startPosition = Vector3.up;
-        public Vector3 endPosition = Vector3.down;
+	public class Rope : MapObject
+	{
+		public Vector3 startPosition = Vector3.up;
+		public Vector3 endPosition = Vector3.down;
 
-        public override string ToString()
-        {
-            return $"Rope[{this.startPosition}, {this.endPosition}]";
-        }
-    }
+		public override string ToString()
+		{
+			return $"Rope[{this.startPosition}, {this.endPosition}]";
+		}
+	}
 
-    [MapsExtendedMapObject(typeof(Rope))]
-    public class RopeSpecification : MapObjectSpecification<Rope>
-    {
-        public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
+	[MapsExtendedMapObject(typeof(Rope))]
+	public class RopeSpecification : MapObjectSpecification<Rope>
+	{
+		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
-        protected override void OnDeserialize(Rope data, GameObject target)
-        {
-            target.transform.position = data.startPosition;
-            target.transform.GetChild(0).position = data.endPosition;
-        }
+		protected override void OnDeserialize(Rope data, GameObject target)
+		{
+			target.transform.position = data.startPosition;
+			target.transform.GetChild(0).position = data.endPosition;
+		}
 
-        protected override Rope OnSerialize(GameObject instance)
-        {
-            return new Rope
-            {
-                startPosition = instance.transform.position,
-                endPosition = instance.transform.GetChild(0).position
-            };
-        }
-    }
+		protected override Rope OnSerialize(GameObject instance)
+		{
+			return new Rope
+			{
+				startPosition = instance.transform.position,
+				endPosition = instance.transform.GetChild(0).position
+			};
+		}
+	}
 }

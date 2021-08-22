@@ -6,81 +6,81 @@ using MapsExt.Editor;
 
 namespace MapsExt.Visualizers
 {
-    public class SpawnVisualizer : MonoBehaviour, IMapObjectVisualizer
-    {
-        private Image labelBg;
-        private TextMeshProUGUI label;
-        private Image positionIndicator;
-        private Canvas canvas;
+	public class SpawnVisualizer : MonoBehaviour, IMapObjectVisualizer
+	{
+		private Image labelBg;
+		private TextMeshProUGUI label;
+		private Image positionIndicator;
+		private Canvas canvas;
 
-        public void SetEnabled(bool enabled)
-        {
-            this.enabled = enabled;
-        }
+		public void SetEnabled(bool enabled)
+		{
+			this.enabled = enabled;
+		}
 
-        public void OnEnable()
-        {
-            var collider = this.gameObject.AddComponent<BoxCollider2D>();
-            collider.size = new Vector3(3, 3);
+		public void OnEnable()
+		{
+			var collider = this.gameObject.AddComponent<BoxCollider2D>();
+			collider.size = new Vector3(3, 3);
 
-            var colliderGo = new GameObject("Label Collider");
-            colliderGo.transform.SetParent(this.transform);
-            colliderGo.transform.localPosition = new Vector3(0, 2);
+			var colliderGo = new GameObject("Label Collider");
+			colliderGo.transform.SetParent(this.transform);
+			colliderGo.transform.localPosition = new Vector3(0, 2);
 
-            var labelCollider = colliderGo.AddComponent<BoxCollider2D>();
-            labelCollider.size = new Vector2(3, 1);
+			var labelCollider = colliderGo.AddComponent<BoxCollider2D>();
+			labelCollider.size = new Vector2(3, 1);
 
-            var canvasGo = new GameObject("Canvas");
-            canvasGo.transform.SetParent(this.transform);
-            canvasGo.transform.localPosition = Vector3.zero;
+			var canvasGo = new GameObject("Canvas");
+			canvasGo.transform.SetParent(this.transform);
+			canvasGo.transform.localPosition = Vector3.zero;
 
-            this.canvas = canvasGo.AddComponent<Canvas>();
-            this.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            this.canvas.sortingOrder = 1;
+			this.canvas = canvasGo.AddComponent<Canvas>();
+			this.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+			this.canvas.sortingOrder = 1;
 
-            var imageGo = new GameObject("Image");
-            imageGo.transform.SetParent(canvasGo.transform);
-            imageGo.transform.localScale = Vector3.one;
+			var imageGo = new GameObject("Image");
+			imageGo.transform.SetParent(canvasGo.transform);
+			imageGo.transform.localScale = Vector3.one;
 
-            this.labelBg = imageGo.AddComponent<ProceduralImage>();
-            this.labelBg.rectTransform.sizeDelta = new Vector2(80f, 30f);
-            this.labelBg.color = new Color(0, 0.57f, 0.45f, 0.2f);
+			this.labelBg = imageGo.AddComponent<ProceduralImage>();
+			this.labelBg.rectTransform.sizeDelta = new Vector2(80f, 30f);
+			this.labelBg.color = new Color(0, 0.57f, 0.45f, 0.2f);
 
-            var modifier  = imageGo.AddComponent<UniformModifier>();
-            modifier.Radius = 8;
+			var modifier  = imageGo.AddComponent<UniformModifier>();
+			modifier.Radius = 8;
 
-            var textGo = new GameObject("Text");
-            textGo.transform.SetParent(canvasGo.transform);
+			var textGo = new GameObject("Text");
+			textGo.transform.SetParent(canvasGo.transform);
 
-            this.label = textGo.AddComponent<TextMeshProUGUI>();
-            this.label.fontSize = 12;
-            this.label.fontStyle = FontStyles.Bold;
-            this.label.color = new Color(1, 1, 1, 0.8f);
-            this.label.alignment = TextAlignmentOptions.Center;
+			this.label = textGo.AddComponent<TextMeshProUGUI>();
+			this.label.fontSize = 12;
+			this.label.fontStyle = FontStyles.Bold;
+			this.label.color = new Color(1, 1, 1, 0.8f);
+			this.label.alignment = TextAlignmentOptions.Center;
 
-            var pointCanvasGo = new GameObject("Position Indicator");
-            pointCanvasGo.transform.SetParent(canvasGo.transform);
+			var pointCanvasGo = new GameObject("Position Indicator");
+			pointCanvasGo.transform.SetParent(canvasGo.transform);
 
-            this.positionIndicator = pointCanvasGo.AddComponent<Image>();
-            this.positionIndicator.rectTransform.sizeDelta = UIUtils.WorldToScreenRect(new Rect(0, 0, 0.5f, 0.5f)).size;
-        }
+			this.positionIndicator = pointCanvasGo.AddComponent<Image>();
+			this.positionIndicator.rectTransform.sizeDelta = UIUtils.WorldToScreenRect(new Rect(0, 0, 0.5f, 0.5f)).size;
+		}
 
-        public void OnDisable()
-        {
-            GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
-            GameObject.Destroy(this.transform.Find("Canvas").gameObject);
-            GameObject.Destroy(this.transform.Find("Label Collider").gameObject);
-        }
+		public void OnDisable()
+		{
+			GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
+			GameObject.Destroy(this.transform.Find("Canvas").gameObject);
+			GameObject.Destroy(this.transform.Find("Label Collider").gameObject);
+		}
 
-        public void LateUpdate()
-        {
-            var spawnObj = this.gameObject.GetComponent<SpawnPoint>();
-            this.label.text = $"Spawn {spawnObj.ID}";
+		public void LateUpdate()
+		{
+			var spawnObj = this.gameObject.GetComponent<SpawnPoint>();
+			this.label.text = $"Spawn {spawnObj.ID}";
 
-            var screenPos = MainCam.instance.cam.WorldToScreenPoint(this.transform.position) - MainCam.instance.cam.WorldToScreenPoint(Vector3.zero);
-            this.positionIndicator.rectTransform.anchoredPosition = screenPos;
-            this.label.rectTransform.anchoredPosition = screenPos + new Vector3(0, 50f, 0);
-            this.labelBg.rectTransform.anchoredPosition = screenPos + new Vector3(0, 50f, 0);
-        }
-    }
+			var screenPos = MainCam.instance.cam.WorldToScreenPoint(this.transform.position) - MainCam.instance.cam.WorldToScreenPoint(Vector3.zero);
+			this.positionIndicator.rectTransform.anchoredPosition = screenPos;
+			this.label.rectTransform.anchoredPosition = screenPos + new Vector3(0, 50f, 0);
+			this.labelBg.rectTransform.anchoredPosition = screenPos + new Vector3(0, 50f, 0);
+		}
+	}
 }

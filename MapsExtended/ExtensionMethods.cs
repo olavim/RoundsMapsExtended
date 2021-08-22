@@ -3,11 +3,11 @@ using ExceptionDispatchInfo = System.Runtime.ExceptionServices.ExceptionDispatch
 
 namespace MapsExt
 {
-    public static class ExtensionMethods
-    {
-        public static void Rethrow(this Exception ex)
-        {
-            ExceptionDispatchInfo.Capture(ex).Throw();
-        }
-    }
+	public static class ExtensionMethods
+	{
+		public static void Rethrow(this Exception ex)
+		{
+			ExceptionDispatchInfo.Capture(ex).Throw();
+		}
+	}
 }

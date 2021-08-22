@@ -2,11 +2,11 @@
 
 namespace MapsExt.MapObjects
 {
-    public class GroundCircle : PhysicalMapObject { }
+	public class GroundCircle : PhysicalMapObject { }
 
-    [MapsExtendedMapObject(typeof(GroundCircle))]
-    public class GroundCircleSpecification : PhysicalMapObjectSpecification<GroundCircle>
-    {
-        public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
-    }
+	[MapsExtendedMapObject(typeof(GroundCircle))]
+	public class GroundCircleSpecification : PhysicalMapObjectSpecification<GroundCircle>
+	{
+		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
+	}
 }
