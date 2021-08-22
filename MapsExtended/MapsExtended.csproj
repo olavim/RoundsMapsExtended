@@ -10,7 +10,6 @@
     <Authors>olavim</Authors>
     <TargetFramework>net462</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RoundsFolder>C:\Program Files (x86)\Steam\steamapps\common\ROUNDS</RoundsFolder>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,42 +39,45 @@
   <ItemGroup>
     <PackageReference Include="UnboundLib" Version="2.2.0" />
   </ItemGroup>
+
+  <Import Project="..\BuildProps.props" Condition="Exists('..\BuildProps.props')"/>
+
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\Libs\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>..\..\Libs\0Harmony.dll</HintPath>
+      <HintPath>$(RoundsFolder)\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\Libs\BepInEx.dll</HintPath>
+      <HintPath>$(RoundsFolder)\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="PhotonRealtime">
-      <HintPath>..\..\Libs\PhotonRealtime.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonRealtime.dll</HintPath>
     </Reference>
     <Reference Include="PhotonUnityNetworking">
-      <HintPath>..\..\Libs\PhotonUnityNetworking.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonUnityNetworking.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>..\..\Libs\Sirenix.Serialization.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization.Config">
-      <HintPath>..\..\Libs\Sirenix.Serialization.Config.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\Libs\UnityEngine.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\Libs\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\Libs\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\Libs\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Physics2DModule">
-      <HintPath>..\..\Libs\UnityEngine.Physics2DModule.dll</HintPath>
+      <HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

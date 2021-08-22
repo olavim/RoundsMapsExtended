@@ -42,11 +42,14 @@ if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
     $plug = New-Item -Type Directory -Path "$RoundsPath\BepInEx\plugins\$name" -Force
     Write-Host "Copy $TargetAssembly to $plug"
     Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
-    Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$plug" -Force
+
+    if($name.Equals("MapsExtended.Editor")) {
+        Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$plug" -Force
+    }
 }
 
 # Release packages for ThunderStore
-if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
+if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
     $package = "$ProjectPath\release"
     
     Write-Host "Packaging for ThunderStore"

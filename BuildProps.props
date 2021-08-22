@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="EnsureConfigPropsImport" BeforeTargets="PrepareForBuild">
+      <PropertyGroup>
+          <ErrorText>This project needs a Config.props file with the path to your ROUNDS installation. {0} is missing. A Config.props.dist file is provided for your convenience, which you can copy, rename, and edit.</ErrorText>
+      </PropertyGroup>
+      <Error Condition="!Exists('$(SolutionDir)Config.props')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)Config.props'))" />
+  </Target>
+  <Import Project="$(SolutionDir)Config.props" Condition="Exists('$(SolutionDir)Config.props')"/>
+</Project>
