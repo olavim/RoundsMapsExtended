@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 namespace MapsExt.Transformers
 {
@@ -13,17 +12,6 @@ namespace MapsExt.Transformers
 
             float ratio = (collider.radius / oldRadius);
             this.transform.GetChild(0).localScale *= ratio;
-
-            var shadow = this.GetComponent<SFPolygon>();
-            var path = shadow.GetPath(0);
-            var newPath = new List<Vector2>();
-
-            foreach (var point in path)
-            {
-                newPath.Add(point * ratio);
-            }
-
-            shadow.SetPath(0, newPath.ToArray());
         }
     }
 }
