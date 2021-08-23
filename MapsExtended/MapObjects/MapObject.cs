@@ -10,36 +10,38 @@ namespace MapsExt.MapObjects
 		public bool active = true;
 	}
 
-	public abstract class MapObjectSpecification
+	public interface IMapObjectSpecification
 	{
-		public abstract GameObject Prefab { get; }
+		GameObject Prefab { get; }
 
-		public abstract void Deserialize(MapObject data, GameObject target);
+		void Deserialize(MapObject data, GameObject target);
 
-		public abstract MapObject Serialize(GameObject instance);
+		void Serialize(GameObject instance, MapObject target);
 	}
 
-	public abstract class MapObjectSpecification<T> : MapObjectSpecification
+	public abstract class MapObjectSpecification<T> : IMapObjectSpecification
 		where T : MapObject
 	{
-		public override void Deserialize(MapObject data, GameObject target)
+		public void Deserialize(MapObject data, GameObject target)
 		{
-			this.OnDeserialize((T) data, target);
 			var c = target.GetOrAddComponent<MapObjectInstance>();
 			c.dataType = data.GetType();
 			target.SetActive(data.active);
+
+			this.Deserialize((T) data, target);
 		}
 
-		public override MapObject Serialize(GameObject instance)
+		public void Serialize(GameObject instance, MapObject target)
 		{
-			var data = this.OnSerialize(instance);
-			data.active = instance.activeSelf;
-			return data;
+			target.active = instance.activeSelf;
+			this.Serialize(instance, (T) target);
 		}
 
-		protected abstract void OnDeserialize(T data, GameObject target);
+		public abstract GameObject Prefab { get; }
 
-		protected abstract T OnSerialize(GameObject instance);
+		protected abstract void Deserialize(T data, GameObject target);
+
+		protected abstract void Serialize(GameObject instance, T target);
 	}
 
 	public class MapObjectInstance : MonoBehaviour

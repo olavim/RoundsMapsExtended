@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using HarmonyLib;
 using UnboundLib;
 
 namespace MapsExt.MapObjects
@@ -20,7 +19,7 @@ namespace MapsExt.MapObjects
 	public abstract class PhysicalMapObjectSpecification<T> : MapObjectSpecification<T>
 		where T : PhysicalMapObject
 	{
-		protected override void OnDeserialize(T data, GameObject target)
+		protected override void Deserialize(T data, GameObject target)
 		{
 			/* PhysicalMapObjectInstance doesn't add any functionality, but it offers a convenient way
 			 * to find "physical" map objects from scene.
@@ -32,13 +31,11 @@ namespace MapsExt.MapObjects
 			target.transform.rotation = data.rotation;
 		}
 
-		protected override T OnSerialize(GameObject instance)
+		protected override void Serialize(GameObject instance, T target)
 		{
-			var data = AccessTools.CreateInstance<T>();
-			data.position = instance.transform.position;
-			data.scale = instance.transform.localScale;
-			data.rotation = instance.transform.rotation;
-			return data;
+			target.position = instance.transform.position;
+			target.scale = instance.transform.localScale;
+			target.rotation = instance.transform.rotation;
 		}
 	}
 

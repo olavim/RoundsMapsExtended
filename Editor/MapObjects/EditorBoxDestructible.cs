@@ -5,11 +5,11 @@ using UnityEngine;
 namespace MapsExt.Editor.MapObjects
 {
 	[MapsExtendedEditorMapObject(typeof(BoxDestructible), "Box (Destructible)", "Dynamic")]
-	public class EditorBoxDestructibleSpecification : BoxDestructibleSpecification
+	public class EditorBoxDestructibleSpecification : BoxDestructibleSpecification, IEditorMapObjectSpecification
 	{
-		protected override void OnDeserialize(BoxDestructible data, GameObject target)
+		protected override void Deserialize(BoxDestructible data, GameObject target)
 		{
-			base.OnDeserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<BoxActionHandler>();
 		}
 	}

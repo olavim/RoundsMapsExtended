@@ -2,7 +2,7 @@
 
 namespace MapsExt.Editor
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class MapsExtendedEditorMapObject : Attribute
 	{
 		public Type dataType;

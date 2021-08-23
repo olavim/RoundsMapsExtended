@@ -2,7 +2,7 @@
 
 namespace MapsExt
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class MapsExtendedMapObject : Attribute
 	{
 		public string name;

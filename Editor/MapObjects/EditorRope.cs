@@ -7,11 +7,11 @@ using UnityEngine;
 namespace MapsExt.Editor.MapObjects
 {
 	[MapsExtendedEditorMapObject(typeof(Rope), "Rope")]
-	public class EditorRope : MapObjectSpecification<Rope>
+	public class EditorRope : MapObjectSpecification<Rope>, IEditorMapObjectSpecification
 	{
 		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
 
-		protected override void OnDeserialize(Rope data, GameObject target)
+		protected override void Deserialize(Rope data, GameObject target)
 		{
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeActionHandler>();
@@ -33,14 +33,11 @@ namespace MapsExt.Editor.MapObjects
 			instance.UpdateAttachments();
 		}
 
-		protected override Rope OnSerialize(GameObject instance)
+		protected override void Serialize(GameObject instance, Rope target)
 		{
 			var ropeInstance = instance.GetComponent<EditorRopeInstance>();
-			return new Rope
-			{
-				startPosition = ropeInstance.GetAnchor(0).GetPosition(),
-				endPosition = ropeInstance.GetAnchor(1).GetPosition()
-			};
+			target.startPosition = ropeInstance.GetAnchor(0).GetPosition();
+			target.endPosition = ropeInstance.GetAnchor(1).GetPosition();
 		}
 	}
 

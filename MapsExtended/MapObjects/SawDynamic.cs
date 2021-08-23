@@ -11,9 +11,9 @@ namespace MapsExt.MapObjects
 	{
 		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
 
-		protected override void OnDeserialize(SawDynamic data, GameObject target)
+		protected override void Deserialize(SawDynamic data, GameObject target)
 		{
-			base.OnDeserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<SawTransformer>();
 		}
 	}

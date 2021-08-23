@@ -5,11 +5,11 @@ using UnityEngine;
 namespace MapsExt.Editor.MapObjects
 {
 	[MapsExtendedEditorMapObject(typeof(SawDynamic), "Saw", "Dynamic")]
-	public class EditorSawDynamic : SawDynamicSpecification
+	public class EditorSawDynamic : SawDynamicSpecification, IEditorMapObjectSpecification
 	{
-		protected override void OnDeserialize(SawDynamic data, GameObject target)
+		protected override void Deserialize(SawDynamic data, GameObject target)
 		{
-			base.OnDeserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<BoxActionHandler>();
 		}
 	}

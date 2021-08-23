@@ -37,6 +37,7 @@ namespace MapsExt
 		public bool forceCustomMaps = false;
 		public CustomMap loadedMap;
 		public string loadedMapSceneName;
+		public Action<Assembly> RegisterMapObjectsAction;
 
 		internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
 
@@ -58,11 +59,12 @@ namespace MapsExt
 				}
 			};
 
-			this.RegisterMapObjects(Assembly.GetExecutingAssembly());
+			this.RegisterMapObjectsAction += this.OnRegisterMapObjects;
 		}
 
 		public void Start()
 		{
+			this.RegisterMapObjects();
 			this.UpdateMapFiles();
 
 			if (MapsExtended.DEBUG)
@@ -71,18 +73,33 @@ namespace MapsExt
 			}
 		}
 
-		public void RegisterMapObjects(Assembly assembly)
+		public void RegisterMapObjects()
 		{
+			this.RegisterMapObjectsAction?.Invoke(Assembly.GetCallingAssembly());
+		}
+
+		private void OnRegisterMapObjects(Assembly assembly)
+		{
+			UnityEngine.Debug.Log(assembly.GetName());
 			var types = assembly.GetTypes();
 			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapsExtendedMapObject>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
+				UnityEngine.Debug.Log(type.Name);
 				try
 				{
 					var attr = type.GetCustomAttribute<MapsExtendedMapObject>();
-					var instance = (MapObjectSpecification) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterSpecification(attr.dataType, instance);
+					var instance = AccessTools.CreateInstance(type) as IMapObjectSpecification;
+
+					if (instance == null) {
+						throw new Exception($"Cannot register map object specification: {type.Name} does not implement {typeof(IMapObjectSpecification).Name}");
+					}
+
+					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
+					this.mapObjectManager.RegisterType(attr.dataType, instance.Prefab);
+					this.mapObjectManager.RegisterSerializer(attr.dataType, instance, AccessTools.Method(typeof(IMapObjectSpecification), "Serialize"));
+					this.mapObjectManager.RegisterDeserializer(attr.dataType, instance, AccessTools.Method(typeof(IMapObjectSpecification), "Deserialize"));
 				}
 				catch (Exception ex)
 				{

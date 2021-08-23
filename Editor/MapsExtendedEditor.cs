@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 using HarmonyLib;
 using UnboundLib;
 using MapsExt.MapObjects;
+using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -50,10 +51,14 @@ namespace MapsExt.Editor
 			this.mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
 			this.mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
 
-			this.RegisterMapObjects(Assembly.GetExecutingAssembly());
+			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
-		public void RegisterMapObjects(Assembly assembly)
+		public void Start() {
+			MapsExtended.instance.RegisterMapObjects();
+		}
+
+		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
 			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapsExtendedEditorMapObject>() != null);
@@ -63,8 +68,16 @@ namespace MapsExt.Editor
 				try
 				{
 					var attr = type.GetCustomAttribute<MapsExtendedEditorMapObject>();
-					var instance = (MapObjectSpecification) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterSpecification(attr.dataType, instance, attr.category);
+					var instance = AccessTools.CreateInstance(type) as IEditorMapObjectSpecification;
+
+					if (instance == null) {
+						throw new Exception($"Cannot register editor map object specification: {type.Name} does not implement {typeof(IEditorMapObjectSpecification).Name}");
+					}
+
+					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
+					this.mapObjectManager.RegisterType(attr.dataType, instance.Prefab);
+					this.mapObjectManager.RegisterSerializer(attr.dataType, instance, AccessTools.Method(typeof(IEditorMapObjectSpecification), "Serialize"));
+					this.mapObjectManager.RegisterDeserializer(attr.dataType, instance, AccessTools.Method(typeof(IEditorMapObjectSpecification), "Deserialize"));
 					this.mapObjectAttributes.Add(attr);
 				}
 				catch (Exception ex)

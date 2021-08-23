@@ -5,11 +5,11 @@ using UnityEngine;
 namespace MapsExt.Editor.MapObjects
 {
 	[MapsExtendedEditorMapObject(typeof(GroundCircle), "Ground (Circle)", "Static")]
-	public class EditorGroundCircleSpecification : GroundCircleSpecification
+	public class EditorGroundCircleSpecification : GroundCircleSpecification, IEditorMapObjectSpecification
 	{
-		protected override void OnDeserialize(GroundCircle data, GameObject target)
+		protected override void Deserialize(GroundCircle data, GameObject target)
 		{
-			base.OnDeserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<BoxActionHandler>();
 		}
 	}

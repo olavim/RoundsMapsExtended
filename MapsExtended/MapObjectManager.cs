@@ -6,36 +6,62 @@ using UnboundLib;
 using Jotunn.Utils;
 using MapsExt.MapObjects;
 using Photon.Pun;
+using HarmonyLib;
+using System.Reflection;
 
 namespace MapsExt
 {
 	public class MapObjectManager : NetworkedBehaviour
 	{
-		private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
-
-		public static T LoadCustomAsset<T>(string name) where T : UnityEngine.Object
-		{
-			return MapObjectManager.mapObjectBundle.LoadAsset<T>(name);
+		private class Spec {
+			public GameObject prefab;
+			public object serializerTarget;
+			public object deserializerTarget;
+			public MethodInfo serializer;
+			public MethodInfo deserializer;
 		}
 
-		private readonly Dictionary<Type, MapObjectSpecification> specs = new Dictionary<Type, MapObjectSpecification>();
+		private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
+
+		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
+		{
+			return MapObjectManager.mapObjectBundle.LoadAsset<TObj>(name);
+		}
+
+		private readonly Dictionary<Type, Spec> specs = new Dictionary<Type, Spec>();
 		private readonly TargetSyncedStore<int> syncedInstantiations = new TargetSyncedStore<int>();
 
-		public void RegisterSpecification(Type dataType, MapObjectSpecification spec, params object[] details)
+		public void RegisterType(Type dataType, GameObject prefab)
 		{
 			if (!typeof(MapObject).IsAssignableFrom(dataType))
 			{
 				throw new ArgumentException($"Invalid data type '{dataType.FullName}': data type must be assignable from '{typeof(MapObject).FullName}'");
 			}
 
+			var spec = new Spec();
+			spec.prefab = prefab;
 			this.specs.Add(dataType, spec);
 
-			if (spec.Prefab.GetComponent<PhotonMapObject>())
+			if (prefab.GetComponent<PhotonMapObject>())
 			{
-				PhotonNetwork.PrefabPool.RegisterPrefab(this.GetInstanceName(dataType), spec.Prefab);
+				PhotonNetwork.PrefabPool.RegisterPrefab(this.GetInstanceName(dataType), prefab);
 
 				// PhotonMapObject has a hard-coded prefab name prefix / resource location
-				PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), spec.Prefab);
+				PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), prefab);
+			}
+		}
+
+		public void RegisterSerializer(Type dataType, object target, MethodInfo serializer) {
+			if (this.specs.TryGetValue(dataType, out Spec spec)) {
+				spec.serializerTarget = target;
+				spec.serializer = serializer;
+			}
+		}
+
+		public void RegisterDeserializer(Type dataType, object target, MethodInfo deserializer) {
+			if (this.specs.TryGetValue(dataType, out Spec spec)) {
+				spec.deserializerTarget = target;
+				spec.deserializer = deserializer;
 			}
 		}
 
@@ -56,11 +82,13 @@ namespace MapsExt
 				throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}) because it's missing a dataType");
 			}
 
-			if (this.specs.TryGetValue(mapObjectInstance.dataType, out MapObjectSpecification spec))
+			if (this.specs.TryGetValue(mapObjectInstance.dataType, out Spec spec))
 			{
 				try
 				{
-					return spec.Serialize(mapObjectInstance.gameObject);
+					var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
+					spec.serializer.Invoke(spec.serializerTarget, new object[] { mapObjectInstance.gameObject, data });
+					return data;
 				}
 				catch (Exception ex)
 				{
@@ -78,7 +106,7 @@ namespace MapsExt
 		public void Deserialize(MapObject data, GameObject target)
 		{
 			var spec = this.specs[data.GetType()];
-			spec.Deserialize(data, target);
+			spec.deserializer.Invoke(spec.deserializerTarget, new object[] { data, target });
 		}
 
 		public void Instantiate(MapObject data, Transform parent, Action<GameObject> onInstantiate = null)
@@ -87,14 +115,14 @@ namespace MapsExt
 
 			int instantiationID = this.syncedInstantiations.Allocate(parent);
 
-			bool isMapObjectNetworked = spec.Prefab.GetComponent<PhotonMapObject>() != null;
+			bool isMapObjectNetworked = spec.prefab.GetComponent<PhotonMapObject>() != null;
 			bool isMapSpawned = MapManager.instance.currentMap?.Map.wasSpawned == true;
 
 			GameObject instance;
 
 			if (!isMapSpawned || !isMapObjectNetworked)
 			{
-				instance = GameObject.Instantiate(spec.Prefab, Vector3.zero, Quaternion.identity, parent);
+				instance = GameObject.Instantiate(spec.prefab, Vector3.zero, Quaternion.identity, parent);
 
 				if (isMapObjectNetworked)
 				{
@@ -114,7 +142,7 @@ namespace MapsExt
 					{
 						MapsExtended.instance.OnPhotonMapObjectInstantiate(instance.GetComponent<PhotonMapObject>(), networkInstance =>
 						{
-							spec.Deserialize(data, networkInstance);
+							this.Deserialize(data, networkInstance);
 							onInstantiate?.Invoke(networkInstance);
 
 							int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
@@ -146,7 +174,7 @@ namespace MapsExt
 
 			instance.name = this.GetInstanceName(data.GetType());
 
-			spec.Deserialize(data, instance);
+			this.Deserialize(data, instance);
 
 			this.ExecuteAfterFrames(1, () =>
 			{
@@ -164,8 +192,7 @@ namespace MapsExt
 				int viewID = this.syncedInstantiations.Get(instantiationID);
 				var networkInstance = PhotonNetwork.GetPhotonView(viewID).gameObject;
 
-				var spec = this.specs[data.GetType()];
-				spec.Deserialize(data, networkInstance);
+				this.Deserialize(data, networkInstance);
 
 				onInstantiate?.Invoke(networkInstance);
 			}
