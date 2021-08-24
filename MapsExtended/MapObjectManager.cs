@@ -54,6 +54,12 @@ namespace MapsExt
 			}
 		}
 
+		public void RegisterSerializer<T>(Type dataType, Action<GameObject, MapObject> serializer) where T : IMapObjectSpecification {
+			if (this.specs.TryGetValue(dataType, out Spec spec)) {
+				spec.serializer = serializer;
+			}
+		}
+
 		public void RegisterDeserializer(Type dataType, Action<MapObject, GameObject> deserializer) {
 			if (this.specs.TryGetValue(dataType, out Spec spec)) {
 				spec.deserializer = deserializer;
