@@ -3,24 +3,33 @@
 namespace MapsExt.Editor
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-	public class MapsExtendedEditorMapObject : Attribute
+	public class EditorMapObjectSpec : Attribute
 	{
 		public Type dataType;
 		public string label;
 		public string category;
 
-		public MapsExtendedEditorMapObject(Type dataType, string label)
+		public EditorMapObjectSpec(Type dataType, string label)
 		{
 			this.dataType = dataType;
 			this.label = label;
 			this.category = null;
 		}
 
-		public MapsExtendedEditorMapObject(Type dataType, string label, string category)
+		public EditorMapObjectSpec(Type dataType, string label, string category)
 		{
 			this.dataType = dataType;
 			this.label = label;
 			this.category = category;
 		}
 	}
+
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+	public class EditorMapObjectSerializer : Attribute { }
+
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+	public class EditorMapObjectDeserializer : Attribute { }
+
+	[AttributeUsage(AttributeTargets.Property, Inherited = false)]
+	public class EditorMapObjectPrefab : Attribute { }
 }

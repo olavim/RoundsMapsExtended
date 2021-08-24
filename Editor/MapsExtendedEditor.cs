@@ -24,7 +24,7 @@ namespace MapsExt.Editor
 		public static MapsExtendedEditor instance;
 
 		public bool editorActive = false;
-		public List<MapsExtendedEditorMapObject> mapObjectAttributes = new List<MapsExtendedEditorMapObject>();
+		public List<EditorMapObjectSpec> mapObjectAttributes = new List<EditorMapObjectSpec>();
 
 		internal MapObjectManager mapObjectManager;
 
@@ -54,34 +54,52 @@ namespace MapsExt.Editor
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
-		public void Start() {
+		public void Start()
+		{
 			MapsExtended.instance.RegisterMapObjects();
 		}
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapsExtendedEditorMapObject>() != null);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObjectSpec>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
 				try
 				{
-					var attr = type.GetCustomAttribute<MapsExtendedEditorMapObject>();
-					var instance = AccessTools.CreateInstance(type) as IEditorMapObjectSpecification;
+					var attr = type.GetCustomAttribute<EditorMapObjectSpec>();
 
-					if (instance == null) {
-						throw new Exception($"Cannot register editor map object specification: {type.Name} does not implement {typeof(IEditorMapObjectSpecification).Name}");
+					var prefabProperty = type.GetProperties().FirstOrDefault(m => m.GetCustomAttribute<EditorMapObjectPrefab>() != null);
+
+					if (prefabProperty == null)
+					{
+						throw new Exception($"{type.Name} is not a valid map object spec: Missing prefab property");
+					}
+
+					GameObject prefab = (GameObject)prefabProperty.GetGetMethod().Invoke(null, null);
+					SerializerAction<MapObject> serializer = MapObjectSerializerUtils.GetTypeSerializer<EditorMapObjectSerializer>(type);
+					DeserializerAction<MapObject> deserializer = MapObjectSerializerUtils.GetTypeDeserializer<EditorMapObjectDeserializer>(type);
+
+					if (serializer == null)
+					{
+						throw new Exception($"{type.Name} is not a valid map object spec: Missing serializer method or property");
+					}
+
+					if (deserializer == null)
+					{
+						throw new Exception($"{type.Name} is not a valid map object spec: Missing deserializer method or property");
 					}
 
 					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
-					this.mapObjectManager.RegisterType(attr.dataType, instance.Prefab);
-					this.mapObjectManager.RegisterSerializer(attr.dataType, instance.Serialize);
-					this.mapObjectManager.RegisterDeserializer(attr.dataType, instance.Deserialize);
+					this.mapObjectManager.RegisterType(attr.dataType, prefab);
+					this.mapObjectManager.RegisterSerializer(attr.dataType, serializer);
+					this.mapObjectManager.RegisterDeserializer(attr.dataType, deserializer);
 					this.mapObjectAttributes.Add(attr);
 				}
 				catch (Exception ex)
 				{
+					UnityEngine.Debug.LogError($"Could not register editor map object {type.Name}:");
 					UnityEngine.Debug.LogError(ex);
 				}
 			}
@@ -140,7 +158,7 @@ namespace MapsExt.Editor
 
 		public void SpawnObject(GameObject container, Type type, Action<GameObject> cb)
 		{
-			var mapObject = (MapObject) AccessTools.CreateInstance(type);
+			var mapObject = (MapObject)AccessTools.CreateInstance(type);
 			this.SpawnObject(container, mapObject, cb);
 		}
 

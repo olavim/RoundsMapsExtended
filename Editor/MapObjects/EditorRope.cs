@@ -6,12 +6,22 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[MapsExtendedEditorMapObject(typeof(Rope), "Rope")]
-	public class EditorRope : MapObjectSpecification<Rope>, IEditorMapObjectSpecification
+	[EditorMapObjectSpec(typeof(Rope), "Rope")]
+	public static class EditorRopeSpec
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
+		[EditorMapObjectPrefab]
+		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
 
-		protected override void Deserialize(Rope data, GameObject target)
+		[EditorMapObjectSerializer]
+		public static void Serialize(GameObject instance, Rope target)
+		{
+			var ropeInstance = instance.GetComponent<EditorRopeInstance>();
+			target.startPosition = ropeInstance.GetAnchor(0).GetPosition();
+			target.endPosition = ropeInstance.GetAnchor(1).GetPosition();
+		}
+
+		[EditorMapObjectDeserializer]
+		public static void Deserialize(Rope data, GameObject target)
 		{
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeActionHandler>();
@@ -31,13 +41,6 @@ namespace MapsExt.Editor.MapObjects
 			target.transform.GetChild(0).position = data.startPosition;
 			target.transform.GetChild(1).position = data.endPosition;
 			instance.UpdateAttachments();
-		}
-
-		protected override void Serialize(GameObject instance, Rope target)
-		{
-			var ropeInstance = instance.GetComponent<EditorRopeInstance>();
-			target.startPosition = ropeInstance.GetAnchor(0).GetPosition();
-			target.endPosition = ropeInstance.GetAnchor(1).GetPosition();
 		}
 	}
 

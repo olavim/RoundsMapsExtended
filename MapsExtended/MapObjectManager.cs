@@ -12,10 +12,11 @@ namespace MapsExt
 {
 	public class MapObjectManager : NetworkedBehaviour
 	{
-		private class Spec {
+		private class Spec
+		{
 			public GameObject prefab;
-			public Action<GameObject, MapObject> serializer;
-			public Action<MapObject, GameObject> deserializer;
+			public SerializerAction<MapObject> serializer;
+			public DeserializerAction<MapObject> deserializer;
 		}
 
 		private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
@@ -48,20 +49,18 @@ namespace MapsExt
 			}
 		}
 
-		public void RegisterSerializer(Type dataType, Action<GameObject, MapObject> serializer) {
-			if (this.specs.TryGetValue(dataType, out Spec spec)) {
+		public void RegisterSerializer(Type dataType, SerializerAction<MapObject> serializer)
+		{
+			if (this.specs.TryGetValue(dataType, out Spec spec))
+			{
 				spec.serializer = serializer;
 			}
 		}
 
-		public void RegisterSerializer<T>(Type dataType, Action<GameObject, MapObject> serializer) where T : IMapObjectSpecification {
-			if (this.specs.TryGetValue(dataType, out Spec spec)) {
-				spec.serializer = serializer;
-			}
-		}
-
-		public void RegisterDeserializer(Type dataType, Action<MapObject, GameObject> deserializer) {
-			if (this.specs.TryGetValue(dataType, out Spec spec)) {
+		public void RegisterDeserializer(Type dataType, DeserializerAction<MapObject> deserializer)
+		{
+			if (this.specs.TryGetValue(dataType, out Spec spec))
+			{
 				spec.deserializer = deserializer;
 			}
 		}
@@ -87,7 +86,8 @@ namespace MapsExt
 			{
 				try
 				{
-					var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
+					var data = (MapObject)AccessTools.CreateInstance(mapObjectInstance.dataType);
+					BaseMapObjectSerializer.Serialize(mapObjectInstance.gameObject, data);
 					spec.serializer(mapObjectInstance.gameObject, data);
 					return data;
 				}
@@ -106,6 +106,7 @@ namespace MapsExt
 
 		public void Deserialize(MapObject data, GameObject target)
 		{
+			BaseMapObjectSerializer.Deserialize(data, target);
 			var spec = this.specs[data.GetType()];
 			spec.deserializer(data, target);
 		}

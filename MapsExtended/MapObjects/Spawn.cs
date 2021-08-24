@@ -9,25 +9,28 @@ namespace MapsExt.MapObjects
 		public Vector3 position = Vector3.zero;
 	}
 
-	[MapsExtendedMapObject(typeof(Spawn))]
-	public class SpawnSpecification : MapObjectSpecification<Spawn>
+	[MapObjectSpec(typeof(Spawn))]
+	public static class SpawnSpec
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
+		[MapObjectPrefab]
+		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 
-		protected override void Deserialize(Spawn data, GameObject target)
-		{
-			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
-			spawnPoint.ID = data.id;
-			spawnPoint.TEAMID = data.teamID;
-			target.transform.position = data.position;
-		}
-
-		protected override void Serialize(GameObject instance, Spawn target)
+		[MapsExt.MapObjectSerializer]
+		public static void Serialize(GameObject instance, Spawn target)
 		{
 			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
 			target.id = spawnPoint.ID;
 			target.teamID = spawnPoint.TEAMID;
 			target.position = instance.transform.position;
+		}
+
+		[MapObjectDeserializer]
+		public static void Deserialize(Spawn data, GameObject target)
+		{
+			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
+			spawnPoint.ID = data.id;
+			spawnPoint.TEAMID = data.teamID;
+			target.transform.position = data.position;
 		}
 	}
 

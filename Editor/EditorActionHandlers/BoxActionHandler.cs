@@ -2,7 +2,7 @@
 
 namespace MapsExt.Editor
 {
-	public class BoxActionHandler : EditorActionHandler
+	public class SpatialActionHandler : EditorActionHandler
 	{
 		public override bool CanRotate()
 		{

@@ -13,21 +13,24 @@ namespace MapsExt.MapObjects
 		}
 	}
 
-	[MapsExtendedMapObject(typeof(Rope))]
-	public class RopeSpecification : MapObjectSpecification<Rope>
+	[MapObjectSpec(typeof(Rope))]
+	public static class RopeSpec
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
+		[MapObjectPrefab]
+		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
-		protected override void Deserialize(Rope data, GameObject target)
-		{
-			target.transform.position = data.startPosition;
-			target.transform.GetChild(0).position = data.endPosition;
-		}
-
-		protected override void Serialize(GameObject instance, Rope target)
+		[MapsExt.MapObjectSerializer]
+		public static void Serialize(GameObject instance, Rope target)
 		{
 			target.startPosition = instance.transform.position;
 			target.endPosition = instance.transform.GetChild(0).position;
+		}
+
+		[MapObjectDeserializer]
+		public static void Deserialize(Rope data, GameObject target)
+		{
+			target.transform.position = data.startPosition;
+			target.transform.GetChild(0).position = data.endPosition;
 		}
 	}
 }

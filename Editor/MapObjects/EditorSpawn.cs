@@ -4,12 +4,22 @@ using UnboundLib;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[MapsExtendedEditorMapObject(typeof(Spawn), "Spawn")]
-	public class EditorSpawnSpecification : SpawnSpecification, IEditorMapObjectSpecification
+	[EditorMapObjectSpec(typeof(Spawn), "Spawn")]
+	public static class EditorSpawnSpec
 	{
-		protected override void Deserialize(Spawn data, GameObject target)
+		[EditorMapObjectPrefab]
+		public static GameObject Prefab => SpawnSpec.Prefab;
+
+		[EditorMapObjectSerializer]
+		public static void Serialize(GameObject instance, Spawn target)
 		{
-			base.Deserialize(data, target);
+			SpawnSpec.Serialize(instance, target);
+		}
+
+		[EditorMapObjectDeserializer]
+		public static void Deserialize(Spawn data, GameObject target)
+		{
+			SpawnSpec.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
 			target.gameObject.GetOrAddComponent<SpawnActionHandler>();
 			target.transform.SetAsLastSibling();

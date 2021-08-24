@@ -4,16 +4,24 @@ using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
-	public class SawDynamic : PhysicalMapObject { }
-
-	[MapsExtendedMapObject(typeof(SawDynamic))]
-	public class SawDynamicSpecification : PhysicalMapObjectSpecification<SawDynamic>
+	public class SawDynamic : SpatialMapObject { }
+	
+	[MapObjectSpec(typeof(SawDynamic))]
+	public static class SawDynamicSpec
 	{
-		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
-
-		protected override void Deserialize(SawDynamic data, GameObject target)
+		[MapObjectPrefab]
+		public static GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
+		
+		[MapsExt.MapObjectSerializer]
+		public static void Serialize(GameObject instance, SawDynamic target)
 		{
-			base.Deserialize(data, target);
+			SpatialSerializer.Serialize(instance, target);
+		}
+		
+		[MapObjectDeserializer]
+		public static void Deserialize(SawDynamic data, GameObject target)
+		{
+			SpatialSerializer.Deserialize(data, target);
 			target.GetOrAddComponent<SawTransformer>();
 		}
 	}

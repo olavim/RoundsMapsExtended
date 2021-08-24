@@ -82,27 +82,45 @@ namespace MapsExt
 		{
 			UnityEngine.Debug.Log(assembly.GetName());
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapsExtendedMapObject>() != null);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObjectSpec>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
-				UnityEngine.Debug.Log(type.Name);
 				try
 				{
-					var attr = type.GetCustomAttribute<MapsExtendedMapObject>();
-					var instance = AccessTools.CreateInstance(type) as IMapObjectSpecification;
+					var attr = type.GetCustomAttribute<MapObjectSpec>();
 
-					if (instance == null) {
-						throw new Exception($"Cannot register map object specification: {type.Name} does not implement {typeof(IMapObjectSpecification).Name}");
+					var prefabProperty = type
+						.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+						.FirstOrDefault(m => m.GetCustomAttribute<MapObjectPrefab>() != null);
+
+					if (prefabProperty == null)
+					{
+						throw new Exception($"{type.Name} is not a valid map object spec: Missing prefab property");
+					}
+
+					GameObject prefab = (GameObject)prefabProperty.GetGetMethod().Invoke(null, null);
+					SerializerAction<MapObject> serializer = MapObjectSerializerUtils.GetTypeSerializer<MapObjectSerializer>(type);
+					DeserializerAction<MapObject> deserializer = MapObjectSerializerUtils.GetTypeDeserializer<MapObjectDeserializer>(type);
+
+					if (serializer == null)
+					{
+						throw new Exception($"{type.Name} is not a valid map object spec: Missing serializer method or property");
+					}
+
+					if (deserializer == null)
+					{
+						throw new Exception($"{type.Name} is not a valid map object spec: Missing deserializer method or property");
 					}
 
 					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
-					this.mapObjectManager.RegisterType(attr.dataType, instance.Prefab);
-					this.mapObjectManager.RegisterSerializer(attr.dataType, instance.Serialize);
-					this.mapObjectManager.RegisterDeserializer(attr.dataType, instance.Deserialize);
+					this.mapObjectManager.RegisterType(attr.dataType, prefab);
+					this.mapObjectManager.RegisterSerializer(attr.dataType, serializer);
+					this.mapObjectManager.RegisterDeserializer(attr.dataType, deserializer);
 				}
 				catch (Exception ex)
 				{
+					UnityEngine.Debug.LogError($"Could not register editor map object {type.Name}:");
 					UnityEngine.Debug.LogError(ex);
 				}
 			}

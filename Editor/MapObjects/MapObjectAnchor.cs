@@ -82,8 +82,8 @@ namespace MapsExt.MapObjects
 			var colliders = Physics2D.OverlapPointAll(pos);
 
 			var collider =
-				colliders.FirstOrDefault(c => c.gameObject.GetComponent<PhysicalMapObjectInstance>() != null && c.gameObject == this.target) ??
-				colliders.FirstOrDefault(c => c.gameObject.GetComponent<PhysicalMapObjectInstance>() != null);
+				colliders.FirstOrDefault(c => c.gameObject.GetComponent<SpatialMapObjectInstance>() != null && c.gameObject == this.target) ??
+				colliders.FirstOrDefault(c => c.gameObject.GetComponent<SpatialMapObjectInstance>() != null);
 
 			if (collider == null)
 			{
