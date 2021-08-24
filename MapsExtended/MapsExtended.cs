@@ -98,8 +98,8 @@ namespace MapsExt
 
 					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
 					this.mapObjectManager.RegisterType(attr.dataType, instance.Prefab);
-					this.mapObjectManager.RegisterSerializer(attr.dataType, instance, AccessTools.Method(typeof(IMapObjectSpecification), "Serialize"));
-					this.mapObjectManager.RegisterDeserializer(attr.dataType, instance, AccessTools.Method(typeof(IMapObjectSpecification), "Deserialize"));
+					this.mapObjectManager.RegisterSerializer(attr.dataType, instance.Serialize);
+					this.mapObjectManager.RegisterDeserializer(attr.dataType, instance.Deserialize);
 				}
 				catch (Exception ex)
 				{

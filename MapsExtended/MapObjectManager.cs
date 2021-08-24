@@ -7,7 +7,6 @@ using Jotunn.Utils;
 using MapsExt.MapObjects;
 using Photon.Pun;
 using HarmonyLib;
-using System.Reflection;
 
 namespace MapsExt
 {
@@ -15,10 +14,8 @@ namespace MapsExt
 	{
 		private class Spec {
 			public GameObject prefab;
-			public object serializerTarget;
-			public object deserializerTarget;
-			public MethodInfo serializer;
-			public MethodInfo deserializer;
+			public Action<GameObject, MapObject> serializer;
+			public Action<MapObject, GameObject> deserializer;
 		}
 
 		private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
@@ -51,16 +48,14 @@ namespace MapsExt
 			}
 		}
 
-		public void RegisterSerializer(Type dataType, object target, MethodInfo serializer) {
+		public void RegisterSerializer(Type dataType, Action<GameObject, MapObject> serializer) {
 			if (this.specs.TryGetValue(dataType, out Spec spec)) {
-				spec.serializerTarget = target;
 				spec.serializer = serializer;
 			}
 		}
 
-		public void RegisterDeserializer(Type dataType, object target, MethodInfo deserializer) {
+		public void RegisterDeserializer(Type dataType, Action<MapObject, GameObject> deserializer) {
 			if (this.specs.TryGetValue(dataType, out Spec spec)) {
-				spec.deserializerTarget = target;
 				spec.deserializer = deserializer;
 			}
 		}
@@ -87,7 +82,7 @@ namespace MapsExt
 				try
 				{
 					var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
-					spec.serializer.Invoke(spec.serializerTarget, new object[] { mapObjectInstance.gameObject, data });
+					spec.serializer(mapObjectInstance.gameObject, data);
 					return data;
 				}
 				catch (Exception ex)
@@ -106,7 +101,7 @@ namespace MapsExt
 		public void Deserialize(MapObject data, GameObject target)
 		{
 			var spec = this.specs[data.GetType()];
-			spec.deserializer.Invoke(spec.deserializerTarget, new object[] { data, target });
+			spec.deserializer(data, target);
 		}
 
 		public void Instantiate(MapObject data, Transform parent, Action<GameObject> onInstantiate = null)
