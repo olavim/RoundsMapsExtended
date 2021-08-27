@@ -178,11 +178,8 @@ namespace MapsExt
 
 			this.Deserialize(data, instance);
 
-			this.ExecuteAfterFrames(1, () =>
-			{
-				// The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
-				onInstantiate?.Invoke(instance);
-			});
+			// The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
+			onInstantiate?.Invoke(instance);
 		}
 
 		private IEnumerator SyncInstantiation(object target, int instantiationID, MapObject data, Action<GameObject> onInstantiate)

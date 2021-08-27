@@ -9,7 +9,6 @@ using UnityEngine.SceneManagement;
 using HarmonyLib;
 using UnboundLib;
 using MapsExt.MapObjects;
-using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -69,9 +68,15 @@ namespace MapsExt.Editor
 				try
 				{
 					var attr = type.GetCustomAttribute<EditorMapObjectSpec>();
-					var prefab = ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(EditorMapObjectPrefab));
-					var serializer = ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(EditorMapObjectSerializer));
-					var deserializer = ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(EditorMapObjectDeserializer));
+					var prefab =
+						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(EditorMapObjectPrefab)) ??
+						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(MapObjectPrefab));
+					var serializer =
+						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(EditorMapObjectSerializer)) ??
+						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(MapObjectSerializer));
+					var deserializer =
+						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(EditorMapObjectDeserializer)) ??
+						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
 
 					if (prefab == null)
 					{
@@ -123,6 +128,8 @@ namespace MapsExt.Editor
 			SceneManager.sceneLoaded -= this.AddEditorOnLevelLoad;
 
 			var map = MapManager.instance.currentMap.Map;
+			map.SetFieldValue("hasCalledReady", true);
+
 			var go = map.gameObject;
 			go.transform.position = Vector3.zero;
 
@@ -141,9 +148,7 @@ namespace MapsExt.Editor
 
 		public void LoadMap(GameObject container, string mapFilePath)
 		{
-			MapsExtended.LoadMap(container, mapFilePath, this.mapObjectManager);
-
-			this.ExecuteAfterFrames(1, () =>
+			MapsExtended.LoadMap(container, mapFilePath, this.mapObjectManager, () =>
 			{
 				var mapObjects = container.GetComponentsInChildren<MapObjectInstance>();
 

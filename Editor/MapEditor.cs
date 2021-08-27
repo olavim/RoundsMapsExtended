@@ -132,7 +132,8 @@ namespace MapsExt.Editor
 
 		private CustomMap GetMapData(string name = null)
 		{
-			var mapData = new CustomMap {
+			var mapData = new CustomMap
+			{
 				id = Guid.NewGuid().ToString(),
 				name = name,
 				mapObjects = new List<MapObject>()
@@ -299,6 +300,7 @@ namespace MapsExt.Editor
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.content, new Spawn(), instance =>
 				{
+					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this.tempSpawn = instance;
 					this.DoStartSimulation();
 				});
@@ -318,7 +320,7 @@ namespace MapsExt.Editor
 				GameModeManager.SetGameMode("Sandbox");
 				GameModeManager.CurrentHandler.StartGame();
 
-				var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
+				var gm = (GM_Test)GameModeManager.CurrentHandler.GameMode;
 				gm.testMap = true;
 				gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = false;
 
@@ -338,7 +340,7 @@ namespace MapsExt.Editor
 
 		public void OnStopSimulation()
 		{
-			var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
+			var gm = (GM_Test)GameModeManager.CurrentHandler.GameMode;
 			gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = true;
 
 			this.isSimulating = false;
@@ -444,7 +446,7 @@ namespace MapsExt.Editor
 
 					const float eps = 0.000005f;
 
-					if ((Mathf.Abs(identityDiff.x) < eps || Mathf.Abs(identityDiff.x - identityDelta.x) < eps) && 
+					if ((Mathf.Abs(identityDiff.x) < eps || Mathf.Abs(identityDiff.x - identityDelta.x) < eps) &&
 						(Mathf.Abs(identityDiff.y) < eps || Mathf.Abs(identityDiff.y - identityDelta.y) < eps))
 					{
 						scaleOffset = diff;
@@ -632,8 +634,8 @@ namespace MapsExt.Editor
 			var mouseDelta = mouseWorldPos - this.prevMouse;
 			Vector3 cellDelta = mouseCell - this.prevCell;
 
-			var sizeDelta = this.snapToGrid 
-				? cellDelta * this.GridSize 
+			var sizeDelta = this.snapToGrid
+				? cellDelta * this.GridSize
 				: Quaternion.Inverse(this.grid.transform.rotation) * mouseDelta;
 
 			if (sizeDelta != Vector3.zero)

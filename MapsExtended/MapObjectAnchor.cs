@@ -123,6 +123,14 @@ namespace MapsExt
 				return new Bounds();
 			}
 
+			// CircleCollider bounds is calculated wrong, so we do it manually
+			if (collider is CircleCollider2D circleCollider)
+			{
+				float x = 2 * circleCollider.radius * circleCollider.transform.localScale.x;
+				float y = 2 * circleCollider.radius * circleCollider.transform.localScale.y;
+				return new Bounds(circleCollider.transform.position, new Vector3(x, y, 1));
+			}
+
 			var rotation = obj.transform.rotation;
 			obj.transform.rotation = Quaternion.identity;
 			var bounds = collider.bounds;

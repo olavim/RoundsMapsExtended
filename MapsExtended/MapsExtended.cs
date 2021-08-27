@@ -114,7 +114,7 @@ namespace MapsExt
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register editor map object {type.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register map object {type.Name}: {ex.Message}");
 
 #if DEBUG
 					UnityEngine.Debug.LogError(ex.StackTrace);

@@ -82,7 +82,7 @@ namespace MapsExt
 		{
 			return type
 				.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-				.FirstOrDefault(m => m.GetCustomAttribute<MapObjectPrefab>() != null)
+				.FirstOrDefault(m => m.GetCustomAttribute(attributeType) != null)
 				?.GetValue(null) as T;
 		}
 	}
