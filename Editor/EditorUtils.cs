@@ -55,7 +55,7 @@ namespace MapsExt.Editor
 
 		public static float Snap(float num, float step)
 		{
-			return Mathf.Round(num / step) * Mathf.Abs(step);
+			return Mathf.Max(1, Mathf.Round(num / step)) * Mathf.Abs(step);
 		}
 
 		public static Rect GetMapObjectBounds(GameObject go)
