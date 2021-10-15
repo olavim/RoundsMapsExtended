@@ -151,12 +151,21 @@ namespace MapsExt.Editor
 			}
 
 			MapManager.instance.isTestingMap = true;
-			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);
-			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOffline();
+			GameObject.Find("Game/UI/UI_MainMenu/Canvas").gameObject.SetActive(false);
+            GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOffline();
 			map.hasEntered = true;
 
 			ArtHandler.instance.NextArt();
-		}
+
+            // fix Mod Options button in EscapeMenu
+            var modOpsBar = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.ProceduralImage.ProceduralImage>();
+            var modOpsButton = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.Button>();
+            UnityEngine.UI.ColorBlock modOpsButColor = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.Button>().colors;
+            modOpsButton.transition = UnityEngine.UI.Selectable.Transition.ColorTint; 
+            modOpsButton.colors = UnityEngine.UI.ColorBlock.defaultColorBlock;
+            modOpsButColor.normalColor = new Color(1f, 1f, 1f, 0f);
+            modOpsButColor.highlightedColor = new Color(1f, 0f, 0f, 0.92f);
+        }
 
 		public void LoadMap(GameObject container, string mapFilePath)
 		{
