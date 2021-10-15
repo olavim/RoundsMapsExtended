@@ -13,6 +13,7 @@ using UnityEngine;
 using TMPro;
 using UnboundLib;
 using UnboundLib.Utils.UI;
+using UnboundLib.Utils;
 using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
@@ -142,8 +143,8 @@ namespace MapsExt
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
-			Unbound.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
-		}
+            LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
+        }
 
 		private static CustomMap LoadMapData(string path)
 		{
