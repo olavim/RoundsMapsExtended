@@ -10,10 +10,13 @@ using Jotunn.Utils;
 using UnityEngine.SceneManagement;
 using Sirenix.Serialization;
 using UnityEngine;
+using TMPro;
 using UnboundLib;
+using UnboundLib.Utils.UI;
 using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
+
 
 namespace MapsExt
 {
@@ -69,9 +72,9 @@ namespace MapsExt
 
 			if (MapsExtended.DEBUG)
 			{
-				Unbound.RegisterGUI("MapsExtended Debug", this.DrawDebugGUI);
+                Unbound.RegisterMenu("Maps Extended DEBUG", () => { }, this.DrawDebugGUI, null, true);
 			}
-		}
+        }
 
 		public void RegisterMapObjects()
 		{
@@ -123,9 +126,9 @@ namespace MapsExt
 			}
 		}
 
-		public void DrawDebugGUI()
+		public void DrawDebugGUI(GameObject menu)
 		{
-			this.forceCustomMaps = GUILayout.Toggle(this.forceCustomMaps, "Force Custom Maps");
+            MenuHandler.CreateToggle(this.forceCustomMaps, "Force Custom Maps", menu, null, 30, false, Color.red);
 		}
 
 		public void UpdateMapFiles()
