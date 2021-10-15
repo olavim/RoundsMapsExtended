@@ -29,7 +29,11 @@
 	<WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
-  <Import Project="..\BuildProps.props"/>
+  <Import Project="..\BuildProps.props" />
+
+  <ItemGroup>
+    <PackageReference Include="UnboundLib" Version="2.7.3" />
+  </ItemGroup>
 
   <ItemGroup>
 	<Reference Include="System" />
