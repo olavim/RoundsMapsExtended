@@ -56,8 +56,20 @@ namespace MapsExt.Editor
 		public void Start()
 		{
 			MapsExtended.instance.RegisterMapObjects();
-		}
+            Unbound.RegisterMenu("Map Editor", () => {
+                GameManager.instance.isPlaying = true;
 
+                this.editorActive = true;
+                MapManager.instance.RPCA_LoadLevel("NewMap");
+                SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
+
+            }, test, null, false);
+        }
+
+        public void test(GameObject test)
+        {
+
+        }
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
