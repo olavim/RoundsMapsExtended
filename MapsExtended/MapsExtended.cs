@@ -11,13 +11,15 @@ using UnityEngine.SceneManagement;
 using Sirenix.Serialization;
 using UnityEngine;
 using UnboundLib;
+using UnboundLib.Utils.UI;
 using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
+using UnboundLib.Utils;
 
 namespace MapsExt
 {
-	[BepInDependency("com.willis.rounds.unbound", "2.2.0")]
+	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
 	[BepInPlugin(ModId, "MapsExtended", Version)]
 	public class MapsExtended : BaseUnityPlugin
 	{
@@ -69,7 +71,7 @@ namespace MapsExt
 
 			if (MapsExtended.DEBUG)
 			{
-				Unbound.RegisterGUI("MapsExtended Debug", this.DrawDebugGUI);
+				Unbound.RegisterMenu("Maps Extended DEBUG", () => { }, this.DrawDebugGUI, null, true);
 			}
 		}
 
@@ -123,9 +125,9 @@ namespace MapsExt
 			}
 		}
 
-		public void DrawDebugGUI()
+		public void DrawDebugGUI(GameObject menu)
 		{
-			this.forceCustomMaps = GUILayout.Toggle(this.forceCustomMaps, "Force Custom Maps");
+			MenuHandler.CreateToggle(this.forceCustomMaps, "Force Custom Maps", menu, null, 30, false, Color.red);
 		}
 
 		public void UpdateMapFiles()
@@ -139,7 +141,7 @@ namespace MapsExt
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
-			Unbound.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
+			LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
 		}
 
 		private static CustomMap LoadMapData(string path)

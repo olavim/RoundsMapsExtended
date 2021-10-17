@@ -12,7 +12,7 @@ using MapsExt.MapObjects;
 
 namespace MapsExt.Editor
 {
-	[BepInDependency("com.willis.rounds.unbound", "2.2.0")]
+	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
 	[BepInDependency("io.olavim.rounds.mapsextended", "1.0.0")]
 	[BepInPlugin(ModId, "MapsExtended.Editor", Version)]
 	public class MapsExtendedEditor : BaseUnityPlugin
@@ -56,6 +56,15 @@ namespace MapsExt.Editor
 		public void Start()
 		{
 			MapsExtended.instance.RegisterMapObjects();
+			Unbound.RegisterMenu("Map Editor", () =>
+			{
+				GameManager.instance.isPlaying = true;
+
+				this.editorActive = true;
+				MapManager.instance.RPCA_LoadLevel("NewMap");
+				SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
+
+			}, null, null, false);
 		}
 
 		private void RegisterMapObjects(Assembly assembly)
@@ -139,11 +148,20 @@ namespace MapsExt.Editor
 			}
 
 			MapManager.instance.isTestingMap = true;
-			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);
+			GameObject.Find("Game/UI/UI_MainMenu/Canvas").gameObject.SetActive(false);
 			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOffline();
 			map.hasEntered = true;
 
 			ArtHandler.instance.NextArt();
+
+			// fix Mod Options button in EscapeMenu
+			var modOpsBar = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.ProceduralImage.ProceduralImage>();
+			var modOpsButton = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.Button>();
+			UnityEngine.UI.ColorBlock modOpsButColor = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.Button>().colors;
+			modOpsButton.transition = UnityEngine.UI.Selectable.Transition.ColorTint;
+			modOpsButton.colors = UnityEngine.UI.ColorBlock.defaultColorBlock;
+			modOpsButColor.normalColor = new Color(1f, 1f, 1f, 0f);
+			modOpsButColor.highlightedColor = new Color(1f, 0f, 0f, 0.92f);
 		}
 
 		public void LoadMap(GameObject container, string mapFilePath)
@@ -163,7 +181,7 @@ namespace MapsExt.Editor
 
 		public void SpawnObject(GameObject container, Type type, Action<GameObject> cb)
 		{
-			var mapObject = (MapObject)AccessTools.CreateInstance(type);
+			var mapObject = (MapObject) AccessTools.CreateInstance(type);
 			this.SpawnObject(container, mapObject, cb);
 		}
 

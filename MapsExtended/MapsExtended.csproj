@@ -37,10 +37,10 @@
 		<EmbeddedResource Include="AssetsEmbedded\mapobjects" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="UnboundLib" Version="2.2.0" />
+		<PackageReference Include="UnboundLib" Version="2.7.3" />
 	</ItemGroup>
 
-	<Import Project="..\BuildProps.props"/>
+	<Import Project="..\BuildProps.props" />
 
 	<ItemGroup>
 	<Reference Include="Assembly-CSharp">
@@ -63,6 +63,9 @@
 	</Reference>
 	<Reference Include="Sirenix.Serialization.Config">
 		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
+	</Reference>
+	<Reference Include="Unity.TextMeshPro">
+	  <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
 	</Reference>
 	<Reference Include="UnityEngine">
 		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.dll</HintPath>

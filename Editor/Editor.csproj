@@ -36,7 +36,7 @@
 	<EmbeddedResource Include="AssetsEmbedded\uielements" />
   </ItemGroup>
   <ItemGroup>
-	<PackageReference Include="UnboundLib" Version="2.2.0" />
+	<PackageReference Include="UnboundLib" Version="2.7.3" />
 	<ProjectReference Include="..\Editor.UI\Editor.UI.csproj" />
 	<ProjectReference Include="..\MapsExtended\MapsExtended.csproj" />
 	<Reference Include="System" />
@@ -49,7 +49,7 @@
 	<Reference Include="System.Xml" />
   </ItemGroup>
 
-  <Import Project="..\BuildProps.props"/>
+  <Import Project="..\BuildProps.props" />
 
   <ItemGroup>
 	<Reference Include="0Harmony">

@@ -29,7 +29,7 @@
 	<WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
-  <Import Project="..\BuildProps.props"/>
+  <Import Project="..\BuildProps.props" />
 
   <ItemGroup>
 	<Reference Include="System" />
