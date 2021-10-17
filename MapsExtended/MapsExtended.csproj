@@ -65,7 +65,7 @@
 		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
 	</Reference>
 	<Reference Include="Unity.TextMeshPro">
-	  <HintPath>D:\Steam\steamapps\common\ROUNDS\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+	  <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
 	</Reference>
 	<Reference Include="UnityEngine">
 		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.dll</HintPath>

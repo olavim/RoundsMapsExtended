@@ -32,10 +32,6 @@
   <Import Project="..\BuildProps.props" />
 
   <ItemGroup>
-    <PackageReference Include="UnboundLib" Version="2.7.3" />
-  </ItemGroup>
-
-  <ItemGroup>
 	<Reference Include="System" />
 	<Reference Include="System.Core" />
 	<Reference Include="System.Xml.Linq" />
