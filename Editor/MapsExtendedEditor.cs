@@ -58,13 +58,13 @@ namespace MapsExt.Editor
 			MapsExtended.instance.RegisterMapObjects();
 			Unbound.RegisterMenu("Map Editor", () =>
 			{
+				AccessTools.Field(typeof(UnboundLib.Utils.UI.ModOptions), "showingModOptions").SetValue(null, false);
 				GameManager.instance.isPlaying = true;
 
 				this.editorActive = true;
 				MapManager.instance.RPCA_LoadLevel("NewMap");
 				SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
-
-			}, null, null, false);
+			}, (obj) => { }, null, false);
 		}
 
 		private void RegisterMapObjects(Assembly assembly)
@@ -119,19 +119,6 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void Update()
-		{
-			if (Input.GetKeyDown(KeyCode.F5))
-			{
-				// Prevents Landfall's own map testing stuff from triggering
-				GameManager.instance.isPlaying = true;
-
-				this.editorActive = true;
-				MapManager.instance.RPCA_LoadLevel("NewMap");
-				SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
-			}
-		}
-
 		private void AddEditorOnLevelLoad(Scene scene, LoadSceneMode mode)
 		{
 			SceneManager.sceneLoaded -= this.AddEditorOnLevelLoad;
@@ -148,20 +135,11 @@ namespace MapsExt.Editor
 			}
 
 			MapManager.instance.isTestingMap = true;
-			GameObject.Find("Game/UI/UI_MainMenu/Canvas").gameObject.SetActive(false);
+			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);
 			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOffline();
 			map.hasEntered = true;
 
 			ArtHandler.instance.NextArt();
-
-			// fix Mod Options button in EscapeMenu
-			var modOpsBar = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.ProceduralImage.ProceduralImage>();
-			var modOpsButton = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.Button>();
-			UnityEngine.UI.ColorBlock modOpsButColor = GameObject.Find("Game/UI/UI_Game/Canvas/EscapeMenu/Main/Group/MOD OPTIONS").gameObject.GetOrAddComponent<UnityEngine.UI.Button>().colors;
-			modOpsButton.transition = UnityEngine.UI.Selectable.Transition.ColorTint;
-			modOpsButton.colors = UnityEngine.UI.ColorBlock.defaultColorBlock;
-			modOpsButColor.normalColor = new Color(1f, 1f, 1f, 0f);
-			modOpsButColor.highlightedColor = new Color(1f, 0f, 0f, 0.92f);
 		}
 
 		public void LoadMap(GameObject container, string mapFilePath)
