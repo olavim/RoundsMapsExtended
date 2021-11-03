@@ -2,12 +2,20 @@
 using UnityEngine;
 using UnboundLib;
 using System.Collections.Generic;
+using HarmonyLib;
 
 namespace MapsExt.MapObjects
 {
 	public class MapObject
 	{
 		public bool active = true;
+
+		public virtual MapObject Move(Vector3 v)
+		{
+			var copy = (MapObject) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
+			copy.active = this.active;
+			return copy;
+		}
 	}
 
 	public delegate void SerializerAction<T>(GameObject instance, T target) where T : MapObject;

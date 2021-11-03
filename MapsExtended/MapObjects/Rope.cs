@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using HarmonyLib;
 
 namespace MapsExt.MapObjects
 {
@@ -6,6 +7,15 @@ namespace MapsExt.MapObjects
 	{
 		public Vector3 startPosition = Vector3.up;
 		public Vector3 endPosition = Vector3.down;
+
+		public override MapObject Move(Vector3 v)
+		{
+			var copy = (Rope) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
+			copy.active = this.active;
+			copy.startPosition = this.startPosition + v;
+			copy.endPosition = this.endPosition + v;
+			return copy;
+		}
 
 		public override string ToString()
 		{

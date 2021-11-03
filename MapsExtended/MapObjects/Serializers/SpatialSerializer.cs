@@ -1,13 +1,24 @@
 ﻿using UnityEngine;
 using UnboundLib;
+using HarmonyLib;
 
 namespace MapsExt.MapObjects
 {
-	public abstract class SpatialMapObject : MapObject
+	public class SpatialMapObject : MapObject
 	{
 		public Vector3 position = Vector3.zero;
 		public Vector3 scale = Vector3.one * 2;
 		public Quaternion rotation = Quaternion.identity;
+
+		public override MapObject Move(Vector3 v)
+		{
+			var copy = (SpatialMapObject) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
+			copy.active = this.active;
+			copy.position = this.position + v;
+			copy.scale = this.scale;
+			copy.rotation = this.rotation;
+			return copy;
+		}
 	}
 
 	/// <summary>

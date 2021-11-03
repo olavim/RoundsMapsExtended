@@ -238,10 +238,9 @@ namespace MapsExt.Editor
 
 			foreach (var data in this.clipboardMapObjects)
 			{
-				MapsExtendedEditor.instance.SpawnObject(this.content, data, instance =>
+				MapsExtendedEditor.instance.SpawnObject(this.content, data.Move(new Vector3(1, -1, 0)), instance =>
 				{
 					instance.SetActive(false);
-					instance.transform.position = instance.transform.position + new Vector3(1, -1, 0);
 					newInstances.Add(instance);
 				});
 			}

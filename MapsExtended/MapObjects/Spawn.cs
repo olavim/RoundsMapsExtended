@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using HarmonyLib;
 
 namespace MapsExt.MapObjects
 {
@@ -7,6 +8,16 @@ namespace MapsExt.MapObjects
 		public int id = 0;
 		public int teamID = 0;
 		public Vector3 position = Vector3.zero;
+
+		override public MapObject Move(Vector3 v)
+		{
+			var copy = (Spawn) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
+			copy.active = this.active;
+			copy.id = this.id;
+			copy.teamID = this.teamID;
+			copy.position = this.position + v;
+			return copy;
+		}
 	}
 
 	[MapObjectSpec(typeof(Spawn))]

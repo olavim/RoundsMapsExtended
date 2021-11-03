@@ -86,7 +86,7 @@ namespace MapsExt
 			{
 				try
 				{
-					var data = (MapObject)AccessTools.CreateInstance(mapObjectInstance.dataType);
+					var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
 					BaseMapObjectSerializer.Serialize(mapObjectInstance.gameObject, data);
 					spec.serializer(mapObjectInstance.gameObject, data);
 					return data;
