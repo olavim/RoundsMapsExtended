@@ -18,7 +18,7 @@ namespace MapsExt.Editor
 	public class MapsExtendedEditor : BaseUnityPlugin
 	{
 		private const string ModId = "io.olavim.rounds.mapsextended.editor";
-		public const string Version = "0.9.0";
+		public const string Version = MapsExtended.Version;
 
 		public static MapsExtendedEditor instance;
 
