@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnboundLib;
+using MapsExt.Transformers;
 
 namespace MapsExt.MapObjects
 {
@@ -20,6 +22,7 @@ namespace MapsExt.MapObjects
 		public static void Deserialize(Ball data, GameObject target)
 		{
 			SpatialSerializer.Deserialize(data, target);
+			target.GetOrAddComponent<EllipseTransformer>();
 		}
 	}
 }

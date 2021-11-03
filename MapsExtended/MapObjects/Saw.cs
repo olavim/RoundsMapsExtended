@@ -23,6 +23,7 @@ namespace MapsExt.MapObjects
 		{
 			SpatialSerializer.Deserialize(data, target);
 			target.GetOrAddComponent<SawTransformer>();
+			target.GetOrAddComponent<EllipseTransformer>();
 		}
 	}
 }
