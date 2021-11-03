@@ -37,7 +37,7 @@ namespace MapsExt.MapObjects
 			this.FixShadow();
 		}
 
-		private void FixShadow()
+		public void FixShadow()
 		{
 			var collider = this.gameObject.GetComponent<Collider2D>();
 

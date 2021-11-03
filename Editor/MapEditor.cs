@@ -33,7 +33,7 @@ namespace MapsExt.Editor
 
 		public IEnumerable<MapObjectInstance> SelectedMapObjectInstances
 		{
-			get { return this.selectedMapObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()); }
+			get { return this.selectedMapObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()).Distinct().ToArray(); }
 		}
 
 		private bool isCreatingSelection;
@@ -153,7 +153,9 @@ namespace MapsExt.Editor
 			MapsExtendedEditor.instance.SpawnObject(this.content, type, instance =>
 			{
 				instance.SetActive(false);
-				instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, this.GridSize * 2f);
+
+				float scaleStep = Mathf.Max(1, this.GridSize * 2f);
+				instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, scaleStep);
 				instance.transform.position = Vector3.zero;
 
 				var damageable = instance.GetComponent<DamagableEvent>();
@@ -320,7 +322,7 @@ namespace MapsExt.Editor
 				GameModeManager.SetGameMode("Sandbox");
 				GameModeManager.CurrentHandler.StartGame();
 
-				var gm = (GM_Test)GameModeManager.CurrentHandler.GameMode;
+				var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
 				gm.testMap = true;
 				gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = false;
 
@@ -340,7 +342,7 @@ namespace MapsExt.Editor
 
 		public void OnStopSimulation()
 		{
-			var gm = (GM_Test)GameModeManager.CurrentHandler.GameMode;
+			var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
 			gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = true;
 
 			this.isSimulating = false;

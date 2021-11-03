@@ -16,6 +16,9 @@ param(
 	[System.String]$RoundsPath,
 	
 	[Parameter(Mandatory)]
+	[System.String]$SolutionPath,
+	
+	[Parameter(Mandatory)]
 	[System.String]$ProjectPath
 )
 
@@ -25,6 +28,7 @@ Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 # Test some preliminaries
 ("$TargetPath",
  "$RoundsPath",
+ "$SolutionPath",
  "$ProjectPath"
 ) | % {
 	if (!(Test-Path "$_")) {Write-Error -ErrorAction Stop -Message "$_ folder is missing"}
@@ -50,14 +54,14 @@ if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
 
 # Release packages for ThunderStore
 if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
-	$package = "$ProjectPath\release"
+	$package = "$SolutionPath\release"
 	
 	Write-Host "Packaging for ThunderStore"
 	New-Item -Type Directory -Path "$package\Thunderstore" -Force
 	$thunder = New-Item -Type Directory -Path "$package\Thunderstore\package"
 	$thunder.CreateSubdirectory('plugins')
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$thunder\plugins\"
-	Copy-Item -Path "$ProjectPath\README.md" -Destination "$thunder\README.md"
+	Copy-Item -Path "$SolutionPath\README.md" -Destination "$thunder\README.md"
 	Copy-Item -Path "$ProjectPath\manifest.json" -Destination "$thunder\manifest.json"
 	Copy-Item -Path "$ProjectPath\icon.png" -Destination "$thunder\icon.png"
 
@@ -74,7 +78,7 @@ if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name
 
 # Release package for GitHub
 if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
-	$package = "$ProjectPath\release"
+	$package = "$SolutionPath\release"
 
 	Write-Host "Packaging for GitHub"
 	$pkg = New-Item -Type Directory -Path "$package\package"

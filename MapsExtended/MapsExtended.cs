@@ -24,7 +24,7 @@ namespace MapsExt
 	public class MapsExtended : BaseUnityPlugin
 	{
 		private const string ModId = "io.olavim.rounds.mapsextended";
-		public const string Version = "1.0.0";
+		public const string Version = "0.9.0";
 
 #if DEBUG
 		public static readonly bool DEBUG = true;
@@ -55,8 +55,10 @@ namespace MapsExt
 
 			SceneManager.sceneLoaded += (scene, mode) =>
 			{
+				UnityEngine.Debug.Log("Loading scene: " + scene.name);
 				if (mode == LoadSceneMode.Single)
 				{
+					UnityEngine.Debug.Log("Updating maps...");
 					this.UpdateMapFiles();
 				}
 			};
@@ -141,6 +143,21 @@ namespace MapsExt
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
+			IList<string> activeLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "activeLevels").GetValue(null);
+			IList<string> inactiveLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "inactiveLevels").GetValue(null);
+			IList<string> levelsToRedraw = (IList<string>) AccessTools.Field(typeof(ToggleLevelMenuHandler), "levelsThatNeedToRedrawn").GetValue(ToggleLevelMenuHandler.instance);
+			IDictionary<string, Level> allLevels = LevelManager.levels;
+
+			var invalidatedLevels = allLevels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
+
+			foreach (var level in invalidatedLevels)
+			{
+				activeLevels?.Remove(level);
+				inactiveLevels?.Remove(level);
+				levelsToRedraw?.Remove(level);
+				allLevels.Remove(level);
+			}
+
 			LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
 		}
 
@@ -185,6 +202,7 @@ namespace MapsExt
 				yield return null;
 			}
 
+			yield return null;
 			onLoad?.Invoke();
 		}
 	}
@@ -209,7 +227,6 @@ namespace MapsExt
 			if (sceneName != null && sceneName.StartsWith("MapsExtended:"))
 			{
 				string id = sceneName.Split(':')[1];
-				UnityEngine.Debug.Log(sceneName + " - " + id);
 
 				MapsExtended.instance.loadedMap = MapsExtended.instance.maps.First(m => m.id == id);
 				MapsExtended.instance.loadedMapSceneName = sceneName;
@@ -250,6 +267,53 @@ namespace MapsExt
 			int index = UnityEngine.Random.Range(0, customMaps.Count);
 			__result = customMaps[index].id;
 			return false;
+		}
+	}
+
+	[HarmonyPatch(typeof(MapManager), "GetSpawnPoints")]
+	class MapManagerPatch_GetSpawnPoints
+	{
+		public static void Postfix(ref SpawnPoint[] __result)
+		{
+			var spawns = __result.ToList();
+
+			int playerCount = PlayerManager.instance.players.Count;
+			int teamCount = PlayerManager.instance.players.Select(p => p.teamID).Distinct().Count();
+
+			// Ensure at least one spawn exists
+			if (spawns.Count == 0)
+			{
+				spawns.Add(new SpawnPoint()
+				{
+					ID = 0,
+					TEAMID = 0,
+					// Choose center of map as default spawn location
+					localStartPos = Vector3.zero
+				});
+			}
+
+			// Ensure there are at least as many spawns as there are players
+			while (spawns.Count < playerCount)
+			{
+				var prevSpawn = spawns[spawns.Count - 1];
+				int nextID = spawns.Count;
+				int nextTeamID = spawns.Count % teamCount;
+
+				/* If map has two spawns, but there are four players, then players 1 and 3 should have the same spawn location,
+				 * and players 2 and 4 should have the same spawn location.
+				 */
+				var prevTeamSpawn = spawns.Count > teamCount ? spawns[spawns.Count - 1 - teamCount] : null;
+				var nextPosition = prevTeamSpawn ? prevTeamSpawn.localStartPos : prevSpawn.localStartPos;
+
+				spawns.Add(new SpawnPoint()
+				{
+					ID = nextID,
+					TEAMID = nextTeamID,
+					localStartPos = nextPosition
+				});
+			}
+
+			__result = spawns.ToArray();
 		}
 	}
 

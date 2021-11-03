@@ -30,6 +30,7 @@ namespace MapsExt.MapObjects
 			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
 			spawnPoint.ID = data.id;
 			spawnPoint.TEAMID = data.teamID;
+			spawnPoint.localStartPos = data.position;
 			target.transform.position = data.position;
 		}
 	}

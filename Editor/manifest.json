@@ -1,0 +1,10 @@
+{
+	"name": "MapsExtended Editor",
+	"description": "Map editor mod for ROUNDS",
+	"version_number": "#VERSION#",
+	"dependencies": [
+		"BepInEx-BepInExPack_ROUNDS-5.4.1100",
+		"olavim-MapsExtended-0.9.0"
+	],
+	"website_url": "https://github.com/olavim/RoundsMapsExtended"
+}

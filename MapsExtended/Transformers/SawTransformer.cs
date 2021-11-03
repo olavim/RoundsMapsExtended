@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using MapsExt.MapObjects;
 
 namespace MapsExt.Transformers
 {
@@ -12,6 +13,8 @@ namespace MapsExt.Transformers
 
 			float ratio = (collider.radius / oldRadius);
 			this.transform.GetChild(0).localScale *= ratio;
+
+			this.GetComponent<MapObjectInstance>().FixShadow();
 		}
 	}
 }

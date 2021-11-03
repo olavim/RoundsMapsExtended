@@ -19,7 +19,7 @@ namespace MapsExt.MapObjects
 		[MapObjectPrefab]
 		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
-		[MapsExt.MapObjectSerializer]
+		[MapObjectSerializer]
 		public static void Serialize(GameObject instance, Rope target)
 		{
 			target.startPosition = instance.transform.position;
