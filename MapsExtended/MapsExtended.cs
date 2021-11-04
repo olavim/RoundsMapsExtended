@@ -50,15 +50,15 @@ namespace MapsExt
 
 			AssetUtils.LoadAssetBundleFromResources("mapbase", typeof(MapsExtended).Assembly);
 
-			this.mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
-			this.mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
+			var mapObjectManagerGo = new GameObject("Root Map Object Manager");
+			DontDestroyOnLoad(mapObjectManagerGo);
+			this.mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this.mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
 			SceneManager.sceneLoaded += (scene, mode) =>
 			{
-				UnityEngine.Debug.Log("Loading scene: " + scene.name);
 				if (mode == LoadSceneMode.Single)
 				{
-					UnityEngine.Debug.Log("Updating maps...");
 					this.UpdateMapFiles();
 				}
 			};
@@ -75,6 +75,11 @@ namespace MapsExt
 			{
 				Unbound.RegisterMenu("Maps Extended DEBUG", () => { }, this.DrawDebugGUI, null, true);
 			}
+		}
+
+		public void OnDisable()
+		{
+			UnityEngine.Debug.Log(UnityEngine.StackTraceUtility.ExtractStackTrace());
 		}
 
 		public void RegisterMapObjects()

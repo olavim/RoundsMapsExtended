@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
+using UnboundLib.Networking;
 using Jotunn.Utils;
 using MapsExt.MapObjects;
 using Photon.Pun;
@@ -10,7 +11,7 @@ using HarmonyLib;
 
 namespace MapsExt
 {
-	public class MapObjectManager : NetworkedBehaviour
+	public class MapObjectManager : MonoBehaviour
 	{
 		private class Spec
 		{
@@ -20,14 +21,27 @@ namespace MapsExt
 		}
 
 		private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
+		private static Dictionary<string, TargetSyncedStore<int>> syncStores = new Dictionary<string, TargetSyncedStore<int>>();
 
 		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
 		{
 			return MapObjectManager.mapObjectBundle.LoadAsset<TObj>(name);
 		}
 
+		private string NetworkID { get; set; }
+
 		private readonly Dictionary<Type, Spec> specs = new Dictionary<Type, Spec>();
-		private readonly TargetSyncedStore<int> syncedInstantiations = new TargetSyncedStore<int>();
+
+		public void SetNetworkID(string id)
+		{
+			if (this.NetworkID != null)
+			{
+				MapObjectManager.syncStores.Remove(this.NetworkID);
+			}
+
+			this.NetworkID = id;
+			MapObjectManager.syncStores.Add(id, new TargetSyncedStore<int>());
+		}
 
 		public void RegisterType(Type dataType, GameObject prefab)
 		{
@@ -115,7 +129,8 @@ namespace MapsExt
 		{
 			var spec = this.specs[data.GetType()];
 
-			int instantiationID = this.syncedInstantiations.Allocate(parent);
+			var syncStore = MapObjectManager.syncStores[this.NetworkID];
+			int instantiationID = syncStore.Allocate(parent);
 
 			bool isMapObjectNetworked = spec.prefab.GetComponent<PhotonMapObject>() != null;
 			bool isMapSpawned = MapManager.instance.currentMap?.Map.wasSpawned == true;
@@ -150,7 +165,7 @@ namespace MapsExt
 							int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
 
 							// Communicate the photon instantiated map object to other clients
-							this.photonView.RPC("RPC_SyncInstantiation", RpcTarget.Others, instantiationID, viewID);
+							NetworkingManager.RPC_Others(typeof(MapObjectManager), nameof(MapObjectManager.RPC_SyncInstantiation), this.NetworkID, instantiationID, viewID);
 						});
 					}
 					else
@@ -184,11 +199,12 @@ namespace MapsExt
 
 		private IEnumerator SyncInstantiation(object target, int instantiationID, MapObject data, Action<GameObject> onInstantiate)
 		{
-			yield return this.syncedInstantiations.WaitForValue(target, instantiationID);
+			var syncStore = MapObjectManager.syncStores[this.NetworkID];
+			yield return syncStore.WaitForValue(target, instantiationID);
 
-			if (this.syncedInstantiations.TargetEquals(target))
+			if (syncStore.TargetEquals(target))
 			{
-				int viewID = this.syncedInstantiations.Get(instantiationID);
+				int viewID = syncStore.Get(instantiationID);
 				var networkInstance = PhotonNetwork.GetPhotonView(viewID).gameObject;
 
 				this.Deserialize(data, networkInstance);
@@ -197,10 +213,10 @@ namespace MapsExt
 			}
 		}
 
-		[PunRPC]
-		public void RPC_SyncInstantiation(int instantiationID, int viewID)
+		[UnboundRPC]
+		public static void RPC_SyncInstantiation(string networkID, int instantiationID, int viewID)
 		{
-			this.syncedInstantiations.Set(instantiationID, viewID);
+			MapObjectManager.syncStores[networkID].Set(instantiationID, viewID);
 		}
 	}
 }

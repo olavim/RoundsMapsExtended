@@ -34,6 +34,11 @@ namespace MapsExt.Editor
 			var harmony = new Harmony(MapsExtendedEditor.ModId);
 			harmony.PatchAll();
 
+			var mapObjectManagerGo = new GameObject("Editor Map Object Manager");
+			DontDestroyOnLoad(mapObjectManagerGo);
+			this.mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this.mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
+
 			SceneManager.sceneLoaded += (scene, mode) =>
 			{
 				if (mode == LoadSceneMode.Single)
@@ -47,15 +52,13 @@ namespace MapsExt.Editor
 			string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}MapsExtended.Editor.UI.dll");
 
-			this.mapObjectManager = this.gameObject.AddComponent<MapObjectManager>();
-			this.mapObjectManager.NetworkID = $"{ModId}/RootMapObjectManager";
-
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
 		public void Start()
 		{
 			MapsExtended.instance.RegisterMapObjects();
+
 			Unbound.RegisterMenu("Map Editor", () =>
 			{
 				AccessTools.Field(typeof(UnboundLib.Utils.UI.ModOptions), "showingModOptions").SetValue(null, false);
