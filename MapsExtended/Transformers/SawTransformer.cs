@@ -7,6 +7,8 @@ namespace MapsExt.Transformers
 	{
 		public void Start()
 		{
+			this.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
+
 			var collider = this.GetComponent<CircleCollider2D>();
 			float oldRadius = collider.radius;
 			collider.radius = 0.5f;

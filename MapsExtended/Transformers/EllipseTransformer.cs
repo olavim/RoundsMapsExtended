@@ -6,20 +6,17 @@ namespace MapsExt.Transformers
 {
 	public class EllipseTransformer : MonoBehaviour
 	{
-		private CircleCollider2D circleCollider;
-		private PolygonCollider2D polygonCollider;
-
 		public void Start()
 		{
-			this.circleCollider = this.gameObject.GetComponent<CircleCollider2D>();
+			var circleCollider = this.gameObject.GetComponent<CircleCollider2D>();
 
-			if (this.circleCollider)
+			if (circleCollider)
 			{
-				this.polygonCollider = this.gameObject.GetOrAddComponent<PolygonCollider2D>();
+				var polygonCollider = this.gameObject.GetOrAddComponent<PolygonCollider2D>();
 
 				int numVertices = 24;
 				float anglePerVertex = 360f / numVertices;
-				float radius = this.circleCollider.radius;
+				float radius = circleCollider.radius;
 
 				var identity = new Vector3(0, radius, 0);
 				var vertices = new List<Vector2>();
@@ -31,22 +28,9 @@ namespace MapsExt.Transformers
 					vertices.Add(new Vector2(point.x, point.y));
 				}
 
-				this.polygonCollider.SetPath(0, vertices.ToArray());
-			}
-		}
+				polygonCollider.SetPath(0, vertices.ToArray());
 
-		public void Update()
-		{
-			if (this.circleCollider?.enabled == false && this.transform.localScale.x == this.transform.localScale.y)
-			{
-				this.circleCollider.enabled = true;
-				this.polygonCollider.enabled = false;
-			}
-
-			if (this.circleCollider?.enabled == true && this.transform.localScale.x != this.transform.localScale.y)
-			{
-				this.circleCollider.enabled = false;
-				this.polygonCollider.enabled = true;
+				GameObject.Destroy(circleCollider);
 			}
 		}
 	}
