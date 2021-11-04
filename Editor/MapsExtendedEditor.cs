@@ -166,7 +166,7 @@ namespace MapsExt.Editor
 			this.SpawnObject(container, mapObject, cb);
 		}
 
-		public void SpawnObject(GameObject container, MapObject data, Action<GameObject> cb)
+		public void SpawnObject(GameObject container, MapObject data, Action<GameObject> cb = null)
 		{
 			this.mapObjectManager.Instantiate(data, container.transform, instance =>
 			{
@@ -178,7 +178,7 @@ namespace MapsExt.Editor
 					this.ExecuteAfterFrames(1, () => this.SetPhysicsActive(rig, false));
 				}
 
-				cb(instance);
+				cb?.Invoke(instance);
 			});
 		}
 

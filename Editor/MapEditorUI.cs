@@ -99,7 +99,7 @@ namespace MapsExt.Editor
 			foreach (var attr in MapsExtendedEditor.instance.mapObjectAttributes)
 			{
 				string category = attr.category ?? "";
-				
+
 				if (!mapObjects.ContainsKey(category))
 				{
 					mapObjects.Add(category, new List<Tuple<string, Type>>());

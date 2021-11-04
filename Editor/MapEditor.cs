@@ -51,6 +51,7 @@ namespace MapsExt.Editor
 
 		private Grid grid;
 		private MapEditorUI gui;
+		private MapEditorAnimationHandler animationHandler;
 		private GameObject tempSpawn;
 		private GameObject tempContent;
 
@@ -76,6 +77,7 @@ namespace MapsExt.Editor
 			this.tempContent.SetActive(false);
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
+			this.gameObject.AddComponent<MapEditorAnimationHandler>();
 
 			var gridGo = new GameObject("MapEditorGrid");
 			gridGo.transform.SetParent(this.transform);
@@ -478,6 +480,14 @@ namespace MapsExt.Editor
 
 		public void OnDragEnd()
 		{
+			foreach (var obj in this.selectedMapObjects)
+			{
+				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
+				{
+					handler.onMove?.Invoke();
+				}
+			}
+
 			this.isDraggingMapObjects = false;
 			this.timeline.EndInteraction();
 
@@ -538,6 +548,14 @@ namespace MapsExt.Editor
 
 		public void OnResizeEnd()
 		{
+			foreach (var obj in this.selectedMapObjects)
+			{
+				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
+				{
+					handler.onResize?.Invoke();
+				}
+			}
+
 			this.isResizingMapObject = false;
 			this.timeline.EndInteraction();
 
@@ -557,6 +575,14 @@ namespace MapsExt.Editor
 
 		public void OnRotateEnd()
 		{
+			foreach (var obj in this.selectedMapObjects)
+			{
+				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
+				{
+					handler.onRotate?.Invoke();
+				}
+			}
+
 			this.isRotatingMapObject = false;
 			this.timeline.EndInteraction();
 		}

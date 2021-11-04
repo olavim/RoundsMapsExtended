@@ -84,6 +84,18 @@ namespace MapsExt
 			return $"{this.NetworkID}/{type.FullName}";
 		}
 
+		public MapObject Serialize(GameObject go)
+		{
+			var mapObjectInstance = go.GetComponent<MapObjectInstance>();
+
+			if (mapObjectInstance == null)
+			{
+				throw new ArgumentException($"Cannot serialize GameObject: missing MapObjectInstance");
+			}
+
+			return this.Serialize(mapObjectInstance);
+		}
+
 		public MapObject Serialize(MapObjectInstance mapObjectInstance)
 		{
 			if (mapObjectInstance == null)
