@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using UnboundLib;
 using MapsExt.MapObjects;
 using System;
-using System.Collections;
 
 namespace MapsExt.Editor
 {
@@ -29,7 +27,10 @@ namespace MapsExt.Editor
 
 		private void AddAnimation(GameObject go)
 		{
+			go.SetActive(false);
 			var anim = go.AddComponent<MapObjectAnimation>();
+			anim.playOnAwake = false;
+			go.SetActive(true);
 
 			Action baseChanged = () =>
 			{
@@ -40,9 +41,7 @@ namespace MapsExt.Editor
 			};
 
 			var baseActionHandler = go.GetComponent<EditorActionHandler>();
-			baseActionHandler.onMove += baseChanged;
-			baseActionHandler.onResize += baseChanged;
-			baseActionHandler.onRotate += baseChanged;
+			baseActionHandler.onAction += baseChanged;
 
 			this.SetAnimation(anim);
 		}
@@ -51,7 +50,16 @@ namespace MapsExt.Editor
 		{
 			if (newAnimation == null)
 			{
-				this.animation?.gameObject.SetActive(true);
+				var baseObject = this.animation?.gameObject;
+				if (baseObject)
+				{
+					var firstFrame = this.animation.keyframes[0];
+					baseObject.transform.position = firstFrame.position;
+					baseObject.transform.localScale = firstFrame.scale;
+					baseObject.transform.rotation = firstFrame.rotation;
+					baseObject.SetActive(true);
+				}
+
 				this.animation = null;
 				this.SetKeyframe(-1);
 				return;
@@ -74,9 +82,7 @@ namespace MapsExt.Editor
 			if (this.keyframeMapObject)
 			{
 				var prevActionHandler = this.keyframeMapObject.GetComponent<EditorActionHandler>();
-				prevActionHandler.onMove -= this.HandleKeyframeChanged;
-				prevActionHandler.onResize -= this.HandleKeyframeChanged;
-				prevActionHandler.onRotate -= this.HandleKeyframeChanged;
+				prevActionHandler.onAction -= this.HandleKeyframeChanged;
 				GameObject.Destroy(this.keyframeMapObject);
 				this.keyframeMapObject = null;
 			}
@@ -90,9 +96,7 @@ namespace MapsExt.Editor
 				{
 					this.keyframeMapObject = instance;
 					var newActionHandler = this.keyframeMapObject.GetComponent<EditorActionHandler>();
-					newActionHandler.onMove += this.HandleKeyframeChanged;
-					newActionHandler.onResize += this.HandleKeyframeChanged;
-					newActionHandler.onRotate += this.HandleKeyframeChanged;
+					newActionHandler.onAction += this.HandleKeyframeChanged;
 				});
 			}
 		}
@@ -110,6 +114,7 @@ namespace MapsExt.Editor
 			frameData.position = frame.position;
 			frameData.scale = frame.scale;
 			frameData.rotation = frame.rotation;
+			frameData.animationKeyframes.Clear();
 
 			MapsExtendedEditor.instance.SpawnObject(this.editor.content, frameData, cb);
 		}

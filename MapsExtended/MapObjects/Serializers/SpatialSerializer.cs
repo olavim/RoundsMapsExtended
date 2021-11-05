@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnboundLib;
 using HarmonyLib;
+using System.Collections.Generic;
 
 namespace MapsExt.MapObjects
 {
@@ -9,6 +10,7 @@ namespace MapsExt.MapObjects
 		public Vector3 position = Vector3.zero;
 		public Vector3 scale = Vector3.one * 2;
 		public Quaternion rotation = Quaternion.identity;
+		public List<AnimationKeyframe> animationKeyframes = new List<AnimationKeyframe>();
 
 		public override MapObject Move(Vector3 v)
 		{
@@ -17,6 +19,17 @@ namespace MapsExt.MapObjects
 			copy.position = this.position + v;
 			copy.scale = this.scale;
 			copy.rotation = this.rotation;
+
+			if (this.animationKeyframes.Count > 0)
+			{
+				foreach (var frame in this.animationKeyframes)
+				{
+					copy.animationKeyframes.Add(new AnimationKeyframe(frame));
+				}
+
+				copy.animationKeyframes[0].position = this.animationKeyframes[0].position + v;
+			}
+
 			return copy;
 		}
 	}
@@ -32,6 +45,15 @@ namespace MapsExt.MapObjects
 			target.position = instance.transform.position;
 			target.scale = instance.transform.localScale;
 			target.rotation = instance.transform.rotation;
+
+			var anim = instance.GetComponent<MapObjectAnimation>();
+			if (anim)
+			{
+				foreach (var frame in anim.keyframes)
+				{
+					target.animationKeyframes.Add(new AnimationKeyframe(frame));
+				}
+			}
 		}
 
 		public static void Deserialize(SpatialMapObject data, GameObject target)
@@ -44,8 +66,17 @@ namespace MapsExt.MapObjects
 			target.transform.position = data.position;
 			target.transform.localScale = data.scale;
 			target.transform.rotation = data.rotation;
+
+			if (data.animationKeyframes != null && data.animationKeyframes.Count > 0)
+			{
+				var anim = target.AddComponent<MapObjectAnimation>();
+				foreach (var frame in data.animationKeyframes)
+				{
+					anim.keyframes.Add(new AnimationKeyframe(frame));
+				}
+			}
 		}
 	}
-
+	
 	public class SpatialMapObjectInstance : MonoBehaviour { }
 }

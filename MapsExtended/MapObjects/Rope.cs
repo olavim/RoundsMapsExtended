@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using HarmonyLib;
+using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
@@ -41,6 +42,19 @@ namespace MapsExt.MapObjects
 		{
 			target.transform.position = data.startPosition;
 			target.transform.GetChild(0).position = data.endPosition;
+
+			var rope = target.GetComponent<MapObjet_Rope>();
+			rope.OnJointAdded(joint =>
+			{
+				var distanceJoint = joint as DistanceJoint2D;
+				if (distanceJoint)
+				{
+					rope.ExecuteAfterFrames(1, () =>
+					{
+						distanceJoint.autoConfigureDistance = false;
+					});
+				}
+			});
 		}
 	}
 }

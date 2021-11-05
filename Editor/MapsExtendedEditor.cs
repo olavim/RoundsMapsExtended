@@ -184,21 +184,9 @@ namespace MapsExt.Editor
 
 		public void ResetAnimations(GameObject go)
 		{
-			var codeAnimation = go.GetComponent<CodeAnimation>();
-			if (codeAnimation)
+			foreach (var anim in go.GetComponentsInChildren<MapObjectAnimation>())
 			{
-				codeAnimation.PlayIn();
-			}
-
-			var curveAnimation = go.GetComponent<CurveAnimation>();
-			if (curveAnimation)
-			{
-				curveAnimation.PlayIn();
-			}
-
-			foreach (Transform child in go.transform)
-			{
-				this.ResetAnimations(child.gameObject);
+				anim.playOnAwake = false;
 			}
 		}
 
@@ -261,10 +249,10 @@ namespace MapsExt.Editor
 
 		private void SetPhysicsActive(Rigidbody2D rig, bool active)
 		{
+			rig.simulated = true;
 			rig.velocity = Vector2.zero;
 			rig.angularVelocity = 0;
-			rig.simulated = true;
-			rig.isKinematic = !active;
+			rig.isKinematic = rig.gameObject.GetComponent<MapObjectAnimation>() ? true : !active;
 		}
 	}
 

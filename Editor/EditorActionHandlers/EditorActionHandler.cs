@@ -11,6 +11,7 @@ namespace MapsExt.Editor
 
 		public abstract bool Resize(Vector3 sizeDelta, int resizeDirection);
 
+		public Action onAction;
 		public Action onMove;
 		public Action onResize;
 		public Action onRotate;

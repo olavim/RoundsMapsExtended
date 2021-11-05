@@ -54,6 +54,11 @@ namespace MapsExt
 
 		public Vector3 GetPosition()
 		{
+			if (this.target == null)
+			{
+				return this.transform.position;
+			}
+
 			var pos = this.target.transform.position;
 			var targetCollider = this.target.GetComponent<Collider2D>();
 

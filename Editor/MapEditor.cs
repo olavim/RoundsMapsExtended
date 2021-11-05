@@ -484,6 +484,7 @@ namespace MapsExt.Editor
 			{
 				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
 				{
+					handler.onAction?.Invoke();
 					handler.onMove?.Invoke();
 				}
 			}
@@ -552,6 +553,7 @@ namespace MapsExt.Editor
 			{
 				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
 				{
+					handler.onAction?.Invoke();
 					handler.onResize?.Invoke();
 				}
 			}
@@ -579,6 +581,7 @@ namespace MapsExt.Editor
 			{
 				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
 				{
+					handler.onAction?.Invoke();
 					handler.onRotate?.Invoke();
 				}
 			}

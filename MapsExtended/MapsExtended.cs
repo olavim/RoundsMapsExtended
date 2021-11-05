@@ -322,6 +322,29 @@ namespace MapsExt
 		}
 	}
 
+	[HarmonyPatch(typeof(MapTransition), "Toggle")]
+	class MapTransitionPatch_Toggle
+	{
+		public static void Postfix(GameObject obj, bool enabled)
+		{
+			var anim = obj.GetComponent<MapObjectAnimation>();
+			if (anim)
+			{
+				anim.enabled = enabled;
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(MapObjet_Rope), "AddJoint")]
+	class RopePatch_AddJoint
+	{
+		public static void Postfix(MapObjet_Rope __instance, AnchoredJoint2D ___joint)
+		{
+			UnityEngine.Debug.Log("AddJoint");
+			__instance.JointAdded(___joint);
+		}
+	}
+
 	[HarmonyPatch(typeof(PhotonMapObject), "Update")]
 	class PhotonMapObjectPatch
 	{
