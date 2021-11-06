@@ -345,6 +345,15 @@ namespace MapsExt
 		}
 	}
 
+	[HarmonyPatch(typeof(NetworkPhysicsObject), "BulletPush")]
+	class NetworkPhysicsObject_BulletPush
+	{
+		public static bool Prefix(NetworkPhysicsObject __instance)
+		{
+			return __instance.gameObject.GetComponent<MapObjectAnimation>() == null;
+		}
+	}
+
 	[HarmonyPatch(typeof(PhotonMapObject), "Update")]
 	class PhotonMapObjectPatch
 	{

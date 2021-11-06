@@ -64,8 +64,7 @@ namespace MapsExt
 
 		public void OnDisable()
 		{
-			this.StopAllCoroutines();
-			this.IsPlaying = false;
+			this.Stop();
 
 			var rb = this.gameObject.GetComponent<Rigidbody2D>();
 
@@ -96,6 +95,13 @@ namespace MapsExt
 		{
 			this.IsPlaying = true;
 			this.StartCoroutine(this.PlayCoroutine());
+		}
+
+		public void Stop()
+		{
+			this.StopAllCoroutines();
+			this.ApplyKeyframe(0);
+			this.IsPlaying = false;
 		}
 
 		private IEnumerator PlayCoroutine()

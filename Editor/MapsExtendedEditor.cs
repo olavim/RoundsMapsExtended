@@ -182,14 +182,6 @@ namespace MapsExt.Editor
 			});
 		}
 
-		public void ResetAnimations(GameObject go)
-		{
-			foreach (var anim in go.GetComponentsInChildren<MapObjectAnimation>())
-			{
-				anim.playOnAwake = false;
-			}
-		}
-
 		private void SetupMapObject(GameObject container, GameObject go)
 		{
 			if (go.GetComponent<CodeAnimation>())
@@ -232,10 +224,16 @@ namespace MapsExt.Editor
 				mask.backSortingOrder = 0;
 			}
 
-			this.ExecuteAfterFrames(1, () =>
+			this.ResetAnimations(container);
+		}
+
+		public void ResetAnimations(GameObject go)
+		{
+			foreach (var anim in go.GetComponentsInChildren<MapObjectAnimation>())
 			{
-				this.ResetAnimations(container);
-			});
+				anim.playOnAwake = false;
+				anim.Stop();
+			}
 		}
 
 		public void SetMapPhysicsActive(GameObject container, bool active)
