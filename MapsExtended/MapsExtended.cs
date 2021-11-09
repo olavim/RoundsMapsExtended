@@ -345,12 +345,73 @@ namespace MapsExt
 		}
 	}
 
+	// Needed to fix collision with animated saws
 	[HarmonyPatch(typeof(NetworkPhysicsObject), "BulletPush")]
 	class NetworkPhysicsObject_BulletPush
 	{
 		public static bool Prefix(NetworkPhysicsObject __instance)
 		{
 			return __instance.gameObject.GetComponent<MapObjectAnimation>() == null;
+		}
+	}
+
+	// Needed to fix collision with animated saws
+	[HarmonyPatch(typeof(NetworkPhysicsObject), "Push")]
+	class NetworkPhysicsObject_Push
+	{
+		public static bool Prefix(NetworkPhysicsObject __instance)
+		{
+			return __instance.gameObject.GetComponent<MapObjectAnimation>() == null;
+		}
+	}
+
+	// Fixes saw collision with destructible boxes
+	[HarmonyPatch(typeof(DamageBox), "Collide")]
+	class DamageBox_Collide
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var list = instructions.ToList();
+			var newInstructions = new List<CodeInstruction>();
+
+			var f_shake = AccessTools.Field(typeof(DamageBox), "shake");
+			var m_getCharacterData = AccessTools.Method(typeof(Component), "GetComponent", null, new Type[] { typeof(CharacterData) });
+			var m_opImplicit = typeof(UnityEngine.Object)
+				.GetMethods(BindingFlags.Public | BindingFlags.Static)
+				.First(mi => mi.Name == "op_Implicit" && mi.ReturnType == typeof(bool));
+
+			for (int i = 0; i < list.Count; i++)
+			{
+				if (list[i].IsLdloc() && list[i + 1].Calls(m_getCharacterData))
+				{
+					// Call GetComponent<CharacterData>() on a non-null component (base game bug)
+					newInstructions.Add(new CodeInstruction(OpCodes.Ldloc_1));
+					newInstructions.Add(list[i + 1]);
+					i++;
+				}
+				else if (
+					list[i].IsLdarg(0) &&
+					list[i + 1].LoadsField(f_shake) &&
+					list[i + 2].LoadsConstant(0f)
+				)
+				{
+					// Make sure local variable `component2` is not null before using it
+					newInstructions.Add(new CodeInstruction(OpCodes.Ldloc_S, 4));
+					newInstructions.Add(new CodeInstruction(OpCodes.Call, m_opImplicit));
+					newInstructions.Add(new CodeInstruction(OpCodes.Brfalse, list[i + 3].operand));
+					newInstructions.Add(list[i]);
+					newInstructions.Add(list[i + 1]);
+					newInstructions.Add(list[i + 2]);
+					newInstructions.Add(list[i + 3]);
+					i += 3;
+				}
+				else
+				{
+					newInstructions.Add(list[i]);
+				}
+			}
+
+			return newInstructions;
 		}
 	}
 

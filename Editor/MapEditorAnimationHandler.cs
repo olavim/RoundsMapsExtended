@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using MapsExt.MapObjects;
 using System;
+using System.Collections.Generic;
+using UnboundLib;
 
 namespace MapsExt.Editor
 {
@@ -11,10 +13,21 @@ namespace MapsExt.Editor
 		private int keyframe;
 
 		private GameObject keyframeMapObject;
+		private LineRenderer traceLine;
 
 		public void Awake()
 		{
 			this.editor = this.gameObject.GetComponent<MapEditor>();
+
+			var traceLineGo = new GameObject("Animation Trace Line");
+			traceLineGo.transform.SetParent(this.transform);
+			this.traceLine = traceLineGo.AddComponent<LineRenderer>();
+			this.traceLine.material = new Material(Shader.Find("Sprites/Default"));
+			this.traceLine.widthMultiplier = 0.15f;
+			this.traceLine.numCornerVertices = 4;
+			this.traceLine.startColor = new Color(1f, 1f, 1f, 0.01f);
+			this.traceLine.endColor = this.traceLine.startColor;
+			this.traceLine.loop = false;
 		}
 
 		public void Update()
@@ -23,6 +36,8 @@ namespace MapsExt.Editor
 			{
 				return;
 			}
+
+			this.UpdateTraceLine();
 		}
 
 		private void AddAnimation(GameObject go)
@@ -99,12 +114,41 @@ namespace MapsExt.Editor
 					newActionHandler.onAction += this.HandleKeyframeChanged;
 				});
 			}
+
+			this.UpdateTraceLine();
 		}
 
 		public void AddKeyframe()
 		{
 			this.animation.AddKeyframe();
 			this.SetKeyframe(this.animation.keyframes.Count - 1);
+		}
+
+		private void UpdateTraceLine()
+		{
+			if (this.animation == null || this.keyframe <= 0)
+			{
+				this.traceLine.positionCount = 0;
+				this.traceLine.SetPositions(new Vector3[] { });
+			}
+			else
+			{
+				var positions = new List<Vector3>();
+				for (int i = 0; i <= this.keyframe; i++)
+				{
+					if (i == this.keyframe)
+					{
+						positions.Add(this.keyframeMapObject.transform.position);
+					}
+					else
+					{
+						positions.Add(this.animation.keyframes[i].position);
+					}
+				}
+
+				this.traceLine.positionCount = positions.Count;
+				this.traceLine.SetPositions(positions.ToArray());
+			}
 		}
 
 		private void SpawnKeyframeMapObject(AnimationKeyframe frame, Action<GameObject> cb)
@@ -125,6 +169,7 @@ namespace MapsExt.Editor
 			frame.position = this.keyframeMapObject.transform.position;
 			frame.scale = this.keyframeMapObject.transform.localScale;
 			frame.rotation = this.keyframeMapObject.transform.rotation;
+			this.UpdateTraceLine();
 		}
 
 		public void OnGUI()

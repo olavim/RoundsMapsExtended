@@ -11,14 +11,10 @@ namespace MapsExt
 		private class RigidBodyParams
 		{
 			public float gravityScale;
-			public RigidbodyType2D bodyType;
-			public bool isKinematic;
 
 			public RigidBodyParams(Rigidbody2D rb)
 			{
 				this.gravityScale = rb.gravityScale;
-				this.bodyType = rb.bodyType;
-				this.isKinematic = rb.isKinematic;
 			}
 		}
 
@@ -49,8 +45,8 @@ namespace MapsExt
 					rb = this.gameObject.AddComponent<Rigidbody2D>();
 				}
 
-				rb.bodyType = RigidbodyType2D.Kinematic;
 				rb.gravityScale = 0;
+				rb.constraints = RigidbodyConstraints2D.FreezeAll;
 
 				if (this.playOnAwake)
 				{
@@ -74,9 +70,8 @@ namespace MapsExt
 			}
 			else
 			{
-				rb.isKinematic = this.originalRigidBody.isKinematic;
-				rb.bodyType = this.originalRigidBody.bodyType;
 				rb.gravityScale = this.originalRigidBody.gravityScale;
+				rb.constraints = RigidbodyConstraints2D.None;
 			}
 		}
 
@@ -138,6 +133,11 @@ namespace MapsExt
 
 		private void ApplyKeyframe(int frameIndex, float time = 0)
 		{
+			if (frameIndex > this.keyframes.Count - 1)
+			{
+				return;
+			}
+
 			var startFrame = frameIndex > 0 ? this.keyframes[frameIndex - 1] : this.keyframes[0];
 			var endFrame = this.keyframes[frameIndex];
 

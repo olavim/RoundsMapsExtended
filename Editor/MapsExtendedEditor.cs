@@ -250,7 +250,7 @@ namespace MapsExt.Editor
 			rig.simulated = true;
 			rig.velocity = Vector2.zero;
 			rig.angularVelocity = 0;
-			rig.isKinematic = rig.gameObject.GetComponent<MapObjectAnimation>() ? true : !active;
+			rig.isKinematic = !active;
 		}
 	}
 
