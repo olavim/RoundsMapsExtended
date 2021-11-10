@@ -139,12 +139,14 @@ namespace MapsExt
 
 		public void UpdateMapFiles()
 		{
-			var pluginPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
-			var rootPaths = Directory.GetFiles(Path.Combine(BepInEx.Paths.GameRootPath, "maps"), "*.map", SearchOption.AllDirectories);
+			var pluginMapPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
+			var personalMapsFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
+			Directory.CreateDirectory(personalMapsFolder);
+			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
 
 			this.maps = new List<CustomMap>();
-			this.maps.AddRange(pluginPaths.Select(MapsExtended.LoadMapData));
-			this.maps.AddRange(rootPaths.Select(MapsExtended.LoadMapData));
+			this.maps.AddRange(pluginMapPaths.Select(MapsExtended.LoadMapData));
+			this.maps.AddRange(personalMapPaths.Select(MapsExtended.LoadMapData));
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
