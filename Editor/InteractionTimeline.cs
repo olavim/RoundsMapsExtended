@@ -15,6 +15,7 @@ namespace MapsExt
 		private int interactionIndex = -1;
 		private MapObjectInstance[] interactionMapObjectInstances;
 		private MapObjectManager mapObjectManager;
+		private bool isValidInteraction;
 
 		public InteractionTimeline(MapObjectManager mapObjectManager)
 		{
@@ -38,12 +39,17 @@ namespace MapsExt
 
 		public void BeginInteraction(IEnumerable<MapObjectInstance> instances, bool isCreateInteraction = false)
 		{
-			MapObjectInteraction.BeginInteraction(mapObjectManager, instances);
+			this.isValidInteraction = MapObjectInteraction.BeginInteraction(mapObjectManager, instances);
 			this.interactionMapObjectInstances = isCreateInteraction ? instances.ToArray() : null;
 		}
 
 		public void EndInteraction()
 		{
+			if (!this.isValidInteraction)
+			{
+				return;
+			}
+
 			if (this.interactionIndex < this.interactionStack.Count - 1)
 			{
 				int removeFrom = this.interactionIndex + 1;

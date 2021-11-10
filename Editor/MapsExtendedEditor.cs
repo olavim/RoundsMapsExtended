@@ -51,6 +51,7 @@ namespace MapsExt.Editor
 
 			string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}MapsExtended.Editor.UI.dll");
+			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}NetTopologySuite.dll");
 
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}

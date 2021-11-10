@@ -3,7 +3,7 @@ param(
 	[System.String]$Version,
 
 	[Parameter(Mandatory)]
-	[ValidateSet('Debug','Release')]
+	[ValidateSet('Debug', 'Release')]
 	[System.String]$Target,
 	
 	[Parameter(Mandatory)]
@@ -27,33 +27,34 @@ Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
 # Test some preliminaries
 ("$TargetPath",
- "$RoundsPath",
- "$SolutionPath",
- "$ProjectPath"
+"$RoundsPath",
+"$SolutionPath",
+"$ProjectPath"
 ) | % {
-	if (!(Test-Path "$_")) {Write-Error -ErrorAction Stop -Message "$_ folder is missing"}
+	if (!(Test-Path "$_")) { Write-Error -ErrorAction Stop -Message "$_ folder is missing" }
 }
 
 # Go
 Write-Host "Publishing for $Target from $TargetPath"
 
 # Plugin name without ".dll"
-$name = "$TargetAssembly" -Replace('.dll')
+$name = "$TargetAssembly" -Replace ('.dll')
 
-if($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
+if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
 	Write-Host "Updating local installation in $RoundsPath"
 	
 	$plug = New-Item -Type Directory -Path "$RoundsPath\BepInEx\plugins\$name" -Force
 	Write-Host "Copy $TargetAssembly to $plug"
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
 
-	if($name.Equals("MapsExtended.Editor")) {
+	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$plug" -Force
+		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$plug" -Force
 	}
 }
 
 # Release packages for ThunderStore
-if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
+if ($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
 	$package = "$SolutionPath\release"
 	
 	Write-Host "Packaging for ThunderStore"
@@ -65,8 +66,9 @@ if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name
 	Copy-Item -Path "$ProjectPath\manifest.json" -Destination "$thunder\manifest.json"
 	Copy-Item -Path "$ProjectPath\icon.png" -Destination "$thunder\icon.png"
 
-	if($name.Equals("MapsExtended.Editor")) {
+	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$thunder\plugins\"
+		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$thunder\plugins\"
 	}
 
 	((Get-Content -path "$thunder\manifest.json" -Raw) -replace "#VERSION#", "$Version") | Set-Content -Path "$thunder\manifest.json"
@@ -77,7 +79,7 @@ if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name
 }
 
 # Release package for GitHub
-if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
+if ($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended"))) {
 	$package = "$SolutionPath\release"
 
 	Write-Host "Packaging for GitHub"
@@ -85,8 +87,9 @@ if($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $name
 	$pkg.CreateSubdirectory('BepInEx\plugins')
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$pkg\BepInEx\plugins\$name.dll"
 
-	if($name.Equals("MapsExtended.Editor")) {
-		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$pkg\BepInEx\plugins\$name.UI.dll"
+	if ($name.Equals("MapsExtended.Editor")) {
+		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$pkg\BepInEx\plugins\"
+		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$pkg\BepInEx\plugins\"
 	}
 
 	Remove-Item -Path "$package\$name.$Version.zip" -Force

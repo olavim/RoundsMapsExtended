@@ -2,18 +2,18 @@
 using MapsExt.MapObjects;
 using System;
 using System.Collections.Generic;
-using UnboundLib;
+using MapsExt.UI;
 
 namespace MapsExt.Editor
 {
 	public class MapEditorAnimationHandler : MonoBehaviour
 	{
 		public MapEditor editor;
-		private MapObjectAnimation animation;
-		private int keyframe;
+		public MapObjectAnimation animation;
+		public GameObject keyframeMapObject;
 
-		private GameObject keyframeMapObject;
-		private LineRenderer traceLine;
+		private int keyframe;
+		private SmoothLineRenderer lineRenderer;
 
 		public void Awake()
 		{
@@ -21,13 +21,7 @@ namespace MapsExt.Editor
 
 			var traceLineGo = new GameObject("Animation Trace Line");
 			traceLineGo.transform.SetParent(this.transform);
-			this.traceLine = traceLineGo.AddComponent<LineRenderer>();
-			this.traceLine.material = new Material(Shader.Find("Sprites/Default"));
-			this.traceLine.widthMultiplier = 0.15f;
-			this.traceLine.numCornerVertices = 4;
-			this.traceLine.startColor = new Color(1f, 1f, 1f, 0.01f);
-			this.traceLine.endColor = this.traceLine.startColor;
-			this.traceLine.loop = false;
+			this.lineRenderer = traceLineGo.AddComponent<SmoothLineRenderer>();
 		}
 
 		public void Update()
@@ -61,7 +55,7 @@ namespace MapsExt.Editor
 			this.SetAnimation(anim);
 		}
 
-		private void SetAnimation(MapObjectAnimation newAnimation)
+		public void SetAnimation(MapObjectAnimation newAnimation)
 		{
 			if (newAnimation == null)
 			{
@@ -109,6 +103,7 @@ namespace MapsExt.Editor
 
 				this.SpawnKeyframeMapObject(frame, instance =>
 				{
+					GameObject.Destroy(instance.GetComponent<MapObjectInstance>());
 					this.keyframeMapObject = instance;
 					var newActionHandler = this.keyframeMapObject.GetComponent<EditorActionHandler>();
 					newActionHandler.onAction += this.HandleKeyframeChanged;
@@ -126,29 +121,17 @@ namespace MapsExt.Editor
 
 		private void UpdateTraceLine()
 		{
-			if (this.animation == null || this.keyframe <= 0)
+			var points = new List<Vector3>();
+
+			if (this.animation != null && this.keyframe > 0)
 			{
-				this.traceLine.positionCount = 0;
-				this.traceLine.SetPositions(new Vector3[] { });
-			}
-			else
-			{
-				var positions = new List<Vector3>();
 				for (int i = 0; i <= this.keyframe; i++)
 				{
-					if (i == this.keyframe)
-					{
-						positions.Add(this.keyframeMapObject.transform.position);
-					}
-					else
-					{
-						positions.Add(this.animation.keyframes[i].position);
-					}
+					points.Add(this.animation.keyframes[i].position);
 				}
-
-				this.traceLine.positionCount = positions.Count;
-				this.traceLine.SetPositions(positions.ToArray());
 			}
+
+			this.lineRenderer.SetPositions(points);
 		}
 
 		private void SpawnKeyframeMapObject(AnimationKeyframe frame, Action<GameObject> cb)

@@ -24,11 +24,11 @@ namespace MapsExt
 			MapObjectInteraction.BeginInteraction(mapObjectManager, objects.Select(obj => obj.GetComponent<MapObjectInstance>()));
 		}
 
-		public static void BeginInteraction(MapObjectManager mapObjectManager, IEnumerable<MapObjectInstance> instances)
+		public static bool BeginInteraction(MapObjectManager mapObjectManager, IEnumerable<MapObjectInstance> instances)
 		{
 			if (instances.Any(ins => ins == null))
 			{
-				throw new ArgumentException("Cannot begin interaction: MapObjectInstance must not be null");
+				return false;
 			}
 
 			MapObjectInteraction.cachedMapObjectManager = mapObjectManager;
@@ -39,6 +39,8 @@ namespace MapsExt
 				var state = mapObjectManager.Serialize(instance);
 				MapObjectInteraction.startState.Add(new Tuple<MapObjectInstance, MapObject>(instance, state));
 			}
+
+			return true;
 		}
 
 		public static MapObjectInteraction EndInteraction()

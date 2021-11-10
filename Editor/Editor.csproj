@@ -36,6 +36,7 @@
 	<EmbeddedResource Include="AssetsEmbedded\uielements" />
   </ItemGroup>
   <ItemGroup>
+	<PackageReference Include="NetTopologySuite" Version="2.4.0" />
 	<PackageReference Include="UnboundLib" Version="2.7.3" />
 	<ProjectReference Include="..\Editor.UI\Editor.UI.csproj" />
 	<ProjectReference Include="..\MapsExtended\MapsExtended.csproj" />
@@ -117,6 +118,9 @@
 	  <HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UIModule.dll</HintPath>
 	</Reference>
   </ItemGroup>
+	<ItemGroup>
+    <Compile Include="..\ThirdParty\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+	</ItemGroup>
   <Target Name="ReadPackageVersionFromOutputAssembly" DependsOnTargets="Build" Outputs="$(PackageVersion)">
 	<GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
 	  <Output TaskParameter="Assemblies" ItemName="PackAssembly" />

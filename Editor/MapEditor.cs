@@ -77,7 +77,7 @@ namespace MapsExt.Editor
 			this.tempContent.SetActive(false);
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
-			this.gameObject.AddComponent<MapEditorAnimationHandler>();
+			this.animationHandler = this.gameObject.AddComponent<MapEditorAnimationHandler>();
 
 			var gridGo = new GameObject("MapEditorGrid");
 			gridGo.transform.SetParent(this.transform);
@@ -145,6 +145,14 @@ namespace MapsExt.Editor
 			foreach (var mapObject in mapObjects)
 			{
 				mapData.mapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject));
+			}
+
+			// If a map object is being animated, it is disabled and needs to be handled separately
+			if (this.animationHandler.animation)
+			{
+				var mapObjectData = MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animationHandler.animation.gameObject);
+				mapObjectData.active = true;
+				mapData.mapObjects.Add(mapObjectData);
 			}
 
 			return mapData;
@@ -295,6 +303,7 @@ namespace MapsExt.Editor
 		{
 			this.ClearSelected();
 			this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
+			this.animationHandler.SetAnimation(null);
 
 			this.isSimulating = true;
 			this.isCreatingSelection = false;

@@ -77,6 +77,6 @@ namespace MapsExt.MapObjects
 			}
 		}
 	}
-	
+
 	public class SpatialMapObjectInstance : MonoBehaviour { }
 }
