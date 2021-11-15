@@ -5,15 +5,15 @@ using System.Linq;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Algorithm;
 using NetTopologySuite.Operation.Union;
-using Sebastian.Geometry;
+using MapsExt.Geometry;
 using Polygon = NetTopologySuite.Geometries.Polygon;
 
 namespace MapsExt.UI
 {
 	public class SmoothLineRenderer : MonoBehaviour
 	{
-		public int cornerVertexCount = 12;
-		public float lineWidth = 0.2f;
+		public int cornerVertexCount = 8;
+		public float lineWidth = 0.1f;
 
 		private GeometryFactory geometryFactory;
 		private MeshRenderer renderer;
@@ -34,36 +34,28 @@ namespace MapsExt.UI
 
 			if (points.Count < 2)
 			{
-				filter.mesh = null;
 				return;
 			}
 
-			var circles = points.Select(this.CreateCircle).ToList();
-			var hull = this.CreateConcaveHull(circles);
+			Mesh newMesh = null;
 
-			var shapes = new List<Shape>();
-
-			var unionExterior = new Shape();
-			unionExterior.points = hull.ExteriorRing.Coordinates.Select(c => new Vector3((float) c.X, 0, (float) c.Y)).ToList();
-			unionExterior.points.RemoveAt(unionExterior.points.Count - 1);
-			shapes.Add(unionExterior);
-
-			for (int i = 0; i < hull.NumInteriorRings; i++)
+			float width = this.lineWidth;
+			while (newMesh == null)
 			{
-				var shape = new Shape();
-				shape.points = hull.InteriorRings[i].Coordinates.Select(c => new Vector3((float) c.X, 0, (float) c.Y)).ToList();
-				shape.points.RemoveAt(shape.points.Count - 1);
-				shapes.Add(shape);
+				var circles = points.Select(p => this.CreateCircle(p, width)).ToList();
+				var hull = this.CreateConcaveHull(circles);
+				var triangulator = new Triangulator(hull);
+				newMesh = triangulator.GetMesh();
+				width -= 0.01f;
 			}
 
-			filter.mesh = new CompositeShape(shapes).GetMesh();
-			filter.mesh.vertices = filter.mesh.vertices.Select(v => new Vector3(v.x, v.z, 0)).ToArray();
+			filter.mesh = newMesh;
 		}
 
-		private Polygon CreateCircle(Vector3 pos)
+		private Polygon CreateCircle(Vector3 pos, float width)
 		{
 			var coords = new List<Coordinate>();
-			var widthVertex = new Vector3(0, this.lineWidth / 2f, 0);
+			var widthVertex = new Vector3(0, width / 2f, 0);
 			float anglePerVertex = 360f / this.cornerVertexCount;
 
 			for (int j = 0; j < this.cornerVertexCount; j++)
@@ -81,7 +73,7 @@ namespace MapsExt.UI
 
 		private Polygon CreateConcaveHull(List<Polygon> shapes)
 		{
-			var lines = new List<Geometry>();
+			var lines = new List<NetTopologySuite.Geometries.Geometry>();
 
 			for (int i = 0; i < shapes.Count - 1; i++)
 			{

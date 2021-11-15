@@ -50,6 +50,7 @@ if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
 	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$plug" -Force
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$plug" -Force
+		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$plug" -Force
 	}
 }
 
@@ -69,6 +70,7 @@ if ($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $nam
 	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$thunder\plugins\"
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$thunder\plugins\"
+		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$thunder\plugins\"
 	}
 
 	((Get-Content -path "$thunder\manifest.json" -Raw) -replace "#VERSION#", "$Version") | Set-Content -Path "$thunder\manifest.json"
@@ -90,6 +92,7 @@ if ($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $nam
 	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$pkg\BepInEx\plugins\"
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$pkg\BepInEx\plugins\"
+		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$pkg\BepInEx\plugins\"
 	}
 
 	Remove-Item -Path "$package\$name.$Version.zip" -Force
