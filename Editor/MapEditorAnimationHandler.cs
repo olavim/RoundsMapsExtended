@@ -127,7 +127,7 @@ namespace MapsExt.Editor
 			{
 				for (int i = 0; i <= this.keyframe; i++)
 				{
-					points.Add(this.animation.keyframes[i].position);
+					points.Add(i == this.keyframe ? this.keyframeMapObject.transform.position : this.animation.keyframes[i].position);
 				}
 			}
 

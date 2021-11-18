@@ -230,7 +230,11 @@ namespace MapsExt.Geometry
 			public PolygonHull(LineString ring, int vertexOffset)
 			{
 				var coords = ring.Coordinates.ToList();
-				coords.RemoveAt(coords.Count - 1);
+
+				if (coords.Count > 0)
+				{
+					coords.RemoveAt(coords.Count - 1);
+				}
 
 				this.vertices = coords.ToArray();
 				this.vertexOffset = vertexOffset;
@@ -263,7 +267,7 @@ namespace MapsExt.Geometry
 					}
 				}
 
-				var sortedInteriors = interiors.ToList();
+				var sortedInteriors = interiors.Where(r => r.Coordinates.Length > 0).ToList();
 
 				// Sort interiors by their max x-coordinates, descending order
 				sortedInteriors.Sort((a, b) => b.Coordinates.Max(c => c.X).CompareTo(a.Coordinates.Max(c => c.X)));
@@ -286,7 +290,7 @@ namespace MapsExt.Geometry
 				{
 					for (int j = 0; j < this.vertices.Length; j++)
 					{
-						if (i != j && this.vertices[i].Distance(this.vertices[j]) < 0.001f)
+						if (i != j && this.vertices[i].Distance(this.vertices[j]) < 0.0001f)
 						{
 							return false;
 						}

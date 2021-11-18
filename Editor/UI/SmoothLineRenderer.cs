@@ -31,6 +31,7 @@ namespace MapsExt.UI
 		public void SetPositions(List<Vector3> points)
 		{
 			var filter = this.gameObject.GetComponent<MeshFilter>();
+			filter.mesh = null;
 
 			if (points.Count < 2)
 			{
@@ -40,7 +41,7 @@ namespace MapsExt.UI
 			Mesh newMesh = null;
 
 			float width = this.lineWidth;
-			while (newMesh == null)
+			while (newMesh == null && width >= 0.05f)
 			{
 				var circles = points.Select(p => this.CreateCircle(p, width)).ToList();
 				var hull = this.CreateConcaveHull(circles);
