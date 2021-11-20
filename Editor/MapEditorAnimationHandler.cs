@@ -17,16 +17,12 @@ namespace MapsExt.Editor
 
 		public void Awake()
 		{
-			this.editor = this.gameObject.GetComponent<MapEditor>();
-
-			var traceLineGo = new GameObject("Animation Trace Line");
-			traceLineGo.transform.SetParent(this.transform);
-			this.lineRenderer = traceLineGo.AddComponent<SmoothLineRenderer>();
+			this.lineRenderer = this.gameObject.AddComponent<SmoothLineRenderer>();
 		}
 
 		public void Update()
 		{
-			if (this.editor.isSimulating)
+			if (!this.editor || this.editor.isSimulating)
 			{
 				return;
 			}
@@ -103,7 +99,6 @@ namespace MapsExt.Editor
 
 				this.SpawnKeyframeMapObject(frame, instance =>
 				{
-					GameObject.Destroy(instance.GetComponent<MapObjectInstance>());
 					this.keyframeMapObject = instance;
 					var newActionHandler = this.keyframeMapObject.GetComponent<EditorActionHandler>();
 					newActionHandler.onAction += this.HandleKeyframeChanged;
@@ -163,6 +158,14 @@ namespace MapsExt.Editor
 			}
 
 			GUI.Window(0, new Rect(10, 30, 200, 500), this.BuildAnimationWindow, "Animation");
+		}
+
+		public void RefreshCurrentFrame()
+		{
+			var frame = this.animation.keyframes[this.keyframe];
+			this.keyframeMapObject.transform.position = frame.position;
+			this.keyframeMapObject.transform.localScale = frame.scale;
+			this.keyframeMapObject.transform.rotation = frame.rotation;
 		}
 
 		private void BuildAnimationWindow(int windowId)

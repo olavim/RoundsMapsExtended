@@ -33,7 +33,13 @@ namespace MapsExt.Editor
 
 		public IEnumerable<MapObjectInstance> SelectedMapObjectInstances
 		{
-			get { return this.selectedMapObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()).Distinct().ToArray(); }
+			get
+			{
+				// If a map object is being animated, it's also selected
+				return this.animationHandler.animation
+					? new MapObjectInstance[] { this.animationHandler.animation.gameObject.GetComponent<MapObjectInstance>() }
+					: this.selectedMapObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()).Distinct().ToArray();
+			}
 		}
 
 		private bool isCreatingSelection;
@@ -77,7 +83,11 @@ namespace MapsExt.Editor
 			this.tempContent.SetActive(false);
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
-			this.animationHandler = this.gameObject.AddComponent<MapEditorAnimationHandler>();
+
+			var animationContainer = new GameObject("Animation Handler");
+			animationContainer.transform.SetParent(this.transform);
+			this.animationHandler = animationContainer.AddComponent<MapEditorAnimationHandler>();
+			this.animationHandler.editor = this;
 
 			var gridGo = new GameObject("MapEditorGrid");
 			gridGo.transform.SetParent(this.transform);
@@ -190,6 +200,7 @@ namespace MapsExt.Editor
 				this.ResetSpawnLabels();
 				this.ClearSelected();
 				this.UpdateRopeAttachments();
+				this.animationHandler.RefreshCurrentFrame();
 			}
 		}
 
@@ -200,6 +211,7 @@ namespace MapsExt.Editor
 				this.ResetSpawnLabels();
 				this.ClearSelected();
 				this.UpdateRopeAttachments();
+				this.animationHandler.RefreshCurrentFrame();
 			}
 		}
 

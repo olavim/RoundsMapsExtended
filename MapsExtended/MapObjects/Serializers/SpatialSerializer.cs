@@ -69,10 +69,20 @@ namespace MapsExt.MapObjects
 
 			if (data.animationKeyframes != null && data.animationKeyframes.Count > 0)
 			{
-				var anim = target.AddComponent<MapObjectAnimation>();
-				foreach (var frame in data.animationKeyframes)
+				var anim = target.GetOrAddComponent<MapObjectAnimation>();
+
+				for (int i = 0; i < data.animationKeyframes.Count; i++)
 				{
-					anim.keyframes.Add(new AnimationKeyframe(frame));
+					var newFrame = new AnimationKeyframe(data.animationKeyframes[i]);
+
+					if (i <= anim.keyframes.Count - 1)
+					{
+						anim.keyframes[i] = newFrame;
+					}
+					else
+					{
+						anim.keyframes.Add(newFrame);
+					}
 				}
 			}
 		}
