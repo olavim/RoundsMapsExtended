@@ -22,7 +22,7 @@ namespace MapsExt.UI
 		{
 			this.renderer = this.gameObject.GetOrAddComponent<MeshRenderer>();
 			this.renderer.material = new Material(Shader.Find("Sprites/Default"));
-			this.renderer.material.color = new Color(1f, 1f, 1f, 0.01f);
+			this.renderer.material.color = new Color(1f, 1f, 1f, 0.1f);
 
 			this.gameObject.GetOrAddComponent<MeshFilter>();
 			this.geometryFactory = new GeometryFactory(PrecisionModel.FloatingSingle.Value);

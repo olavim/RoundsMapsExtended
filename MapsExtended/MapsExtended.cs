@@ -340,7 +340,6 @@ namespace MapsExt
 	{
 		public static void Postfix(MapObjet_Rope __instance, AnchoredJoint2D ___joint)
 		{
-			UnityEngine.Debug.Log("AddJoint");
 			__instance.JointAdded(___joint);
 		}
 	}

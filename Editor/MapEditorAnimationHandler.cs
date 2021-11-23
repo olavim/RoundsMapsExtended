@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Rendering;
 using MapsExt.MapObjects;
 using System;
 using System.Collections.Generic;
@@ -11,13 +13,61 @@ namespace MapsExt.Editor
 		public MapEditor editor;
 		public MapObjectAnimation animation;
 		public GameObject keyframeMapObject;
+		public Action onAnimationChanged;
 
-		private int keyframe;
+		public int Keyframe { get; private set; }
+
 		private SmoothLineRenderer lineRenderer;
+		private int prevKeyframe = -1;
+		private GameObject curtain;
 
 		public void Awake()
 		{
 			this.lineRenderer = this.gameObject.AddComponent<SmoothLineRenderer>();
+
+			this.curtain = new GameObject("Curtain");
+			this.curtain.transform.SetParent(this.transform);
+			this.curtain.SetActive(false);
+
+			var canvas = this.curtain.AddComponent<Canvas>();
+			canvas.sortingLayerID = SortingLayer.NameToID("MapParticle");
+			canvas.sortingOrder = 10;
+
+			var renderer = this.curtain.GetComponent<CanvasRenderer>();
+			var image = this.curtain.AddComponent<Image>();
+			image.color = new Color(0.15f, 0.15f, 0.15f, 0.95f);
+			image.rectTransform.sizeDelta = new Vector2(Screen.width, Screen.height);
+		}
+
+		public void OnEnable()
+		{
+			if (this.animation == null)
+			{
+				return;
+			}
+
+			this.animation.gameObject.SetActive(false);
+			this.SetKeyframe(this.prevKeyframe);
+		}
+
+		public void OnDisable()
+		{
+			if (this.animation == null)
+			{
+				return;
+			}
+
+			var baseObject = this.animation.gameObject;
+			var firstFrame = this.animation.keyframes[0];
+			baseObject.transform.position = firstFrame.position;
+			baseObject.transform.localScale = firstFrame.scale;
+			baseObject.transform.rotation = firstFrame.rotation;
+			baseObject.SetActive(true);
+
+			this.prevKeyframe = this.Keyframe;
+
+			UnityEngine.Debug.Log("set frame -1");
+			this.SetKeyframe(-1);
 		}
 
 		public void Update()
@@ -30,7 +80,7 @@ namespace MapsExt.Editor
 			this.UpdateTraceLine();
 		}
 
-		private void AddAnimation(GameObject go)
+		public void AddAnimation(GameObject go)
 		{
 			go.SetActive(false);
 			var anim = go.AddComponent<MapObjectAnimation>();
@@ -65,6 +115,7 @@ namespace MapsExt.Editor
 					baseObject.SetActive(true);
 				}
 
+				this.curtain.SetActive(false);
 				this.animation = null;
 				this.SetKeyframe(-1);
 				return;
@@ -72,6 +123,7 @@ namespace MapsExt.Editor
 
 			this.animation = newAnimation;
 			this.animation.gameObject.SetActive(false);
+			this.curtain.SetActive(true);
 
 			if (this.animation.keyframes.Count == 0)
 			{
@@ -80,9 +132,10 @@ namespace MapsExt.Editor
 			}
 
 			this.SetKeyframe(0);
+			this.onAnimationChanged?.Invoke();
 		}
 
-		private void SetKeyframe(int frameIndex)
+		public void SetKeyframe(int frameIndex)
 		{
 			if (this.keyframeMapObject)
 			{
@@ -92,16 +145,27 @@ namespace MapsExt.Editor
 				this.keyframeMapObject = null;
 			}
 
-			if (frameIndex >= 0)
+			this.editor.ClearSelected();
+			this.Keyframe = frameIndex;
+
+			if (this.Keyframe >= 0)
 			{
-				this.keyframe = frameIndex;
-				var frame = this.animation.keyframes[this.keyframe];
+				var frame = this.animation.keyframes[this.Keyframe];
 
 				this.SpawnKeyframeMapObject(frame, instance =>
 				{
 					this.keyframeMapObject = instance;
 					var newActionHandler = this.keyframeMapObject.GetComponent<EditorActionHandler>();
 					newActionHandler.onAction += this.HandleKeyframeChanged;
+
+					foreach (var mask in instance.GetComponentsInChildren<SpriteMask>())
+					{
+						mask.backSortingOrder = 20;
+						mask.frontSortingOrder = 21;
+					}
+
+					this.keyframeMapObject.transform.SetAsFirstSibling();
+					this.editor.AddSelected(this.keyframeMapObject);
 				});
 			}
 
@@ -114,15 +178,21 @@ namespace MapsExt.Editor
 			this.SetKeyframe(this.animation.keyframes.Count - 1);
 		}
 
+		public void DeleteKeyframe(int index)
+		{
+			this.animation.DeleteKeyframe(index);
+			this.SetKeyframe(Mathf.Min(index + 1, this.animation.keyframes.Count - 1));
+		}
+
 		private void UpdateTraceLine()
 		{
 			var points = new List<Vector3>();
 
-			if (this.animation != null && this.keyframe > 0)
+			if (this.animation != null && this.Keyframe > 0)
 			{
-				for (int i = 0; i <= this.keyframe; i++)
+				for (int i = 0; i <= this.Keyframe; i++)
 				{
-					points.Add(i == this.keyframe ? this.keyframeMapObject.transform.position : this.animation.keyframes[i].position);
+					points.Add(i == this.Keyframe ? this.keyframeMapObject.transform.position : this.animation.keyframes[i].position);
 				}
 			}
 
@@ -138,76 +208,24 @@ namespace MapsExt.Editor
 			frameData.rotation = frame.rotation;
 			frameData.animationKeyframes.Clear();
 
-			MapsExtendedEditor.instance.SpawnObject(this.editor.content, frameData, cb);
+			MapsExtendedEditor.instance.SpawnObject(this.gameObject, frameData, cb);
 		}
 
 		private void HandleKeyframeChanged()
 		{
-			var frame = this.animation.keyframes[this.keyframe];
+			var frame = this.animation.keyframes[this.Keyframe];
 			frame.position = this.keyframeMapObject.transform.position;
 			frame.scale = this.keyframeMapObject.transform.localScale;
 			frame.rotation = this.keyframeMapObject.transform.rotation;
 			this.UpdateTraceLine();
 		}
 
-		public void OnGUI()
-		{
-			if (this.editor.isSimulating)
-			{
-				return;
-			}
-
-			GUI.Window(0, new Rect(10, 30, 200, 500), this.BuildAnimationWindow, "Animation");
-		}
-
 		public void RefreshCurrentFrame()
 		{
-			var frame = this.animation.keyframes[this.keyframe];
+			var frame = this.animation.keyframes[this.Keyframe];
 			this.keyframeMapObject.transform.position = frame.position;
 			this.keyframeMapObject.transform.localScale = frame.scale;
 			this.keyframeMapObject.transform.rotation = frame.rotation;
-		}
-
-		private void BuildAnimationWindow(int windowId)
-		{
-			GUI.enabled =
-				this.animation == null &&
-				editor.selectedMapObjects.Count == 1 &&
-				editor.selectedMapObjects[0].GetComponent<SpatialMapObjectInstance>() != null;
-
-			if (GUI.Button(new Rect(10, 40, 100, 20), "Animate"))
-			{
-				if (editor.selectedMapObjects[0].GetComponent<MapObjectAnimation>())
-				{
-					this.SetAnimation(editor.selectedMapObjects[0].GetComponent<MapObjectAnimation>());
-				}
-				else
-				{
-					this.AddAnimation(editor.selectedMapObjects[0]);
-				}
-			}
-
-			GUI.enabled = this.animation != null;
-
-			if (GUI.Button(new Rect(10, 70, 100, 20), "Stop Animating"))
-			{
-				this.SetAnimation(null);
-			}
-
-			if (GUI.Button(new Rect(10, 100, 100, 20), "Add Keyframe"))
-			{
-				this.AddKeyframe();
-			}
-
-			for (int i = 0; i < (this.animation?.keyframes.Count ?? 0); i++)
-			{
-				if (GUI.Button(new Rect(10, 130 + (30 * i), 100, 20), $"Keyframe {i + 1}"))
-				{
-					this.SetKeyframe(i);
-				}
-			}
-
-			GUI.enabled = true;
 		}
 	}
 }

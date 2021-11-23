@@ -39,11 +39,35 @@ namespace MapsExt.UI
 			}
 		}
 
+		public static GameObject AnimationWindowPrefab
+		{
+			get
+			{
+				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/animation window.prefab");
+			}
+		}
+
+		public static GameObject KeyframeSettingsPrefab
+		{
+			get
+			{
+				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/keyframe settings.prefab");
+			}
+		}
+
 		public static GameObject FoldoutPrefab
 		{
 			get
 			{
 				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/foldout.prefab");
+			}
+		}
+
+		public static Sprite SquareSprite
+		{
+			get
+			{
+				return Assets.bundle.LoadAsset<Sprite>("assets/squaresprite.png");
 			}
 		}
 

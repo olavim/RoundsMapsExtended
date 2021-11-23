@@ -15,11 +15,29 @@ namespace MapsExt.UI
 		{
 			this.foldoutToggle.onClick.AddListener(() =>
 			{
-				bool expand = !this.content?.activeSelf ?? true;
-				this.content?.SetActive(expand);
-				this.expandedFeature?.SetActive(expand);
-				this.collapsedFeature?.SetActive(!expand);
+				if (this.content)
+				{
+					this.SetOpen(!this.content.activeSelf);
+				}
 			});
+		}
+
+		public void SetOpen(bool open)
+		{
+			if (this.content)
+			{
+				this.content.SetActive(open);
+			}
+
+			if (this.expandedFeature)
+			{
+				this.expandedFeature.SetActive(open);
+			}
+
+			if (this.collapsedFeature)
+			{
+				this.collapsedFeature.SetActive(!open);
+			}
 		}
 	}
 }

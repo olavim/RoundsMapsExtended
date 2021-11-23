@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Sirenix.Serialization;
 using MapsExt.UI;
-using MapsExt.Visualizers;
 using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
@@ -22,6 +22,7 @@ namespace MapsExt.Editor
 		public bool snapToGrid;
 		public InteractionTimeline timeline;
 		public GameObject content;
+		public MapEditorAnimationHandler animationHandler;
 
 		public readonly Material mat = new Material(Shader.Find("Sprites/Default"));
 
@@ -57,7 +58,6 @@ namespace MapsExt.Editor
 
 		private Grid grid;
 		private MapEditorUI gui;
-		private MapEditorAnimationHandler animationHandler;
 		private GameObject tempSpawn;
 		private GameObject tempContent;
 
@@ -75,6 +75,18 @@ namespace MapsExt.Editor
 			this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
 			this.timeline = new InteractionTimeline(MapsExtendedEditor.instance.mapObjectManager);
 
+			var go = GameObject.Instantiate(MapsExtendedEditor.instance.frontParticles, Vector3.zero, Quaternion.identity, this.transform);
+			foreach (var r in go.GetComponentsInChildren<ParticleSystemRenderer>())
+			{
+				r.sortingOrder = 20;
+				r.gameObject.GetComponent<ParticleSystem>().Play();
+			}
+
+			var animationContainer = new GameObject("Animation Handler");
+			animationContainer.transform.SetParent(this.transform);
+			this.animationHandler = animationContainer.AddComponent<MapEditorAnimationHandler>();
+			this.animationHandler.editor = this;
+
 			this.content = new GameObject("Content");
 			this.content.transform.SetParent(this.transform);
 
@@ -83,11 +95,6 @@ namespace MapsExt.Editor
 			this.tempContent.SetActive(false);
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
-
-			var animationContainer = new GameObject("Animation Handler");
-			animationContainer.transform.SetParent(this.transform);
-			this.animationHandler = animationContainer.AddComponent<MapEditorAnimationHandler>();
-			this.animationHandler.editor = this;
 
 			var gridGo = new GameObject("MapEditorGrid");
 			gridGo.transform.SetParent(this.transform);
@@ -155,14 +162,6 @@ namespace MapsExt.Editor
 			foreach (var mapObject in mapObjects)
 			{
 				mapData.mapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject));
-			}
-
-			// If a map object is being animated, it is disabled and needs to be handled separately
-			if (this.animationHandler.animation)
-			{
-				var mapObjectData = MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animationHandler.animation.gameObject);
-				mapObjectData.active = true;
-				mapData.mapObjects.Add(mapObjectData);
 			}
 
 			return mapData;
@@ -315,10 +314,14 @@ namespace MapsExt.Editor
 		{
 			this.ClearSelected();
 			this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
-			this.animationHandler.SetAnimation(null);
-
+			this.animationHandler.enabled = false;
 			this.isSimulating = true;
 			this.isCreatingSelection = false;
+
+			foreach (var r in this.gameObject.GetComponentsInChildren<ParticleSystemRenderer>())
+			{
+				r.enabled = false;
+			}
 
 			if (this.content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
@@ -326,12 +329,12 @@ namespace MapsExt.Editor
 				{
 					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this.tempSpawn = instance;
-					this.DoStartSimulation();
+					this.ExecuteAfterFrames(1, this.DoStartSimulation);
 				});
 			}
 			else
 			{
-				this.DoStartSimulation();
+				this.ExecuteAfterFrames(1, this.DoStartSimulation);
 			}
 		}
 		private void DoStartSimulation()
@@ -380,6 +383,12 @@ namespace MapsExt.Editor
 
 			this.content.SetActive(true);
 			this.tempContent.SetActive(false);
+			this.animationHandler.enabled = true;
+
+			foreach (var r in this.gameObject.GetComponentsInChildren<ParticleSystemRenderer>())
+			{
+				r.enabled = true;
+			}
 		}
 
 		public void OnClickOpen()
@@ -431,7 +440,16 @@ namespace MapsExt.Editor
 			{
 				var list = EditorUtils.GetContainedMapObjects(UIUtils.GUIToWorldRect(this.selectionRect));
 				this.ClearSelected();
-				this.AddSelected(list);
+
+				// When editing animation, don't allow selecting other map objects
+				if (this.animationHandler.animation != null && list.Any(obj => obj == this.animationHandler.keyframeMapObject))
+				{
+					this.AddSelected(this.animationHandler.keyframeMapObject);
+				}
+				else if (this.animationHandler.animation == null)
+				{
+					this.AddSelected(list);
+				}
 			}
 
 			this.isCreatingSelection = false;
@@ -521,7 +539,12 @@ namespace MapsExt.Editor
 			mapObjects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
 			GameObject mapObject = null;
 
-			if (mapObjects.Count > 0)
+			// When editing animation, don't allow selecting other map objects
+			if (this.animationHandler.animation != null && mapObjects.Any(obj => obj == this.animationHandler.keyframeMapObject))
+			{
+				mapObject = this.animationHandler.keyframeMapObject;
+			}
+			else if (this.animationHandler.animation == null && mapObjects.Count > 0)
 			{
 				mapObject = mapObjects[0];
 
@@ -727,19 +750,19 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void ClearSelected()
+		public void ClearSelected()
 		{
 			this.selectedMapObjects.Clear();
 			this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
 		}
 
-		private void AddSelected(IEnumerable<GameObject> list)
+		public void AddSelected(IEnumerable<GameObject> list)
 		{
 			this.selectedMapObjects.AddRange(list);
 			this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
 		}
 
-		private void AddSelected(GameObject obj)
+		public void AddSelected(GameObject obj)
 		{
 			this.selectedMapObjects.Add(obj);
 			this.gui.OnChangeSelectedObjects(this.selectedMapObjects);

@@ -11,10 +11,14 @@ namespace MapsExt
 		private class RigidBodyParams
 		{
 			public float gravityScale;
+			public bool isKinematic;
+			public bool useFullKinematicContacts;
 
 			public RigidBodyParams(Rigidbody2D rb)
 			{
 				this.gravityScale = rb.gravityScale;
+				this.isKinematic = rb.isKinematic;
+				this.useFullKinematicContacts = rb.useFullKinematicContacts;
 			}
 		}
 
@@ -47,6 +51,8 @@ namespace MapsExt
 
 				rb.gravityScale = 0;
 				rb.constraints = RigidbodyConstraints2D.FreezeAll;
+				rb.isKinematic = true;
+				rb.useFullKinematicContacts = true;
 
 				if (this.playOnAwake)
 				{
@@ -72,6 +78,8 @@ namespace MapsExt
 			{
 				rb.gravityScale = this.originalRigidBody.gravityScale;
 				rb.constraints = RigidbodyConstraints2D.None;
+				rb.isKinematic = this.originalRigidBody.isKinematic;
+				rb.useFullKinematicContacts = this.originalRigidBody.useFullKinematicContacts;
 			}
 		}
 
@@ -84,6 +92,11 @@ namespace MapsExt
 		public void AddKeyframe()
 		{
 			this.keyframes.Add(new AnimationKeyframe(this.keyframes[this.keyframes.Count - 1]));
+		}
+
+		public void DeleteKeyframe(int index)
+		{
+			this.keyframes.RemoveAt(index);
 		}
 
 		public void Play()

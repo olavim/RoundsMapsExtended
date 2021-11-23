@@ -26,6 +26,7 @@ namespace MapsExt.Editor
 		public List<EditorMapObjectSpec> mapObjectAttributes = new List<EditorMapObjectSpec>();
 
 		internal MapObjectManager mapObjectManager;
+		internal GameObject frontParticles;
 
 		public void Awake()
 		{
@@ -44,6 +45,7 @@ namespace MapsExt.Editor
 				if (mode == LoadSceneMode.Single)
 				{
 					this.editorActive = false;
+					this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
 				}
 			};
 
@@ -70,6 +72,8 @@ namespace MapsExt.Editor
 				MapManager.instance.RPCA_LoadLevel("NewMap");
 				SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
 			}, (obj) => { }, null, false);
+
+			this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
 		}
 
 		private void RegisterMapObjects(Assembly assembly)
@@ -216,14 +220,28 @@ namespace MapsExt.Editor
 				}
 			}
 
+			foreach (var r in go.GetComponentsInChildren<SpriteRenderer>())
+			{
+				if (r.gameObject.tag != "NoMask")
+				{
+					GameObject.Destroy(r);
+				}
+				else if (r.sortingLayerName == "MostFront")
+				{
+					r.sortingLayerID = SortingLayer.NameToID("MapParticle");
+					r.sortingOrder = 5;
+					r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+				}
+			}
+
 			var mask = go.GetComponent<SpriteMask>();
-			if (mask && mask.gameObject.tag != "NoMask")
+			if (mask)
 			{
 				mask.isCustomRangeActive = true;
 				mask.frontSortingLayerID = SortingLayer.NameToID("MapParticle");
-				mask.frontSortingOrder = 1;
+				mask.frontSortingOrder = 6;
 				mask.backSortingLayerID = SortingLayer.NameToID("MapParticle");
-				mask.backSortingOrder = 0;
+				mask.backSortingOrder = mask.gameObject.tag == "NoMask" ? 5 : 0;
 			}
 
 			this.ResetAnimations(container);
@@ -252,7 +270,11 @@ namespace MapsExt.Editor
 			rig.simulated = true;
 			rig.velocity = Vector2.zero;
 			rig.angularVelocity = 0;
-			rig.isKinematic = !active;
+
+			if (!rig.gameObject.GetComponent<MapObjectAnimation>())
+			{
+				rig.isKinematic = !active;
+			}
 		}
 	}
 

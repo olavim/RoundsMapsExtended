@@ -6,7 +6,6 @@ using MapsExt.UI;
 using MapsExt.MapObjects;
 using System;
 using System.Linq;
-using HarmonyLib;
 
 namespace MapsExt.Editor
 {
@@ -45,7 +44,9 @@ namespace MapsExt.Editor
 
 		private List<GameObject> selectedMapObjects;
 		private Window mapObjectWindow;
+		private AnimationWindow animationWindow;
 		private bool mapObjectWindowWasOpen;
+		private bool animationWindowWasOpen;
 
 		public void Awake()
 		{
@@ -72,6 +73,7 @@ namespace MapsExt.Editor
 			var cKey = new NamedKeyCode(KeyCode.C, "C");
 			var vKey = new NamedKeyCode(KeyCode.V, "V");
 			var zKey = new NamedKeyCode(KeyCode.Z, "Z");
+			var tKey = new NamedKeyCode(KeyCode.T, "T");
 
 			var openItem = new MenuItemBuilder().Label("Open...").Action(this.editor.OnClickOpen).KeyBinding(oKey, ctrlKey).Item();
 			var saveItem = new MenuItemBuilder().Label("Save").Action(this.editor.OnClickSave).KeyBinding(sKey, ctrlKey).Item();
@@ -87,11 +89,13 @@ namespace MapsExt.Editor
 			var redoItem = new MenuItemBuilder().Label("Redo").Action(this.editor.OnRedo).KeyBinding(zKey, ctrlKey, shiftKey).Item();
 			var copyItem = new MenuItemBuilder().Label("Copy").Action(this.editor.OnCopy).KeyBinding(cKey, ctrlKey).Item();
 			var pasteItem = new MenuItemBuilder().Label("Paste").Action(this.editor.OnPaste).KeyBinding(vKey, ctrlKey).Item();
+			var animationItem = new MenuItemBuilder().Label("Animation...").Action(this.OpenAnimationWindow).KeyBinding(tKey, ctrlKey).Item();
 
 			this.toolbar.editMenu.AddItem(undoItem);
 			this.toolbar.editMenu.AddItem(redoItem);
 			this.toolbar.editMenu.AddItem(copyItem);
 			this.toolbar.editMenu.AddItem(pasteItem);
+			this.toolbar.editMenu.AddItem(animationItem);
 
 			var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
 			mapObjects.Add("", new List<Tuple<string, Type>>());
@@ -141,16 +145,15 @@ namespace MapsExt.Editor
 				{
 					this.editor.OnStartSimulation();
 					this.mapObjectWindowWasOpen = this.mapObjectWindow.gameObject.activeSelf;
+					this.animationWindowWasOpen = this.animationWindow.gameObject.activeSelf;
 					this.mapObjectWindow.gameObject.SetActive(false);
+					this.animationWindow.gameObject.SetActive(false);
 				}
 				else
 				{
 					this.editor.OnStopSimulation();
-
-					if (mapObjectWindowWasOpen)
-					{
-						this.mapObjectWindow.gameObject.SetActive(true);
-					}
+					this.mapObjectWindow.gameObject.SetActive(mapObjectWindowWasOpen);
+					this.animationWindow.gameObject.SetActive(animationWindowWasOpen);
 				}
 
 				var menuState = simulated ? Menu.MenuState.DISABLED : Menu.MenuState.INACTIVE;
@@ -163,9 +166,20 @@ namespace MapsExt.Editor
 
 			this.mapObjectWindow = GameObject.Instantiate(Assets.WindowPrefab, this.transform).GetComponent<Window>();
 			this.mapObjectWindow.title.text = "Map Objects";
+			var mapObjectWindowSize = new Vector2(300, 300);
+			this.mapObjectWindow.gameObject.GetComponent<RectTransform>().sizeDelta = mapObjectWindowSize;
+			this.mapObjectWindow.transform.position = new Vector3(Screen.width - (mapObjectWindowSize.x / 2f) - 5, Screen.height - (mapObjectWindowSize.y / 2f) - 35, 0);
 
-			var windowSize = this.mapObjectWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
-			this.mapObjectWindow.transform.position = new Vector3(Screen.width - (windowSize.x / 2f) - 5, Screen.height - (windowSize.y / 2f) - 35, 0);
+			this.animationWindow = GameObject.Instantiate(Assets.AnimationWindowPrefab, this.transform).GetComponent<AnimationWindow>();
+			this.animationWindow.title.text = "Animation";
+			var animationWindowSize = new Vector2(300, 300);
+			this.animationWindow.gameObject.GetComponent<RectTransform>().sizeDelta = animationWindowSize;
+			this.animationWindow.transform.position = new Vector3(Screen.width - (animationWindowSize.x / 2f) - 5, this.mapObjectWindow.transform.position.y - animationWindowSize.y - 5, 0);
+			this.animationWindow.gameObject.SetActive(false);
+
+			this.animationWindow.deleteButton.onClick.AddListener(this.HandleDeleteAnimationKeyframe);
+			this.animationWindow.addButton.onClick.AddListener(this.HandleAddAnimationKeyframe);
+			this.animationWindow.closeButton.onClick.AddListener(this.CloseAnimationWindow);
 
 			GameObject CreateButton(MenuItem item)
 			{
@@ -259,6 +273,106 @@ namespace MapsExt.Editor
 			this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.timeline.CanRedo());
 		}
 
+		private void OpenAnimationWindow()
+		{
+			var mapObject = this.selectedMapObjects[0];
+			var anim = mapObject.GetComponent<MapObjectAnimation>();
+
+			if (anim)
+			{
+				this.editor.animationHandler.SetAnimation(anim);
+			}
+			else
+			{
+				this.editor.animationHandler.AddAnimation(mapObject);
+				anim = this.editor.animationHandler.animation;
+			}
+
+			for (int i = 0; i < anim.keyframes.Count; i++)
+			{
+				this.AddAnimationKeyframeSettings(i);
+			}
+
+			var baseKeyframeSettings = this.animationWindow.content.transform.GetChild(0).gameObject.GetComponent<KeyframeSettings>();
+			GameObject.Destroy(baseKeyframeSettings.contentFoldout.content);
+			baseKeyframeSettings.contentFoldout.label.text = "Base";
+			baseKeyframeSettings.Select();
+
+			this.animationWindow.gameObject.SetActive(true);
+		}
+
+		private void CloseAnimationWindow()
+		{
+			this.editor.animationHandler.SetAnimation(null);
+
+			foreach (Transform child in this.animationWindow.content.transform)
+			{
+				GameObject.Destroy(child.gameObject);
+			}
+		}
+
+		private KeyframeSettings AddAnimationKeyframeSettings(int keyframe)
+		{
+			var anim = this.editor.animationHandler.animation;
+			var keyframeSettings = GameObject.Instantiate(Assets.KeyframeSettingsPrefab, this.animationWindow.content.transform).GetComponent<KeyframeSettings>();
+
+			keyframeSettings.contentFoldout.label.text = $"Keyframe {keyframe}";
+
+			keyframeSettings.onDurationChanged += value => anim.keyframes[keyframe].animationSpeed = value;
+			keyframeSettings.onEasingChanged += value =>
+			{
+				anim.keyframes[keyframe].curveType =
+					value == "In" ? AnimationKeyframe.CurveType.EaseIn :
+					value == "Out" ? AnimationKeyframe.CurveType.EaseOut :
+					value == "In and Out" ? AnimationKeyframe.CurveType.EaseInOut :
+					AnimationKeyframe.CurveType.Linear;
+
+				anim.keyframes[keyframe].UpdateCurve();
+			};
+
+			keyframeSettings.onClick += () =>
+			{
+				foreach (var settings in this.animationWindow.content.GetComponentsInChildren<KeyframeSettings>())
+				{
+					settings.SetSelected(settings == keyframeSettings);
+				}
+
+				this.editor.animationHandler.SetKeyframe(keyframe);
+				this.animationWindow.deleteButton.interactable = true;
+			};
+
+			return keyframeSettings;
+		}
+
+		private void HandleAddAnimationKeyframe()
+		{
+			this.editor.animationHandler.AddKeyframe();
+
+			var keyframeSettings = this.AddAnimationKeyframeSettings(this.editor.animationHandler.Keyframe);
+			foreach (var settings in this.animationWindow.content.GetComponentsInChildren<KeyframeSettings>())
+			{
+				settings.SetSelected(settings == keyframeSettings);
+			}
+		}
+
+		private void HandleDeleteAnimationKeyframe()
+		{
+			int keyframe = this.editor.animationHandler.Keyframe;
+			GameObject.Destroy(this.animationWindow.content.transform.GetChild(keyframe).gameObject);
+			this.editor.animationHandler.DeleteKeyframe(keyframe);
+
+			if (this.editor.animationHandler.animation.keyframes.Count == 0)
+			{
+				GameObject.Destroy(this.editor.animationHandler.animation);
+				this.editor.animationHandler.SetAnimation(null);
+				return;
+			}
+
+			keyframe = this.editor.animationHandler.Keyframe;
+			var settings = this.animationWindow.content.transform.GetChild(keyframe).gameObject.GetComponent<KeyframeSettings>();
+			settings.Select();
+		}
+
 		private void OpenMapFolder()
 		{
 			Application.OpenURL($"file://{BepInEx.Paths.GameRootPath}/maps");
@@ -273,7 +387,7 @@ namespace MapsExt.Editor
 		{
 			foreach (Transform child in this.transform)
 			{
-				if (child == this.toolbar.transform || child == this.mapObjectWindow.transform)
+				if (child == this.toolbar.transform || child == this.mapObjectWindow.transform || child == this.animationWindow.transform)
 				{
 					continue;
 				}
@@ -299,6 +413,9 @@ namespace MapsExt.Editor
 
 				this.AddRotationHandle(mapObject);
 			}
+
+			bool canAnimate = list.Count == 1 && list[0].GetComponent<SpatialMapObjectInstance>();
+			this.toolbar.editMenu.SetItemEnabled("Animation...", canAnimate);
 
 			foreach (var obj in list)
 			{
