@@ -47,6 +47,7 @@ namespace MapsExt.Editor
 			}
 
 			this.animation.gameObject.SetActive(false);
+			this.curtain.SetActive(true);
 			this.SetKeyframe(this.prevKeyframe);
 		}
 
@@ -57,6 +58,8 @@ namespace MapsExt.Editor
 				return;
 			}
 
+			this.curtain.SetActive(false);
+
 			var baseObject = this.animation.gameObject;
 			var firstFrame = this.animation.keyframes[0];
 			baseObject.transform.position = firstFrame.position;
@@ -66,7 +69,6 @@ namespace MapsExt.Editor
 
 			this.prevKeyframe = this.Keyframe;
 
-			UnityEngine.Debug.Log("set frame -1");
 			this.SetKeyframe(-1);
 		}
 

@@ -395,6 +395,7 @@ namespace MapsExt.Editor
 		{
 			FileDialog.OpenDialog(file =>
 			{
+				this.gui.CloseAnimationWindow();
 				MapsExtendedEditor.instance.LoadMap(this.content, file);
 
 				string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);

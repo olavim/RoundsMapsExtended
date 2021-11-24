@@ -301,8 +301,9 @@ namespace MapsExt.Editor
 			this.animationWindow.gameObject.SetActive(true);
 		}
 
-		private void CloseAnimationWindow()
+		public void CloseAnimationWindow()
 		{
+			this.animationWindow.gameObject.SetActive(false);
 			this.editor.animationHandler.SetAnimation(null);
 
 			foreach (Transform child in this.animationWindow.content.transform)
