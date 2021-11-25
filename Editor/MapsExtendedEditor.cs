@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering.PostProcessing;
 using HarmonyLib;
 using UnboundLib;
 using MapsExt.MapObjects;
@@ -27,6 +28,7 @@ namespace MapsExt.Editor
 
 		internal MapObjectManager mapObjectManager;
 		internal GameObject frontParticles;
+		internal GameObject mainPostProcessing;
 
 		public void Awake()
 		{
@@ -46,6 +48,8 @@ namespace MapsExt.Editor
 				{
 					this.editorActive = false;
 					this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
+					this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
+					MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
 				}
 			};
 
@@ -74,6 +78,23 @@ namespace MapsExt.Editor
 			}, (obj) => { }, null, false);
 
 			this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
+			this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
+
+			var cameraGo = new GameObject("PostProcessCamera");
+			cameraGo.transform.SetParent(this.transform);
+
+			var camera = cameraGo.AddComponent<Camera>();
+			camera.CopyFrom(MainCam.instance.cam);
+			camera.depth = 10;
+			camera.cullingMask = 0; // Render nothing, only apply post-processing fx
+
+			var layer = cameraGo.AddComponent<PostProcessLayer>();
+			layer.Init((PostProcessResources) MainCam.instance.gameObject.GetComponent<PostProcessLayer>().GetFieldValue("m_Resources"));
+			layer.volumeTrigger = cameraGo.transform;
+			layer.volumeLayer = (1 << LayerMask.NameToLayer("Default Post"));
+			layer.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
+
+			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
 		}
 
 		private void RegisterMapObjects(Assembly assembly)
@@ -220,31 +241,102 @@ namespace MapsExt.Editor
 				}
 			}
 
-			foreach (var r in go.GetComponentsInChildren<SpriteRenderer>())
-			{
-				if (r.gameObject.tag != "NoMask")
-				{
-					GameObject.Destroy(r);
-				}
-				else if (r.sortingLayerName == "MostFront")
-				{
-					r.sortingLayerID = SortingLayer.NameToID("MapParticle");
-					r.sortingOrder = 5;
-					r.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
-				}
-			}
-
-			var mask = go.GetComponent<SpriteMask>();
-			if (mask)
-			{
-				mask.isCustomRangeActive = true;
-				mask.frontSortingLayerID = SortingLayer.NameToID("MapParticle");
-				mask.frontSortingOrder = 6;
-				mask.backSortingLayerID = SortingLayer.NameToID("MapParticle");
-				mask.backSortingOrder = mask.gameObject.tag == "NoMask" ? 5 : 0;
-			}
-
+			// this.FixRenderLayers(go);
 			this.ResetAnimations(container);
+		}
+
+		private void FixRenderLayers(GameObject go)
+		{
+			foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+			{
+				if (renderer is SpriteMask)
+				{
+					continue;
+				}
+
+				var spriteRenderer = renderer as SpriteRenderer;
+				var particleRenderer = renderer as ParticleSystemRenderer;
+
+				if (spriteRenderer)
+				{
+					spriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+				}
+
+				if (particleRenderer)
+				{
+					particleRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+				}
+
+				if (renderer.sortingLayerName == "MapParticle")
+				{
+					renderer.sortingOrder = 0;
+				}
+
+				if (renderer.sortingLayerName == "MostFront")
+				{
+					renderer.sortingOrder = 1;
+				}
+
+				if (renderer.sortingLayerName == "Background")
+				{
+					renderer.sortingOrder = 2;
+				}
+
+				renderer.sortingLayerID = SortingLayer.NameToID("MapParticle");
+			}
+
+			foreach (var mask in go.GetComponentsInChildren<SpriteMask>())
+			{
+				int layerID = mask.frontSortingLayerID;
+				mask.frontSortingLayerID = SortingLayer.NameToID("MapParticle");
+				mask.backSortingLayerID = SortingLayer.NameToID("MapParticle");
+
+				if (layerID == SortingLayer.NameToID("MapParticle") || layerID == SortingLayer.NameToID("Default"))
+				{
+					mask.frontSortingOrder = 1;
+					mask.backSortingOrder = 0;
+				}
+
+				if (layerID == SortingLayer.NameToID("MostFront"))
+				{
+					mask.frontSortingOrder = 2;
+					mask.backSortingOrder = 1;
+				}
+
+				if (layerID == SortingLayer.NameToID("Background"))
+				{
+					mask.frontSortingOrder = 3;
+					mask.backSortingOrder = 2;
+				}
+
+				mask.isCustomRangeActive = true;
+			}
+
+			foreach (var parentMask in go.GetComponentsInChildren<SpriteMask>())
+			{
+				if (!parentMask.enabled)
+				{
+					continue;
+				}
+
+				int minOrder = 999;
+				int maxOrder = 0;
+
+				foreach (var childRenderer in parentMask.gameObject.GetComponentsInChildren<Renderer>())
+				{
+					if (!(childRenderer is SpriteMask) && childRenderer.enabled)
+					{
+						minOrder = Mathf.Min(minOrder, childRenderer.sortingOrder);
+						maxOrder = Mathf.Max(maxOrder, childRenderer.sortingOrder);
+					}
+				}
+
+				if (minOrder != 999)
+				{
+					parentMask.frontSortingOrder = maxOrder + 1;
+					parentMask.backSortingOrder = minOrder;
+				}
+			}
 		}
 
 		public void ResetAnimations(GameObject go)

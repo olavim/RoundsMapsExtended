@@ -30,17 +30,7 @@ namespace MapsExt.Editor.MapObjects
 	public static class EditorBoxBackgroundSpec
 	{
 		[EditorMapObjectPrefab]
-		public static GameObject Prefab
-		{
-			get
-			{
-				var prefab = GameObject.Instantiate(BoxBackgroundSpec.Prefab, Vector3.zero, Quaternion.identity);
-				prefab.SetActive(false);
-				prefab.GetComponent<SpriteMask>().enabled = true;
-				return prefab;
-			}
-		}
-
+		public static GameObject Prefab => BoxBackgroundSpec.Prefab;
 		[EditorMapObjectSerializer]
 		public static SerializerAction<BoxBackground> Serialize => EditorSpatialSerializer.BuildSerializer<BoxBackground>(BoxBackgroundSpec.Serialize);
 		[EditorMapObjectDeserializer]

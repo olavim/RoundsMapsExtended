@@ -2,6 +2,7 @@
 using UnboundLib;
 using HarmonyLib;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MapsExt.MapObjects
 {
@@ -47,9 +48,9 @@ namespace MapsExt.MapObjects
 			target.rotation = instance.transform.rotation;
 
 			var anim = instance.GetComponent<MapObjectAnimation>();
-			if (anim)
+			if (anim && anim.keyframes.Count > 0)
 			{
-				foreach (var frame in anim.keyframes)
+				foreach (var frame in anim.keyframes.Skip(1))
 				{
 					target.animationKeyframes.Add(new AnimationKeyframe(frame));
 				}
@@ -69,19 +70,20 @@ namespace MapsExt.MapObjects
 
 			if (data.animationKeyframes != null && data.animationKeyframes.Count > 0)
 			{
+				var dataFrames = data.animationKeyframes.ToList();
+				dataFrames.Insert(0, new AnimationKeyframe(data));
+
 				var anim = target.GetOrAddComponent<MapObjectAnimation>();
 
-				for (int i = 0; i < data.animationKeyframes.Count; i++)
+				for (int i = 0; i < dataFrames.Count; i++)
 				{
-					var newFrame = new AnimationKeyframe(data.animationKeyframes[i]);
-
 					if (i <= anim.keyframes.Count - 1)
 					{
-						anim.keyframes[i] = newFrame;
+						anim.keyframes[i] = dataFrames[i];
 					}
 					else
 					{
-						anim.keyframes.Add(newFrame);
+						anim.keyframes.Add(dataFrames[i]);
 					}
 				}
 			}

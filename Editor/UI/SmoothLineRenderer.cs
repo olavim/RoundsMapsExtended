@@ -14,15 +14,15 @@ namespace MapsExt.UI
 	{
 		public int cornerVertexCount = 8;
 		public float lineWidth = 0.1f;
+		public MeshRenderer Renderer { get; private set; }
 
 		private GeometryFactory geometryFactory;
-		private MeshRenderer renderer;
 
 		public void Awake()
 		{
-			this.renderer = this.gameObject.GetOrAddComponent<MeshRenderer>();
-			this.renderer.material = new Material(Shader.Find("Sprites/Default"));
-			this.renderer.material.color = new Color(1f, 1f, 1f, 0.1f);
+			this.Renderer = this.gameObject.GetOrAddComponent<MeshRenderer>();
+			this.Renderer.material = new Material(Shader.Find("Sprites/Default"));
+			this.Renderer.material.color = new Color(1f, 1f, 1f, 0.1f);
 
 			this.gameObject.GetOrAddComponent<MeshFilter>();
 			this.geometryFactory = new GeometryFactory(PrecisionModel.FloatingSingle.Value);

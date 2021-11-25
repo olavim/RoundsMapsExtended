@@ -75,13 +75,6 @@ namespace MapsExt.Editor
 			this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
 			this.timeline = new InteractionTimeline(MapsExtendedEditor.instance.mapObjectManager);
 
-			var go = GameObject.Instantiate(MapsExtendedEditor.instance.frontParticles, Vector3.zero, Quaternion.identity, this.transform);
-			foreach (var r in go.GetComponentsInChildren<ParticleSystemRenderer>())
-			{
-				r.sortingOrder = 20;
-				r.gameObject.GetComponent<ParticleSystem>().Play();
-			}
-
 			var animationContainer = new GameObject("Animation Handler");
 			animationContainer.transform.SetParent(this.transform);
 			this.animationHandler = animationContainer.AddComponent<MapEditorAnimationHandler>();
@@ -318,11 +311,6 @@ namespace MapsExt.Editor
 			this.isSimulating = true;
 			this.isCreatingSelection = false;
 
-			foreach (var r in this.gameObject.GetComponentsInChildren<ParticleSystemRenderer>())
-			{
-				r.enabled = false;
-			}
-
 			if (this.content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.content, new Spawn(), instance =>
@@ -384,11 +372,6 @@ namespace MapsExt.Editor
 			this.content.SetActive(true);
 			this.tempContent.SetActive(false);
 			this.animationHandler.enabled = true;
-
-			foreach (var r in this.gameObject.GetComponentsInChildren<ParticleSystemRenderer>())
-			{
-				r.enabled = true;
-			}
 		}
 
 		public void OnClickOpen()

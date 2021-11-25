@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Rendering;
+using UnityEngine.Rendering.PostProcessing;
 using MapsExt.MapObjects;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,9 @@ namespace MapsExt.Editor
 {
 	public class MapEditorAnimationHandler : MonoBehaviour
 	{
+		private const int POSTPROCESS_LAYER = 31;
+		private const int MAPOBJECT_LAYER = 31;
+
 		public MapEditor editor;
 		public MapObjectAnimation animation;
 		public GameObject keyframeMapObject;
@@ -19,18 +22,30 @@ namespace MapsExt.Editor
 
 		private SmoothLineRenderer lineRenderer;
 		private int prevKeyframe = -1;
+
 		private GameObject curtain;
+		private Camera animationCamera;
+		private GameObject particles;
 
 		public void Awake()
 		{
-			this.lineRenderer = this.gameObject.AddComponent<SmoothLineRenderer>();
+			this.SetupLayerCamera();
+			this.SetupLayerCurtain();
 
+			this.lineRenderer = this.gameObject.AddComponent<SmoothLineRenderer>();
+			this.lineRenderer.Renderer.sortingLayerID = SortingLayer.NameToID("MostFront");
+			this.lineRenderer.Renderer.sortingOrder = 9;
+		}
+
+		// Creates a transparent image that "separates" the bottom and top layers
+		private void SetupLayerCurtain()
+		{
 			this.curtain = new GameObject("Curtain");
 			this.curtain.transform.SetParent(this.transform);
 			this.curtain.SetActive(false);
 
 			var canvas = this.curtain.AddComponent<Canvas>();
-			canvas.sortingLayerID = SortingLayer.NameToID("MapParticle");
+			canvas.sortingLayerID = SortingLayer.NameToID("MostFront");
 			canvas.sortingOrder = 10;
 
 			var renderer = this.curtain.GetComponent<CanvasRenderer>();
@@ -39,12 +54,30 @@ namespace MapsExt.Editor
 			image.rectTransform.sizeDelta = new Vector2(Screen.width, Screen.height);
 		}
 
+		/* The bottom layer (and curtain) is rendered by the main camera, while the top layer
+		 * is rendered by a second camera.
+		 */
+		private void SetupLayerCamera()
+		{
+			var cameraGo = new GameObject("Animation Camera");
+			cameraGo.transform.SetParent(this.transform);
+			this.animationCamera = cameraGo.AddComponent<Camera>();
+			this.animationCamera.CopyFrom(MainCam.instance.cam);
+			this.animationCamera.cullingMask = (1 << MAPOBJECT_LAYER);
+			this.animationCamera.depth = 2;
+			MainCam.instance.cam.cullingMask = MainCam.instance.cam.cullingMask & ~(1 << MAPOBJECT_LAYER);
+
+			cameraGo.AddComponent<CameraZoomHandler>();
+		}
+
 		public void OnEnable()
 		{
 			if (this.animation == null)
 			{
 				return;
 			}
+
+			this.RefreshParticles();
 
 			this.animation.gameObject.SetActive(false);
 			this.curtain.SetActive(true);
@@ -58,6 +91,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
+			this.RefreshParticles();
 			this.curtain.SetActive(false);
 
 			var baseObject = this.animation.gameObject;
@@ -80,6 +114,27 @@ namespace MapsExt.Editor
 			}
 
 			this.UpdateTraceLine();
+		}
+
+		/* Many map objects (such as ground) show a particle effect background. Since our
+		 * second camera can only render stuff on a specific layer, we need to duplicate the
+		 * particle rendering stuff on it.
+		 */
+		public void RefreshParticles()
+		{
+			if (this.particles)
+			{
+				GameObject.Destroy(this.particles);
+			}
+
+			this.particles = GameObject.Instantiate(MapsExtendedEditor.instance.frontParticles, Vector3.zero, Quaternion.identity, this.transform);
+
+			foreach (var p in this.particles.GetComponentsInChildren<ParticleSystem>())
+			{
+				// Render these particles on the second camera's layer
+				p.gameObject.layer = MAPOBJECT_LAYER;
+				p.Play();
+			}
 		}
 
 		public void AddAnimation(GameObject go)
@@ -120,12 +175,14 @@ namespace MapsExt.Editor
 				this.curtain.SetActive(false);
 				this.animation = null;
 				this.SetKeyframe(-1);
+				this.RefreshParticles();
 				return;
 			}
 
 			this.animation = newAnimation;
 			this.animation.gameObject.SetActive(false);
 			this.curtain.SetActive(true);
+			this.RefreshParticles();
 
 			if (this.animation.keyframes.Count == 0)
 			{
@@ -160,13 +217,15 @@ namespace MapsExt.Editor
 					var newActionHandler = this.keyframeMapObject.GetComponent<EditorActionHandler>();
 					newActionHandler.onAction += this.HandleKeyframeChanged;
 
-					foreach (var mask in instance.GetComponentsInChildren<SpriteMask>())
+					/* To show the map object on top of the curtain, set its layer so that
+					 * it's only rendered by the second camera.
+					 */
+					foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
 					{
-						mask.backSortingOrder = 20;
-						mask.frontSortingOrder = 21;
+						renderer.gameObject.layer = MAPOBJECT_LAYER;
 					}
 
-					this.keyframeMapObject.transform.SetAsFirstSibling();
+					this.keyframeMapObject.transform.SetAsLastSibling();
 					this.editor.AddSelected(this.keyframeMapObject);
 				});
 			}

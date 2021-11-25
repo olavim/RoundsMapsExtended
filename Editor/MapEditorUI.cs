@@ -271,6 +271,7 @@ namespace MapsExt.Editor
 
 			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.timeline.CanUndo());
 			this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.timeline.CanRedo());
+			this.toolbar.editMenu.SetItemEnabled("Animation...", !this.animationWindow.gameObject.activeSelf);
 		}
 
 		private void OpenAnimationWindow()
