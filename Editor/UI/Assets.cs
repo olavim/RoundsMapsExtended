@@ -63,6 +63,14 @@ namespace MapsExt.UI
 			}
 		}
 
+		public static GameObject MapObjectInspectorPrefab
+		{
+			get
+			{
+				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/inspector.prefab");
+			}
+		}
+
 		public static Sprite SquareSprite
 		{
 			get

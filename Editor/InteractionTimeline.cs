@@ -9,6 +9,9 @@ namespace MapsExt
 	// An InteractionTimeline forms a one-dimensional timeline of MapObjectInteractions that can be traversed by "undoing" and "redoing".
 	public class InteractionTimeline
 	{
+		public MapObjectInteraction UndoInteraction => interactionIndex >= 0 ? this.interactionStack[this.interactionIndex] : null;
+		public MapObjectInteraction RedoInteraction => interactionIndex < this.interactionStack.Count - 1 ? this.interactionStack[this.interactionIndex + 1] : null;
+
 		private readonly List<MapObjectInteraction> interactionStack = new List<MapObjectInteraction>();
 		private readonly Dictionary<int, MapObjectInstance[]> interactionIndexMapObjectInstances = new Dictionary<int, MapObjectInstance[]>();
 

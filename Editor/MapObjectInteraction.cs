@@ -1,5 +1,4 @@
-﻿using MapsExt.Editor.MapObjects;
-using MapsExt.MapObjects;
+﻿using MapsExt.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,7 @@ namespace MapsExt
 {
 	public class MapObjectInteraction
 	{
-		private struct StateTransition
+		public class StateTransition
 		{
 			public MapObject fromState;
 			public MapObject toState;
@@ -65,6 +64,8 @@ namespace MapsExt
 			return new MapObjectInteraction(MapObjectInteraction.cachedMapObjectManager, stateTransitions);
 		}
 
+		public GameObject[] Targets => this.stateTransitions.Select(t => t.target.gameObject).Distinct().ToArray();
+
 		private readonly MapObjectManager mapObjectManager;
 		private readonly List<StateTransition> stateTransitions;
 
@@ -93,6 +94,16 @@ namespace MapsExt
 			{
 				this.SetState(st.toState, st.target);
 			}
+		}
+
+		public StateTransition GetTransition(GameObject target)
+		{
+			if (target == null)
+			{
+				return null;
+			}
+
+			return this.stateTransitions.FirstOrDefault(t => t.target.gameObject == target);
 		}
 
 		private void SetState(MapObject state, MapObjectInstance target)

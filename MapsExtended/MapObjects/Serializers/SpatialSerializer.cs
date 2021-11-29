@@ -77,7 +77,7 @@ namespace MapsExt.MapObjects
 
 				for (int i = 0; i < dataFrames.Count; i++)
 				{
-					if (i <= anim.keyframes.Count - 1)
+					if (i < anim.keyframes.Count)
 					{
 						anim.keyframes[i] = dataFrames[i];
 					}
@@ -86,6 +86,13 @@ namespace MapsExt.MapObjects
 						anim.keyframes.Add(dataFrames[i]);
 					}
 				}
+
+				anim.keyframes = anim.keyframes.Take(dataFrames.Count).ToList();
+			}
+			else
+			{
+				target.GetComponent<MapObjectAnimation>()?.keyframes.Clear();
+				target.GetComponent<MapObjectAnimation>()?.keyframes.Insert(0, new AnimationKeyframe(data));
 			}
 		}
 	}

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Rendering.PostProcessing;
 using MapsExt.MapObjects;
 using System;
 using System.Collections.Generic;
@@ -160,18 +159,14 @@ namespace MapsExt.Editor
 
 		public void SetAnimation(MapObjectAnimation newAnimation)
 		{
+			if (newAnimation == this.animation)
+			{
+				return;
+			}
+
 			if (newAnimation == null)
 			{
-				var baseObject = this.animation?.gameObject;
-				if (baseObject)
-				{
-					var firstFrame = this.animation.keyframes[0];
-					baseObject.transform.position = firstFrame.position;
-					baseObject.transform.localScale = firstFrame.scale;
-					baseObject.transform.rotation = firstFrame.rotation;
-					baseObject.SetActive(true);
-				}
-
+				this.animation.gameObject.SetActive(true);
 				this.curtain.SetActive(false);
 				this.animation = null;
 				this.SetKeyframe(-1);
@@ -235,13 +230,19 @@ namespace MapsExt.Editor
 
 		public void AddKeyframe()
 		{
+			this.editor.BeginInteraction(new MapObjectInstance[] { this.animation.gameObject.GetComponent<MapObjectInstance>() });
 			this.animation.AddKeyframe();
+			this.editor.EndInteraction();
+
 			this.SetKeyframe(this.animation.keyframes.Count - 1);
 		}
 
 		public void DeleteKeyframe(int index)
 		{
+			this.editor.BeginInteraction(new MapObjectInstance[] { this.animation.gameObject.GetComponent<MapObjectInstance>() });
 			this.animation.DeleteKeyframe(index);
+			this.editor.EndInteraction();
+
 			this.SetKeyframe(Mathf.Min(index + 1, this.animation.keyframes.Count - 1));
 		}
 
@@ -278,11 +279,24 @@ namespace MapsExt.Editor
 			frame.position = this.keyframeMapObject.transform.position;
 			frame.scale = this.keyframeMapObject.transform.localScale;
 			frame.rotation = this.keyframeMapObject.transform.rotation;
+
+			if (this.Keyframe == 0)
+			{
+				this.animation.transform.position = this.keyframeMapObject.transform.position;
+				this.animation.transform.localScale = this.keyframeMapObject.transform.localScale;
+				this.animation.transform.rotation = this.keyframeMapObject.transform.rotation;
+			}
+
 			this.UpdateTraceLine();
 		}
 
 		public void RefreshCurrentFrame()
 		{
+			if (!this.animation)
+			{
+				return;
+			}
+
 			var frame = this.animation.keyframes[this.Keyframe];
 			this.keyframeMapObject.transform.position = frame.position;
 			this.keyframeMapObject.transform.localScale = frame.scale;

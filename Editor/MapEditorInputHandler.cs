@@ -63,12 +63,27 @@ namespace MapsExt.Editor
 
 			if (Input.mouseScrollDelta.y > 0 || Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.KeypadPlus))
 			{
-				this.editor.OnZoomIn();
+				this.HandleZoom(1);
 			}
 
 			if (Input.mouseScrollDelta.y < 0 || Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
 			{
-				this.editor.OnZoomOut();
+				this.HandleZoom(-1);
+			}
+		}
+
+		private void HandleZoom(int direction)
+		{
+			if (!EventSystem.current.IsPointerOverGameObject())
+			{
+				if (direction > 0)
+				{
+					this.editor.OnZoomIn();
+				}
+				else
+				{
+					this.editor.OnZoomOut();
+				}
 			}
 		}
 

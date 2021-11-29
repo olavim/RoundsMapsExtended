@@ -8,8 +8,8 @@ namespace MapsExt.Editor
 		{
 			return true;
 		}
-		
-		public override bool CanResize(int resizeDirection)
+
+		public override bool CanResize()
 		{
 			return true;
 		}

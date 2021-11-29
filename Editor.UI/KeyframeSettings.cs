@@ -7,8 +7,7 @@ namespace MapsExt.UI
 	public class KeyframeSettings : MonoBehaviour
 	{
 		public Foldout contentFoldout;
-		public Slider durationSlider;
-		public InputField durationInput;
+		public TextSliderInput durationInput;
 		public Dropdown easingDropdown;
 		public ColorBlock colors;
 
@@ -20,7 +19,6 @@ namespace MapsExt.UI
 		public string Easing { get; private set; }
 
 		private bool isSelected = false;
-		private float maxDurationSliderValue;
 
 		public void Start()
 		{
@@ -30,10 +28,7 @@ namespace MapsExt.UI
 				this.onClick?.Invoke();
 			});
 
-			this.durationSlider.onValueChanged.AddListener(this.UpdateDuration);
-			this.durationInput.onValueChanged.AddListener(this.UpdateDuration);
-			this.maxDurationSliderValue = this.durationSlider.maxValue;
-
+			this.durationInput.onChanged += this.UpdateDuration;
 			this.easingDropdown.onValueChanged.AddListener(this.UpdateEasing);
 
 			this.UpdateFoldoutColors();
@@ -52,53 +47,9 @@ namespace MapsExt.UI
 			};
 		}
 
-		private void UpdateDuration(float origValue)
+		private void UpdateDuration(float value)
 		{
-			float value = Mathf.Min(this.maxDurationSliderValue, origValue);
-			value = (float) Math.Round(value * 10f) / 10f;
-
-			if (this.durationSlider.maxValue > this.maxDurationSliderValue)
-			{
-				this.durationSlider.maxValue = this.maxDurationSliderValue;
-			}
-
-			if (value != origValue)
-			{
-				this.durationSlider.value = value;
-				return;
-			}
-
-			this.durationInput.onValueChanged.RemoveListener(this.UpdateDuration);
-			this.durationInput.text = value.ToString("0.0");
-			this.durationInput.onValueChanged.AddListener(this.UpdateDuration);
-
 			this.Duration = value;
-			this.onDurationChanged?.Invoke(this.Duration);
-		}
-
-		private void UpdateDuration(string valueStr)
-		{
-			if (valueStr.EndsWith("."))
-			{
-				return;
-			}
-
-			float value = this.Duration;
-
-			if (valueStr == "")
-			{
-				value = 1f;
-			}
-			else if (float.TryParse(valueStr, out value))
-			{
-				this.durationSlider.onValueChanged.RemoveListener(this.UpdateDuration);
-				this.durationSlider.maxValue = (value > this.maxDurationSliderValue) ? value : this.maxDurationSliderValue;
-				this.durationSlider.value = value;
-				this.durationSlider.onValueChanged.AddListener(this.UpdateDuration);
-
-				this.Duration = value;
-			}
-
 			this.onDurationChanged?.Invoke(this.Duration);
 		}
 
