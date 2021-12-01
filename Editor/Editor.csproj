@@ -37,7 +37,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="NetTopologySuite" Version="2.4.0" />
-		<PackageReference Include="UnboundLib" Version="2.7.3" />
+		<PackageReference Include="UnboundLib" Version="2.8.0" />
 		<ProjectReference Include="..\Editor.UI\Editor.UI.csproj" />
 		<ProjectReference Include="..\MapsExtended\MapsExtended.csproj" />
 		<Reference Include="System" />

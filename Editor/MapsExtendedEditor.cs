@@ -49,6 +49,7 @@ namespace MapsExt.Editor
 					this.editorActive = false;
 					this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
 					this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
+
 					MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
 				}
 			};

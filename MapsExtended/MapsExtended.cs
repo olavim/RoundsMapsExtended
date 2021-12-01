@@ -148,21 +148,8 @@ namespace MapsExt
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
-			IList<string> activeLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "activeLevels").GetValue(null);
-			IList<string> inactiveLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "inactiveLevels").GetValue(null);
-			IList<string> levelsToRedraw = (IList<string>) AccessTools.Field(typeof(ToggleLevelMenuHandler), "levelsThatNeedToRedrawn").GetValue(ToggleLevelMenuHandler.instance);
-			IDictionary<string, Level> allLevels = LevelManager.levels;
-
-			var invalidatedLevels = allLevels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
-
-			foreach (var level in invalidatedLevels)
-			{
-				activeLevels?.Remove(level);
-				inactiveLevels?.Remove(level);
-				levelsToRedraw?.Remove(level);
-				allLevels.Remove(level);
-			}
-
+			var invalidatedLevels = LevelManager.levels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
+			LevelManager.RemoveLevels(invalidatedLevels);
 			LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
 		}
 
