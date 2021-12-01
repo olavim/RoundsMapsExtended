@@ -137,7 +137,7 @@ namespace MapsExt
 			while (elapsedTime < frameLength)
 			{
 				this.ApplyKeyframe(frameIndex, elapsedTime);
-				elapsedTime += TimeHandler.deltaTime * frame.animationSpeed;
+				elapsedTime += TimeHandler.deltaTime;
 				yield return null;
 			}
 

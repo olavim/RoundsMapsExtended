@@ -347,7 +347,12 @@ namespace MapsExt.Editor
 				keyframeSettings.contentFoldout.label.text = $"Keyframe {keyframe}";
 			}
 
-			keyframeSettings.onDurationChanged += value => anim.keyframes[keyframe].animationSpeed = value;
+			keyframeSettings.onDurationChanged += value =>
+			{
+				anim.keyframes[keyframe].duration = value;
+				anim.keyframes[keyframe].UpdateCurve();
+			};
+
 			keyframeSettings.onEasingChanged += value =>
 			{
 				anim.keyframes[keyframe].curveType =
