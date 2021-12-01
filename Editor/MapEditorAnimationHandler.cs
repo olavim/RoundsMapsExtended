@@ -199,7 +199,6 @@ namespace MapsExt.Editor
 				this.keyframeMapObject = null;
 			}
 
-			this.editor.ClearSelected();
 			this.Keyframe = frameIndex;
 
 			if (this.Keyframe >= 0)
@@ -221,8 +220,13 @@ namespace MapsExt.Editor
 					}
 
 					this.keyframeMapObject.transform.SetAsLastSibling();
+					this.editor.ClearSelected();
 					this.editor.AddSelected(this.keyframeMapObject);
 				});
+			}
+			else
+			{
+				this.editor.ClearSelected();
 			}
 
 			this.UpdateTraceLine();
@@ -290,7 +294,7 @@ namespace MapsExt.Editor
 			this.UpdateTraceLine();
 		}
 
-		public void RefreshCurrentFrame()
+		public void RefreshMapObjectFromFrame()
 		{
 			if (!this.animation)
 			{
@@ -301,6 +305,19 @@ namespace MapsExt.Editor
 			this.keyframeMapObject.transform.position = frame.position;
 			this.keyframeMapObject.transform.localScale = frame.scale;
 			this.keyframeMapObject.transform.rotation = frame.rotation;
+		}
+
+		public void RefreshFrameFromMapObject()
+		{
+			if (!this.animation)
+			{
+				return;
+			}
+
+			var frame = this.animation.keyframes[this.Keyframe];
+			frame.position = this.keyframeMapObject.transform.position;
+			frame.scale = this.keyframeMapObject.transform.localScale;
+			frame.rotation = this.keyframeMapObject.transform.rotation;
 		}
 	}
 }

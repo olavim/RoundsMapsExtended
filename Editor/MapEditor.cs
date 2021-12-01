@@ -230,7 +230,7 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 			this.UpdateRopeAttachments();
 
-			this.animationHandler.RefreshCurrentFrame();
+			this.animationHandler.RefreshMapObjectFromFrame();
 		}
 
 		public void Redo()
@@ -258,8 +258,11 @@ namespace MapsExt.Editor
 						this.animationHandler.SetAnimation(null);
 					}
 
-					// If a new keyframe was created because of redo, select the new keyframe
-					if (fromState.animationKeyframes.Count < toState.animationKeyframes.Count)
+					// If a new keyframe was created because of redo, or current keyframe no longer exists, select the last keyframe
+					if (
+						fromState.animationKeyframes.Count < toState.animationKeyframes.Count ||
+						this.animationHandler.Keyframe >= this.animationHandler.animation.keyframes.Count
+					)
 					{
 						this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
 					}
@@ -272,7 +275,7 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 			this.UpdateRopeAttachments();
 
-			this.animationHandler.RefreshCurrentFrame();
+			this.animationHandler.RefreshMapObjectFromFrame();
 		}
 
 		public void BeginInteraction(IEnumerable<MapObjectInstance> objects, bool isCreateInteraction = false)

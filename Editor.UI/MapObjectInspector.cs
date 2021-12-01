@@ -9,5 +9,8 @@ namespace MapsExt.UI
 		public Vector2Input sizeInput;
 		public TextSliderInput rotationInput;
 		public Button animationButton;
+
+		public GameObject visualTarget;
+		public GameObject interactionTarget;
 	}
 }

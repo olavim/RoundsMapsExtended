@@ -67,6 +67,11 @@ namespace MapsExt.Editor
 
 			var toolbarGo = GameObject.Instantiate(Assets.ToolbarPrefab, this.transform);
 			toolbarGo.name = "Toolbar";
+			var toolbarCanvas = toolbarGo.AddComponent<Canvas>();
+			toolbarCanvas.overrideSorting = true;
+			toolbarCanvas.sortingOrder = 10;
+
+			toolbarGo.AddComponent<GraphicRaycaster>();
 
 			this.toolbar = toolbarGo.GetComponent<Toolbar>();
 
@@ -184,7 +189,8 @@ namespace MapsExt.Editor
 			this.inspectorWindow.transform.position = new Vector3(Screen.width - (inspectorWindowSize.x / 2f) - 5, this.mapObjectWindow.transform.position.y - inspectorWindowSize.y - 5, 0);
 
 			this.inspector = GameObject.Instantiate(Assets.MapObjectInspectorPrefab, this.inspectorWindow.content.transform).GetComponent<MapObjectInspector>();
-			this.inspector.animationButton.onClick.AddListener(this.OpenAnimationWindow);
+
+			this.inspector.animationButton.onClick.AddListener(this.OnClickAnimationButton);
 
 			this.animationWindow = GameObject.Instantiate(Assets.AnimationWindowPrefab, this.transform).GetComponent<AnimationWindow>();
 			this.animationWindow.title.text = "Animation";
@@ -212,6 +218,7 @@ namespace MapsExt.Editor
 					normalColor = new Color32(40, 40, 40, 255),
 					highlightedColor = new Color32(50, 50, 50, 255),
 					pressedColor = new Color32(60, 60, 60, 255),
+					disabledColor = new Color32(40, 40, 40, 255),
 					fadeDuration = 0.1f,
 					colorMultiplier = 1
 				};
@@ -264,6 +271,7 @@ namespace MapsExt.Editor
 		public void Start()
 		{
 			this.editor.selectedMapObjects.CollectionChanged += this.HandleSelectedObjectsChanged;
+			this.inspector.gameObject.SetActive(false);
 		}
 
 		public void Update()
@@ -349,6 +357,18 @@ namespace MapsExt.Editor
 			this.RefreshAnimationWindow();
 		}
 
+		private void OnClickAnimationButton()
+		{
+			if (this.animationWindow.gameObject.activeSelf)
+			{
+				this.CloseAnimationWindow();
+			}
+			else
+			{
+				this.OpenAnimationWindow();
+			}
+		}
+
 		private void OpenAnimationWindow()
 		{
 			var mapObject = this.selectedMapObjects[0];
@@ -366,6 +386,14 @@ namespace MapsExt.Editor
 
 			this.RefreshAnimationWindow();
 			this.animationWindow.gameObject.SetActive(true);
+
+			this.inspector.animationButton.gameObject.GetComponentInChildren<Text>().text = "Close Animation";
+
+			foreach (var btn in this.mapObjectWindow.content.GetComponentsInChildren<Button>())
+			{
+				btn.interactable = false;
+				btn.gameObject.GetComponentInChildren<Text>().color = new Color32(200, 200, 200, 100);
+			}
 		}
 
 		public void CloseAnimationWindow()
@@ -376,6 +404,14 @@ namespace MapsExt.Editor
 			foreach (Transform child in this.animationWindow.content.transform)
 			{
 				GameObject.Destroy(child.gameObject);
+			}
+
+			this.inspector.animationButton.gameObject.GetComponentInChildren<Text>().text = "Edit Animation";
+
+			foreach (var btn in this.mapObjectWindow.content.GetComponentsInChildren<Button>())
+			{
+				btn.interactable = true;
+				btn.gameObject.GetComponentInChildren<Text>().color = new Color32(200, 200, 200, 255);
 			}
 		}
 
@@ -446,12 +482,16 @@ namespace MapsExt.Editor
 		private void HandleAddAnimationKeyframe()
 		{
 			this.editor.animationHandler.AddKeyframe();
+			this.UnlinkInspector();
+			this.LinkInspector(this.editor.animationHandler.keyframeMapObject);
 			this.RefreshAnimationWindow();
 		}
 
 		private void HandleDeleteAnimationKeyframe()
 		{
 			this.editor.animationHandler.DeleteKeyframe(this.editor.animationHandler.Keyframe);
+			this.UnlinkInspector();
+			this.LinkInspector(this.editor.animationHandler.keyframeMapObject);
 			this.RefreshAnimationWindow();
 		}
 
@@ -495,15 +535,17 @@ namespace MapsExt.Editor
 
 		private void InspectorPositionChanged(Vector2 value)
 		{
-			this.editor.BeginInteraction(new MapObjectInstance[] { this.selectedMapObjects[0].GetComponent<MapObjectInstance>() });
-			this.selectedMapObjects[0].transform.position = (Vector3) value;
+			this.editor.BeginInteraction(new MapObjectInstance[] { this.inspector.interactionTarget.GetComponent<MapObjectInstance>() });
+			this.inspector.visualTarget.transform.position = (Vector3) value;
+			this.editor.animationHandler.RefreshFrameFromMapObject();
 			this.editor.EndInteraction();
 		}
 
 		private void InspectorSizeChanged(Vector2 value)
 		{
-			this.editor.BeginInteraction(new MapObjectInstance[] { this.selectedMapObjects[0].GetComponent<MapObjectInstance>() });
-			this.selectedMapObjects[0].transform.localScale = (Vector3) value;
+			this.editor.BeginInteraction(new MapObjectInstance[] { this.inspector.interactionTarget.GetComponent<MapObjectInstance>() });
+			this.inspector.visualTarget.transform.localScale = (Vector3) value;
+			this.editor.animationHandler.RefreshFrameFromMapObject();
 			this.editor.EndInteraction();
 		}
 
@@ -511,10 +553,11 @@ namespace MapsExt.Editor
 		{
 			if (type == TextSliderInput.ChangeType.ChangeStart)
 			{
-				this.editor.BeginInteraction(new MapObjectInstance[] { this.selectedMapObjects[0].GetComponent<MapObjectInstance>() });
+				this.editor.BeginInteraction(new MapObjectInstance[] { this.inspector.interactionTarget.GetComponent<MapObjectInstance>() });
 			}
 
-			this.selectedMapObjects[0].transform.rotation = Quaternion.Euler(0, 0, value);
+			this.inspector.visualTarget.transform.rotation = Quaternion.Euler(0, 0, value);
+			this.editor.animationHandler.RefreshFrameFromMapObject();
 
 			if (type == TextSliderInput.ChangeType.ChangeEnd)
 			{
@@ -522,55 +565,73 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void InspectorMapObjectPositionChanged()
+		private void MapObjectPositionChanged()
 		{
 			this.inspector.positionInput.onChanged -= this.InspectorPositionChanged;
-			this.inspector.positionInput.Value = (Vector2) this.selectedMapObjects[0].transform.position;
+			this.inspector.positionInput.Value = (Vector2) this.inspector.visualTarget.transform.position;
 			this.inspector.positionInput.onChanged += this.InspectorPositionChanged;
 		}
 
-		private void InspectorMapObjectSizeChanged()
+		private void MapObjectSizeChanged()
 		{
 			this.inspector.sizeInput.onChanged -= this.InspectorSizeChanged;
-			this.inspector.sizeInput.Value = (Vector2) this.selectedMapObjects[0].transform.localScale;
+			this.inspector.sizeInput.Value = (Vector2) this.inspector.visualTarget.transform.localScale;
 			this.inspector.sizeInput.onChanged += this.InspectorSizeChanged;
 		}
 
-		private void InspectorMapObjectRotationChanged()
+		private void MapObjectRotationChanged()
 		{
 			this.inspector.rotationInput.onChanged -= this.InspectorRotationChanged;
-			this.inspector.rotationInput.Value = this.selectedMapObjects[0].transform.rotation.eulerAngles.z;
+			this.inspector.rotationInput.Value = this.inspector.visualTarget.transform.rotation.eulerAngles.z;
 			this.inspector.rotationInput.onChanged += this.InspectorRotationChanged;
 		}
 
-		private void LinkInspector(GameObject mapObject)
+		private void LinkInspector(GameObject interactionTarget)
 		{
-			var actionHandler = mapObject.GetComponent<EditorActionHandler>();
+			this.LinkInspector(interactionTarget, interactionTarget);
+		}
 
-			this.inspector.positionInput.Value = mapObject.transform.position;
-			this.inspector.sizeInput.Value = mapObject.transform.localScale;
-			this.inspector.rotationInput.Value = mapObject.transform.rotation.eulerAngles.z;
+		private void LinkInspector(GameObject interactionTarget, GameObject visualTarget)
+		{
+			this.inspector.gameObject.SetActive(true);
+
+			var actionHandler = visualTarget.GetComponent<EditorActionHandler>();
+
+			this.inspector.positionInput.Value = visualTarget.transform.position;
+			this.inspector.sizeInput.Value = visualTarget.transform.localScale;
+			this.inspector.rotationInput.Value = visualTarget.transform.rotation.eulerAngles.z;
 
 			this.inspector.positionInput.onChanged += this.InspectorPositionChanged;
 			this.inspector.sizeInput.onChanged += this.InspectorSizeChanged;
 			this.inspector.rotationInput.onChanged += this.InspectorRotationChanged;
 
-			actionHandler.onMove += this.InspectorMapObjectPositionChanged;
-			actionHandler.onResize += this.InspectorMapObjectSizeChanged;
-			actionHandler.onRotate += this.InspectorMapObjectRotationChanged;
+			this.inspector.visualTarget = visualTarget;
+			this.inspector.interactionTarget = interactionTarget;
+
+			actionHandler.onMove += this.MapObjectPositionChanged;
+			actionHandler.onResize += this.MapObjectSizeChanged;
+			actionHandler.onRotate += this.MapObjectRotationChanged;
 		}
 
-		private void UnlinkInspector(GameObject mapObject)
+		private void UnlinkInspector()
 		{
-			var actionHandler = mapObject.GetComponent<EditorActionHandler>();
+			if (!this.inspector.interactionTarget)
+			{
+				return;
+			}
 
 			this.inspector.positionInput.onChanged -= this.InspectorPositionChanged;
 			this.inspector.sizeInput.onChanged -= this.InspectorSizeChanged;
 			this.inspector.rotationInput.onChanged -= this.InspectorRotationChanged;
 
-			actionHandler.onMove -= this.InspectorMapObjectPositionChanged;
-			actionHandler.onResize -= this.InspectorMapObjectSizeChanged;
-			actionHandler.onRotate -= this.InspectorMapObjectRotationChanged;
+			var actionHandler = this.inspector.visualTarget.GetComponent<EditorActionHandler>();
+			actionHandler.onMove -= this.MapObjectPositionChanged;
+			actionHandler.onResize -= this.MapObjectSizeChanged;
+			actionHandler.onRotate -= this.MapObjectRotationChanged;
+
+			this.inspector.visualTarget = null;
+			this.inspector.interactionTarget = null;
+			this.inspector.gameObject.SetActive(false);
 		}
 
 		public void HandleSelectedObjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -587,10 +648,7 @@ namespace MapsExt.Editor
 				GameObject.Destroy(child.gameObject);
 			}
 
-			if (this.selectedMapObjects.Count == 1)
-			{
-				this.UnlinkInspector(this.selectedMapObjects[0]);
-			}
+			this.UnlinkInspector();
 
 			this.selectedMapObjects.Clear();
 			this.selectedMapObjects.AddRange(list);
@@ -610,6 +668,11 @@ namespace MapsExt.Editor
 				this.AddRotationHandle(mapObject);
 
 				this.LinkInspector(mapObject);
+			}
+
+			if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
+			{
+				this.LinkInspector(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.keyframeMapObject);
 			}
 
 			bool canAnimate = list.Count == 1 && list[0].GetComponent<SpatialMapObjectInstance>();

@@ -17,8 +17,13 @@ namespace MapsExt.UI
 			get => this.inputValue;
 			set
 			{
+				this.xInput.onValueChanged.RemoveListener(this.UpdateXValue);
+				this.yInput.onValueChanged.RemoveListener(this.UpdateYValue);
 				this.xInput.text = value.x.ToString();
 				this.yInput.text = value.y.ToString();
+				this.inputValue = value;
+				this.xInput.onValueChanged.AddListener(this.UpdateXValue);
+				this.yInput.onValueChanged.AddListener(this.UpdateYValue);
 			}
 		}
 
