@@ -180,6 +180,9 @@ namespace MapsExt.Editor
 				instance.SetActive(true);
 				this.EndInteraction();
 
+				this.ClearSelected();
+				this.AddSelected(instance);
+
 				this.ResetSpawnLabels();
 				this.UpdateRopeAttachments();
 			});
@@ -329,7 +332,6 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.ClearSelected();
 			this.StartCoroutine(this.SpawnClipboardObjects());
 		}
 
@@ -370,6 +372,7 @@ namespace MapsExt.Editor
 				.SelectMany(obj => obj.GetComponentsInChildren<EditorActionHandler>())
 				.Select(h => h.gameObject);
 
+			this.ClearSelected();
 			this.AddSelected(actionHandlers);
 
 			this.BeginInteraction(newInstances.Select(obj => obj.GetComponent<MapObjectInstance>()), true);
