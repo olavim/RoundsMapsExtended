@@ -9,15 +9,13 @@ namespace MapsExt
 	// An InteractionTimeline forms a one-dimensional timeline of MapObjectInteractions that can be traversed by "undoing" and "redoing".
 	public class InteractionTimeline
 	{
-		public MapObjectInteraction UndoInteraction => interactionIndex >= 0 ? this.interactionStack[this.interactionIndex] : null;
-		public MapObjectInteraction RedoInteraction => interactionIndex < this.interactionStack.Count - 1 ? this.interactionStack[this.interactionIndex + 1] : null;
-
 		private readonly List<MapObjectInteraction> interactionStack = new List<MapObjectInteraction>();
 		private readonly Dictionary<int, MapObjectInstance[]> interactionIndexMapObjectInstances = new Dictionary<int, MapObjectInstance[]>();
 
 		private int interactionIndex = -1;
-		private MapObjectInstance[] interactionMapObjectInstances;
+		private MapObjectInstance[] targetMapObjectInstances;
 		private MapObjectManager mapObjectManager;
+		private bool isCreateInteraction;
 		private bool isValidInteraction;
 
 		public InteractionTimeline(MapObjectManager mapObjectManager)
@@ -42,8 +40,22 @@ namespace MapsExt
 
 		public void BeginInteraction(IEnumerable<MapObjectInstance> instances, bool isCreateInteraction = false)
 		{
+			// Commit pending interactions before starting a new one
+			if (this.targetMapObjectInstances != null)
+			{
+				this.EndInteraction();
+			}
+
 			this.isValidInteraction = MapObjectInteraction.BeginInteraction(mapObjectManager, instances);
-			this.interactionMapObjectInstances = isCreateInteraction ? instances.ToArray() : null;
+			this.targetMapObjectInstances = instances.ToArray();
+			this.isCreateInteraction = isCreateInteraction;
+		}
+
+		public void CancelInteraction()
+		{
+			this.targetMapObjectInstances = null;
+			this.isCreateInteraction = false;
+			this.isValidInteraction = false;
 		}
 
 		public void EndInteraction()
@@ -81,11 +93,14 @@ namespace MapsExt
 			this.interactionStack.Add(interaction);
 			this.interactionIndex++;
 
-			if (this.interactionMapObjectInstances != null)
+			if (this.isCreateInteraction)
 			{
-				this.interactionIndexMapObjectInstances.Add(this.interactionIndex, this.interactionMapObjectInstances);
-				this.interactionMapObjectInstances = null;
+				this.interactionIndexMapObjectInstances.Add(this.interactionIndex, this.targetMapObjectInstances);
 			}
+
+			this.targetMapObjectInstances = null;
+			this.isCreateInteraction = false;
+			this.isValidInteraction = false;
 		}
 
 		public bool CanUndo()
@@ -98,30 +113,30 @@ namespace MapsExt
 			return this.interactionIndex < this.interactionStack.Count - 1;
 		}
 
-		public bool Undo()
+		public MapObjectInteraction Undo()
 		{
 			if (!this.CanUndo())
 			{
-				return false;
+				return null;
 			}
 
 			var interaction = this.interactionStack[this.interactionIndex];
 			interaction.Undo();
 			this.interactionIndex--;
-			return true;
+			return interaction;
 		}
 
-		public bool Redo()
+		public MapObjectInteraction Redo()
 		{
 			if (!this.CanRedo())
 			{
-				return false;
+				return null;
 			}
 
 			this.interactionIndex++;
 			var interaction = this.interactionStack[this.interactionIndex];
 			interaction.Redo();
-			return true;
+			return interaction;
 		}
 	}
 }

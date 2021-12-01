@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Sirenix.Serialization;
 using MapsExt.UI;
 using UnboundLib;
@@ -16,7 +16,7 @@ namespace MapsExt.Editor
 {
 	public class MapEditor : MonoBehaviour
 	{
-		public List<GameObject> selectedMapObjects;
+		public ObservableCollection<GameObject> selectedMapObjects;
 		public string currentMapName;
 		public bool isSimulating;
 		public bool snapToGrid;
@@ -63,7 +63,7 @@ namespace MapsExt.Editor
 
 		public void Awake()
 		{
-			this.selectedMapObjects = new List<GameObject>();
+			this.selectedMapObjects = new ObservableCollection<GameObject>();
 			this.snapToGrid = true;
 			this.isCreatingSelection = false;
 			this.isDraggingMapObjects = false;
@@ -99,8 +99,7 @@ namespace MapsExt.Editor
 			uiGo.transform.SetParent(this.transform);
 
 			uiGo.SetActive(false);
-			this.gui = uiGo.AddComponent<MapEditorUI>();
-			this.gui.editor = this;
+			uiGo.AddComponent<MapEditorUI>().editor = this;
 			uiGo.SetActive(true);
 
 			this.gameObject.AddComponent<MapBorder>();
@@ -188,112 +187,92 @@ namespace MapsExt.Editor
 			});
 		}
 
-		public void OnUndo()
+		public void Undo()
 		{
-			var interaction = this.timeline.UndoInteraction;
 			var animObject = this.animationHandler.animation?.gameObject;
 			var keyframeCount = this.animationHandler.animation?.keyframes.Count;
+			var interaction = this.timeline.Undo();
 
-			if (this.timeline.Undo())
+			if (interaction == null)
 			{
-				if (animObject)
-				{
-					var transition = interaction.GetTransition(animObject);
-
-					if (transition != null)
-					{
-						var fromState = (SpatialMapObject) transition.fromState;
-						var toState = (SpatialMapObject) transition.toState;
-
-						// If the map object being animated was destroyed because of undo, close animation windows
-						if (!fromState.active && toState.active)
-						{
-							this.gui.CloseAnimationWindow();
-						}
-
-						// If the last keyframe was destroyed because of undo, select the new last keyframe
-						if (
-							fromState.animationKeyframes.Count < toState.animationKeyframes.Count &&
-							this.animationHandler.Keyframe >= this.animationHandler.animation.keyframes.Count
-						)
-						{
-							this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
-						}
-					}
-
-					animObject.SetActive(false);
-				}
-
-				this.ResetSpawnLabels();
-				this.ClearSelected();
-				this.UpdateRopeAttachments();
-
-				foreach (var target in interaction.Targets)
-				{
-					foreach (var handler in target.GetComponentsInChildren<EditorActionHandler>())
-					{
-						handler.onAction?.Invoke();
-						handler.onMove?.Invoke();
-						handler.onResize?.Invoke();
-						handler.onRotate?.Invoke();
-					}
-				}
-
-				this.animationHandler.RefreshCurrentFrame();
-				this.gui.RefreshAnimationWindow();
+				return;
 			}
+
+			if (animObject)
+			{
+				var transition = interaction.GetTransition(animObject);
+
+				if (transition != null)
+				{
+					var fromState = (SpatialMapObject) transition.fromState;
+					var toState = (SpatialMapObject) transition.toState;
+
+					// If the map object being animated was destroyed because of undo, close animation windows
+					if (!fromState.active && toState.active)
+					{
+						this.animationHandler.SetAnimation(null);
+					}
+
+					// If the last keyframe was destroyed because of undo, select the new last keyframe
+					if (
+						fromState.animationKeyframes.Count < toState.animationKeyframes.Count &&
+						this.animationHandler.Keyframe >= this.animationHandler.animation.keyframes.Count
+					)
+					{
+						this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
+					}
+				}
+
+				animObject.SetActive(false);
+			}
+
+			this.ResetSpawnLabels();
+			this.ClearSelected();
+			this.UpdateRopeAttachments();
+
+			this.animationHandler.RefreshCurrentFrame();
 		}
 
-		public void OnRedo()
+		public void Redo()
 		{
-			var interaction = this.timeline.RedoInteraction;
 			var animObject = this.animationHandler.animation?.gameObject;
+			var interaction = this.timeline.Redo();
 
-			if (this.timeline.Redo())
+			if (interaction == null)
 			{
-				if (animObject)
-				{
-					var transition = interaction.GetTransition(animObject);
-
-					if (transition != null)
-					{
-						var fromState = (SpatialMapObject) transition.fromState;
-						var toState = (SpatialMapObject) transition.toState;
-
-						// If the map object being animated was destroyed because of redo, close animation windows
-						if (fromState.active && !toState.active)
-						{
-							this.gui.CloseAnimationWindow();
-						}
-
-						// If a new keyframe was created because of redo, select the new keyframe
-						if (fromState.animationKeyframes.Count < toState.animationKeyframes.Count)
-						{
-							this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
-						}
-					}
-
-					animObject.SetActive(false);
-				}
-
-				this.ResetSpawnLabels();
-				this.ClearSelected();
-				this.UpdateRopeAttachments();
-
-				foreach (var target in interaction.Targets)
-				{
-					foreach (var handler in target.GetComponentsInChildren<EditorActionHandler>())
-					{
-						handler.onAction?.Invoke();
-						handler.onMove?.Invoke();
-						handler.onResize?.Invoke();
-						handler.onRotate?.Invoke();
-					}
-				}
-
-				this.animationHandler.RefreshCurrentFrame();
-				this.gui.RefreshAnimationWindow();
+				return;
 			}
+
+			if (animObject)
+			{
+				var transition = interaction.GetTransition(animObject);
+
+				if (transition != null)
+				{
+					var fromState = (SpatialMapObject) transition.fromState;
+					var toState = (SpatialMapObject) transition.toState;
+
+					// If the map object being animated was destroyed because of redo, close animation windows
+					if (fromState.active && !toState.active)
+					{
+						this.animationHandler.SetAnimation(null);
+					}
+
+					// If a new keyframe was created because of redo, select the new keyframe
+					if (fromState.animationKeyframes.Count < toState.animationKeyframes.Count)
+					{
+						this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
+					}
+				}
+
+				animObject.SetActive(false);
+			}
+
+			this.ResetSpawnLabels();
+			this.ClearSelected();
+			this.UpdateRopeAttachments();
+
+			this.animationHandler.RefreshCurrentFrame();
 		}
 
 		public void BeginInteraction(IEnumerable<MapObjectInstance> objects, bool isCreateInteraction = false)
@@ -480,42 +459,21 @@ namespace MapsExt.Editor
 			this.animationHandler.enabled = true;
 		}
 
-		public void OnClickOpen()
+		public void LoadMap(string mapFilePath)
 		{
-			FileDialog.OpenDialog(file =>
+			MapsExtendedEditor.instance.LoadMap(this.content, mapFilePath);
+
+			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
+			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");
+
+			this.currentMapName = mapFilePath.StartsWith(personalFolder) ? mapName : null;
+
+			this.ExecuteAfterFrames(1, () =>
 			{
-				this.gui.CloseAnimationWindow();
-				MapsExtendedEditor.instance.LoadMap(this.content, file);
-
-				string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
-				string mapName = file.Substring(0, file.Length - 4).Replace(personalFolder, "");
-
-				this.currentMapName = file.StartsWith(personalFolder) ? mapName : null;
-
-				this.ExecuteAfterFrames(1, () =>
-				{
-					this.ResetSpawnLabels();
-					this.ClearSelected();
-					this.UpdateRopeAttachments();
-				});
+				this.ResetSpawnLabels();
+				this.ClearSelected();
+				this.UpdateRopeAttachments();
 			});
-		}
-
-		public void OnClickSaveAs()
-		{
-			FileDialog.SaveDialog(filename => this.SaveMap(filename));
-		}
-
-		public void OnClickSave()
-		{
-			if (this.currentMapName?.Length > 0)
-			{
-				this.SaveMap(this.currentMapName);
-			}
-			else
-			{
-				this.OnClickSaveAs();
-			}
 		}
 
 		public void OnSelectionStart()
@@ -837,19 +795,19 @@ namespace MapsExt.Editor
 		public void ClearSelected()
 		{
 			this.selectedMapObjects.Clear();
-			this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
 		}
 
 		public void AddSelected(IEnumerable<GameObject> list)
 		{
-			this.selectedMapObjects.AddRange(list);
-			this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
+			foreach (var go in list)
+			{
+				this.AddSelected(go);
+			}
 		}
 
 		public void AddSelected(GameObject obj)
 		{
 			this.selectedMapObjects.Add(obj);
-			this.gui.OnChangeSelectedObjects(this.selectedMapObjects);
 		}
 
 		private void ResetSpawnLabels()

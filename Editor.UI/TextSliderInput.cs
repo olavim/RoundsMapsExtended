@@ -1,4 +1,5 @@
 ﻿using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine;
 using System;
 
@@ -8,6 +9,9 @@ namespace MapsExt.UI
 	{
 		public Slider slider;
 		public InputField input;
+
+		public Action<float> onChangedStart;
+		public Action<float> onChangedEnd;
 		public Action<float> onChanged;
 
 		private float inputValue;
@@ -15,19 +19,52 @@ namespace MapsExt.UI
 		public float Value
 		{
 			get => this.inputValue;
-			set => this.input.text = value.ToString();
+			set
+			{
+				this.input.text = value.ToString();
+			}
 		}
 
 		private float maxSliderValue;
+		private float valueOnSliderMouseDown;
+		private bool isMouseDownOnSlider = false;
 
-		public void Start()
+		public void Awake()
 		{
-			this.slider.onValueChanged.AddListener(this.UpdateValue);
-			this.input.onValueChanged.AddListener(this.UpdateValue);
+			this.slider.onValueChanged.AddListener(this.UpdateValueSlider);
+			this.input.onValueChanged.AddListener(this.UpdateValueTextInput);
 			this.maxSliderValue = this.slider.maxValue;
 		}
 
-		private void UpdateValue(float origValue)
+		public void Start()
+		{
+			var eventTrigger = this.slider.gameObject.GetComponent<EventTrigger>() ?? this.slider.gameObject.AddComponent<EventTrigger>();
+
+			var downEntry = new EventTrigger.Entry();
+			downEntry.eventID = EventTriggerType.PointerDown;
+			downEntry.callback.AddListener(data =>
+			{
+				this.isMouseDownOnSlider = true;
+				this.valueOnSliderMouseDown = this.Value;
+				this.onChangedStart?.Invoke(this.Value);
+			});
+
+			var upEntry = new EventTrigger.Entry();
+			upEntry.eventID = EventTriggerType.PointerUp;
+			upEntry.callback.AddListener(data =>
+			{
+				this.isMouseDownOnSlider = false;
+				if (this.Value != this.valueOnSliderMouseDown)
+				{
+					this.onChangedEnd?.Invoke(this.Value);
+				}
+			});
+
+			eventTrigger.triggers.Add(downEntry);
+			eventTrigger.triggers.Add(upEntry);
+		}
+
+		private void UpdateValueSlider(float origValue)
 		{
 			float value = Mathf.Min(this.maxSliderValue, origValue);
 			value = (float) Math.Round(value * 10f) / 10f;
@@ -43,33 +80,32 @@ namespace MapsExt.UI
 				return;
 			}
 
-			this.input.onValueChanged.RemoveListener(this.UpdateValue);
+			this.input.onValueChanged.RemoveListener(this.UpdateValueTextInput);
 			this.input.text = value.ToString("0.0");
-			this.input.onValueChanged.AddListener(this.UpdateValue);
+			this.input.onValueChanged.AddListener(this.UpdateValueTextInput);
 
 			this.inputValue = value;
+
 			this.onChanged?.Invoke(this.Value);
 		}
 
-		private void UpdateValue(string valueStr)
+		private void UpdateValueTextInput(string valueStr)
 		{
 			if (valueStr.EndsWith("."))
 			{
 				return;
 			}
 
-			float value = this.inputValue;
-
 			if (valueStr == "")
 			{
-				value = 1f;
+				this.inputValue = 1f;
 			}
-			else if (float.TryParse(valueStr, out value))
+			else if (float.TryParse(valueStr, out float value))
 			{
-				this.slider.onValueChanged.RemoveListener(this.UpdateValue);
+				this.slider.onValueChanged.RemoveListener(this.UpdateValueSlider);
 				this.slider.maxValue = (value > this.maxSliderValue) ? value : this.maxSliderValue;
 				this.slider.value = value;
-				this.slider.onValueChanged.AddListener(this.UpdateValue);
+				this.slider.onValueChanged.AddListener(this.UpdateValueSlider);
 
 				this.inputValue = value;
 			}

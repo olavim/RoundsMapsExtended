@@ -12,6 +12,8 @@ namespace MapsExt.UI
 		public ColorBlock colors;
 
 		public Action onClick;
+		public Action<float> onDurationChangedStart;
+		public Action<float> onDurationChangedEnd;
 		public Action<float> onDurationChanged;
 		public Action<string> onEasingChanged;
 
@@ -29,6 +31,8 @@ namespace MapsExt.UI
 			});
 
 			this.durationInput.onChanged += this.UpdateDuration;
+			this.durationInput.onChangedStart += this.UpdateDurationStart;
+			this.durationInput.onChangedEnd += this.UpdateDurationEnd;
 			this.easingDropdown.onValueChanged.AddListener(this.UpdateEasing);
 
 			this.UpdateFoldoutColors();
@@ -51,6 +55,18 @@ namespace MapsExt.UI
 		{
 			this.Duration = value;
 			this.onDurationChanged?.Invoke(this.Duration);
+		}
+
+		private void UpdateDurationStart(float value)
+		{
+			this.Duration = value;
+			this.onDurationChangedStart?.Invoke(this.Duration);
+		}
+
+		private void UpdateDurationEnd(float value)
+		{
+			this.Duration = value;
+			this.onDurationChangedEnd?.Invoke(this.Duration);
 		}
 
 		private void UpdateEasing(int index)
