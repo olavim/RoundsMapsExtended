@@ -277,6 +277,7 @@ namespace MapsExt.Editor
 
 		public void BeginInteraction(IEnumerable<MapObjectInstance> objects, bool isCreateInteraction = false)
 		{
+			// If a map object is being animated, we hide it in the editor but in reality it's active
 			var animObject = this.animationHandler.animation?.gameObject;
 			animObject?.SetActive(true);
 			this.timeline.BeginInteraction(objects, isCreateInteraction);
@@ -285,6 +286,7 @@ namespace MapsExt.Editor
 
 		public void EndInteraction()
 		{
+			// If a map object is being animated, we hide it in the editor but in reality it's active
 			var animObject = this.animationHandler.animation?.gameObject;
 			animObject?.SetActive(true);
 			this.timeline.EndInteraction();

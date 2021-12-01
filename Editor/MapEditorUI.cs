@@ -396,23 +396,19 @@ namespace MapsExt.Editor
 				keyframeSettings.contentFoldout.label.text = $"Keyframe {keyframe}";
 			}
 
-			keyframeSettings.onDurationChanged += value =>
+			keyframeSettings.onDurationChanged += (value, type) =>
 			{
-				anim.keyframes[keyframe].duration = value;
-				anim.keyframes[keyframe].UpdateCurve();
-			};
+				if (type == TextSliderInput.ChangeType.ChangeStart)
+				{
+					this.editor.BeginInteraction(new MapObjectInstance[] { anim.gameObject.GetComponent<MapObjectInstance>() });
+				}
 
-			keyframeSettings.onDurationChangedStart += value =>
-			{
-				this.editor.BeginInteraction(new MapObjectInstance[] { anim.gameObject.GetComponent<MapObjectInstance>() });
 				anim.keyframes[keyframe].duration = value;
-				anim.keyframes[keyframe].UpdateCurve();
-			};
 
-			keyframeSettings.onDurationChangedEnd += value =>
-			{
-				anim.keyframes[keyframe].duration = value;
-				this.editor.EndInteraction();
+				if (type == TextSliderInput.ChangeType.ChangeEnd)
+				{
+					this.editor.EndInteraction();
+				}
 
 				anim.keyframes[keyframe].UpdateCurve();
 			};
@@ -511,21 +507,19 @@ namespace MapsExt.Editor
 			this.editor.EndInteraction();
 		}
 
-		private void InspectorRotationChanged(float value)
+		private void InspectorRotationChanged(float value, TextSliderInput.ChangeType type)
 		{
-			this.selectedMapObjects[0].transform.rotation = Quaternion.Euler(0, 0, value);
-		}
+			if (type == TextSliderInput.ChangeType.ChangeStart)
+			{
+				this.editor.BeginInteraction(new MapObjectInstance[] { this.selectedMapObjects[0].GetComponent<MapObjectInstance>() });
+			}
 
-		private void InspectorRotationChangedStart(float value)
-		{
-			this.editor.BeginInteraction(new MapObjectInstance[] { this.selectedMapObjects[0].GetComponent<MapObjectInstance>() });
 			this.selectedMapObjects[0].transform.rotation = Quaternion.Euler(0, 0, value);
-		}
 
-		private void InspectorRotationChangedEnd(float value)
-		{
-			this.selectedMapObjects[0].transform.rotation = Quaternion.Euler(0, 0, value);
-			this.editor.EndInteraction();
+			if (type == TextSliderInput.ChangeType.ChangeEnd)
+			{
+				this.editor.EndInteraction();
+			}
 		}
 
 		private void InspectorMapObjectPositionChanged()
@@ -545,14 +539,8 @@ namespace MapsExt.Editor
 		private void InspectorMapObjectRotationChanged()
 		{
 			this.inspector.rotationInput.onChanged -= this.InspectorRotationChanged;
-			this.inspector.rotationInput.onChangedStart -= this.InspectorRotationChangedStart;
-			this.inspector.rotationInput.onChangedEnd -= this.InspectorRotationChangedEnd;
-
 			this.inspector.rotationInput.Value = this.selectedMapObjects[0].transform.rotation.eulerAngles.z;
-
 			this.inspector.rotationInput.onChanged += this.InspectorRotationChanged;
-			this.inspector.rotationInput.onChangedStart += this.InspectorRotationChangedStart;
-			this.inspector.rotationInput.onChangedEnd += this.InspectorRotationChangedEnd;
 		}
 
 		private void LinkInspector(GameObject mapObject)
@@ -566,8 +554,6 @@ namespace MapsExt.Editor
 			this.inspector.positionInput.onChanged += this.InspectorPositionChanged;
 			this.inspector.sizeInput.onChanged += this.InspectorSizeChanged;
 			this.inspector.rotationInput.onChanged += this.InspectorRotationChanged;
-			this.inspector.rotationInput.onChangedStart += this.InspectorRotationChangedStart;
-			this.inspector.rotationInput.onChangedEnd += this.InspectorRotationChangedEnd;
 
 			actionHandler.onMove += this.InspectorMapObjectPositionChanged;
 			actionHandler.onResize += this.InspectorMapObjectSizeChanged;

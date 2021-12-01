@@ -7,12 +7,17 @@ namespace MapsExt.UI
 {
 	public class TextSliderInput : MonoBehaviour
 	{
+		public enum ChangeType
+		{
+			ChangeStart,
+			Change,
+			ChangeEnd
+		}
+
 		public Slider slider;
 		public InputField input;
 
-		public Action<float> onChangedStart;
-		public Action<float> onChangedEnd;
-		public Action<float> onChanged;
+		public Action<float, ChangeType> onChanged;
 
 		private float inputValue;
 
@@ -46,7 +51,7 @@ namespace MapsExt.UI
 			{
 				this.isMouseDownOnSlider = true;
 				this.valueOnSliderMouseDown = this.Value;
-				this.onChangedStart?.Invoke(this.Value);
+				this.onChanged?.Invoke(this.Value, ChangeType.ChangeStart);
 			});
 
 			var upEntry = new EventTrigger.Entry();
@@ -56,7 +61,7 @@ namespace MapsExt.UI
 				this.isMouseDownOnSlider = false;
 				if (this.Value != this.valueOnSliderMouseDown)
 				{
-					this.onChangedEnd?.Invoke(this.Value);
+					this.onChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 				}
 			});
 
@@ -86,7 +91,7 @@ namespace MapsExt.UI
 
 			this.inputValue = value;
 
-			this.onChanged?.Invoke(this.Value);
+			this.onChanged?.Invoke(this.Value, ChangeType.Change);
 		}
 
 		private void UpdateValueTextInput(string valueStr)
@@ -110,7 +115,9 @@ namespace MapsExt.UI
 				this.inputValue = value;
 			}
 
-			this.onChanged?.Invoke(this.Value);
+			this.onChanged?.Invoke(this.Value, ChangeType.ChangeStart);
+			this.onChanged?.Invoke(this.Value, ChangeType.Change);
+			this.onChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 		}
 	}
 }
