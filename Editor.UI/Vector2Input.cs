@@ -70,5 +70,17 @@ namespace MapsExt.UI
 
 			this.onChanged?.Invoke(this.Value);
 		}
+
+		public void SetEnabled(bool enabled)
+		{
+			this.xInput.interactable = enabled;
+			this.yInput.interactable = enabled;
+
+			var col = enabled ? Color.white : new Color(0.78f, 0.78f, 0.78f, 0.4f);
+			foreach (var text in this.gameObject.GetComponentsInChildren<Text>())
+			{
+				text.color = col;
+			}
+		}
 	}
 }

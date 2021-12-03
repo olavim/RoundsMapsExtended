@@ -611,6 +611,9 @@ namespace MapsExt.Editor
 			actionHandler.onMove += this.MapObjectPositionChanged;
 			actionHandler.onResize += this.MapObjectSizeChanged;
 			actionHandler.onRotate += this.MapObjectRotationChanged;
+
+			this.inspector.sizeInput.SetEnabled(actionHandler.CanResize());
+			this.inspector.rotationInput.SetEnabled(actionHandler.CanRotate());
 		}
 
 		private void UnlinkInspector()

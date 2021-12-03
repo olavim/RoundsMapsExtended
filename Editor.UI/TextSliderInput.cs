@@ -119,5 +119,11 @@ namespace MapsExt.UI
 			this.onChanged?.Invoke(this.Value, ChangeType.Change);
 			this.onChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 		}
+
+		public void SetEnabled(bool enabled)
+		{
+			this.slider.interactable = enabled;
+			this.input.interactable = enabled;
+		}
 	}
 }
