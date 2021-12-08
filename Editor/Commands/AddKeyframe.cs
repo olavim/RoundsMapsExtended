@@ -33,7 +33,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(AddKeyframeCommand cmd)
+		public override void Execute(AddKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -42,7 +42,7 @@ namespace MapsExt.Editor.Commands
 			this.editor.animationHandler.SetKeyframe(cmd.frameIndex);
 		}
 
-		override public void Undo(AddKeyframeCommand cmd)
+		public override void Undo(AddKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -54,9 +54,14 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		override public AddKeyframeCommand Merge(AddKeyframeCommand cmd1, AddKeyframeCommand cmd2)
+		public override AddKeyframeCommand Merge(AddKeyframeCommand cmd1, AddKeyframeCommand cmd2)
 		{
 			return cmd2;
+		}
+
+		public override bool IsRedundant(AddKeyframeCommand cmd)
+		{
+			return cmd.frame == null;
 		}
 	}
 }

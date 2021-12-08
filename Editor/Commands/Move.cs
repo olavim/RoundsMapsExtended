@@ -41,7 +41,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(MoveCommand cmd)
+		public override void Execute(MoveCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
@@ -57,7 +57,7 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		override public void Undo(MoveCommand cmd)
+		public override void Undo(MoveCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
@@ -75,9 +75,14 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
-		override public MoveCommand Merge(MoveCommand cmd1, MoveCommand cmd2)
+		public override MoveCommand Merge(MoveCommand cmd1, MoveCommand cmd2)
 		{
 			return new MoveCommand(cmd1, cmd1.delta + cmd2.delta);
+		}
+
+		public override bool IsRedundant(MoveCommand cmd)
+		{
+			return cmd.delta == Vector3.zero;
 		}
 	}
 }

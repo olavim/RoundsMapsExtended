@@ -558,9 +558,10 @@ namespace MapsExt.Editor
 
 		private void InspectorRotationChanged(float value, TextSliderInput.ChangeType type)
 		{
-			var rotationDelta = Quaternion.Euler(0, 0, value) * Quaternion.Inverse(this.inspector.visualTarget.transform.rotation);
+			var fromRotation = this.inspector.visualTarget.transform.rotation;
+			var toRotation = Quaternion.AngleAxis(value, Vector3.forward);
 			var actionHandler = this.inspector.visualTarget.GetComponent<EditorActionHandler>();
-			var cmd = new RotateCommand(actionHandler, rotationDelta, this.editor.animationHandler.KeyframeIndex);
+			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation, this.editor.animationHandler.KeyframeIndex);
 			this.editor.commandHistory.Add(cmd, type != TextSliderInput.ChangeType.ChangeStart);
 		}
 

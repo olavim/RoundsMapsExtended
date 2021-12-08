@@ -5,20 +5,20 @@ namespace MapsExt.Editor.Commands
 {
 	public class ChangeKeyframeDurationCommand : ICommand
 	{
-		public readonly MapObject data;
+		public readonly SpatialMapObject data;
 		public readonly float delta;
 		public readonly int frameIndex;
 
 		public ChangeKeyframeDurationCommand(GameObject instance, float delta, int frameIndex)
 		{
-			this.data = MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
+			this.data = (SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
 			this.delta = delta;
 			this.frameIndex = frameIndex;
 		}
 
 		public ChangeKeyframeDurationCommand(MapObject data, float delta, int frameIndex)
 		{
-			this.data = data;
+			this.data = (SpatialMapObject) data;
 			this.delta = delta;
 			this.frameIndex = frameIndex;
 		}
@@ -33,7 +33,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(ChangeKeyframeDurationCommand cmd)
+		public override void Execute(ChangeKeyframeDurationCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -41,17 +41,22 @@ namespace MapsExt.Editor.Commands
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
 		}
 
-		override public void Undo(ChangeKeyframeDurationCommand cmd)
+		public override void Undo(ChangeKeyframeDurationCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
-			animation.keyframes[cmd.frameIndex].duration = ((SpatialMapObject) cmd.data).animationKeyframes[cmd.frameIndex - 1].duration;
+			animation.keyframes[cmd.frameIndex].duration = cmd.data.animationKeyframes[cmd.frameIndex - 1].duration;
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
 		}
 
-		override public ChangeKeyframeDurationCommand Merge(ChangeKeyframeDurationCommand cmd1, ChangeKeyframeDurationCommand cmd2)
+		public override ChangeKeyframeDurationCommand Merge(ChangeKeyframeDurationCommand cmd1, ChangeKeyframeDurationCommand cmd2)
 		{
 			return new ChangeKeyframeDurationCommand(cmd1.data, cmd1.delta + cmd2.delta, cmd1.frameIndex);
+		}
+
+		public override bool IsRedundant(ChangeKeyframeDurationCommand cmd)
+		{
+			return Mathf.Abs(cmd.delta) < float.Epsilon;
 		}
 	}
 }

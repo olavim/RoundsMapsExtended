@@ -5,13 +5,13 @@ namespace MapsExt.Editor.Commands
 {
 	public class DeleteKeyframeCommand : ICommand
 	{
-		public readonly MapObject data;
+		public readonly SpatialMapObject data;
 		public readonly AnimationKeyframe frame;
 		public readonly int frameIndex;
 
 		public DeleteKeyframeCommand(GameObject instance, int frameIndex)
 		{
-			this.data = MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
+			this.data = (SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
 			this.frame = new AnimationKeyframe(instance.GetComponent<MapObjectAnimation>().keyframes[frameIndex]);
 			this.frameIndex = frameIndex;
 		}
@@ -26,7 +26,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(DeleteKeyframeCommand cmd)
+		public override void Execute(DeleteKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -38,16 +38,21 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		override public void Undo(DeleteKeyframeCommand cmd)
+		public override void Undo(DeleteKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
 			animation.keyframes.Insert(cmd.frameIndex, cmd.frame);
 		}
 
-		override public DeleteKeyframeCommand Merge(DeleteKeyframeCommand cmd1, DeleteKeyframeCommand cmd2)
+		public override DeleteKeyframeCommand Merge(DeleteKeyframeCommand cmd1, DeleteKeyframeCommand cmd2)
 		{
 			return cmd2;
+		}
+
+		public override bool IsRedundant(DeleteKeyframeCommand cmd)
+		{
+			return cmd.data == null;
 		}
 	}
 }

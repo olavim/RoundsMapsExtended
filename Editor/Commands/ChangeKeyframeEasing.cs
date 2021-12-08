@@ -5,13 +5,13 @@ namespace MapsExt.Editor.Commands
 {
 	public class ChangeKeyframeEasingCommand : ICommand
 	{
-		public readonly MapObject data;
+		public readonly SpatialMapObject data;
 		public readonly AnimationKeyframe.CurveType curveType;
 		public readonly int frameIndex;
 
 		public ChangeKeyframeEasingCommand(GameObject instance, AnimationKeyframe.CurveType curveType, int frameIndex)
 		{
-			this.data = MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
+			this.data = (SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
 			this.curveType = curveType;
 			this.frameIndex = frameIndex;
 		}
@@ -26,7 +26,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(ChangeKeyframeEasingCommand cmd)
+		public override void Execute(ChangeKeyframeEasingCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -34,17 +34,22 @@ namespace MapsExt.Editor.Commands
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
 		}
 
-		override public void Undo(ChangeKeyframeEasingCommand cmd)
+		public override void Undo(ChangeKeyframeEasingCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
-			animation.keyframes[cmd.frameIndex].curveType = ((SpatialMapObject) cmd.data).animationKeyframes[cmd.frameIndex - 1].curveType;
+			animation.keyframes[cmd.frameIndex].curveType = cmd.data.animationKeyframes[cmd.frameIndex - 1].curveType;
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
 		}
 
-		override public ChangeKeyframeEasingCommand Merge(ChangeKeyframeEasingCommand cmd1, ChangeKeyframeEasingCommand cmd2)
+		public override ChangeKeyframeEasingCommand Merge(ChangeKeyframeEasingCommand cmd1, ChangeKeyframeEasingCommand cmd2)
 		{
 			return cmd2;
+		}
+
+		public override bool IsRedundant(ChangeKeyframeEasingCommand cmd)
+		{
+			return cmd.curveType == cmd.data.animationKeyframes[cmd.frameIndex - 1].curveType;
 		}
 	}
 }

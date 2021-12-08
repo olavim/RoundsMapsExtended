@@ -51,12 +51,14 @@ namespace MapsExt
 			}
 
 			System.Tuple<int, ICommand> prevCmd = this.commands.Count > 0 ? this.commands[this.commandIndex] : null;
+			bool didMerge = false;
 
 			// Merge new command with the previous one if it's possible and was requested
 			if (merge && prevCmd?.Item1 == this.commandMergeId && prevCmd?.Item2.GetType() == typeof(T))
 			{
 				var mergedCmd = handler.Merge((T) prevCmd.Item2, cmd);
 				this.commands[this.commandIndex] = new Tuple<int, ICommand>(this.commandMergeId, mergedCmd);
+				didMerge = true;
 			}
 			else
 			{
@@ -64,7 +66,19 @@ namespace MapsExt
 				this.commandIndex++;
 			}
 
-			handler.Execute(cmd);
+			bool isRedundant = handler.IsRedundant((T) this.commands[this.commandIndex].Item2);
+
+			// Remove the new command or the result of merged commands if it causes no change
+			if (isRedundant)
+			{
+				this.commands.RemoveAt(this.commandIndex);
+				this.commandIndex--;
+			}
+
+			if (!isRedundant || didMerge)
+			{
+				handler.Execute(cmd);
+			}
 		}
 
 		public void PreventNextMerge()

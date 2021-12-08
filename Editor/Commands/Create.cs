@@ -42,7 +42,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(CreateCommand cmd)
+		public override void Execute(CreateCommand cmd)
 		{
 			this.editor.StartCoroutine(this.ExecuteCoroutine(cmd));
 		}
@@ -77,7 +77,7 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
-		override public void Undo(CreateCommand cmd)
+		public override void Undo(CreateCommand cmd)
 		{
 			foreach (var mapObject in cmd.data)
 			{
@@ -96,9 +96,14 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
-		override public CreateCommand Merge(CreateCommand cmd1, CreateCommand cmd2)
+		public override CreateCommand Merge(CreateCommand cmd1, CreateCommand cmd2)
 		{
 			return cmd2;
+		}
+
+		public override bool IsRedundant(CreateCommand cmd)
+		{
+			return cmd.data.Length == 0;
 		}
 	}
 }

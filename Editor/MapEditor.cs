@@ -11,6 +11,7 @@ using MapsExt.MapObjects;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.Commands;
 using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Extensions;
 using System;
 
 namespace MapsExt.Editor
@@ -587,19 +588,11 @@ namespace MapsExt.Editor
 			mousePos.y -= objectPos.y;
 
 			float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
+			angle = EditorUtils.Snap(angle, this.snapToGrid ? 15f : 2f);
+			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-			if (this.snapToGrid)
-			{
-				angle = EditorUtils.Snap(angle, 15f);
-			}
-
-			var rotationDelta = Quaternion.Euler(0, 0, angle) * Quaternion.Inverse(handler.transform.rotation);
-
-			if (rotationDelta != Quaternion.identity)
-			{
-				var cmd = new RotateCommand(this.selectedActionHandlers, rotationDelta, this.animationHandler.KeyframeIndex);
-				this.commandHistory.Add(cmd, true);
-			}
+			var cmd = new RotateCommand(this.selectedActionHandlers, handler.transform.rotation, toRotation, this.animationHandler.KeyframeIndex);
+			this.commandHistory.Add(cmd, true);
 		}
 
 		public void ClearSelected()

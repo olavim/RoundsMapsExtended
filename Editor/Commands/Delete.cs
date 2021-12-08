@@ -8,16 +8,16 @@ namespace MapsExt.Editor.Commands
 {
 	public class DeleteCommand : ICommand
 	{
-		public readonly MapObject[] mapObjects;
+		public readonly MapObject[] data;
 
 		public DeleteCommand(IEnumerable<GameObject> instances)
 		{
-			this.mapObjects = instances.Select(obj => MapsExtendedEditor.instance.mapObjectManager.Serialize(obj)).ToArray();
+			this.data = instances.Select(obj => MapsExtendedEditor.instance.mapObjectManager.Serialize(obj)).ToArray();
 		}
 
 		public DeleteCommand(IEnumerable<MapObjectInstance> instances)
 		{
-			this.mapObjects = instances.Select(obj => MapsExtendedEditor.instance.mapObjectManager.Serialize(obj)).ToArray();
+			this.data = instances.Select(obj => MapsExtendedEditor.instance.mapObjectManager.Serialize(obj)).ToArray();
 		}
 	}
 
@@ -30,9 +30,9 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		override public void Execute(DeleteCommand cmd)
+		public override void Execute(DeleteCommand cmd)
 		{
-			foreach (var mapObject in cmd.mapObjects)
+			foreach (var mapObject in cmd.data)
 			{
 				var instance = mapObject.FindInstance(this.editor.content).gameObject;
 
@@ -49,20 +49,20 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
-		override public void Undo(DeleteCommand cmd)
+		public override void Undo(DeleteCommand cmd)
 		{
 			this.editor.StartCoroutine(this.UndoCoroutine(cmd));
 		}
 
 		private IEnumerator UndoCoroutine(DeleteCommand cmd)
 		{
-			int waiting = cmd.mapObjects.Length;
+			int waiting = cmd.data.Length;
 
-			for (int i = 0; i < cmd.mapObjects.Length; i++)
+			for (int i = 0; i < cmd.data.Length; i++)
 			{
 				MapsExtendedEditor.instance.SpawnObject(
 					this.editor.content,
-					cmd.mapObjects[i],
+					cmd.data[i],
 					_ => waiting--
 				);
 			}
@@ -76,9 +76,14 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
-		override public DeleteCommand Merge(DeleteCommand cmd1, DeleteCommand cmd2)
+		public override DeleteCommand Merge(DeleteCommand cmd1, DeleteCommand cmd2)
 		{
 			return cmd2;
+		}
+
+		public override bool IsRedundant(DeleteCommand cmd)
+		{
+			return cmd.data.Length == 0;
 		}
 	}
 }

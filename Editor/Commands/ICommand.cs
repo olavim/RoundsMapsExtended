@@ -13,6 +13,7 @@ namespace MapsExt.Editor.Commands
 		void Execute(ICommand cmd);
 		void Undo(ICommand cmd);
 		ICommand Merge(ICommand cmd1, ICommand cmd2);
+		bool IsRedundant(ICommand cmd);
 	}
 
 	public interface ICommandHandler<T> where T : ICommand
@@ -20,6 +21,7 @@ namespace MapsExt.Editor.Commands
 		void Execute(T cmd);
 		void Undo(T cmd);
 		T Merge(T cmd1, T cmd2);
+		bool IsRedundant(T cmd);
 	}
 
 	// Finds a specific EditorActionHandler component from a GameObject hierarchy where the GameObject instances might change

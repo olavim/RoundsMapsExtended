@@ -19,7 +19,7 @@ namespace MapsExt.Editor.ActionHandlers
 			return false;
 		}
 
-		public override bool Rotate(Quaternion rotationDelta)
+		public override bool SetRotation(Quaternion rotation)
 		{
 			return false;
 		}
