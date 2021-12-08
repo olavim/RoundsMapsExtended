@@ -1,16 +1,16 @@
 ﻿using UnityEngine;
 
-namespace MapsExt.Editor
+namespace MapsExt.Editor.ActionHandlers
 {
 	public class SpatialActionHandler : EditorActionHandler
 	{
-		public override bool CanRotate()
-		{
-			return true;
-		}
+		public override bool CanMove() => true;
+		public override bool CanResize() => true;
+		public override bool CanRotate() => true;
 
-		public override bool CanResize()
+		public override bool Move(Vector3 positionDelta)
 		{
+			this.transform.position += positionDelta;
 			return true;
 		}
 
@@ -52,6 +52,19 @@ namespace MapsExt.Editor
 
 			this.transform.localScale = newScale;
 			this.transform.position += positionDelta * 0.5f;
+			return true;
+		}
+
+		public override bool Rotate(Quaternion rotationDelta)
+		{
+			const float precision = 100f;
+
+			this.transform.rotation *= rotationDelta;
+			var euler = this.transform.rotation.eulerAngles;
+			euler.x = Mathf.Round(euler.x * precision) / precision;
+			euler.y = Mathf.Round(euler.y * precision) / precision;
+			euler.z = Mathf.Round(euler.z * precision) / precision;
+			this.transform.rotation = Quaternion.Euler(euler);
 			return true;
 		}
 	}

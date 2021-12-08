@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnboundLib;
+using System.Linq;
 using System.Collections.Generic;
 using HarmonyLib;
 
@@ -8,11 +9,20 @@ namespace MapsExt.MapObjects
 {
 	public class MapObject
 	{
+		public string mapObjectId = Guid.NewGuid().ToString();
 		public bool active = true;
+
+		public MapObjectInstance FindInstance(GameObject container)
+		{
+			return container
+					.GetComponentsInChildren<MapObjectInstance>(true)
+					.FirstOrDefault(obj => obj.mapObjectId == this.mapObjectId);
+		}
 
 		public virtual MapObject Move(Vector3 v)
 		{
 			var copy = (MapObject) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
+			copy.mapObjectId = this.mapObjectId;
 			copy.active = this.active;
 			return copy;
 		}
@@ -25,12 +35,14 @@ namespace MapsExt.MapObjects
 	{
 		public static void Serialize(GameObject instance, MapObject target)
 		{
+			target.mapObjectId = instance.GetComponent<MapObjectInstance>().mapObjectId;
 			target.active = instance.activeSelf;
 		}
 
 		public static void Deserialize(MapObject data, GameObject target)
 		{
 			var c = target.GetOrAddComponent<MapObjectInstance>();
+			c.mapObjectId = data.mapObjectId;
 			c.dataType = data.GetType();
 			target.SetActive(data.active);
 		}
@@ -38,6 +50,7 @@ namespace MapsExt.MapObjects
 
 	public class MapObjectInstance : MonoBehaviour
 	{
+		public string mapObjectId;
 		public Type dataType;
 
 		public void Start()

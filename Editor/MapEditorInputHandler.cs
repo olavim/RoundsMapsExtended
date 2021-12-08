@@ -120,9 +120,9 @@ namespace MapsExt.Editor
 			this.mouseDownSince = Time.time * 1000;
 			this.mouseDownPosition = Input.mousePosition;
 
-			var list = EditorUtils.GetHoveredMapObjects();
+			var list = EditorUtils.GetHoveredActionHandlers();
 
-			if (list.Exists(this.editor.IsMapObjectSelected))
+			if (list.Exists(this.editor.IsActionHandlerSelected))
 			{
 				this.isDragging = true;
 				this.editor.OnDragStart();
@@ -141,7 +141,7 @@ namespace MapsExt.Editor
 
 			if (mouseDelta.magnitude <= this.clickPositionEpsilon && mouseUpTime - this.mouseDownSince <= this.clickTimeMsEpsilon)
 			{
-				this.editor.OnClickMapObjects(EditorUtils.GetHoveredMapObjects());
+				this.editor.OnClickActionHandlers(EditorUtils.GetHoveredActionHandlers());
 			}
 
 			if (this.isSelecting)

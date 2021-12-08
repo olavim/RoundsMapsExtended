@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using MapsExt.MapObjects;
+using MapsExt.Editor.ActionHandlers;
 using UnboundLib;
 
 namespace MapsExt.Editor.MapObjects
@@ -18,8 +19,8 @@ namespace MapsExt.Editor.MapObjects
 		{
 			SerializerAction<T> result = null;
 
-			result += (instance, target) => EditorSpatialSerializer.Serialize(instance, (T)target);
-			result += (instance, target) => action(instance, (T)target);
+			result += (instance, target) => EditorSpatialSerializer.Serialize(instance, (T) target);
+			result += (instance, target) => action(instance, (T) target);
 
 			return result;
 		}
@@ -28,8 +29,8 @@ namespace MapsExt.Editor.MapObjects
 		{
 			DeserializerAction<T> result = null;
 
-			result += (data, target) => EditorSpatialSerializer.Deserialize((T)data, target);
-			result += (data, target) => action((T)data, target);
+			result += (data, target) => EditorSpatialSerializer.Deserialize((T) data, target);
+			result += (data, target) => action((T) data, target);
 
 			return result;
 		}

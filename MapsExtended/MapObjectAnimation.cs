@@ -89,16 +89,6 @@ namespace MapsExt
 			this.keyframes.Add(new AnimationKeyframe(mapObject));
 		}
 
-		public void AddKeyframe()
-		{
-			this.keyframes.Add(new AnimationKeyframe(this.keyframes[this.keyframes.Count - 1]));
-		}
-
-		public void DeleteKeyframe(int index)
-		{
-			this.keyframes.RemoveAt(index);
-		}
-
 		public void Play()
 		{
 			this.IsPlaying = true;

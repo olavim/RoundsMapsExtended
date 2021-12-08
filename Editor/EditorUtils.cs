@@ -1,49 +1,24 @@
 ﻿using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
+using MapsExt.Editor.ActionHandlers;
 
 namespace MapsExt.Editor
 {
 	public static class EditorUtils
 	{
-		public static List<GameObject> GetHoveredMapObjects()
+		public static List<EditorActionHandler> GetHoveredActionHandlers()
 		{
 			var mousePos = Input.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var colliders = Physics2D.OverlapPointAll(mouseWorldPos);
-			return EditorUtils.GetDraggableGameObjects(colliders);
+			return colliders.SelectMany(c => c.GetComponentsInChildren<EditorActionHandler>()).ToList();
 		}
 
-		public static List<GameObject> GetContainedMapObjects(Rect rect)
+		public static List<EditorActionHandler> GetContainedActionHandlers(Rect rect)
 		{
 			var colliders = Physics2D.OverlapAreaAll(rect.min, rect.max);
-			return EditorUtils.GetDraggableGameObjects(colliders);
-		}
-
-		private static List<GameObject> GetDraggableGameObjects(IEnumerable<Collider2D> colliders)
-		{
-			var list = new List<GameObject>();
-
-			foreach (var collider in colliders)
-			{
-				var go = collider.gameObject;
-
-				while (go && !EditorUtils.IsDraggableGameObject(go))
-				{
-					go = go.transform.parent?.gameObject;
-				}
-
-				if (go && !list.Contains(go))
-				{
-					list.Add(go);
-				}
-			}
-
-			return list;
-		}
-
-		public static bool IsDraggableGameObject(GameObject go)
-		{
-			return go.GetComponent<EditorActionHandler>() != null;
+			return colliders.SelectMany(c => c.GetComponentsInChildren<EditorActionHandler>()).ToList();
 		}
 
 		public static Vector3 SnapToGrid(Vector3 pos, float gridSize)

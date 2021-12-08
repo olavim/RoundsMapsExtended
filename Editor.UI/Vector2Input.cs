@@ -17,13 +17,8 @@ namespace MapsExt.UI
 			get => this.inputValue;
 			set
 			{
-				this.xInput.onValueChanged.RemoveListener(this.UpdateXValue);
-				this.yInput.onValueChanged.RemoveListener(this.UpdateYValue);
-				this.xInput.text = value.x.ToString();
-				this.yInput.text = value.y.ToString();
-				this.inputValue = value;
-				this.xInput.onValueChanged.AddListener(this.UpdateXValue);
-				this.yInput.onValueChanged.AddListener(this.UpdateYValue);
+				this.SetWithoutEvent(value);
+				this.onChanged?.Invoke(value);
 			}
 		}
 
@@ -69,6 +64,17 @@ namespace MapsExt.UI
 			}
 
 			this.onChanged?.Invoke(this.Value);
+		}
+
+		public void SetWithoutEvent(Vector2 value)
+		{
+			this.xInput.onValueChanged.RemoveListener(this.UpdateXValue);
+			this.yInput.onValueChanged.RemoveListener(this.UpdateYValue);
+			this.xInput.text = value.x.ToString();
+			this.yInput.text = value.y.ToString();
+			this.inputValue = value;
+			this.xInput.onValueChanged.AddListener(this.UpdateXValue);
+			this.yInput.onValueChanged.AddListener(this.UpdateYValue);
 		}
 
 		public void SetEnabled(bool enabled)

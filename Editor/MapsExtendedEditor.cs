@@ -242,6 +242,12 @@ namespace MapsExt.Editor
 				}
 			}
 
+			var damageable = instance.GetComponent<DamagableEvent>();
+			if (damageable)
+			{
+				damageable.disabled = true;
+			}
+
 			// this.FixRenderLayers(go);
 			this.ResetAnimations(container);
 		}

@@ -120,10 +120,24 @@ namespace MapsExt.UI
 			this.onChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 		}
 
+		public void SetWithoutEvent(float value)
+		{
+			var cb = this.onChanged;
+			this.onChanged = null;
+			this.Value = value;
+			this.onChanged = cb;
+		}
+
 		public void SetEnabled(bool enabled)
 		{
 			this.slider.interactable = enabled;
 			this.input.interactable = enabled;
+
+			var col = enabled ? Color.white : new Color(0.78f, 0.78f, 0.78f, 0.4f);
+			foreach (var text in this.gameObject.GetComponentsInChildren<Text>())
+			{
+				text.color = col;
+			}
 		}
 	}
 }

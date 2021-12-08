@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,17 +9,19 @@ using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
 using MapsExt.Editor.MapObjects;
+using MapsExt.Editor.Commands;
+using MapsExt.Editor.ActionHandlers;
 using System;
 
 namespace MapsExt.Editor
 {
 	public class MapEditor : MonoBehaviour
 	{
-		public ObservableCollection<GameObject> selectedMapObjects;
+		public ObservableCollection<EditorActionHandler> selectedActionHandlers;
 		public string currentMapName;
 		public bool isSimulating;
 		public bool snapToGrid;
-		public InteractionTimeline timeline;
+		public CommandHistory commandHistory;
 		public GameObject content;
 		public MapEditorAnimationHandler animationHandler;
 
@@ -32,14 +33,25 @@ namespace MapsExt.Editor
 			set { this.grid.cellSize = Vector3.one * value; }
 		}
 
-		public IEnumerable<MapObjectInstance> SelectedMapObjectInstances
+		public MapObjectInstance[] SelectedMapObjectInstances
 		{
 			get
 			{
 				// If a map object is being animated, it's also selected
 				return this.animationHandler.animation
 					? new MapObjectInstance[] { this.animationHandler.animation.gameObject.GetComponent<MapObjectInstance>() }
-					: this.selectedMapObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()).Distinct().ToArray();
+					: this.selectedActionHandlers.Select(obj => obj.GetComponentInParent<MapObjectInstance>()).Distinct().ToArray();
+			}
+		}
+
+		public GameObject[] SelectedMapObjects
+		{
+			get
+			{
+				// If a map object is being animated, it's also selected
+				return this.animationHandler.animation
+					? new GameObject[] { this.animationHandler.animation.gameObject }
+					: this.selectedActionHandlers.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
 			}
 		}
 
@@ -57,13 +69,12 @@ namespace MapsExt.Editor
 		private List<MapObject> clipboardMapObjects;
 
 		private Grid grid;
-		private MapEditorUI gui;
 		private GameObject tempSpawn;
 		private GameObject tempContent;
 
 		public void Awake()
 		{
-			this.selectedMapObjects = new ObservableCollection<GameObject>();
+			this.selectedActionHandlers = new ObservableCollection<EditorActionHandler>();
 			this.snapToGrid = true;
 			this.isCreatingSelection = false;
 			this.isDraggingMapObjects = false;
@@ -73,12 +84,24 @@ namespace MapsExt.Editor
 			this.isSimulating = false;
 			this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
 			this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
-			this.timeline = new InteractionTimeline(MapsExtendedEditor.instance.mapObjectManager);
 
 			var animationContainer = new GameObject("Animation Handler");
 			animationContainer.transform.SetParent(this.transform);
 			this.animationHandler = animationContainer.AddComponent<MapEditorAnimationHandler>();
 			this.animationHandler.editor = this;
+
+			var commandHandlerProvider = new CommandHandlerProvider();
+			commandHandlerProvider.RegisterHandler(new CreateCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new DeleteCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new MoveCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new ResizeCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new RotateCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new AddKeyframeCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new DeleteKeyframeCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new ChangeKeyframeDurationCommandHandler(this));
+			commandHandlerProvider.RegisterHandler(new ChangeKeyframeEasingCommandHandler(this));
+
+			this.commandHistory = new CommandHistory(commandHandlerProvider);
 
 			this.content = new GameObject("Content");
 			this.content.transform.SetParent(this.transform);
@@ -159,147 +182,10 @@ namespace MapsExt.Editor
 			return mapData;
 		}
 
-		public void SpawnMapObject(Type type)
-		{
-			MapsExtendedEditor.instance.SpawnObject(this.content, type, instance =>
-			{
-				instance.SetActive(false);
-
-				float scaleStep = Mathf.Max(1, this.GridSize * 2f);
-				instance.transform.localScale = EditorUtils.SnapToGrid(instance.transform.localScale, scaleStep);
-				instance.transform.position = Vector3.zero;
-
-				var damageable = instance.GetComponent<DamagableEvent>();
-				if (damageable != null)
-				{
-					damageable.disabled = true;
-				}
-
-				this.BeginInteraction(new MapObjectInstance[] { instance.GetComponent<MapObjectInstance>() }, true);
-				instance.SetActive(true);
-				this.EndInteraction();
-
-				this.ClearSelected();
-				this.AddSelected(instance);
-
-				this.ResetSpawnLabels();
-				this.UpdateRopeAttachments();
-			});
-		}
-
-		public void Undo()
-		{
-			var animObject = this.animationHandler.animation?.gameObject;
-			var keyframeCount = this.animationHandler.animation?.keyframes.Count;
-			var interaction = this.timeline.Undo();
-
-			if (interaction == null)
-			{
-				return;
-			}
-
-			if (animObject)
-			{
-				var transition = interaction.GetTransition(animObject);
-
-				if (transition != null)
-				{
-					var fromState = (SpatialMapObject) transition.fromState;
-					var toState = (SpatialMapObject) transition.toState;
-
-					// If the map object being animated was destroyed because of undo, close animation windows
-					if (!fromState.active && toState.active)
-					{
-						this.animationHandler.SetAnimation(null);
-					}
-
-					// If the last keyframe was destroyed because of undo, select the new last keyframe
-					if (
-						fromState.animationKeyframes.Count < toState.animationKeyframes.Count &&
-						this.animationHandler.Keyframe >= this.animationHandler.animation.keyframes.Count
-					)
-					{
-						this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
-					}
-				}
-
-				animObject.SetActive(false);
-			}
-
-			this.ResetSpawnLabels();
-			this.ClearSelected();
-			this.UpdateRopeAttachments();
-
-			this.animationHandler.RefreshMapObjectFromFrame();
-		}
-
-		public void Redo()
-		{
-			var animObject = this.animationHandler.animation?.gameObject;
-			var interaction = this.timeline.Redo();
-
-			if (interaction == null)
-			{
-				return;
-			}
-
-			if (animObject)
-			{
-				var transition = interaction.GetTransition(animObject);
-
-				if (transition != null)
-				{
-					var fromState = (SpatialMapObject) transition.fromState;
-					var toState = (SpatialMapObject) transition.toState;
-
-					// If the map object being animated was destroyed because of redo, close animation windows
-					if (fromState.active && !toState.active)
-					{
-						this.animationHandler.SetAnimation(null);
-					}
-
-					// If a new keyframe was created because of redo, or current keyframe no longer exists, select the last keyframe
-					if (
-						fromState.animationKeyframes.Count < toState.animationKeyframes.Count ||
-						this.animationHandler.Keyframe >= this.animationHandler.animation.keyframes.Count
-					)
-					{
-						this.animationHandler.SetKeyframe(this.animationHandler.animation.keyframes.Count - 1);
-					}
-				}
-
-				animObject.SetActive(false);
-			}
-
-			this.ResetSpawnLabels();
-			this.ClearSelected();
-			this.UpdateRopeAttachments();
-
-			this.animationHandler.RefreshMapObjectFromFrame();
-		}
-
-		public void BeginInteraction(IEnumerable<MapObjectInstance> objects, bool isCreateInteraction = false)
-		{
-			// If a map object is being animated, we hide it in the editor but in reality it's active
-			var animObject = this.animationHandler.animation?.gameObject;
-			animObject?.SetActive(true);
-			this.timeline.BeginInteraction(objects, isCreateInteraction);
-			animObject?.SetActive(false);
-		}
-
-		public void EndInteraction()
-		{
-			// If a map object is being animated, we hide it in the editor but in reality it's active
-			var animObject = this.animationHandler.animation?.gameObject;
-			animObject?.SetActive(true);
-			this.timeline.EndInteraction();
-			animObject?.SetActive(false);
-		}
-
 		public void OnCopy()
 		{
 			this.clipboardMapObjects = new List<MapObject>();
-			var mapObjectInstances = this.selectedMapObjects
+			var mapObjectInstances = this.selectedActionHandlers
 				.Select(obj => obj.GetComponent<MapObjectInstance>() ?? obj.GetComponentInParent<MapObjectInstance>())
 				.Distinct();
 
@@ -316,7 +202,8 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.StartCoroutine(this.SpawnClipboardObjects());
+			var cmd = new CreateCommand(this.clipboardMapObjects.Select(data => data.Move(new Vector3(1, -1, 0))));
+			this.commandHistory.Add(cmd);
 		}
 
 		public void OnZoomIn()
@@ -333,46 +220,6 @@ namespace MapsExt.Editor
 			map.size = Mathf.Min(50f, newSize);
 		}
 
-		private IEnumerator SpawnClipboardObjects()
-		{
-			int waitingForSpawns = this.clipboardMapObjects.Count;
-			var newInstances = new List<GameObject>();
-
-			foreach (var data in this.clipboardMapObjects)
-			{
-				MapsExtendedEditor.instance.SpawnObject(this.content, data.Move(new Vector3(1, -1, 0)), instance =>
-				{
-					instance.SetActive(false);
-					newInstances.Add(instance);
-				});
-			}
-
-			while (newInstances.Count != waitingForSpawns)
-			{
-				yield return null;
-			}
-
-			var actionHandlers = newInstances
-				.SelectMany(obj => obj.GetComponentsInChildren<EditorActionHandler>())
-				.Select(h => h.gameObject);
-
-			this.ClearSelected();
-			this.AddSelected(actionHandlers);
-
-			this.BeginInteraction(newInstances.Select(obj => obj.GetComponent<MapObjectInstance>()), true);
-			foreach (var obj in newInstances)
-			{
-				obj.SetActive(true);
-			}
-			this.EndInteraction();
-
-			this.ExecuteAfterFrames(1, () =>
-			{
-				this.ResetSpawnLabels();
-				this.UpdateRopeAttachments();
-			});
-		}
-
 		public void OnToggleSnapToGrid(bool enabled)
 		{
 			this.snapToGrid = enabled;
@@ -380,16 +227,8 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			this.BeginInteraction(this.SelectedMapObjectInstances);
-			foreach (var obj in this.SelectedMapObjectInstances)
-			{
-				obj.gameObject.SetActive(false);
-			}
-			this.EndInteraction();
-
-			this.ResetSpawnLabels();
-			this.ClearSelected();
-			this.UpdateRopeAttachments();
+			var cmd = new DeleteCommand(this.SelectedMapObjectInstances);
+			this.commandHistory.Add(cmd);
 		}
 
 		public void OnStartSimulation()
@@ -491,17 +330,17 @@ namespace MapsExt.Editor
 		{
 			if (this.selectionRect.width > 2 && this.selectionRect.height > 2)
 			{
-				var list = EditorUtils.GetContainedMapObjects(UIUtils.GUIToWorldRect(this.selectionRect));
+				var list = EditorUtils.GetContainedActionHandlers(UIUtils.GUIToWorldRect(this.selectionRect));
 				this.ClearSelected();
 
 				// When editing animation, don't allow selecting other map objects
 				if (this.animationHandler.animation != null && list.Any(obj => obj == this.animationHandler.keyframeMapObject))
 				{
-					this.AddSelected(this.animationHandler.keyframeMapObject);
+					this.AddSelected(this.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>());
 				}
 				else if (this.animationHandler.animation == null)
 				{
-					this.AddSelected(list);
+					this.AddSelected(list.SelectMany(go => go.GetComponentsInChildren<EditorActionHandler>()));
 				}
 			}
 
@@ -520,22 +359,22 @@ namespace MapsExt.Editor
 			this.selectionGroupGridOffsets.Clear();
 			this.selectionGroupPositionOffsets.Clear();
 
-			if (this.selectedMapObjects.Count == 1)
+			if (this.selectedActionHandlers.Count == 1)
 			{
-				var obj = this.selectedMapObjects[0];
+				var handler = this.selectedActionHandlers[0];
 
-				var referenceRotation = obj.transform.rotation;
+				var referenceRotation = handler.transform.rotation;
 				var referenceAngles = referenceRotation.eulerAngles;
 				referenceRotation.eulerAngles = new Vector3(referenceAngles.x, referenceAngles.y, referenceAngles.z % 90);
 				this.grid.transform.rotation = referenceRotation;
 
 				var scaleOffset = Vector3.zero;
-				var objectCell = this.grid.WorldToCell(obj.transform.position);
+				var objectCell = this.grid.WorldToCell(handler.transform.position);
 				var snappedPosition = this.grid.CellToWorld(objectCell);
 
-				if (snappedPosition != obj.transform.position)
+				if (snappedPosition != handler.transform.position)
 				{
-					var diff = obj.transform.position - snappedPosition;
+					var diff = handler.transform.position - snappedPosition;
 					var identityDiff = Quaternion.Inverse(referenceRotation) * diff;
 					var identityDelta = new Vector3(this.GridSize / 2f, this.GridSize / 2f, 0);
 
@@ -548,65 +387,62 @@ namespace MapsExt.Editor
 					}
 				}
 
-				this.selectionGroupGridOffsets.Add(obj, Vector3.zero);
-				this.selectionGroupPositionOffsets.Add(obj, scaleOffset);
+				this.selectionGroupGridOffsets.Add(handler.gameObject, Vector3.zero);
+				this.selectionGroupPositionOffsets.Add(handler.gameObject, scaleOffset);
 			}
 			else
 			{
 				this.grid.transform.rotation = Quaternion.identity;
 
-				foreach (var mapObject in this.selectedMapObjects)
+				foreach (var handler in this.selectedActionHandlers)
 				{
-					var objectCell = this.grid.WorldToCell(mapObject.transform.position);
+					var objectCell = this.grid.WorldToCell(handler.transform.position);
 					var snappedPosition = this.grid.CellToWorld(objectCell);
-					this.selectionGroupGridOffsets.Add(mapObject, mapObject.transform.position - snappedPosition);
-					this.selectionGroupPositionOffsets.Add(mapObject, Vector3.zero);
+					this.selectionGroupGridOffsets.Add(handler.gameObject, handler.transform.position - snappedPosition);
+					this.selectionGroupPositionOffsets.Add(handler.gameObject, Vector3.zero);
 				}
 			}
 
 			this.prevCell = this.grid.WorldToCell(mouseWorldPos);
-			this.BeginInteraction(this.SelectedMapObjectInstances);
-
 			this.DetachSelectedRopes();
+			this.commandHistory.PreventNextMerge();
 		}
 
 		public void OnDragEnd()
 		{
 			this.isDraggingMapObjects = false;
-			this.EndInteraction();
-
 			this.UpdateRopeAttachments();
 		}
 
-		public void OnClickMapObjects(List<GameObject> mapObjects)
+		public void OnClickActionHandlers(List<EditorActionHandler> handlers)
 		{
-			mapObjects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
-			GameObject mapObject = null;
+			handlers.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
+			EditorActionHandler handler = null;
 
 			// When editing animation, don't allow selecting other map objects
-			if (this.animationHandler.animation != null && mapObjects.Any(obj => obj == this.animationHandler.keyframeMapObject))
+			if (this.animationHandler.animation != null && handlers.Any(obj => obj == this.animationHandler.keyframeMapObject))
 			{
-				mapObject = this.animationHandler.keyframeMapObject;
+				handler = this.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
 			}
-			else if (this.animationHandler.animation == null && mapObjects.Count > 0)
+			else if (this.animationHandler.animation == null && handlers.Count > 0)
 			{
-				mapObject = mapObjects[0];
+				handler = handlers[0];
 
-				if (this.selectedMapObjects.Count == 1)
+				if (this.selectedActionHandlers.Count == 1)
 				{
-					int currentIndex = mapObjects.FindIndex(this.IsMapObjectSelected);
+					int currentIndex = handlers.FindIndex(this.IsActionHandlerSelected);
 					if (currentIndex != -1)
 					{
-						mapObject = mapObjects[(currentIndex + 1) % mapObjects.Count];
+						handler = handlers[(currentIndex + 1) % handlers.Count];
 					}
 				}
 			}
 
-			int previouslySelectedCount = this.selectedMapObjects.Count;
-			bool clickedMapObjectIsSelected = this.IsMapObjectSelected(mapObject);
+			int previouslySelectedCount = this.selectedActionHandlers.Count;
+			bool clickedMapObjectIsSelected = this.IsActionHandlerSelected(handler);
 			this.ClearSelected();
 
-			if (mapObject == null)
+			if (handler == null)
 			{
 				return;
 			}
@@ -616,7 +452,7 @@ namespace MapsExt.Editor
 
 			if (changeMultiSelectionToSingle || selectUnselected)
 			{
-				this.AddSelected(mapObject);
+				this.AddSelected(handler.GetComponentsInChildren<EditorActionHandler>());
 			}
 		}
 
@@ -625,21 +461,18 @@ namespace MapsExt.Editor
 			var mousePos = Input.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
-			this.grid.transform.rotation = this.selectedMapObjects[0].transform.rotation;
+			this.grid.transform.rotation = this.SelectedMapObjects[0].transform.rotation;
 
 			this.isResizingMapObject = true;
 			this.resizeDirection = resizeDirection;
 			this.prevMouse = mouseWorldPos;
 			this.prevCell = this.grid.WorldToCell(mouseWorldPos);
-
-			this.BeginInteraction(this.SelectedMapObjectInstances);
+			this.commandHistory.PreventNextMerge();
 		}
 
 		public void OnResizeEnd()
 		{
 			this.isResizingMapObject = false;
-			this.EndInteraction();
-
 			this.UpdateRopeAttachments();
 		}
 
@@ -650,34 +483,27 @@ namespace MapsExt.Editor
 
 			this.isRotatingMapObject = true;
 			this.prevMouse = mouseWorldPos;
-
-			this.BeginInteraction(this.SelectedMapObjectInstances);
+			this.commandHistory.PreventNextMerge();
 		}
 
 		public void OnRotateEnd()
 		{
 			this.isRotatingMapObject = false;
-			this.EndInteraction();
+			this.UpdateRopeAttachments();
 		}
 
 		public void OnNudgeSelectedMapObjects(Vector2 delta)
 		{
-			if (this.selectedMapObjects.Count > 0)
+			if (this.SelectedMapObjects.Length > 0)
 			{
-				this.BeginInteraction(this.SelectedMapObjectInstances);
-
-				foreach (var obj in this.selectedMapObjects)
-				{
-					obj.transform.position += new Vector3(delta.x, delta.y, 0);
-				}
-
-				this.EndInteraction();
+				var cmd = new MoveCommand(this.selectedActionHandlers, (Vector3) delta, this.animationHandler.KeyframeIndex);
+				this.commandHistory.Add(cmd);
 			}
 		}
 
-		public bool IsMapObjectSelected(GameObject obj)
+		public bool IsActionHandlerSelected(EditorActionHandler handler)
 		{
-			return this.selectedMapObjects.Contains(obj);
+			return this.selectedActionHandlers.Contains(handler);
 		}
 
 		public Rect GetSelection()
@@ -705,27 +531,23 @@ namespace MapsExt.Editor
 			var mouseDelta = mouseWorldPos - this.prevMouse;
 			var cellDelta = mouseCell - this.prevCell;
 
-			foreach (var obj in this.selectedMapObjects)
+			var delta = mouseDelta;
+
+			if (this.snapToGrid)
 			{
-				if (this.snapToGrid)
-				{
-					Vector3 groupOffset = this.selectionGroupGridOffsets[obj];
-					Vector3 positionOffset = this.selectionGroupPositionOffsets[obj];
-					var objectCell = this.grid.WorldToCell(obj.transform.position);
-					var snappedPosition = this.grid.CellToWorld(objectCell + cellDelta);
+				var handler = this.selectedActionHandlers[0];
+				var groupOffset = this.selectionGroupGridOffsets[handler.gameObject];
+				var positionOffset = this.selectionGroupPositionOffsets[handler.gameObject];
+				var objectCell = this.grid.WorldToCell(handler.transform.position);
+				var snappedPosition = this.grid.CellToWorld(objectCell + cellDelta);
 
-					obj.transform.position = snappedPosition + groupOffset + positionOffset;
-				}
-				else
-				{
-					obj.transform.position += mouseDelta;
-				}
+				delta = (snappedPosition + groupOffset + positionOffset) - handler.transform.position;
+			}
 
-				foreach (var handler in obj.GetComponentsInChildren<EditorActionHandler>())
-				{
-					handler.onAction?.Invoke();
-					handler.onMove?.Invoke();
-				}
+			if (delta != Vector3.zero)
+			{
+				var cmd = new MoveCommand(this.selectedActionHandlers, delta, this.animationHandler.KeyframeIndex);
+				this.commandHistory.Add(cmd, true);
 			}
 
 			this.prevMouse += mouseDelta;
@@ -746,76 +568,59 @@ namespace MapsExt.Editor
 
 			if (sizeDelta != Vector3.zero)
 			{
-				bool resized = false;
-				foreach (var mapObject in this.selectedMapObjects)
-				{
-					if (mapObject.GetComponent<EditorActionHandler>().Resize(sizeDelta, this.resizeDirection))
-					{
-						resized = true;
+				var cmd = new ResizeCommand(this.selectedActionHandlers, sizeDelta, this.resizeDirection, this.animationHandler.KeyframeIndex);
+				this.commandHistory.Add(cmd, true);
 
-						foreach (var handler in mapObject.GetComponentsInChildren<EditorActionHandler>())
-						{
-							handler.onAction?.Invoke();
-							handler.onResize?.Invoke();
-						}
-					}
-				}
-
-				if (resized)
-				{
-					this.prevMouse += mouseDelta;
-					this.prevCell = mouseCell;
-				}
+				this.prevMouse += mouseDelta;
+				this.prevCell = mouseCell;
 			}
 		}
 
 		private void RotateMapObject()
 		{
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+			var handler = this.selectedActionHandlers[0];
 
-			foreach (var mapObject in this.selectedMapObjects)
+			var mousePos = mouseWorldPos;
+			var objectPos = handler.transform.position;
+			mousePos.x -= objectPos.x;
+			mousePos.y -= objectPos.y;
+
+			float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
+
+			if (this.snapToGrid)
 			{
-				var mousePos = mouseWorldPos;
-				var objectPos = mapObject.transform.position;
-				mousePos.x -= objectPos.x;
-				mousePos.y -= objectPos.y;
+				angle = EditorUtils.Snap(angle, 15f);
+			}
 
-				float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
+			var rotationDelta = Quaternion.Euler(0, 0, angle) * Quaternion.Inverse(handler.transform.rotation);
 
-				if (this.snapToGrid)
-				{
-					angle = EditorUtils.Snap(angle, 15f);
-				}
-
-				mapObject.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-
-				foreach (var handler in mapObject.GetComponentsInChildren<EditorActionHandler>())
-				{
-					handler.onAction?.Invoke();
-					handler.onRotate?.Invoke();
-				}
+			if (rotationDelta != Quaternion.identity)
+			{
+				var cmd = new RotateCommand(this.selectedActionHandlers, rotationDelta, this.animationHandler.KeyframeIndex);
+				this.commandHistory.Add(cmd, true);
 			}
 		}
 
 		public void ClearSelected()
 		{
-			this.selectedMapObjects.Clear();
+			this.selectedActionHandlers.Clear();
 		}
 
-		public void AddSelected(IEnumerable<GameObject> list)
+		public void AddSelected(IEnumerable<EditorActionHandler> list)
 		{
-			foreach (var go in list)
+			foreach (var handler in list)
 			{
-				this.AddSelected(go);
+				this.AddSelected(handler);
 			}
 		}
 
-		public void AddSelected(GameObject obj)
+		public void AddSelected(EditorActionHandler handler)
 		{
-			this.selectedMapObjects.Add(obj);
+			this.selectedActionHandlers.Add(handler);
 		}
 
-		private void ResetSpawnLabels()
+		public void ResetSpawnLabels()
 		{
 			var spawns = this.content.GetComponentsInChildren<SpawnPoint>().ToList();
 			for (int i = 0; i < spawns.Count; i++)
@@ -826,7 +631,7 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void UpdateRopeAttachments()
+		public void UpdateRopeAttachments()
 		{
 			foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
 			{
@@ -836,7 +641,7 @@ namespace MapsExt.Editor
 
 		private void DetachSelectedRopes()
 		{
-			var anchors = this.selectedMapObjects
+			var anchors = this.selectedActionHandlers
 				.Select(obj => obj.GetComponent<MapObjectAnchor>())
 				.Where(handler => handler != null);
 
