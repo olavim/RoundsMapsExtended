@@ -11,7 +11,6 @@ using MapsExt.MapObjects;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.Commands;
 using MapsExt.Editor.ActionHandlers;
-using MapsExt.Editor.Extensions;
 using System;
 
 namespace MapsExt.Editor

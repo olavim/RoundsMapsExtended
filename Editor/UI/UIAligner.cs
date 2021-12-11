@@ -48,7 +48,7 @@ namespace MapsExt.Editor.UI
 
 			if (refBounds != this.prevReferenceBounds)
 			{
-				var directionMulti = TogglePosition.directionMultipliers[this.position] * 0.5f;
+				var directionMulti = AnchorPosition.directionMultipliers[this.position] * 0.5f;
 
 				var rt = this.gameObject.GetComponent<RectTransform>();
 				rt.anchoredPosition = new Vector2(

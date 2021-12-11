@@ -57,12 +57,12 @@ namespace MapsExt
 
 			if (this.curveType == CurveType.EaseIn)
 			{
-				this.curve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(this.duration / 2f, 0.2f), new Keyframe(this.duration, 1));
+				this.curve = new AnimationCurve(new Keyframe(0, 0, 0, 0), new Keyframe(this.duration, 1, 1, 0));
 			}
 
 			if (this.curveType == CurveType.EaseOut)
 			{
-				this.curve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(this.duration / 2f, 0.8f), new Keyframe(this.duration, 1));
+				this.curve = new AnimationCurve(new Keyframe(0, 0, 0, 1), new Keyframe(this.duration, 1, 0, 0));
 			}
 
 			if (this.curveType == CurveType.EaseInOut)

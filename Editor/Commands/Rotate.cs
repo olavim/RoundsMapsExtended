@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MapsExt.Editor.ActionHandlers;
-using MapsExt.Editor.Extensions;
 
 namespace MapsExt.Editor.Commands
 {
@@ -50,15 +49,8 @@ namespace MapsExt.Editor.Commands
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
-				var handler = locator.FindActionHandler(this.editor.content);
-				handler.SetRotation(cmd.toRotation);
-
-				var anim = handler.GetComponent<MapObjectAnimation>();
-				if (anim)
-				{
-					anim.keyframes[cmd.frameIndex].rotation = handler.transform.rotation;
-					this.editor.animationHandler.RefreshKeyframeMapObject();
-				}
+				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
+				handler.SetRotation(cmd.toRotation, cmd.frameIndex);
 			}
 		}
 
@@ -66,15 +58,8 @@ namespace MapsExt.Editor.Commands
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
-				var handler = locator.FindActionHandler(this.editor.content);
-				handler.SetRotation(cmd.fromRotation);
-
-				var anim = handler.GetComponent<MapObjectAnimation>();
-				if (anim)
-				{
-					anim.keyframes[cmd.frameIndex].rotation = handler.transform.rotation;
-					this.editor.animationHandler.RefreshKeyframeMapObject();
-				}
+				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
+				handler.SetRotation(cmd.fromRotation, cmd.frameIndex);
 			}
 
 			this.editor.UpdateRopeAttachments();

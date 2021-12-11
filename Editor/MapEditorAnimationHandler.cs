@@ -106,8 +106,7 @@ namespace MapsExt.Editor
 			baseObject.SetActive(true);
 
 			this.prevKeyframe = this.KeyframeIndex;
-
-			this.SetKeyframe(0);
+			this.SetKeyframe(-1);
 		}
 
 		public void Update()
@@ -117,6 +116,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
+			this.RefreshKeyframeMapObject();
 			this.UpdateTraceLine();
 		}
 
@@ -204,10 +204,11 @@ namespace MapsExt.Editor
 						renderer.gameObject.layer = MAPOBJECT_LAYER;
 					}
 
+					instance.transform.SetAsLastSibling();
+
 					this.keyframeMapObject = instance;
-					this.keyframeMapObject.transform.SetAsLastSibling();
 					this.editor.ClearSelected();
-					this.editor.AddSelected(this.keyframeMapObject.GetComponent<EditorActionHandler>());
+					this.editor.AddSelected(instance.GetComponent<EditorActionHandler>());
 				});
 			}
 			else
@@ -248,7 +249,7 @@ namespace MapsExt.Editor
 
 		public void RefreshKeyframeMapObject()
 		{
-			if (this.Keyframe == null)
+			if (this.keyframeMapObject == null || this.Keyframe == null)
 			{
 				return;
 			}

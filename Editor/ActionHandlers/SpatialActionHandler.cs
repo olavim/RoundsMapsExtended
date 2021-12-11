@@ -10,54 +10,100 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override bool Move(Vector3 positionDelta)
 		{
-			this.transform.position += positionDelta;
-			return true;
+			return this.Move(positionDelta, 0);
 		}
 
 		public override bool Resize(Vector3 sizeDelta, int resizeDirection)
 		{
-			float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().GridSize;
-			bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().snapToGrid;
-
-			var scaleMulti = Editor.TogglePosition.directionMultipliers[resizeDirection];
-			var scaleDelta = Vector3.Scale(sizeDelta, scaleMulti);
-
-			if (snapToGrid && scaleDelta.x != 0 && this.transform.localScale.x + scaleDelta.x < gridSize)
-			{
-				scaleDelta.x = gridSize - this.transform.localScale.x;
-			}
-
-			if (snapToGrid && scaleDelta.y != 0 && this.transform.localScale.y + scaleDelta.y < gridSize)
-			{
-				scaleDelta.y = gridSize - this.transform.localScale.y;
-			}
-
-			if (scaleDelta.x != 0 && this.transform.localScale.x + scaleDelta.x < 0.1f)
-			{
-				scaleDelta.x = 0.1f - this.transform.localScale.x;
-			}
-
-			if (scaleDelta.y != 0 && this.transform.localScale.y + scaleDelta.y < 0.1f)
-			{
-				scaleDelta.y = 0.1f - this.transform.localScale.y;
-			}
-
-			var positionDelta = this.transform.rotation * Vector3.Scale(scaleDelta, scaleMulti);
-			var newScale = this.transform.localScale + scaleDelta;
-
-			if (newScale == this.transform.localScale)
-			{
-				return false;
-			}
-
-			this.transform.localScale = newScale;
-			this.transform.position += positionDelta * 0.5f;
-			return true;
+			return this.Resize(sizeDelta, resizeDirection, 0);
 		}
 
 		public override bool SetRotation(Quaternion rotation)
 		{
-			this.transform.rotation = rotation;
+			return this.SetRotation(rotation, 0);
+		}
+
+		public bool Move(Vector3 positionDelta, int keyframe)
+		{
+			if (this.GetComponent<MapObjectAnimation>())
+			{
+				this.GetComponent<MapObjectAnimation>().keyframes[keyframe].position += positionDelta;
+			}
+			else
+			{
+				this.transform.position += positionDelta;
+			}
+
+			return true;
+		}
+
+		public bool Resize(Vector3 sizeDelta, int resizeDirection, int keyframe)
+		{
+			float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().GridSize;
+			bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().snapToGrid;
+
+			var directionMulti = Editor.AnchorPosition.directionMultipliers[resizeDirection];
+			var scaleMulti = Editor.AnchorPosition.sizeMultipliers[resizeDirection];
+			var scaleDelta = Vector3.Scale(sizeDelta, scaleMulti);
+
+			var animation = this.GetComponent<MapObjectAnimation>();
+			var currentScale = animation ? animation.keyframes[keyframe].scale : this.transform.localScale;
+			var currentRotation = animation ? animation.keyframes[keyframe].rotation : this.transform.rotation;
+
+			if (snapToGrid && scaleDelta.x != 0 && currentScale.x + scaleDelta.x < gridSize)
+			{
+				scaleDelta.x = gridSize - currentScale.x;
+			}
+
+			if (snapToGrid && scaleDelta.y != 0 && currentScale.y + scaleDelta.y < gridSize)
+			{
+				scaleDelta.y = gridSize - currentScale.y;
+			}
+
+			if (scaleDelta.x != 0 && currentScale.x + scaleDelta.x < 0.1f)
+			{
+				scaleDelta.x = 0.1f - currentScale.x;
+			}
+
+			if (scaleDelta.y != 0 && currentScale.y + scaleDelta.y < 0.1f)
+			{
+				scaleDelta.y = 0.1f - currentScale.y;
+			}
+
+			var newScale = currentScale + scaleDelta;
+
+			if (newScale == currentScale)
+			{
+				return false;
+			}
+
+			var positionDelta = currentRotation * Vector3.Scale(scaleDelta, directionMulti);
+
+			if (animation)
+			{
+				animation.keyframes[keyframe].scale = newScale;
+				animation.keyframes[keyframe].position += positionDelta * 0.5f;
+			}
+			else
+			{
+				this.transform.localScale = newScale;
+				this.transform.position += positionDelta * 0.5f;
+			}
+
+			return true;
+		}
+
+		public bool SetRotation(Quaternion rotation, int keyframe)
+		{
+			if (this.GetComponent<MapObjectAnimation>())
+			{
+				this.GetComponent<MapObjectAnimation>().keyframes[keyframe].rotation = rotation;
+			}
+			else
+			{
+				this.transform.rotation = rotation;
+			}
+
 			return true;
 		}
 	}

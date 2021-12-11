@@ -12,19 +12,32 @@ using System.Linq;
 
 namespace MapsExt.Editor
 {
-	public static class TogglePosition
+	public static class AnchorPosition
 	{
 		public static readonly Dictionary<int, Vector2> directionMultipliers = new Dictionary<int, Vector2>()
 		{
-			{ TogglePosition.Middle, new Vector2(0, 0) },
-			{ TogglePosition.TopLeft, new Vector2(-1f, 1f) },
-			{ TogglePosition.TopMiddle, new Vector2(0, 1f) },
-			{ TogglePosition.TopRight, new Vector2(1f, 1f) },
-			{ TogglePosition.MiddleRight, new Vector2(1f, 0) },
-			{ TogglePosition.BottomRight, new Vector2(1f, -1f) },
-			{ TogglePosition.BottomMiddle, new Vector2(0, -1f) },
-			{ TogglePosition.BottomLeft, new Vector2(-1f, -1f) },
-			{ TogglePosition.MiddleLeft, new Vector2(-1f, 0) }
+			{ AnchorPosition.Middle, new Vector2(0, 0) },
+			{ AnchorPosition.TopLeft, new Vector2(-1f, 1f) },
+			{ AnchorPosition.TopMiddle, new Vector2(0, 1f) },
+			{ AnchorPosition.TopRight, new Vector2(1f, 1f) },
+			{ AnchorPosition.MiddleRight, new Vector2(1f, 0) },
+			{ AnchorPosition.BottomRight, new Vector2(1f, -1f) },
+			{ AnchorPosition.BottomMiddle, new Vector2(0, -1f) },
+			{ AnchorPosition.BottomLeft, new Vector2(-1f, -1f) },
+			{ AnchorPosition.MiddleLeft, new Vector2(-1f, 0) }
+		};
+
+		public static readonly Dictionary<int, Vector2> sizeMultipliers = new Dictionary<int, Vector2>()
+		{
+			{ AnchorPosition.Middle, new Vector2(1f, 1f) },
+			{ AnchorPosition.TopLeft, new Vector2(-1f, 1f) },
+			{ AnchorPosition.TopMiddle, new Vector2(0, 1f) },
+			{ AnchorPosition.TopRight, new Vector2(1f, 1f) },
+			{ AnchorPosition.MiddleRight, new Vector2(1f, 0) },
+			{ AnchorPosition.BottomRight, new Vector2(1f, -1f) },
+			{ AnchorPosition.BottomMiddle, new Vector2(0, -1f) },
+			{ AnchorPosition.BottomLeft, new Vector2(-1f, -1f) },
+			{ AnchorPosition.MiddleLeft, new Vector2(-1f, 0) }
 		};
 
 		public const int Middle = 0;
@@ -450,9 +463,14 @@ namespace MapsExt.Editor
 
 			keyframeSettings.onDurationChanged += (value, type) =>
 			{
+				if (type == TextSliderInput.ChangeType.ChangeStart)
+				{
+					this.editor.commandHistory.PreventNextMerge();
+				}
+
 				float durationDelta = value - anim.keyframes[keyframe].duration;
 				var cmd = new ChangeKeyframeDurationCommand(anim.gameObject, durationDelta, keyframe);
-				this.editor.commandHistory.Add(cmd, type != TextSliderInput.ChangeType.ChangeStart);
+				this.editor.commandHistory.Add(cmd, true);
 
 				anim.keyframes[keyframe].UpdateCurve();
 			};
@@ -488,7 +506,8 @@ namespace MapsExt.Editor
 
 		private void HandleAddAnimationKeyframe()
 		{
-			var cmd = new AddKeyframeCommand(this.editor.animationHandler.animation.gameObject);
+			var anim = this.editor.animationHandler.animation;
+			var cmd = new AddKeyframeCommand(anim.gameObject, new AnimationKeyframe(anim.keyframes[anim.keyframes.Count - 1]), anim.keyframes.Count);
 			this.editor.commandHistory.Add(cmd);
 
 			this.UnlinkInspector();
@@ -546,23 +565,30 @@ namespace MapsExt.Editor
 
 		private void InspectorPositionChanged(Vector2 value)
 		{
-			var cmd = new MoveCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), (Vector3) value, this.editor.animationHandler.KeyframeIndex);
+			var delta = (Vector3) value - this.inspector.visualTarget.transform.position;
+			var cmd = new MoveCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), delta, this.editor.animationHandler.KeyframeIndex);
 			this.editor.commandHistory.Add(cmd);
 		}
 
 		private void InspectorSizeChanged(Vector2 value)
 		{
-			var cmd = new ResizeCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), (Vector3) value, 0, this.editor.animationHandler.KeyframeIndex);
+			var delta = (Vector3) value - this.inspector.visualTarget.transform.localScale;
+			var cmd = new ResizeCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), delta, 0, this.editor.animationHandler.KeyframeIndex);
 			this.editor.commandHistory.Add(cmd);
 		}
 
 		private void InspectorRotationChanged(float value, TextSliderInput.ChangeType type)
 		{
+			if (type == TextSliderInput.ChangeType.ChangeStart)
+			{
+				this.editor.commandHistory.PreventNextMerge();
+			}
+
 			var fromRotation = this.inspector.visualTarget.transform.rotation;
 			var toRotation = Quaternion.AngleAxis(value, Vector3.forward);
 			var actionHandler = this.inspector.visualTarget.GetComponent<EditorActionHandler>();
 			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation, this.editor.animationHandler.KeyframeIndex);
-			this.editor.commandHistory.Add(cmd, type != TextSliderInput.ChangeType.ChangeStart);
+			this.editor.commandHistory.Add(cmd, true);
 		}
 
 		private void LinkInspector(GameObject interactionTarget)
@@ -625,14 +651,14 @@ namespace MapsExt.Editor
 			{
 				var handlerGameObject = list[0].gameObject;
 
-				this.AddResizeHandle(handlerGameObject, TogglePosition.TopLeft);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.TopRight);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.BottomLeft);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.BottomRight);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.MiddleLeft);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.MiddleRight);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.BottomMiddle);
-				this.AddResizeHandle(handlerGameObject, TogglePosition.TopMiddle);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopLeft);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopRight);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.BottomLeft);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.BottomRight);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.MiddleLeft);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.MiddleRight);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.BottomMiddle);
+				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopMiddle);
 				this.AddRotationHandle(handlerGameObject);
 
 				this.LinkInspector(handlerGameObject);
@@ -722,7 +748,7 @@ namespace MapsExt.Editor
 
 			var aligner = go.AddComponent<UI.UIAligner>();
 			aligner.referenceGameObject = mapObject;
-			aligner.position = TogglePosition.TopMiddle;
+			aligner.position = AnchorPosition.TopMiddle;
 			aligner.padding = 48f;
 
 			var image = go.AddComponent<ProceduralImage>();

@@ -49,17 +49,8 @@ namespace MapsExt.Editor.Commands
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
-				var handler = locator.FindActionHandler(this.editor.content);
-				handler.Resize(cmd.delta, cmd.resizeDirection);
-
-				var anim = handler.GetComponent<MapObjectAnimation>();
-				if (anim)
-				{
-					var frame = anim.keyframes[cmd.frameIndex];
-					frame.position = handler.transform.position;
-					frame.scale = handler.transform.localScale;
-					this.editor.animationHandler.RefreshKeyframeMapObject();
-				}
+				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
+				handler.Resize(cmd.delta, cmd.resizeDirection, cmd.frameIndex);
 			}
 		}
 
@@ -67,17 +58,8 @@ namespace MapsExt.Editor.Commands
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
-				var handler = locator.FindActionHandler(this.editor.content);
-				handler.Resize(-cmd.delta, cmd.resizeDirection);
-
-				var anim = handler.GetComponent<MapObjectAnimation>();
-				if (anim)
-				{
-					var frame = anim.keyframes[cmd.frameIndex];
-					frame.position = handler.transform.position;
-					frame.scale = handler.transform.localScale;
-					this.editor.animationHandler.RefreshKeyframeMapObject();
-				}
+				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
+				handler.Resize(-cmd.delta, cmd.resizeDirection, cmd.frameIndex);
 			}
 
 			this.editor.UpdateRopeAttachments();
