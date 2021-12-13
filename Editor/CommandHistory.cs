@@ -19,7 +19,7 @@ namespace MapsExt
 			this.commandMergeId = 0;
 		}
 
-		public bool CanExecute()
+		public bool CanRedo()
 		{
 			return this.commandIndex < this.commands.Count - 1;
 		}
@@ -86,11 +86,11 @@ namespace MapsExt
 			this.commandMergeId++;
 		}
 
-		public void Execute()
+		public void Redo()
 		{
 			this.commandIndex++;
 			var cmd = this.commands[this.commandIndex];
-			this.commandHandlerProvider.GetHandler(cmd.Item2.GetType()).Execute(cmd.Item2);
+			this.commandHandlerProvider.GetHandler(cmd.Item2.GetType()).Redo(cmd.Item2);
 		}
 
 		public void Undo()

@@ -316,7 +316,7 @@ namespace MapsExt.Editor
 			}
 
 			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.commandHistory.CanUndo());
-			this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.commandHistory.CanExecute());
+			this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.commandHistory.CanRedo());
 			this.toolbar.editMenu.SetItemEnabled("Copy", this.editor.animationHandler.animation == null);
 			this.toolbar.editMenu.SetItemEnabled("Paste", this.editor.animationHandler.animation == null);
 
@@ -382,7 +382,7 @@ namespace MapsExt.Editor
 
 		private void OnClickRedo()
 		{
-			this.editor.commandHistory.Execute();
+			this.editor.commandHistory.Redo();
 			this.RefreshAnimationWindow();
 		}
 

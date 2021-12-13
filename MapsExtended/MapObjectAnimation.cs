@@ -27,6 +27,7 @@ namespace MapsExt
 		public bool IsPlaying { get; private set; }
 
 		private RigidBodyParams originalRigidBody;
+		private float timeOverflow;
 
 		public void OnEnable()
 		{
@@ -92,6 +93,7 @@ namespace MapsExt
 		public void Play()
 		{
 			this.IsPlaying = true;
+			this.timeOverflow = 0;
 			this.StartCoroutine(this.PlayCoroutine());
 		}
 
@@ -106,32 +108,29 @@ namespace MapsExt
 		{
 			this.ApplyKeyframe(0);
 
-			for (int i = 1; i < this.keyframes.Count; i++)
+			while (this.IsPlaying && this.keyframes.Count > 1)
 			{
-				yield return this.AnimateKeyframe(i);
-			}
-
-			if (this.keyframes.Count > 1)
-			{
-				this.Play();
+				for (int i = 1; i < this.keyframes.Count; i++)
+				{
+					yield return this.AnimateKeyframe(i);
+				}
 			}
 		}
 
 		private IEnumerator AnimateKeyframe(int frameIndex)
 		{
 			var frame = this.keyframes[frameIndex];
+			float elapsedTime = this.timeOverflow;
 
-			float frameLength = frame.curve.keys[frame.curve.keys.Length - 1].time;
-			float elapsedTime = 0;
-
-			while (elapsedTime < frameLength)
+			while (elapsedTime < frame.duration)
 			{
 				this.ApplyKeyframe(frameIndex, elapsedTime);
 				elapsedTime += TimeHandler.deltaTime;
 				yield return null;
 			}
 
-			this.ApplyKeyframe(frameIndex, frameLength);
+			this.timeOverflow = elapsedTime - frame.duration;
+			this.ApplyKeyframe(frameIndex, frame.duration);
 		}
 
 		private void ApplyKeyframe(int frameIndex, float time = 0)
@@ -144,7 +143,7 @@ namespace MapsExt
 			var startFrame = frameIndex > 0 ? this.keyframes[frameIndex - 1] : this.keyframes[0];
 			var endFrame = this.keyframes[frameIndex];
 
-			float curveValue = endFrame.curve.Evaluate(time);
+			float curveValue = endFrame.curve.Evaluate(time / endFrame.duration);
 			this.transform.position = Vector3.Lerp(startFrame.position, endFrame.position, curveValue);
 			this.transform.localScale = Vector3.Lerp(startFrame.scale, endFrame.scale, curveValue);
 			this.transform.rotation = Quaternion.Lerp(startFrame.rotation, endFrame.rotation, curveValue);

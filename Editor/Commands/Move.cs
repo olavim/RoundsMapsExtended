@@ -45,17 +45,39 @@ namespace MapsExt.Editor.Commands
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
-				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
-				handler.Move(cmd.delta, cmd.frameIndex);
+				var handler = locator.FindActionHandler(this.editor.content);
+
+				if (handler is SpatialActionHandler)
+				{
+					((SpatialActionHandler) handler).Move(cmd.delta, cmd.frameIndex);
+				}
+				else
+				{
+					handler.Move(cmd.delta);
+				}
 			}
+		}
+
+		public override void Redo(MoveCommand cmd)
+		{
+			this.Execute(cmd);
+			this.editor.UpdateRopeAttachments();
 		}
 
 		public override void Undo(MoveCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
-				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
-				handler.Move(-cmd.delta, cmd.frameIndex);
+				var handler = locator.FindActionHandler(this.editor.content);
+
+				if (handler is SpatialActionHandler)
+				{
+					((SpatialActionHandler) handler).Move(-cmd.delta, cmd.frameIndex);
+				}
+				else
+				{
+					handler.Move(-cmd.delta);
+				}
 			}
 
 			this.editor.UpdateRopeAttachments();

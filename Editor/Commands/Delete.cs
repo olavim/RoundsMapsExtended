@@ -49,6 +49,11 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
+		public override void Redo(DeleteCommand cmd)
+		{
+			this.Execute(cmd);
+		}
+
 		public override void Undo(DeleteCommand cmd)
 		{
 			this.editor.StartCoroutine(this.UndoCoroutine(cmd));

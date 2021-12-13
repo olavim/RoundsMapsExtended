@@ -77,6 +77,11 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments();
 		}
 
+		public override void Redo(CreateCommand cmd)
+		{
+			this.Execute(cmd);
+		}
+
 		public override void Undo(CreateCommand cmd)
 		{
 			foreach (var mapObject in cmd.data)

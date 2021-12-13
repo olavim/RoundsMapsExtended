@@ -54,6 +54,12 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
+		public override void Redo(ResizeCommand cmd)
+		{
+			this.Execute(cmd);
+			this.editor.UpdateRopeAttachments();
+		}
+
 		public override void Undo(ResizeCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)

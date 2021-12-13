@@ -13,7 +13,7 @@ namespace MapsExt
 		public CurveType curveType;
 
 		[NonSerialized]
-		public AnimationCurve curve;
+		public BezierAnimationCurve curve;
 
 		public AnimationKeyframe()
 		{
@@ -50,24 +50,23 @@ namespace MapsExt
 
 		public void UpdateCurve()
 		{
-			if (this.curveType == CurveType.Linear)
-			{
-				this.curve = AnimationCurve.Linear(0, 0, this.duration, 1);
-			}
+			this.curve = this.GetCurve();
+		}
 
-			if (this.curveType == CurveType.EaseIn)
+		private BezierAnimationCurve GetCurve()
+		{
+			switch (this.curveType)
 			{
-				this.curve = new AnimationCurve(new Keyframe(0, 0, 0, 0), new Keyframe(this.duration, 1, 1, 0));
-			}
-
-			if (this.curveType == CurveType.EaseOut)
-			{
-				this.curve = new AnimationCurve(new Keyframe(0, 0, 0, 1), new Keyframe(this.duration, 1, 0, 0));
-			}
-
-			if (this.curveType == CurveType.EaseInOut)
-			{
-				this.curve = AnimationCurve.EaseInOut(0, 0, this.duration, 1);
+				case CurveType.Linear:
+					return new BezierAnimationCurve(0, 0, 1, 1);
+				case CurveType.EaseIn:
+					return new BezierAnimationCurve(0.12f, 0, 0.39f, 0);
+				case CurveType.EaseOut:
+					return new BezierAnimationCurve(0.61f, 1, 0.88f, 1);
+				case CurveType.EaseInOut:
+					return new BezierAnimationCurve(0.37f, 0, 0.63f, 1);
+				default:
+					return null;
 			}
 		}
 

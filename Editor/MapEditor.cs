@@ -172,11 +172,24 @@ namespace MapsExt.Editor
 				name = name,
 				mapObjects = new List<MapObject>()
 			};
-			var mapObjects = this.content.GetComponentsInChildren<MapObjectInstance>();
+
+			var mapObjects = this.content.GetComponentsInChildren<MapObjectInstance>(true);
 
 			foreach (var mapObject in mapObjects)
 			{
-				mapData.mapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject));
+				if (mapObject.gameObject == this.animationHandler.keyframeMapObject)
+				{
+					continue;
+				}
+
+				var data = MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject);
+
+				if (!data.active && mapObject.gameObject == this.animationHandler.animation?.gameObject)
+				{
+					data.active = true;
+				}
+
+				mapData.mapObjects.Add(data);
 			}
 
 			return mapData;

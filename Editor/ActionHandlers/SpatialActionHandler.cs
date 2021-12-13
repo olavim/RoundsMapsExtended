@@ -25,11 +25,14 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public bool Move(Vector3 positionDelta, int keyframe)
 		{
-			if (this.GetComponent<MapObjectAnimation>())
+			var animation = this.GetComponent<MapObjectAnimation>();
+
+			if (animation)
 			{
-				this.GetComponent<MapObjectAnimation>().keyframes[keyframe].position += positionDelta;
+				animation.keyframes[keyframe].position += positionDelta;
 			}
-			else
+
+			if (!animation || keyframe == 0)
 			{
 				this.transform.position += positionDelta;
 			}
@@ -84,7 +87,8 @@ namespace MapsExt.Editor.ActionHandlers
 				animation.keyframes[keyframe].scale = newScale;
 				animation.keyframes[keyframe].position += positionDelta * 0.5f;
 			}
-			else
+
+			if (!animation || keyframe == 0)
 			{
 				this.transform.localScale = newScale;
 				this.transform.position += positionDelta * 0.5f;
@@ -95,11 +99,14 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public bool SetRotation(Quaternion rotation, int keyframe)
 		{
-			if (this.GetComponent<MapObjectAnimation>())
+			var animation = this.GetComponent<MapObjectAnimation>();
+
+			if (animation)
 			{
-				this.GetComponent<MapObjectAnimation>().keyframes[keyframe].rotation = rotation;
+				animation.keyframes[keyframe].rotation = rotation;
 			}
-			else
+
+			if (!animation || keyframe == 0)
 			{
 				this.transform.rotation = rotation;
 			}
