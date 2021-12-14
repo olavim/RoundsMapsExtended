@@ -1,6 +1,7 @@
 ﻿using MapsExt.Editor.Commands;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace MapsExt
 {
@@ -45,20 +46,29 @@ namespace MapsExt
 				throw new ArgumentException($"No handler registered for command type {cmd.GetType().Name}");
 			}
 
+			if (handler.IsRedundant(cmd))
+			{
+				return;
+			}
+
 			while (this.commandIndex < this.commands.Count - 1)
 			{
 				this.commands.RemoveAt(this.commandIndex + 1);
 			}
 
 			System.Tuple<int, ICommand> prevCmd = this.commands.Count > 0 ? this.commands[this.commandIndex] : null;
-			bool didMerge = false;
 
 			// Merge new command with the previous one if it's possible and was requested
 			if (merge && prevCmd?.Item1 == this.commandMergeId && prevCmd?.Item2.GetType() == typeof(T))
 			{
 				var mergedCmd = handler.Merge((T) prevCmd.Item2, cmd);
 				this.commands[this.commandIndex] = new Tuple<int, ICommand>(this.commandMergeId, mergedCmd);
-				didMerge = true;
+
+				if (handler.IsRedundant((T) mergedCmd))
+				{
+					this.commands.RemoveAt(this.commandIndex);
+					this.commandIndex--;
+				}
 			}
 			else
 			{
@@ -66,19 +76,8 @@ namespace MapsExt
 				this.commandIndex++;
 			}
 
-			bool isRedundant = handler.IsRedundant((T) this.commands[this.commandIndex].Item2);
-
-			// Remove the new command or the result of merged commands if it causes no change
-			if (isRedundant)
-			{
-				this.commands.RemoveAt(this.commandIndex);
-				this.commandIndex--;
-			}
-
-			if (!isRedundant || didMerge)
-			{
-				handler.Execute(cmd);
-			}
+			// Execute only the new command, NOT the possible result of a merge
+			handler.Execute(cmd);
 		}
 
 		public void PreventNextMerge()
@@ -86,11 +85,11 @@ namespace MapsExt
 			this.commandMergeId++;
 		}
 
-		public void Redo()
+		public void Execute()
 		{
 			this.commandIndex++;
 			var cmd = this.commands[this.commandIndex];
-			this.commandHandlerProvider.GetHandler(cmd.Item2.GetType()).Redo(cmd.Item2);
+			this.commandHandlerProvider.GetHandler(cmd.Item2.GetType()).Execute(cmd.Item2);
 		}
 
 		public void Undo()

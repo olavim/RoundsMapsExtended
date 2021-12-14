@@ -46,12 +46,7 @@ namespace MapsExt.Editor.Commands
 
 			this.editor.ResetSpawnLabels();
 			this.editor.ClearSelected();
-			this.editor.UpdateRopeAttachments();
-		}
-
-		public override void Redo(DeleteCommand cmd)
-		{
-			this.Execute(cmd);
+			this.editor.UpdateRopeAttachments(true);
 		}
 
 		public override void Undo(DeleteCommand cmd)
@@ -78,7 +73,7 @@ namespace MapsExt.Editor.Commands
 			}
 
 			this.editor.ResetSpawnLabels();
-			this.editor.UpdateRopeAttachments();
+			this.editor.UpdateRopeAttachments(false);
 		}
 
 		public override DeleteCommand Merge(DeleteCommand cmd1, DeleteCommand cmd2)

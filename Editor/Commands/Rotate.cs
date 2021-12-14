@@ -54,12 +54,6 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		public override void Redo(RotateCommand cmd)
-		{
-			this.Execute(cmd);
-			this.editor.UpdateRopeAttachments();
-		}
-
 		public override void Undo(RotateCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
@@ -67,8 +61,6 @@ namespace MapsExt.Editor.Commands
 				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
 				handler.SetRotation(cmd.fromRotation, cmd.frameIndex);
 			}
-
-			this.editor.UpdateRopeAttachments();
 		}
 
 		public override RotateCommand Merge(RotateCommand cmd1, RotateCommand cmd2)

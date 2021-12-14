@@ -35,7 +35,7 @@ namespace MapsExt
 			}
 		}
 
-		private GameObject target;
+		public GameObject target { get; private set; }
 		private Offset offset;
 
 		private void Awake()
@@ -82,7 +82,7 @@ namespace MapsExt
 			return this.target != this.gameObject;
 		}
 
-		public void UpdateAttachment()
+		public void UpdateAttachment(bool allowDetach = true)
 		{
 			var pos = this.GetPosition();
 			var colliders = Physics2D.OverlapPointAll(pos);
@@ -93,7 +93,10 @@ namespace MapsExt
 
 			if (collider == null)
 			{
-				this.Detach();
+				if (allowDetach)
+				{
+					this.Detach();
+				}
 			}
 			else if (this.target != collider.gameObject)
 			{

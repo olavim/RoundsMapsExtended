@@ -50,11 +50,6 @@ namespace MapsExt.Editor.Commands
 			this.editor.animationHandler.SetKeyframe(cmd.frameIndex);
 		}
 
-		public override void Redo(AddKeyframeCommand cmd)
-		{
-			this.Execute(cmd);
-		}
-
 		public override void Undo(AddKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;

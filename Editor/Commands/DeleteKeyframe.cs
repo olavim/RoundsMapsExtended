@@ -38,11 +38,6 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		public override void Redo(DeleteKeyframeCommand cmd)
-		{
-			this.Execute(cmd);
-		}
-
 		public override void Undo(DeleteKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;

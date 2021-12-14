@@ -382,7 +382,7 @@ namespace MapsExt.Editor
 
 		private void OnClickRedo()
 		{
-			this.editor.commandHistory.Redo();
+			this.editor.commandHistory.Execute();
 			this.RefreshAnimationWindow();
 		}
 
@@ -568,6 +568,7 @@ namespace MapsExt.Editor
 			var delta = (Vector3) value - this.inspector.visualTarget.transform.position;
 			var cmd = new MoveCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), delta, this.editor.animationHandler.KeyframeIndex);
 			this.editor.commandHistory.Add(cmd);
+			this.editor.UpdateRopeAttachments(false);
 		}
 
 		private void InspectorSizeChanged(Vector2 value)
@@ -575,6 +576,7 @@ namespace MapsExt.Editor
 			var delta = (Vector3) value - this.inspector.visualTarget.transform.localScale;
 			var cmd = new ResizeCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), delta, 0, this.editor.animationHandler.KeyframeIndex);
 			this.editor.commandHistory.Add(cmd);
+			this.editor.UpdateRopeAttachments(false);
 		}
 
 		private void InspectorRotationChanged(float value, TextSliderInput.ChangeType type)
@@ -589,6 +591,11 @@ namespace MapsExt.Editor
 			var actionHandler = this.inspector.visualTarget.GetComponent<EditorActionHandler>();
 			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation, this.editor.animationHandler.KeyframeIndex);
 			this.editor.commandHistory.Add(cmd, true);
+
+			if (type == TextSliderInput.ChangeType.ChangeEnd)
+			{
+				this.editor.UpdateRopeAttachments(false);
+			}
 		}
 
 		private void LinkInspector(GameObject interactionTarget)

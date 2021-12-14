@@ -41,11 +41,6 @@ namespace MapsExt.Editor.Commands
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
 		}
 
-		public override void Redo(ChangeKeyframeDurationCommand cmd)
-		{
-			this.Execute(cmd);
-		}
-
 		public override void Undo(ChangeKeyframeDurationCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;

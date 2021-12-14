@@ -58,12 +58,6 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		public override void Redo(MoveCommand cmd)
-		{
-			this.Execute(cmd);
-			this.editor.UpdateRopeAttachments();
-		}
-
 		public override void Undo(MoveCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
@@ -79,8 +73,6 @@ namespace MapsExt.Editor.Commands
 					handler.Move(-cmd.delta);
 				}
 			}
-
-			this.editor.UpdateRopeAttachments();
 		}
 
 		public override MoveCommand Merge(MoveCommand cmd1, MoveCommand cmd2)

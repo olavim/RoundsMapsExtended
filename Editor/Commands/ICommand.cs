@@ -11,7 +11,6 @@ namespace MapsExt.Editor.Commands
 	public interface ICommandHandler
 	{
 		void Execute(ICommand cmd);
-		void Redo(ICommand cmd);
 		void Undo(ICommand cmd);
 		ICommand Merge(ICommand cmd1, ICommand cmd2);
 		bool IsRedundant(ICommand cmd);
@@ -20,7 +19,6 @@ namespace MapsExt.Editor.Commands
 	public interface ICommandHandler<T> where T : ICommand
 	{
 		void Execute(T cmd);
-		void Redo(T cmd);
 		void Undo(T cmd);
 		T Merge(T cmd1, T cmd2);
 		bool IsRedundant(T cmd);

@@ -2,7 +2,7 @@
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class RopeActionHandler : EditorActionHandler
+	public class RopeAnchorActionHandler : EditorActionHandler
 	{
 		public override bool CanMove() => true;
 		public override bool CanResize() => false;
@@ -10,9 +10,10 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override bool Move(Vector3 positionDelta)
 		{
-			this.GetComponent<MapObjectAnchor>().Detach();
+			var anchor = this.GetComponent<MapObjectAnchor>();
+			anchor.Detach();
 			this.transform.position += positionDelta;
-			this.GetComponent<MapObjectAnchor>().UpdateAttachment();
+			anchor.UpdateAttachment();
 			return true;
 		}
 

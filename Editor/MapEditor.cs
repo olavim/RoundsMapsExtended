@@ -329,7 +329,7 @@ namespace MapsExt.Editor
 			{
 				this.ResetSpawnLabels();
 				this.ClearSelected();
-				this.UpdateRopeAttachments();
+				this.UpdateRopeAttachments(false);
 			});
 		}
 
@@ -359,6 +359,48 @@ namespace MapsExt.Editor
 
 			this.isCreatingSelection = false;
 			this.selectionRect = Rect.zero;
+		}
+
+		public void OnClickActionHandlers(List<EditorActionHandler> handlers)
+		{
+			handlers.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
+			EditorActionHandler handler = null;
+
+			// When editing animation, don't allow selecting other map objects
+			if (this.animationHandler.animation != null && handlers.Any(obj => obj == this.animationHandler.keyframeMapObject))
+			{
+				handler = this.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
+			}
+			else if (this.animationHandler.animation == null && handlers.Count > 0)
+			{
+				handler = handlers[0];
+
+				if (this.selectedActionHandlers.Count == 1)
+				{
+					int currentIndex = handlers.FindIndex(this.IsActionHandlerSelected);
+					if (currentIndex != -1)
+					{
+						handler = handlers[(currentIndex + 1) % handlers.Count];
+					}
+				}
+			}
+
+			int previouslySelectedCount = this.selectedActionHandlers.Count;
+			bool clickedMapObjectIsSelected = this.IsActionHandlerSelected(handler);
+			this.ClearSelected();
+
+			if (handler == null)
+			{
+				return;
+			}
+
+			bool changeMultiSelectionToSingle = clickedMapObjectIsSelected && previouslySelectedCount > 1;
+			bool selectUnselected = !clickedMapObjectIsSelected;
+
+			if (changeMultiSelectionToSingle || selectUnselected)
+			{
+				this.AddSelected(handler.GetComponentsInChildren<EditorActionHandler>());
+			}
 		}
 
 		public void OnDragStart()
@@ -424,49 +466,7 @@ namespace MapsExt.Editor
 		public void OnDragEnd()
 		{
 			this.isDraggingMapObjects = false;
-			this.UpdateRopeAttachments();
-		}
-
-		public void OnClickActionHandlers(List<EditorActionHandler> handlers)
-		{
-			handlers.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
-			EditorActionHandler handler = null;
-
-			// When editing animation, don't allow selecting other map objects
-			if (this.animationHandler.animation != null && handlers.Any(obj => obj == this.animationHandler.keyframeMapObject))
-			{
-				handler = this.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
-			}
-			else if (this.animationHandler.animation == null && handlers.Count > 0)
-			{
-				handler = handlers[0];
-
-				if (this.selectedActionHandlers.Count == 1)
-				{
-					int currentIndex = handlers.FindIndex(this.IsActionHandlerSelected);
-					if (currentIndex != -1)
-					{
-						handler = handlers[(currentIndex + 1) % handlers.Count];
-					}
-				}
-			}
-
-			int previouslySelectedCount = this.selectedActionHandlers.Count;
-			bool clickedMapObjectIsSelected = this.IsActionHandlerSelected(handler);
-			this.ClearSelected();
-
-			if (handler == null)
-			{
-				return;
-			}
-
-			bool changeMultiSelectionToSingle = clickedMapObjectIsSelected && previouslySelectedCount > 1;
-			bool selectUnselected = !clickedMapObjectIsSelected;
-
-			if (changeMultiSelectionToSingle || selectUnselected)
-			{
-				this.AddSelected(handler.GetComponentsInChildren<EditorActionHandler>());
-			}
+			this.UpdateRopeAttachments(false);
 		}
 
 		public void OnResizeStart(int resizeDirection)
@@ -486,7 +486,7 @@ namespace MapsExt.Editor
 		public void OnResizeEnd()
 		{
 			this.isResizingMapObject = false;
-			this.UpdateRopeAttachments();
+			this.UpdateRopeAttachments(false);
 		}
 
 		public void OnRotateStart()
@@ -502,7 +502,7 @@ namespace MapsExt.Editor
 		public void OnRotateEnd()
 		{
 			this.isRotatingMapObject = false;
-			this.UpdateRopeAttachments();
+			this.UpdateRopeAttachments(false);
 		}
 
 		public void OnNudgeSelectedMapObjects(Vector2 delta)
@@ -636,11 +636,11 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void UpdateRopeAttachments()
+		public void UpdateRopeAttachments(bool allowDetach)
 		{
 			foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
 			{
-				rope.UpdateAttachments();
+				rope.UpdateAttachments(allowDetach);
 			}
 		}
 

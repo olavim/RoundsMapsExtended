@@ -54,12 +54,6 @@ namespace MapsExt.Editor.Commands
 			}
 		}
 
-		public override void Redo(ResizeCommand cmd)
-		{
-			this.Execute(cmd);
-			this.editor.UpdateRopeAttachments();
-		}
-
 		public override void Undo(ResizeCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
@@ -67,8 +61,6 @@ namespace MapsExt.Editor.Commands
 				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
 				handler.Resize(-cmd.delta, cmd.resizeDirection, cmd.frameIndex);
 			}
-
-			this.editor.UpdateRopeAttachments();
 		}
 
 		public override ResizeCommand Merge(ResizeCommand cmd1, ResizeCommand cmd2)
