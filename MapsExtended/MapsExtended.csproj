@@ -64,6 +64,9 @@
 		<Reference Include="Sirenix.Serialization.Config">
 			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
 		</Reference>
+		<Reference Include="SonigonAudioEngine.Runtime">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\SonigonAudioEngine.Runtime.dll</HintPath>
+		</Reference>
 		<Reference Include="Unity.TextMeshPro">
 			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
 		</Reference>

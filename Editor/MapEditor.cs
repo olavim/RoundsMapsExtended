@@ -644,6 +644,14 @@ namespace MapsExt.Editor
 			}
 		}
 
+		public void DetachRopes()
+		{
+			foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
+			{
+				rope.Detach();
+			}
+		}
+
 		private void DetachSelectedRopes()
 		{
 			var anchors = this.selectedActionHandlers

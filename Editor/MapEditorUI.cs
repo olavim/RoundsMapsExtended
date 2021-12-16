@@ -208,6 +208,7 @@ namespace MapsExt.Editor
 			this.inspector = GameObject.Instantiate(Assets.MapObjectInspectorPrefab, this.inspectorWindow.content.transform).GetComponent<MapObjectInspector>();
 
 			this.inspector.animationButton.onClick.AddListener(this.OnClickAnimationButton);
+			this.inspector.animationButton.gameObject.GetComponentInChildren<Text>().text = "Edit Animation";
 
 			this.animationWindow = GameObject.Instantiate(Assets.AnimationWindowPrefab, this.transform).GetComponent<AnimationWindow>();
 			this.animationWindow.title.text = "Animation";

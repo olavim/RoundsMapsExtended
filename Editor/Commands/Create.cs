@@ -79,6 +79,8 @@ namespace MapsExt.Editor.Commands
 
 		public override void Undo(CreateCommand cmd)
 		{
+			this.editor.DetachRopes();
+
 			foreach (var mapObject in cmd.data)
 			{
 				var instance = mapObject.FindInstance(this.editor.content).gameObject;

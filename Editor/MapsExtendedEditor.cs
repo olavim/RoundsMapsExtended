@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.PostProcessing;
 using HarmonyLib;
 using UnboundLib;
+using Jotunn.Utils;
 using MapsExt.MapObjects;
 
 namespace MapsExt.Editor

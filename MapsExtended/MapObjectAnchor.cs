@@ -98,7 +98,7 @@ namespace MapsExt
 					this.Detach();
 				}
 			}
-			else if (this.target != collider.gameObject)
+			else
 			{
 				var rotation = collider.transform.rotation;
 				var identityBounds = this.GetIdentityBounds(collider.gameObject);
