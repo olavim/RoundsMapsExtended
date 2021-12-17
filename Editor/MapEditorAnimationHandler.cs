@@ -4,7 +4,7 @@ using MapsExt.MapObjects;
 using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections.Generic;
-using MapsExt.UI;
+using MapsExt.Editor.UI;
 
 namespace MapsExt.Editor
 {

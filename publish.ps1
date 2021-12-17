@@ -48,7 +48,6 @@ if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
 
 	if ($name.Equals("MapsExtended.Editor")) {
-		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$plug" -Force
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$plug" -Force
 		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$plug" -Force
 	}
@@ -68,7 +67,6 @@ if ($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $nam
 	Copy-Item -Path "$ProjectPath\icon.png" -Destination "$thunder\icon.png"
 
 	if ($name.Equals("MapsExtended.Editor")) {
-		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$thunder\plugins\"
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$thunder\plugins\"
 		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$thunder\plugins\"
 	}
@@ -90,7 +88,6 @@ if ($Target.Equals("Release") -and ($name.Equals("MapsExtended.Editor") -or $nam
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$pkg\BepInEx\plugins\$name.dll"
 
 	if ($name.Equals("MapsExtended.Editor")) {
-		Copy-Item -Path "$TargetPath\$name.UI.dll" -Destination "$pkg\BepInEx\plugins\"
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$pkg\BepInEx\plugins\"
 		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$pkg\BepInEx\plugins\"
 	}

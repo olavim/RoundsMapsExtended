@@ -29,12 +29,8 @@
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Remove="AssetsEmbedded\mapbase" />
-		<None Remove="AssetsEmbedded\mapobjects" />
-	</ItemGroup>
-	<ItemGroup>
-		<EmbeddedResource Include="AssetsEmbedded\mapbase" />
-		<EmbeddedResource Include="AssetsEmbedded\mapobjects" />
+		<EmbeddedResource Include="..\AssetsEmbedded\mapbase" />
+		<EmbeddedResource Include="..\AssetsEmbedded\mapobjects" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="UnboundLib" Version="2.8.0" />

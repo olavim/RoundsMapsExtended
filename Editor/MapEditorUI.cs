@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
-using MapsExt.UI;
+using MapsExt.Editor.UI;
 using MapsExt.MapObjects;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.Commands;

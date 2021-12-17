@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class ButtonGraphicToggle : MonoBehaviour
 	{

@@ -1,7 +1,7 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class MapObjectInspector : MonoBehaviour
 	{

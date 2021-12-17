@@ -2,7 +2,7 @@
 using UnityEngine;
 using System;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class KeyframeSettings : MonoBehaviour
 	{

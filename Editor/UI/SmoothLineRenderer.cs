@@ -8,7 +8,7 @@ using NetTopologySuite.Operation.Union;
 using MapsExt.Geometry;
 using Polygon = NetTopologySuite.Geometries.Polygon;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class SmoothLineRenderer : MonoBehaviour
 	{

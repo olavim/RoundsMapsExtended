@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine;
 using System;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class TextSliderInput : MonoBehaviour
 	{
@@ -32,7 +32,6 @@ namespace MapsExt.UI
 
 		private float maxSliderValue;
 		private float valueOnSliderMouseDown;
-		private bool isMouseDownOnSlider = false;
 
 		public void Awake()
 		{
@@ -49,7 +48,6 @@ namespace MapsExt.UI
 			downEntry.eventID = EventTriggerType.PointerDown;
 			downEntry.callback.AddListener(data =>
 			{
-				this.isMouseDownOnSlider = true;
 				this.valueOnSliderMouseDown = this.Value;
 				this.onChanged?.Invoke(this.Value, ChangeType.ChangeStart);
 			});
@@ -58,7 +56,6 @@ namespace MapsExt.UI
 			upEntry.eventID = EventTriggerType.PointerUp;
 			upEntry.callback.AddListener(data =>
 			{
-				this.isMouseDownOnSlider = false;
 				if (this.Value != this.valueOnSliderMouseDown)
 				{
 					this.onChanged?.Invoke(this.Value, ChangeType.ChangeEnd);

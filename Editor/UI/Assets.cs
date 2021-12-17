@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Jotunn.Utils;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public static class Assets
 	{
@@ -11,7 +11,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/file browser.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/file browser.prefab");
 			}
 		}
 
@@ -19,7 +19,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/save dialog.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/save dialog.prefab");
 			}
 		}
 
@@ -27,7 +27,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/toolbar.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/toolbar.prefab");
 			}
 		}
 
@@ -35,7 +35,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/window.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/window.prefab");
 			}
 		}
 
@@ -43,7 +43,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/animation window.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/animation window.prefab");
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/keyframe settings.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/keyframe settings.prefab");
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/foldout.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/foldout.prefab");
 			}
 		}
 
@@ -67,15 +67,7 @@ namespace MapsExt.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/prefabs/inspector.prefab");
-			}
-		}
-
-		public static Sprite SquareSprite
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<Sprite>("assets/squaresprite.png");
+				return Assets.bundle.LoadAsset<GameObject>("assets/ui/inspector.prefab");
 			}
 		}
 

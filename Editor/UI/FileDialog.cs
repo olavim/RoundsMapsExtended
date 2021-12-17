@@ -2,9 +2,8 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using Jotunn.Utils;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class FileDialog : MonoBehaviour
 	{

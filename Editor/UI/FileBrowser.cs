@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-namespace MapsExt.UI
+namespace MapsExt.Editor.UI
 {
 	public class FileBrowser : MonoBehaviour
 	{
