@@ -9,8 +9,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.PostProcessing;
 using HarmonyLib;
 using UnboundLib;
-using Jotunn.Utils;
 using MapsExt.MapObjects;
+using Jotunn.Utils;
 
 namespace MapsExt.Editor
 {
@@ -37,6 +37,8 @@ namespace MapsExt.Editor
 
 			var harmony = new Harmony(MapsExtendedEditor.ModId);
 			harmony.PatchAll();
+
+			AssetUtils.LoadAssetBundleFromResources("mapeditor", typeof(MapsExtendedEditor).Assembly);
 
 			var mapObjectManagerGo = new GameObject("Editor Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
@@ -75,8 +77,8 @@ namespace MapsExt.Editor
 				GameManager.instance.isPlaying = true;
 
 				this.editorActive = true;
-				MapManager.instance.RPCA_LoadLevel("NewMap");
-				SceneManager.sceneLoaded += this.AddEditorOnLevelLoad;
+				MapManager.instance.RPCA_LoadLevel("MapEditor");
+				SceneManager.sceneLoaded += this.OnEditorLevelLoad;
 			}, (obj) => { }, null, false);
 
 			this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
@@ -151,20 +153,15 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void AddEditorOnLevelLoad(Scene scene, LoadSceneMode mode)
+		private void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)
 		{
-			SceneManager.sceneLoaded -= this.AddEditorOnLevelLoad;
+			SceneManager.sceneLoaded -= this.OnEditorLevelLoad;
 
 			var map = MapManager.instance.currentMap.Map;
 			map.SetFieldValue("hasCalledReady", true);
 
 			var go = map.gameObject;
 			go.transform.position = Vector3.zero;
-
-			if (!go.GetComponent<MapEditor>())
-			{
-				go.AddComponent<MapEditor>();
-			}
 
 			MapManager.instance.isTestingMap = true;
 			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);

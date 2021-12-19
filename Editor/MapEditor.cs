@@ -23,9 +23,9 @@ namespace MapsExt.Editor
 		public bool snapToGrid;
 		public CommandHistory commandHistory;
 		public GameObject content;
+		public GameObject simulatedContent;
 		public MapEditorAnimationHandler animationHandler;
-
-		public readonly Material mat = new Material(Shader.Find("Sprites/Default"));
+		public Grid grid;
 
 		public float GridSize
 		{
@@ -68,9 +68,7 @@ namespace MapsExt.Editor
 		private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
 		private List<MapObject> clipboardMapObjects;
 
-		private Grid grid;
 		private GameObject tempSpawn;
-		private GameObject tempContent;
 
 		public void Awake()
 		{
@@ -85,11 +83,6 @@ namespace MapsExt.Editor
 			this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
 			this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
 
-			var animationContainer = new GameObject("Animation Handler");
-			animationContainer.transform.SetParent(this.transform);
-			this.animationHandler = animationContainer.AddComponent<MapEditorAnimationHandler>();
-			this.animationHandler.editor = this;
-
 			var commandHandlerProvider = new CommandHandlerProvider();
 			commandHandlerProvider.RegisterHandler(new CreateCommandHandler(this));
 			commandHandlerProvider.RegisterHandler(new DeleteCommandHandler(this));
@@ -103,29 +96,7 @@ namespace MapsExt.Editor
 
 			this.commandHistory = new CommandHistory(commandHandlerProvider);
 
-			this.content = new GameObject("Content");
-			this.content.transform.SetParent(this.transform);
-
-			this.tempContent = new GameObject("Simulated Content");
-			this.tempContent.transform.SetParent(this.transform);
-			this.tempContent.SetActive(false);
-
 			this.gameObject.AddComponent<MapEditorInputHandler>();
-
-			var gridGo = new GameObject("MapEditorGrid");
-			gridGo.transform.SetParent(this.transform);
-
-			this.grid = gridGo.AddComponent<Grid>();
-			this.grid.cellSize = Vector3.one;
-
-			var uiGo = new GameObject("MapEditorUI");
-			uiGo.transform.SetParent(this.transform);
-
-			uiGo.SetActive(false);
-			uiGo.AddComponent<MapEditorUI>().editor = this;
-			uiGo.SetActive(true);
-
-			this.gameObject.AddComponent<MapBorder>();
 		}
 
 		public void Update()
@@ -269,10 +240,10 @@ namespace MapsExt.Editor
 
 		private void DoStartSimulation()
 		{
-			MapsExtended.LoadMap(this.tempContent, this.GetMapData(), MapsExtended.instance.mapObjectManager, () =>
+			MapsExtended.LoadMap(this.simulatedContent, this.GetMapData(), MapsExtended.instance.mapObjectManager, () =>
 			{
 				this.content.SetActive(false);
-				this.tempContent.SetActive(true);
+				this.simulatedContent.SetActive(true);
 
 				GameModeManager.SetGameMode("Sandbox");
 				GameModeManager.CurrentHandler.StartGame();
@@ -283,10 +254,10 @@ namespace MapsExt.Editor
 
 				this.ExecuteAfterFrames(1, () =>
 				{
-					MapsExtendedEditor.instance.SetMapPhysicsActive(this.tempContent, true);
-					this.gameObject.GetComponent<Map>().allRigs = this.tempContent.GetComponentsInChildren<Rigidbody2D>();
+					MapsExtendedEditor.instance.SetMapPhysicsActive(this.simulatedContent, true);
+					this.gameObject.GetComponent<Map>().allRigs = this.simulatedContent.GetComponentsInChildren<Rigidbody2D>();
 
-					var ropes = this.tempContent.GetComponentsInChildren<MapObjet_Rope>();
+					var ropes = this.simulatedContent.GetComponentsInChildren<MapObjet_Rope>();
 					foreach (var rope in ropes)
 					{
 						rope.Go();
@@ -312,7 +283,7 @@ namespace MapsExt.Editor
 			}
 
 			this.content.SetActive(true);
-			this.tempContent.SetActive(false);
+			this.simulatedContent.SetActive(false);
 			this.animationHandler.enabled = true;
 		}
 

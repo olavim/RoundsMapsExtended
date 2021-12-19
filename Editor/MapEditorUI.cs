@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
+using UnityEngine.Events;
 using MapsExt.Editor.UI;
 using MapsExt.MapObjects;
 using MapsExt.Editor.ActionHandlers;
@@ -54,72 +55,26 @@ namespace MapsExt.Editor
 	public class MapEditorUI : MonoBehaviour
 	{
 		public MapEditor editor;
+		public Toolbar toolbar;
+		public Window mapObjectWindow;
+		public Window inspectorWindow;
+		public AnimationWindow animationWindow;
+		public MapObjectInspector inspector;
+
+		private Texture2D selectionTexture;
 
 		private int resizeDirection;
 		private bool isResizing;
 		private bool isRotating;
-		private Toolbar toolbar;
-
 		private List<EditorActionHandler> selectedActionHandlers;
-		private Window mapObjectWindow;
-		private Window inspectorWindow;
-		private MapObjectInspector inspector;
-		private AnimationWindow animationWindow;
-		private bool mapObjectWindowWasOpen;
-		private bool animationWindowWasOpen;
-		private bool inspectorWindowWasOpen;
+		private Window[] windows;
+		private bool[] windowWasOpen;
 
 		public void Awake()
 		{
 			this.selectedActionHandlers = new List<EditorActionHandler>();
 			this.isResizing = false;
 			this.isRotating = false;
-
-			var canvas = this.gameObject.AddComponent<Canvas>();
-			var scaler = this.gameObject.AddComponent<CanvasScaler>();
-			this.gameObject.AddComponent<GraphicRaycaster>();
-			canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-			canvas.pixelPerfect = true;
-			scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
-
-			var toolbarGo = GameObject.Instantiate(Assets.ToolbarPrefab, this.transform);
-			toolbarGo.name = "Toolbar";
-			var toolbarCanvas = toolbarGo.AddComponent<Canvas>();
-			toolbarCanvas.overrideSorting = true;
-			toolbarCanvas.sortingOrder = 10;
-
-			toolbarGo.AddComponent<GraphicRaycaster>();
-
-			this.toolbar = toolbarGo.GetComponent<Toolbar>();
-
-			var ctrlKey = new NamedKeyCode(KeyCode.LeftControl, "Ctrl");
-			var shiftKey = new NamedKeyCode(KeyCode.LeftShift, "Shift");
-			var sKey = new NamedKeyCode(KeyCode.S, "S");
-			var oKey = new NamedKeyCode(KeyCode.O, "O");
-			var cKey = new NamedKeyCode(KeyCode.C, "C");
-			var vKey = new NamedKeyCode(KeyCode.V, "V");
-			var zKey = new NamedKeyCode(KeyCode.Z, "Z");
-			var tKey = new NamedKeyCode(KeyCode.T, "T");
-
-			var openItem = new MenuItemBuilder().Label("Open...").Action(this.OnClickOpen).KeyBinding(oKey, ctrlKey).Item();
-			var saveItem = new MenuItemBuilder().Label("Save").Action(this.OnClickSave).KeyBinding(sKey, ctrlKey).Item();
-			var saveAsItem = new MenuItemBuilder().Label("Save As...").Action(this.OnClickSaveAs).KeyBinding(sKey, ctrlKey, shiftKey).Item();
-			var openMapFolderItem = new MenuItemBuilder().Label("Open Map Folder").Action(this.OpenMapFolder).Item();
-
-			this.toolbar.fileMenu.AddItem(openItem);
-			this.toolbar.fileMenu.AddItem(saveItem);
-			this.toolbar.fileMenu.AddItem(saveAsItem);
-			this.toolbar.fileMenu.AddItem(openMapFolderItem);
-
-			var undoItem = new MenuItemBuilder().Label("Undo").Action(this.OnClickUndo).KeyBinding(zKey, ctrlKey).Item();
-			var redoItem = new MenuItemBuilder().Label("Redo").Action(this.OnClickRedo).KeyBinding(zKey, ctrlKey, shiftKey).Item();
-			var copyItem = new MenuItemBuilder().Label("Copy").Action(this.editor.OnCopy).KeyBinding(cKey, ctrlKey).Item();
-			var pasteItem = new MenuItemBuilder().Label("Paste").Action(this.editor.OnPaste).KeyBinding(vKey, ctrlKey).Item();
-
-			this.toolbar.editMenu.AddItem(undoItem);
-			this.toolbar.editMenu.AddItem(redoItem);
-			this.toolbar.editMenu.AddItem(copyItem);
-			this.toolbar.editMenu.AddItem(pasteItem);
 
 			var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
 			mapObjects.Add("", new List<Tuple<string, Type>>());
@@ -142,7 +97,7 @@ namespace MapsExt.Editor
 
 				foreach (var entry in mapObjects[category])
 				{
-					Action action = () => this.editor.commandHistory.Add(new CreateCommand(entry.Item2));
+					UnityAction action = () => this.editor.commandHistory.Add(new CreateCommand(entry.Item2));
 					builder.SubItem(b => b.Label(entry.Item1).Action(action));
 				}
 
@@ -151,16 +106,10 @@ namespace MapsExt.Editor
 
 			foreach (var entry in mapObjects[""])
 			{
-				Action action = () => this.editor.commandHistory.Add(new CreateCommand(entry.Item2));
+				UnityAction action = () => this.editor.commandHistory.Add(new CreateCommand(entry.Item2));
 				var builder = new MenuItemBuilder().Label(entry.Item1).Action(action);
 				this.toolbar.mapObjectMenu.AddItem(builder.Item());
 			}
-
-			var mapObjectsWindowItem = new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow).Item();
-			var inspectorWindowItem = new MenuItemBuilder().Label("Map Object Inspector").Action(this.OpenInspectorWindow).Item();
-
-			this.toolbar.windowMenu.AddItem(mapObjectsWindowItem);
-			this.toolbar.windowMenu.AddItem(inspectorWindowItem);
 
 			this.toolbar.gridSizeSlider.value = this.editor.GridSize;
 			this.toolbar.gridSizeSlider.onValueChanged.AddListener(val => this.editor.GridSize = val);
@@ -170,19 +119,19 @@ namespace MapsExt.Editor
 				if (simulated)
 				{
 					this.editor.OnStartSimulation();
-					this.mapObjectWindowWasOpen = this.mapObjectWindow.gameObject.activeSelf;
-					this.inspectorWindowWasOpen = this.inspectorWindow.gameObject.activeSelf;
-					this.animationWindowWasOpen = this.animationWindow.gameObject.activeSelf;
-					this.mapObjectWindow.gameObject.SetActive(false);
-					this.inspectorWindow.gameObject.SetActive(false);
-					this.animationWindow.gameObject.SetActive(false);
+					for (int i = 0; i < this.windows.Length; i++)
+					{
+						this.windowWasOpen[i] = this.windows[i].gameObject.activeSelf;
+						this.windows[i].gameObject.SetActive(false);
+					}
 				}
 				else
 				{
 					this.editor.OnStopSimulation();
-					this.mapObjectWindow.gameObject.SetActive(mapObjectWindowWasOpen);
-					this.inspectorWindow.gameObject.SetActive(inspectorWindowWasOpen);
-					this.animationWindow.gameObject.SetActive(animationWindowWasOpen);
+					for (int i = 0; i < this.windows.Length; i++)
+					{
+						this.windows[i].gameObject.SetActive(this.windowWasOpen[i]);
+					}
 				}
 
 				var menuState = simulated ? Menu.MenuState.DISABLED : Menu.MenuState.INACTIVE;
@@ -193,33 +142,14 @@ namespace MapsExt.Editor
 				this.toolbar.gridSizeSlider.transform.parent.parent.gameObject.SetActive(!simulated);
 			};
 
-			this.mapObjectWindow = GameObject.Instantiate(Assets.WindowPrefab, this.transform).GetComponent<Window>();
-			this.mapObjectWindow.title.text = "Map Objects";
-			var mapObjectWindowSize = new Vector2(300, 300);
-			this.mapObjectWindow.gameObject.GetComponent<RectTransform>().sizeDelta = mapObjectWindowSize;
+			var mapObjectWindowSize = this.mapObjectWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
 			this.mapObjectWindow.transform.position = new Vector3(Screen.width - (mapObjectWindowSize.x / 2f) - 5, Screen.height - (mapObjectWindowSize.y / 2f) - 35, 0);
 
-			this.inspectorWindow = GameObject.Instantiate(Assets.WindowPrefab, this.transform).GetComponent<Window>();
-			this.inspectorWindow.title.text = "Inspector";
-			var inspectorWindowSize = new Vector2(300, 300);
-			this.inspectorWindow.gameObject.GetComponent<RectTransform>().sizeDelta = inspectorWindowSize;
+			var inspectorWindowSize = this.inspectorWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
 			this.inspectorWindow.transform.position = new Vector3(Screen.width - (inspectorWindowSize.x / 2f) - 5, this.mapObjectWindow.transform.position.y - inspectorWindowSize.y - 5, 0);
 
-			this.inspector = GameObject.Instantiate(Assets.MapObjectInspectorPrefab, this.inspectorWindow.content.transform).GetComponent<MapObjectInspector>();
-
-			this.inspector.animationButton.onClick.AddListener(this.OnClickAnimationButton);
-			this.inspector.animationButton.gameObject.GetComponentInChildren<Text>().text = "Edit Animation";
-
-			this.animationWindow = GameObject.Instantiate(Assets.AnimationWindowPrefab, this.transform).GetComponent<AnimationWindow>();
-			this.animationWindow.title.text = "Animation";
-			var animationWindowSize = new Vector2(300, 300);
-			this.animationWindow.gameObject.GetComponent<RectTransform>().sizeDelta = animationWindowSize;
+			var animationWindowSize = this.animationWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
 			this.animationWindow.transform.position = new Vector3((animationWindowSize.x / 2f) + 5, Screen.height - (animationWindowSize.y / 2f) - 35, 0);
-			this.animationWindow.gameObject.SetActive(false);
-
-			this.animationWindow.deleteButton.onClick.AddListener(this.HandleDeleteAnimationKeyframe);
-			this.animationWindow.addButton.onClick.AddListener(this.HandleAddAnimationKeyframe);
-			this.animationWindow.closeButton.onClick.AddListener(this.CloseAnimationWindow);
 
 			GameObject CreateButton(MenuItem item)
 			{
@@ -289,7 +219,9 @@ namespace MapsExt.Editor
 		public void Start()
 		{
 			this.editor.selectedActionHandlers.CollectionChanged += this.HandleSelectedObjectsChanged;
-			this.inspector.gameObject.SetActive(false);
+			this.windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
+			this.windowWasOpen = new bool[this.windows.Length];
+			this.selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
 		}
 
 		public void Update()
@@ -333,7 +265,7 @@ namespace MapsExt.Editor
 
 			if (this.animationWindow.gameObject.activeSelf && !this.editor.animationHandler.animation)
 			{
-				this.CloseAnimationWindow();
+				this.animationWindow.Close();
 			}
 
 			if (this.inspector?.visualTarget)
@@ -345,25 +277,33 @@ namespace MapsExt.Editor
 
 			if (this.inspector.gameObject.activeSelf && !this.inspector.interactionTarget)
 			{
-				this.UnlinkInspector();
+				this.inspector.Unlink();
+			}
+
+			bool animWindowOpen = this.animationWindow.gameObject.activeSelf;
+			byte alpha = (byte) (animWindowOpen ? 100 : 255);
+			foreach (var btn in this.mapObjectWindow.content.GetComponentsInChildren<Button>())
+			{
+				btn.interactable = !animWindowOpen;
+				btn.gameObject.GetComponentInChildren<Text>().color = new Color32(200, 200, 200, alpha);
 			}
 		}
 
-		private void OnClickOpen()
+		public void OnClickOpen()
 		{
 			FileDialog.OpenDialog(file =>
 			{
-				this.CloseAnimationWindow();
+				this.animationWindow.Close();
 				this.editor.LoadMap(file);
 			});
 		}
 
-		private void OnClickSaveAs()
+		public void OnClickSaveAs()
 		{
 			FileDialog.SaveDialog(filename => this.editor.SaveMap(filename));
 		}
 
-		private void OnClickSave()
+		public void OnClickSave()
 		{
 			if (this.editor.currentMapName?.Length > 0)
 			{
@@ -375,265 +315,41 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void OnClickUndo()
-		{
-			this.editor.commandHistory.Undo();
-			this.RefreshAnimationWindow();
-		}
-
-		private void OnClickRedo()
-		{
-			this.editor.commandHistory.Execute();
-			this.RefreshAnimationWindow();
-		}
-
-		private void OnClickAnimationButton()
-		{
-			if (this.animationWindow.gameObject.activeSelf)
-			{
-				this.CloseAnimationWindow();
-			}
-			else
-			{
-				this.OpenAnimationWindow();
-			}
-		}
-
-		private void OpenAnimationWindow()
-		{
-			var handler = this.selectedActionHandlers[0];
-			var anim = handler.GetComponent<MapObjectAnimation>();
-
-			if (anim)
-			{
-				this.editor.animationHandler.SetAnimation(anim);
-			}
-			else
-			{
-				this.editor.animationHandler.AddAnimation(handler.GetComponentInParent<MapObjectInstance>().gameObject);
-				anim = this.editor.animationHandler.animation;
-			}
-
-			this.RefreshAnimationWindow();
-			this.animationWindow.gameObject.SetActive(true);
-
-			this.inspector.animationButton.gameObject.GetComponentInChildren<Text>().text = "Close Animation";
-
-			foreach (var btn in this.mapObjectWindow.content.GetComponentsInChildren<Button>())
-			{
-				btn.interactable = false;
-				btn.gameObject.GetComponentInChildren<Text>().color = new Color32(200, 200, 200, 100);
-			}
-		}
-
-		public void CloseAnimationWindow()
-		{
-			this.animationWindow.gameObject.SetActive(false);
-			this.editor.animationHandler.SetAnimation(null);
-
-			foreach (Transform child in this.animationWindow.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
-
-			this.inspector.animationButton.gameObject.GetComponentInChildren<Text>().text = "Edit Animation";
-
-			foreach (var btn in this.mapObjectWindow.content.GetComponentsInChildren<Button>())
-			{
-				btn.interactable = true;
-				btn.gameObject.GetComponentInChildren<Text>().color = new Color32(200, 200, 200, 255);
-			}
-		}
-
-		private KeyframeSettings AddAnimationKeyframeSettings(int keyframe)
-		{
-			var anim = this.editor.animationHandler.animation;
-			var keyframeSettings = GameObject.Instantiate(Assets.KeyframeSettingsPrefab, this.animationWindow.content.transform).GetComponent<KeyframeSettings>();
-
-			keyframeSettings.contentFoldout.label.text = keyframe == 0 ? "Base" : $"Keyframe {keyframe}";
-
-			if (keyframe == 0)
-			{
-				keyframeSettings.contentFoldout.label.text = "Base";
-				GameObject.Destroy(keyframeSettings.contentFoldout.content);
-			}
-			else
-			{
-				keyframeSettings.contentFoldout.label.text = $"Keyframe {keyframe}";
-			}
-
-			keyframeSettings.onDurationChanged += (value, type) =>
-			{
-				if (type == TextSliderInput.ChangeType.ChangeStart)
-				{
-					this.editor.commandHistory.PreventNextMerge();
-				}
-
-				float durationDelta = value - anim.keyframes[keyframe].duration;
-				var cmd = new ChangeKeyframeDurationCommand(anim.gameObject, durationDelta, keyframe);
-				this.editor.commandHistory.Add(cmd, true);
-
-				anim.keyframes[keyframe].UpdateCurve();
-			};
-
-			keyframeSettings.onEasingChanged += value =>
-			{
-				var curveType =
-					value == "In" ? AnimationKeyframe.CurveType.EaseIn :
-					value == "Out" ? AnimationKeyframe.CurveType.EaseOut :
-					value == "In and Out" ? AnimationKeyframe.CurveType.EaseInOut :
-					AnimationKeyframe.CurveType.Linear;
-
-				var cmd = new ChangeKeyframeEasingCommand(anim.gameObject, curveType, keyframe);
-				this.editor.commandHistory.Add(cmd);
-			};
-
-			keyframeSettings.onClick += () =>
-			{
-				foreach (var settings in this.animationWindow.content.GetComponentsInChildren<KeyframeSettings>())
-				{
-					settings.SetSelected(settings == keyframeSettings);
-				}
-
-				this.editor.animationHandler.SetKeyframe(keyframe);
-				this.animationWindow.deleteButton.interactable = keyframe > 0;
-			};
-
-			keyframeSettings.durationInput.Value = anim.keyframes[keyframe].duration;
-			keyframeSettings.easingDropdown.value = (int) anim.keyframes[keyframe].curveType;
-
-			return keyframeSettings;
-		}
-
-		private void HandleAddAnimationKeyframe()
-		{
-			var anim = this.editor.animationHandler.animation;
-			var cmd = new AddKeyframeCommand(anim.gameObject, new AnimationKeyframe(anim.keyframes[anim.keyframes.Count - 1]), anim.keyframes.Count);
-			this.editor.commandHistory.Add(cmd);
-
-			this.UnlinkInspector();
-			this.LinkInspector(this.editor.animationHandler.keyframeMapObject);
-			this.RefreshAnimationWindow();
-		}
-
-		private void HandleDeleteAnimationKeyframe()
-		{
-			var cmd = new DeleteKeyframeCommand(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.KeyframeIndex);
-			this.editor.commandHistory.Add(cmd);
-
-			this.UnlinkInspector();
-			this.LinkInspector(this.editor.animationHandler.keyframeMapObject);
-			this.RefreshAnimationWindow();
-		}
-
-		public void RefreshAnimationWindow()
-		{
-			foreach (Transform child in this.animationWindow.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
-
-			var anim = this.editor.animationHandler.animation;
-
-			if (!anim)
-			{
-				return;
-			}
-
-			for (int i = 0; i < anim.keyframes.Count; i++)
-			{
-				var settings = this.AddAnimationKeyframeSettings(i);
-				settings.SetSelected(i == this.editor.animationHandler.KeyframeIndex);
-			}
-
-			this.animationWindow.deleteButton.interactable = this.editor.animationHandler.KeyframeIndex > 0;
-		}
-
-		private void OpenMapFolder()
+		public void OnClickOpenMapFolder()
 		{
 			Application.OpenURL($"file://{BepInEx.Paths.GameRootPath}/maps");
 		}
 
-		private void OpenMapObjectWindow()
+		public void OnClickUndo()
+		{
+			this.editor.commandHistory.Undo();
+			this.animationWindow.Refresh();
+		}
+
+		public void OnClickRedo()
+		{
+			this.editor.commandHistory.Execute();
+			this.animationWindow.Refresh();
+		}
+
+		public void OnClickCopy()
+		{
+			this.editor.OnCopy();
+		}
+
+		public void OnClickPaste()
+		{
+			this.editor.OnPaste();
+		}
+
+		public void OpenMapObjectWindow()
 		{
 			this.mapObjectWindow.gameObject.SetActive(true);
 		}
 
-		private void OpenInspectorWindow()
+		public void OpenInspectorWindow()
 		{
 			this.inspectorWindow.gameObject.SetActive(true);
-		}
-
-		private void InspectorPositionChanged(Vector2 value)
-		{
-			var delta = (Vector3) value - this.inspector.visualTarget.transform.position;
-			var cmd = new MoveCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), delta, this.editor.animationHandler.KeyframeIndex);
-			this.editor.commandHistory.Add(cmd);
-			this.editor.UpdateRopeAttachments(false);
-		}
-
-		private void InspectorSizeChanged(Vector2 value)
-		{
-			var delta = (Vector3) value - this.inspector.visualTarget.transform.localScale;
-			var cmd = new ResizeCommand(this.inspector.visualTarget.GetComponent<EditorActionHandler>(), delta, 0, this.editor.animationHandler.KeyframeIndex);
-			this.editor.commandHistory.Add(cmd);
-			this.editor.UpdateRopeAttachments(false);
-		}
-
-		private void InspectorRotationChanged(float value, TextSliderInput.ChangeType type)
-		{
-			if (type == TextSliderInput.ChangeType.ChangeStart)
-			{
-				this.editor.commandHistory.PreventNextMerge();
-			}
-
-			var fromRotation = this.inspector.visualTarget.transform.rotation;
-			var toRotation = Quaternion.AngleAxis(value, Vector3.forward);
-			var actionHandler = this.inspector.visualTarget.GetComponent<EditorActionHandler>();
-			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation, this.editor.animationHandler.KeyframeIndex);
-			this.editor.commandHistory.Add(cmd, true);
-
-			if (type == TextSliderInput.ChangeType.ChangeEnd)
-			{
-				this.editor.UpdateRopeAttachments(false);
-			}
-		}
-
-		private void LinkInspector(GameObject interactionTarget)
-		{
-			this.LinkInspector(interactionTarget, interactionTarget);
-		}
-
-		private void LinkInspector(GameObject interactionTarget, GameObject visualTarget)
-		{
-			this.inspector.gameObject.SetActive(true);
-
-			var actionHandler = visualTarget.GetComponent<EditorActionHandler>();
-
-			this.inspector.positionInput.Value = visualTarget.transform.position;
-			this.inspector.sizeInput.Value = visualTarget.transform.localScale;
-			this.inspector.rotationInput.Value = visualTarget.transform.rotation.eulerAngles.z;
-
-			this.inspector.positionInput.onChanged += this.InspectorPositionChanged;
-			this.inspector.sizeInput.onChanged += this.InspectorSizeChanged;
-			this.inspector.rotationInput.onChanged += this.InspectorRotationChanged;
-
-			this.inspector.visualTarget = visualTarget;
-			this.inspector.interactionTarget = interactionTarget;
-
-			this.inspector.sizeInput.SetEnabled(actionHandler.CanResize());
-			this.inspector.rotationInput.SetEnabled(actionHandler.CanRotate());
-		}
-
-		private void UnlinkInspector()
-		{
-			this.inspector.positionInput.onChanged -= this.InspectorPositionChanged;
-			this.inspector.sizeInput.onChanged -= this.InspectorSizeChanged;
-			this.inspector.rotationInput.onChanged -= this.InspectorRotationChanged;
-
-			this.inspector.visualTarget = null;
-			this.inspector.interactionTarget = null;
-			this.inspector.gameObject.SetActive(false);
 		}
 
 		public void HandleSelectedObjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -642,7 +358,7 @@ namespace MapsExt.Editor
 
 			foreach (Transform child in this.transform)
 			{
-				if (child == this.toolbar.transform || child == this.mapObjectWindow.transform || child == this.inspectorWindow.transform || child == this.animationWindow.transform)
+				if (child == this.toolbar.transform || this.windows.Any(w => w.transform == child))
 				{
 					continue;
 				}
@@ -650,7 +366,7 @@ namespace MapsExt.Editor
 				GameObject.Destroy(child.gameObject);
 			}
 
-			this.UnlinkInspector();
+			this.inspector.Unlink();
 
 			this.selectedActionHandlers.Clear();
 			this.selectedActionHandlers.AddRange(list);
@@ -669,12 +385,12 @@ namespace MapsExt.Editor
 				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopMiddle);
 				this.AddRotationHandle(handlerGameObject);
 
-				this.LinkInspector(handlerGameObject);
+				this.inspector.Link(handlerGameObject);
 			}
 
 			if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
 			{
-				this.LinkInspector(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.keyframeMapObject);
+				this.inspector.Link(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.keyframeMapObject);
 			}
 
 			bool canAnimate = list.Count == 1 && list[0].GetComponent<SpatialMapObjectInstance>();
@@ -793,8 +509,7 @@ namespace MapsExt.Editor
 			if (!this.editor.isSimulating)
 			{
 				var selectionStyle = new GUIStyle(GUI.skin.box);
-				selectionStyle.normal.background = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
-
+				selectionStyle.normal.background = this.selectionTexture;
 				var selectionRect = this.editor.GetSelection();
 
 				if (selectionRect.width > 11 && selectionRect.height > 11)

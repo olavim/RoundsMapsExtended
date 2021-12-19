@@ -3,7 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using Sirenix.Serialization;
 
 namespace MapsExt.Editor.UI
 {
@@ -19,8 +21,16 @@ namespace MapsExt.Editor.UI
 		HOVER
 	}
 
-	public class Menu : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
+	public class Menu : MonoBehaviour, ISerializationCallbackReceiver, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 	{
+		public enum MenuState
+		{
+			INACTIVE,
+			HIGHLIGHTED,
+			ACTIVE,
+			DISABLED
+		}
+
 		public GameObject contentTemplate;
 		public Graphic graphic;
 		public Button itemButton;
@@ -38,16 +48,95 @@ namespace MapsExt.Editor.UI
 		public Action onClose;
 		public Action onHighlight;
 
-		public enum MenuState
-		{
-			INACTIVE,
-			HIGHLIGHTED,
-			ACTIVE,
-			DISABLED
-		}
-
 		private Dictionary<string, MenuItem> itemsByKey = new Dictionary<string, MenuItem>();
 		private GameObject content;
+
+		// AssetBundles REALLY don't want to serialize custom classes
+		[SerializeField, HideInInspector]
+		private byte[] serializationData;
+		[SerializeField, HideInInspector]
+		private List<UnityEngine.Object> serializationDataRefs;
+
+		public void OnAfterDeserialize()
+		{
+			this.items = SerializationUtility.DeserializeValue<List<MenuItem>>(this.serializationData, DataFormat.Binary, this.serializationDataRefs);
+
+			foreach (var item in this.items)
+			{
+				this.itemsByKey.Add(item.label, item);
+			}
+		}
+
+		public void OnBeforeSerialize()
+		{
+			this.serializationData = SerializationUtility.SerializeValue(this.items, DataFormat.Binary, out this.serializationDataRefs);
+		}
+
+		public void Start()
+		{
+			this.content = GameObject.Instantiate(this.contentTemplate, this.transform);
+
+			this.SetState(MenuState.INACTIVE);
+
+			var rectTransform = this.content.GetComponent<RectTransform>();
+
+			if (this.position == MenuPosition.DOWN)
+			{
+				rectTransform.anchorMin = new Vector2(0, 0);
+				rectTransform.anchorMax = new Vector2(0, 0);
+				rectTransform.pivot = new Vector2(0, 1);
+			}
+			else if (this.position == MenuPosition.RIGHT)
+			{
+				rectTransform.anchorMin = new Vector2(1, 1);
+				rectTransform.anchorMax = new Vector2(1, 1);
+				rectTransform.pivot = new Vector2(0, 1);
+			}
+
+			this.contentTemplate.SetActive(false);
+			this.itemButton.gameObject.SetActive(false);
+
+			this.RedrawContent();
+		}
+
+		public void Update()
+		{
+			if (this.state == MenuState.DISABLED)
+			{
+				return;
+			}
+
+			bool isHovered = this.IsMouseInsideMenu();
+
+			if (this.openTrigger == MenuTrigger.CLICK && Input.GetMouseButtonDown(0) && !isHovered)
+			{
+				this.SetState(MenuState.INACTIVE);
+			}
+
+			if (this.openTrigger == MenuTrigger.HOVER)
+			{
+				this.SetState(isHovered ? MenuState.ACTIVE : MenuState.INACTIVE);
+			}
+
+			var sortedItems = this.items
+				.Where(item => item.keyBinding != null && item.keyBinding.key != null && item.keyBinding.key.code != KeyCode.None)
+				.ToList();
+
+			sortedItems.Sort((a, b) =>
+			{
+				return b.keyBinding.modifiers.Count - a.keyBinding.modifiers.Count;
+			});
+
+			var calledItem = sortedItems.Find(item =>
+			{
+				return Input.GetKeyDown(item.keyBinding.key.code) && item.keyBinding.modifiers.All(m => Input.GetKey(m.code));
+			});
+
+			if (calledItem != null && !calledItem.disabled)
+			{
+				calledItem.action?.Invoke();
+			}
+		}
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
@@ -155,72 +244,6 @@ namespace MapsExt.Editor.UI
 			}
 		}
 
-		public void Start()
-		{
-			this.content = GameObject.Instantiate(this.contentTemplate, this.transform);
-
-			this.SetState(MenuState.INACTIVE);
-
-			var rectTransform = this.content.GetComponent<RectTransform>();
-
-			if (this.position == MenuPosition.DOWN)
-			{
-				rectTransform.anchorMin = new Vector2(0, 0);
-				rectTransform.anchorMax = new Vector2(0, 0);
-				rectTransform.pivot = new Vector2(0, 1);
-			}
-			else if (this.position == MenuPosition.RIGHT)
-			{
-				rectTransform.anchorMin = new Vector2(1, 1);
-				rectTransform.anchorMax = new Vector2(1, 1);
-				rectTransform.pivot = new Vector2(0, 1);
-			}
-
-			this.contentTemplate.SetActive(false);
-			this.itemButton.gameObject.SetActive(false);
-
-			this.RedrawContent();
-		}
-
-		public void Update()
-		{
-			if (this.state == MenuState.DISABLED)
-			{
-				return;
-			}
-
-			bool isHovered = this.IsMouseInsideMenu();
-
-			if (this.openTrigger == MenuTrigger.CLICK && Input.GetMouseButtonDown(0) && !isHovered)
-			{
-				this.SetState(MenuState.INACTIVE);
-			}
-
-			if (this.openTrigger == MenuTrigger.HOVER)
-			{
-				this.SetState(isHovered ? MenuState.ACTIVE : MenuState.INACTIVE);
-			}
-
-			var sortedItems = this.items
-				.Where(item => item.keyBinding != null && item.keyBinding.key != null && item.keyBinding.key.code != KeyCode.None)
-				.ToList();
-
-			sortedItems.Sort((a, b) =>
-			{
-				return b.keyBinding.modifiers.Length - a.keyBinding.modifiers.Length;
-			});
-
-			var calledItem = sortedItems.Find(item =>
-			{
-				return Input.GetKeyDown(item.keyBinding.key.code) && item.keyBinding.modifiers.All(m => Input.GetKey(m.code));
-			});
-
-			if (calledItem != null && !calledItem.disabled)
-			{
-				calledItem.action?.Invoke();
-			}
-		}
-
 		private bool IsMouseInsideMenu()
 		{
 			var rectTransforms = this.gameObject.GetComponentsInChildren<RectTransform>().ToList();
@@ -253,11 +276,12 @@ namespace MapsExt.Editor.UI
 			var oldAction = item.action;
 			if (oldAction != null)
 			{
-				item.action = () =>
+				item.action = new UnityEvent();
+				item.action.AddListener(() =>
 				{
-					oldAction();
+					oldAction.Invoke();
 					this.SetState(MenuState.INACTIVE);
-				};
+				});
 			}
 
 			var subitems = item.items ?? new List<MenuItem>() { };
@@ -359,19 +383,10 @@ namespace MapsExt.Editor.UI
 	public class MenuItem
 	{
 		public string label;
-		public Action action;
+		public UnityEvent action;
 		public KeyCombination keyBinding;
 		public List<MenuItem> items;
 		public bool disabled;
-
-		public MenuItem()
-		{
-			this.label = null;
-			this.action = null;
-			this.keyBinding = null;
-			this.items = null;
-			this.disabled = false;
-		}
 	}
 
 	public class MenuItemBuilder
@@ -389,9 +404,10 @@ namespace MapsExt.Editor.UI
 			return this;
 		}
 
-		public MenuItemBuilder Action(Action action)
+		public MenuItemBuilder Action(UnityAction action)
 		{
-			this.item.action = action;
+			this.item.action = new UnityEvent();
+			this.item.action.AddListener(action);
 			return this;
 		}
 
@@ -400,7 +416,7 @@ namespace MapsExt.Editor.UI
 			this.item.keyBinding = new KeyCombination
 			{
 				key = hotkey,
-				modifiers = modifiers
+				modifiers = modifiers.ToList()
 			};
 			return this;
 		}
@@ -426,10 +442,37 @@ namespace MapsExt.Editor.UI
 	}
 
 	[Serializable]
-	public class KeyCombination
+	public class KeyCombination : ISerializationCallbackReceiver
 	{
-		public NamedKeyCode[] modifiers;
+		public List<NamedKeyCode> modifiers = new List<NamedKeyCode>();
 		public NamedKeyCode key;
+
+		// Why is Unity's default serialization so helpless?
+		[SerializeField, HideInInspector]
+		private string[] _serializedModifiers;
+		[SerializeField, HideInInspector]
+		private string _serializedKey;
+
+		public void OnAfterDeserialize()
+		{
+			foreach (string mod in this._serializedModifiers)
+			{
+				this.modifiers.Add(JsonUtility.FromJson<NamedKeyCode>(mod));
+			}
+
+			this.key = JsonUtility.FromJson<NamedKeyCode>(this._serializedKey);
+		}
+
+		public void OnBeforeSerialize()
+		{
+			this._serializedModifiers = new string[this.modifiers.Count];
+			for (int i = 0; i < this.modifiers.Count; i++)
+			{
+				this._serializedModifiers[i] = JsonUtility.ToJson(this.modifiers[i]);
+			}
+
+			this._serializedKey = JsonUtility.ToJson(this.key);
+		}
 	}
 
 	[Serializable]

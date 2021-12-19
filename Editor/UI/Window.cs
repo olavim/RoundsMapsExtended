@@ -11,10 +11,7 @@ namespace MapsExt.Editor.UI
 
 		public void Start()
 		{
-			this.closeButton.onClick.AddListener(() =>
-			{
-				this.gameObject.SetActive(false);
-			});
+			this.closeButton.onClick.AddListener(() => this.gameObject.SetActive(false));
 		}
 	}
 }

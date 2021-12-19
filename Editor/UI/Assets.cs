@@ -11,7 +11,7 @@ namespace MapsExt.Editor.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/file browser.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/file browser.prefab");
 			}
 		}
 
@@ -19,31 +19,7 @@ namespace MapsExt.Editor.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/save dialog.prefab");
-			}
-		}
-
-		public static GameObject ToolbarPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/toolbar.prefab");
-			}
-		}
-
-		public static GameObject WindowPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/window.prefab");
-			}
-		}
-
-		public static GameObject AnimationWindowPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/animation window.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/save dialog.prefab");
 			}
 		}
 
@@ -51,7 +27,7 @@ namespace MapsExt.Editor.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/keyframe settings.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/keyframe settings.prefab");
 			}
 		}
 
@@ -59,21 +35,13 @@ namespace MapsExt.Editor.UI
 		{
 			get
 			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/foldout.prefab");
-			}
-		}
-
-		public static GameObject MapObjectInspectorPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/ui/inspector.prefab");
+				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/foldout.prefab");
 			}
 		}
 
 		static Assets()
 		{
-			Assets.bundle = AssetUtils.LoadAssetBundleFromResources("uielements", typeof(FileDialog).Assembly);
+			Assets.bundle = AssetUtils.LoadAssetBundleFromResources("uielements", typeof(Assets).Assembly);
 		}
 	}
 }

@@ -42,7 +42,7 @@ namespace MapsExt.MapObjects
 		public static void Deserialize(MapObject data, GameObject target)
 		{
 			var c = target.GetOrAddComponent<MapObjectInstance>();
-			c.mapObjectId = data.mapObjectId;
+			c.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
 			c.dataType = data.GetType();
 			target.SetActive(data.active);
 		}
