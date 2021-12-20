@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MapsExt.Editor.ActionHandlers;
+using System.Collections;
 
 namespace MapsExt.Editor.Commands
 {
@@ -11,20 +12,23 @@ namespace MapsExt.Editor.Commands
 		public readonly int resizeDirection;
 		public readonly int frameIndex;
 
-		public ResizeCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta, int resizeDirection, int frameIndex = 0)
+		public ResizeCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta, int resizeDirection)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(handlers);
 			this.delta = delta;
 			this.resizeDirection = resizeDirection;
-			this.frameIndex = frameIndex;
+
+			var e = handlers.GetEnumerator();
+			e.MoveNext();
+			this.frameIndex = e.Current.frameIndex;
 		}
 
-		public ResizeCommand(EditorActionHandler handlers, Vector3 delta, int resizeDirection, int frameIndex = 0)
+		public ResizeCommand(EditorActionHandler handler, Vector3 delta, int resizeDirection)
 		{
-			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handlers });
+			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handler });
 			this.delta = delta;
 			this.resizeDirection = resizeDirection;
-			this.frameIndex = frameIndex;
+			this.frameIndex = handler.frameIndex;
 		}
 
 		public ResizeCommand(ResizeCommand cmd, Vector3 delta)
@@ -45,22 +49,26 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(ResizeCommand cmd)
+		public override IEnumerator Execute(ResizeCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
 				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
 				handler.Resize(cmd.delta, cmd.resizeDirection, cmd.frameIndex);
 			}
+
+			yield break;
 		}
 
-		public override void Undo(ResizeCommand cmd)
+		public override IEnumerator Undo(ResizeCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
 				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
 				handler.Resize(-cmd.delta, cmd.resizeDirection, cmd.frameIndex);
 			}
+
+			yield break;
 		}
 
 		public override ResizeCommand Merge(ResizeCommand cmd1, ResizeCommand cmd2)

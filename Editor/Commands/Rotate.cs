@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MapsExt.Editor.ActionHandlers;
+using System.Collections;
 
 namespace MapsExt.Editor.Commands
 {
@@ -11,20 +12,23 @@ namespace MapsExt.Editor.Commands
 		public readonly Quaternion toRotation;
 		public readonly int frameIndex;
 
-		public RotateCommand(IEnumerable<EditorActionHandler> handlers, Quaternion fromRotation, Quaternion toRotation, int frameIndex = 0)
+		public RotateCommand(IEnumerable<EditorActionHandler> handlers, Quaternion fromRotation, Quaternion toRotation)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(handlers);
 			this.fromRotation = fromRotation;
 			this.toRotation = toRotation;
-			this.frameIndex = frameIndex;
+
+			var e = handlers.GetEnumerator();
+			e.MoveNext();
+			this.frameIndex = e.Current.frameIndex;
 		}
 
-		public RotateCommand(EditorActionHandler handler, Quaternion fromRotation, Quaternion toRotation, int frameIndex = 0)
+		public RotateCommand(EditorActionHandler handler, Quaternion fromRotation, Quaternion toRotation)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handler });
 			this.fromRotation = fromRotation;
 			this.toRotation = toRotation;
-			this.frameIndex = frameIndex;
+			this.frameIndex = handler.frameIndex;
 		}
 
 		public RotateCommand(RotateCommand cmd, Quaternion fromRotation, Quaternion toRotation)
@@ -45,22 +49,26 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(RotateCommand cmd)
+		public override IEnumerator Execute(RotateCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
 				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
 				handler.SetRotation(cmd.toRotation, cmd.frameIndex);
 			}
+
+			yield break;
 		}
 
-		public override void Undo(RotateCommand cmd)
+		public override IEnumerator Undo(RotateCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
 				var handler = (SpatialActionHandler) locator.FindActionHandler(this.editor.content);
 				handler.SetRotation(cmd.fromRotation, cmd.frameIndex);
 			}
+
+			yield break;
 		}
 
 		public override RotateCommand Merge(RotateCommand cmd1, RotateCommand cmd2)

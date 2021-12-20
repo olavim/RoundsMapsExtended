@@ -36,6 +36,8 @@ namespace MapsExt
 		}
 
 		public GameObject target { get; private set; }
+		public bool IsAttached => this.target != this.gameObject;
+
 		private Offset offset;
 
 		private void Awake()
@@ -46,7 +48,7 @@ namespace MapsExt
 
 		private void Update()
 		{
-			if (this.IsAttached())
+			if (this.IsAttached)
 			{
 				this.transform.position = this.GetPosition();
 			}
@@ -75,11 +77,6 @@ namespace MapsExt
 			var dir = new Vector3(x - pos.x, y - pos.y, 0);
 			dir = this.target.transform.rotation * dir;
 			return pos - dir;
-		}
-
-		public bool IsAttached()
-		{
-			return this.target != this.gameObject;
 		}
 
 		public void UpdateAttachment(bool allowDetach = true)
@@ -149,7 +146,7 @@ namespace MapsExt
 
 		public void Detach()
 		{
-			if (this.IsAttached())
+			if (this.IsAttached)
 			{
 				this.transform.position = this.GetPosition();
 			}

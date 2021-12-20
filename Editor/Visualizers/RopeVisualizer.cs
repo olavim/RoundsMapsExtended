@@ -82,8 +82,8 @@ namespace MapsExt.Visualizers
 			this.startGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(pos1);
 			this.endGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(pos2);
 
-			this.startGraphic.color = this.rope.GetAnchor(0).IsAttached() ? new Color(0, 0.5f, 1) : new Color(1, 1, 1);
-			this.endGraphic.color = this.rope.GetAnchor(1).IsAttached() ? new Color(0, 0.5f, 1) : new Color(1, 1, 1);
+			this.startGraphic.color = this.rope.GetAnchor(0).IsAttached ? new Color(0, 0.5f, 1) : new Color(1, 1, 1);
+			this.endGraphic.color = this.rope.GetAnchor(1).IsAttached ? new Color(0, 0.5f, 1) : new Color(1, 1, 1);
 		}
 	}
 }

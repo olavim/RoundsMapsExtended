@@ -1,4 +1,5 @@
 using MapsExt.MapObjects;
+using System.Collections;
 using UnityEngine;
 
 namespace MapsExt.Editor.Commands
@@ -26,20 +27,22 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(ChangeKeyframeEasingCommand cmd)
+		public override IEnumerator Execute(ChangeKeyframeEasingCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
 			animation.keyframes[cmd.frameIndex].curveType = cmd.curveType;
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
+			yield break;
 		}
 
-		public override void Undo(ChangeKeyframeEasingCommand cmd)
+		public override IEnumerator Undo(ChangeKeyframeEasingCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
 			animation.keyframes[cmd.frameIndex].curveType = cmd.data.animationKeyframes[cmd.frameIndex - 1].curveType;
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
+			yield break;
 		}
 
 		public override ChangeKeyframeEasingCommand Merge(ChangeKeyframeEasingCommand cmd1, ChangeKeyframeEasingCommand cmd2)

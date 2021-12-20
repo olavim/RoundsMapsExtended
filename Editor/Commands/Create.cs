@@ -42,12 +42,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(CreateCommand cmd)
-		{
-			this.editor.StartCoroutine(this.ExecuteCoroutine(cmd));
-		}
-
-		private IEnumerator ExecuteCoroutine(CreateCommand cmd)
+		public override IEnumerator Execute(CreateCommand cmd)
 		{
 			int waiting = cmd.data.Length;
 			this.editor.ClearSelected();
@@ -56,14 +51,26 @@ namespace MapsExt.Editor.Commands
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.editor.content, data, obj =>
 				{
+					var handlers = obj.GetComponentsInChildren<EditorActionHandler>();
+
 					if (!cmd.initialized)
 					{
 						float scaleStep = Mathf.Max(1, this.editor.GridSize * 2f);
 						obj.transform.localScale = EditorUtils.SnapToGrid(obj.transform.localScale, scaleStep);
 						obj.transform.position = Vector3.zero;
 					}
+					else
+					{
+						var mapObjInstance = obj.GetComponent<MapObjectInstance>();
+						mapObjInstance.mapObjectId = Guid.NewGuid().ToString();
 
-					this.editor.AddSelected(obj.GetComponentsInChildren<EditorActionHandler>());
+						foreach (var handler in handlers)
+						{
+							handler.Move(new Vector3(1, -1, 0));
+						}
+					}
+
+					this.editor.AddSelected(handlers);
 					waiting--;
 				});
 			}
@@ -77,7 +84,7 @@ namespace MapsExt.Editor.Commands
 			this.editor.UpdateRopeAttachments(false);
 		}
 
-		public override void Undo(CreateCommand cmd)
+		public override IEnumerator Undo(CreateCommand cmd)
 		{
 			this.editor.DetachRopes();
 
@@ -96,6 +103,7 @@ namespace MapsExt.Editor.Commands
 			this.editor.ClearSelected();
 			this.editor.ResetSpawnLabels();
 			this.editor.UpdateRopeAttachments(true);
+			yield break;
 		}
 
 		public override CreateCommand Merge(CreateCommand cmd1, CreateCommand cmd2)

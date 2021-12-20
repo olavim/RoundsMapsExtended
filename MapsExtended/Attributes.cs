@@ -20,13 +20,13 @@ namespace MapsExt
 			this.dataType = dataType;
 		}
 	}
-	
+
 	[AttributeUsage(AttributeTargets.Method, Inherited = false)]
 	public class MapObjectSerializer : Attribute { }
-	
+
 	[AttributeUsage(AttributeTargets.Method, Inherited = false)]
 	public class MapObjectDeserializer : Attribute { }
-	
+
 	[AttributeUsage(AttributeTargets.Property, Inherited = false)]
 	public class MapObjectPrefab : Attribute { }
 }

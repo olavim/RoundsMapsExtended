@@ -1,4 +1,5 @@
 using MapsExt.MapObjects;
+using System.Collections;
 using UnityEngine;
 
 namespace MapsExt.Editor.Commands
@@ -26,7 +27,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(DeleteKeyframeCommand cmd)
+		public override IEnumerator Execute(DeleteKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -36,13 +37,16 @@ namespace MapsExt.Editor.Commands
 			{
 				this.editor.animationHandler.SetKeyframe(animation.keyframes.Count - 1);
 			}
+
+			yield break;
 		}
 
-		public override void Undo(DeleteKeyframeCommand cmd)
+		public override IEnumerator Undo(DeleteKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
 			animation.keyframes.Insert(cmd.frameIndex, cmd.frame);
+			yield break;
 		}
 
 		public override DeleteKeyframeCommand Merge(DeleteKeyframeCommand cmd1, DeleteKeyframeCommand cmd2)

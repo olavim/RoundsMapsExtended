@@ -4,6 +4,8 @@ namespace MapsExt.Editor.ActionHandlers
 {
 	public abstract class EditorActionHandler : MonoBehaviour
 	{
+		public int frameIndex = 0;
+
 		public abstract bool CanMove();
 		public abstract bool CanResize();
 		public abstract bool CanRotate();

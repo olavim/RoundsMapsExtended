@@ -2,6 +2,7 @@ using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
 using UnityEngine;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MapsExt.Editor.Commands
@@ -10,16 +11,16 @@ namespace MapsExt.Editor.Commands
 
 	public interface ICommandHandler
 	{
-		void Execute(ICommand cmd);
-		void Undo(ICommand cmd);
+		IEnumerator Execute(ICommand cmd);
+		IEnumerator Undo(ICommand cmd);
 		ICommand Merge(ICommand cmd1, ICommand cmd2);
 		bool IsRedundant(ICommand cmd);
 	}
 
 	public interface ICommandHandler<T> where T : ICommand
 	{
-		void Execute(T cmd);
-		void Undo(T cmd);
+		IEnumerator Execute(T cmd);
+		IEnumerator Undo(T cmd);
 		T Merge(T cmd1, T cmd2);
 		bool IsRedundant(T cmd);
 	}

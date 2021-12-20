@@ -30,7 +30,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(DeleteCommand cmd)
+		public override IEnumerator Execute(DeleteCommand cmd)
 		{
 			this.editor.DetachRopes();
 
@@ -49,14 +49,11 @@ namespace MapsExt.Editor.Commands
 			this.editor.ResetSpawnLabels();
 			this.editor.ClearSelected();
 			this.editor.UpdateRopeAttachments(true);
+
+			yield break;
 		}
 
-		public override void Undo(DeleteCommand cmd)
-		{
-			this.editor.StartCoroutine(this.UndoCoroutine(cmd));
-		}
-
-		private IEnumerator UndoCoroutine(DeleteCommand cmd)
+		public override IEnumerator Undo(DeleteCommand cmd)
 		{
 			int waiting = cmd.data.Length;
 

@@ -17,6 +17,7 @@ namespace MapsExt.Editor
 		public MapObjectAnimation animation;
 		public GameObject keyframeMapObject;
 		public Action onAnimationChanged;
+		public Camera animationCamera;
 
 		public int KeyframeIndex { get; private set; }
 
@@ -28,7 +29,6 @@ namespace MapsExt.Editor
 		private int prevKeyframe = -1;
 
 		private GameObject curtain;
-		private Camera animationCamera;
 		private GameObject particles;
 
 		public void Awake()
@@ -63,15 +63,7 @@ namespace MapsExt.Editor
 		 */
 		private void SetupLayerCamera()
 		{
-			var cameraGo = new GameObject("Animation Camera");
-			cameraGo.transform.SetParent(this.transform);
-			this.animationCamera = cameraGo.AddComponent<Camera>();
-			this.animationCamera.CopyFrom(MainCam.instance.cam);
-			this.animationCamera.cullingMask = (1 << MAPOBJECT_LAYER);
-			this.animationCamera.depth = 2;
-			MainCam.instance.cam.cullingMask = MainCam.instance.cam.cullingMask & ~(1 << MAPOBJECT_LAYER);
-
-			cameraGo.AddComponent<CameraZoomHandler>();
+			MainCam.instance.cam.cullingMask = MainCam.instance.cam.cullingMask & ~this.animationCamera.cullingMask;
 		}
 
 		public void OnEnable()
@@ -205,10 +197,12 @@ namespace MapsExt.Editor
 					}
 
 					instance.transform.SetAsLastSibling();
+					var handler = instance.GetComponent<EditorActionHandler>();
+					handler.frameIndex = this.KeyframeIndex;
 
 					this.keyframeMapObject = instance;
 					this.editor.ClearSelected();
-					this.editor.AddSelected(instance.GetComponent<EditorActionHandler>());
+					this.editor.AddSelected(handler);
 				});
 			}
 			else

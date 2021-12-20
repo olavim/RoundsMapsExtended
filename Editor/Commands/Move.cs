@@ -1,4 +1,5 @@
 using MapsExt.Editor.ActionHandlers;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,18 +11,21 @@ namespace MapsExt.Editor.Commands
 		public readonly Vector3 delta;
 		public readonly int frameIndex;
 
-		public MoveCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta, int frameIndex = 0)
+		public MoveCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(handlers);
 			this.delta = delta;
-			this.frameIndex = frameIndex;
+
+			var e = handlers.GetEnumerator();
+			e.MoveNext();
+			this.frameIndex = e.Current.frameIndex;
 		}
 
-		public MoveCommand(EditorActionHandler handler, Vector3 delta, int frameIndex = 0)
+		public MoveCommand(EditorActionHandler handler, Vector3 delta)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handler });
 			this.delta = delta;
-			this.frameIndex = frameIndex;
+			this.frameIndex = handler.frameIndex;
 		}
 
 		public MoveCommand(MoveCommand cmd, Vector3 delta)
@@ -41,7 +45,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(MoveCommand cmd)
+		public override IEnumerator Execute(MoveCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
@@ -56,9 +60,11 @@ namespace MapsExt.Editor.Commands
 					handler.Move(cmd.delta);
 				}
 			}
+
+			yield break;
 		}
 
-		public override void Undo(MoveCommand cmd)
+		public override IEnumerator Undo(MoveCommand cmd)
 		{
 			foreach (var locator in cmd.handlerLocators)
 			{
@@ -73,6 +79,8 @@ namespace MapsExt.Editor.Commands
 					handler.Move(-cmd.delta);
 				}
 			}
+
+			yield break;
 		}
 
 		public override MoveCommand Merge(MoveCommand cmd1, MoveCommand cmd2)

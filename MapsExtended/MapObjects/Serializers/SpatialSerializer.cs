@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnboundLib;
-using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,27 +11,6 @@ namespace MapsExt.MapObjects
 		public Vector3 scale = Vector3.one * 2;
 		public Quaternion rotation = Quaternion.identity;
 		public List<AnimationKeyframe> animationKeyframes = new List<AnimationKeyframe>();
-
-		public override MapObject Move(Vector3 v)
-		{
-			var copy = (SpatialMapObject) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
-			copy.active = this.active;
-			copy.position = this.position + v;
-			copy.scale = this.scale;
-			copy.rotation = this.rotation;
-
-			if (this.animationKeyframes.Count > 0)
-			{
-				foreach (var frame in this.animationKeyframes)
-				{
-					copy.animationKeyframes.Add(new AnimationKeyframe(frame));
-				}
-
-				copy.animationKeyframes[0].position = this.animationKeyframes[0].position + v;
-			}
-
-			return copy;
-		}
 	}
 
 	/// <summary>

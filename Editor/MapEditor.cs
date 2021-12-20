@@ -1,10 +1,8 @@
 ﻿using System.IO;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using Sirenix.Serialization;
-using MapsExt.UI;
 using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
@@ -12,12 +10,13 @@ using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.Commands;
 using MapsExt.Editor.ActionHandlers;
 using System;
+using System.Collections;
 
 namespace MapsExt.Editor
 {
 	public class MapEditor : MonoBehaviour
 	{
-		public ObservableCollection<EditorActionHandler> selectedActionHandlers;
+		public RangeObservableCollection<EditorActionHandler> selectedActionHandlers;
 		public string currentMapName;
 		public bool isSimulating;
 		public bool snapToGrid;
@@ -67,12 +66,13 @@ namespace MapsExt.Editor
 		private Dictionary<GameObject, Vector3> selectionGroupGridOffsets;
 		private Dictionary<GameObject, Vector3> selectionGroupPositionOffsets;
 		private List<MapObject> clipboardMapObjects;
+		private CommandHandlerProvider commandHandlerProvider;
 
 		private GameObject tempSpawn;
 
 		public void Awake()
 		{
-			this.selectedActionHandlers = new ObservableCollection<EditorActionHandler>();
+			this.selectedActionHandlers = new RangeObservableCollection<EditorActionHandler>();
 			this.snapToGrid = true;
 			this.isCreatingSelection = false;
 			this.isDraggingMapObjects = false;
@@ -83,18 +83,18 @@ namespace MapsExt.Editor
 			this.selectionGroupGridOffsets = new Dictionary<GameObject, Vector3>();
 			this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
 
-			var commandHandlerProvider = new CommandHandlerProvider();
-			commandHandlerProvider.RegisterHandler(new CreateCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new DeleteCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new MoveCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new ResizeCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new RotateCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new AddKeyframeCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new DeleteKeyframeCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new ChangeKeyframeDurationCommandHandler(this));
-			commandHandlerProvider.RegisterHandler(new ChangeKeyframeEasingCommandHandler(this));
+			this.commandHandlerProvider = new CommandHandlerProvider();
+			this.commandHandlerProvider.RegisterHandler(new CreateCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new DeleteCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new MoveCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new ResizeCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new RotateCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new AddKeyframeCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new DeleteKeyframeCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new ChangeKeyframeDurationCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new ChangeKeyframeEasingCommandHandler(this));
 
-			this.commandHistory = new CommandHistory(commandHandlerProvider);
+			this.commandHistory = new CommandHistory(this.commandHandlerProvider);
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
 		}
@@ -181,12 +181,17 @@ namespace MapsExt.Editor
 
 		public void OnPaste()
 		{
+			this.StartCoroutine(this.OnPasteCoroutine());
+		}
+
+		private IEnumerator OnPasteCoroutine()
+		{
 			if (this.clipboardMapObjects == null || this.clipboardMapObjects.Count == 0)
 			{
-				return;
+				yield break;
 			}
 
-			var cmd = new CreateCommand(this.clipboardMapObjects.Select(data => data.Move(new Vector3(1, -1, 0))));
+			var cmd = new CreateCommand(this.clipboardMapObjects);
 			this.commandHistory.Add(cmd);
 		}
 
@@ -430,14 +435,12 @@ namespace MapsExt.Editor
 			}
 
 			this.prevCell = this.grid.WorldToCell(mouseWorldPos);
-			this.DetachSelectedRopes();
 			this.commandHistory.PreventNextMerge();
 		}
 
 		public void OnDragEnd()
 		{
 			this.isDraggingMapObjects = false;
-			this.UpdateRopeAttachments(false);
 		}
 
 		public void OnResizeStart(int resizeDirection)
@@ -476,11 +479,89 @@ namespace MapsExt.Editor
 			this.UpdateRopeAttachments(false);
 		}
 
+		private void DragMapObjects()
+		{
+			var mousePos = Input.mousePosition;
+			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseCell = this.grid.WorldToCell(mouseWorldPos);
+			var mouseDelta = mouseWorldPos - this.prevMouse;
+			var cellDelta = mouseCell - this.prevCell;
+
+			var delta = mouseDelta;
+
+			if (this.snapToGrid)
+			{
+				var handler = this.selectedActionHandlers[0];
+				var groupOffset = this.selectionGroupGridOffsets[handler.gameObject];
+				var positionOffset = this.selectionGroupPositionOffsets[handler.gameObject];
+				var objectCell = this.grid.WorldToCell(handler.transform.position);
+				var snappedPosition = this.grid.CellToWorld(objectCell + cellDelta);
+
+				delta = (snappedPosition + groupOffset + positionOffset) - handler.transform.position;
+			}
+
+			if (delta != Vector3.zero)
+			{
+				// If a rope anchor and its target are both selected, only move the rope anchor's target since the rope anchor will follow
+				var handlersToMove = this.selectedActionHandlers.Where(handler =>
+					{
+						var anchor = handler.GetComponent<MapObjectAnchor>();
+						return !anchor || !anchor.IsAttached || !this.selectedActionHandlers.Any(h => h.gameObject == anchor.target);
+					});
+
+				var cmd = new MoveCommand(handlersToMove, delta);
+				this.commandHistory.Add(cmd, true);
+			}
+
+			this.prevMouse += mouseDelta;
+			this.prevCell = mouseCell;
+		}
+
+		private void ResizeMapObject()
+		{
+			var mousePos = Input.mousePosition;
+			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseCell = this.grid.WorldToCell(mouseWorldPos);
+			var mouseDelta = mouseWorldPos - this.prevMouse;
+			Vector3 cellDelta = mouseCell - this.prevCell;
+
+			var sizeDelta = this.snapToGrid
+				? cellDelta * this.GridSize
+				: Quaternion.Inverse(this.grid.transform.rotation) * mouseDelta;
+
+			if (sizeDelta != Vector3.zero)
+			{
+				var cmd = new ResizeCommand(this.selectedActionHandlers, sizeDelta, this.resizeDirection);
+				this.commandHistory.Add(cmd, true);
+
+				this.prevMouse += mouseDelta;
+				this.prevCell = mouseCell;
+			}
+		}
+
+		private void RotateMapObject()
+		{
+			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+			var handler = this.selectedActionHandlers[0];
+
+			var mousePos = mouseWorldPos;
+			var objectPos = handler.transform.position;
+			mousePos.x -= objectPos.x;
+			mousePos.y -= objectPos.y;
+
+			float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
+			angle = EditorUtils.Snap(angle, this.snapToGrid ? 15f : 2f);
+			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+			var cmd = new RotateCommand(this.selectedActionHandlers, handler.transform.rotation, toRotation);
+			this.commandHistory.Add(cmd, true);
+		}
+
 		public void OnNudgeSelectedMapObjects(Vector2 delta)
 		{
 			if (this.SelectedMapObjects.Length > 0)
 			{
-				var cmd = new MoveCommand(this.selectedActionHandlers, (Vector3) delta, this.animationHandler.KeyframeIndex);
+				var cmd = new MoveCommand(this.selectedActionHandlers, (Vector3) delta);
 				this.commandHistory.Add(cmd);
 			}
 		}
@@ -507,77 +588,6 @@ namespace MapsExt.Editor
 			this.selectionRect = new Rect(x, y, width, height);
 		}
 
-		private void DragMapObjects()
-		{
-			var mousePos = Input.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = this.grid.WorldToCell(mouseWorldPos);
-			var mouseDelta = mouseWorldPos - this.prevMouse;
-			var cellDelta = mouseCell - this.prevCell;
-
-			var delta = mouseDelta;
-
-			if (this.snapToGrid)
-			{
-				var handler = this.selectedActionHandlers[0];
-				var groupOffset = this.selectionGroupGridOffsets[handler.gameObject];
-				var positionOffset = this.selectionGroupPositionOffsets[handler.gameObject];
-				var objectCell = this.grid.WorldToCell(handler.transform.position);
-				var snappedPosition = this.grid.CellToWorld(objectCell + cellDelta);
-
-				delta = (snappedPosition + groupOffset + positionOffset) - handler.transform.position;
-			}
-
-			if (delta != Vector3.zero)
-			{
-				var cmd = new MoveCommand(this.selectedActionHandlers, delta, this.animationHandler.KeyframeIndex);
-				this.commandHistory.Add(cmd, true);
-			}
-
-			this.prevMouse += mouseDelta;
-			this.prevCell = mouseCell;
-		}
-
-		private void ResizeMapObject()
-		{
-			var mousePos = Input.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = this.grid.WorldToCell(mouseWorldPos);
-			var mouseDelta = mouseWorldPos - this.prevMouse;
-			Vector3 cellDelta = mouseCell - this.prevCell;
-
-			var sizeDelta = this.snapToGrid
-				? cellDelta * this.GridSize
-				: Quaternion.Inverse(this.grid.transform.rotation) * mouseDelta;
-
-			if (sizeDelta != Vector3.zero)
-			{
-				var cmd = new ResizeCommand(this.selectedActionHandlers, sizeDelta, this.resizeDirection, this.animationHandler.KeyframeIndex);
-				this.commandHistory.Add(cmd, true);
-
-				this.prevMouse += mouseDelta;
-				this.prevCell = mouseCell;
-			}
-		}
-
-		private void RotateMapObject()
-		{
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
-			var handler = this.selectedActionHandlers[0];
-
-			var mousePos = mouseWorldPos;
-			var objectPos = handler.transform.position;
-			mousePos.x -= objectPos.x;
-			mousePos.y -= objectPos.y;
-
-			float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
-			angle = EditorUtils.Snap(angle, this.snapToGrid ? 15f : 2f);
-			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-			var cmd = new RotateCommand(this.selectedActionHandlers, handler.transform.rotation, toRotation, this.animationHandler.KeyframeIndex);
-			this.commandHistory.Add(cmd, true);
-		}
-
 		public void ClearSelected()
 		{
 			this.selectedActionHandlers.Clear();
@@ -585,10 +595,7 @@ namespace MapsExt.Editor
 
 		public void AddSelected(IEnumerable<EditorActionHandler> list)
 		{
-			foreach (var handler in list)
-			{
-				this.AddSelected(handler);
-			}
+			this.selectedActionHandlers.AddRange(list);
 		}
 
 		public void AddSelected(EditorActionHandler handler)

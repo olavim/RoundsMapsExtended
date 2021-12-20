@@ -1,6 +1,7 @@
 using MapsExt.MapObjects;
 using UnityEngine;
 using UnboundLib;
+using System.Collections;
 
 namespace MapsExt.Editor.Commands
 {
@@ -34,7 +35,7 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(AddKeyframeCommand cmd)
+		public override IEnumerator Execute(AddKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetOrAddComponent<MapObjectAnimation>();
@@ -46,11 +47,12 @@ namespace MapsExt.Editor.Commands
 			}
 
 			animation.keyframes.Insert(cmd.frameIndex, cmd.frame);
-
 			this.editor.animationHandler.SetKeyframe(cmd.frameIndex);
+
+			yield break;
 		}
 
-		public override void Undo(AddKeyframeCommand cmd)
+		public override IEnumerator Undo(AddKeyframeCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
@@ -60,6 +62,8 @@ namespace MapsExt.Editor.Commands
 			{
 				this.editor.animationHandler.SetKeyframe(animation.keyframes.Count - 1);
 			}
+
+			yield break;
 		}
 
 		public override AddKeyframeCommand Merge(AddKeyframeCommand cmd1, AddKeyframeCommand cmd2)

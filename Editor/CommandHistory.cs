@@ -1,7 +1,8 @@
-﻿using MapsExt.Editor.Commands;
+﻿using MapsExt.Editor;
+using MapsExt.Editor.Commands;
 using System.Collections.Generic;
 using System;
-using System.Linq;
+using System.Collections;
 
 namespace MapsExt
 {
@@ -39,7 +40,35 @@ namespace MapsExt
 		/// </param>
 		public void Add<T>(T cmd, bool merge = false) where T : ICommand
 		{
-			var handler = this.commandHandlerProvider.GetHandler<T>();
+			if (this.AddCommand(cmd, merge))
+			{
+				MapsExtendedEditor.instance.StartCoroutine(this.ExecuteCommandCoroutine(cmd));
+			}
+		}
+
+		public IEnumerator AddAsync<T>(T cmd, bool merge = false) where T : ICommand
+		{
+			if (this.AddCommand(cmd, merge))
+			{
+				yield return this.ExecuteCommandCoroutine(cmd);
+			}
+		}
+
+		private IEnumerator ExecuteCommandCoroutine<T>(T cmd) where T : ICommand
+		{
+			var handler = this.commandHandlerProvider.GetHandler(cmd.GetType());
+			yield return handler.Execute(cmd);
+		}
+
+		private IEnumerator UndoCommandCoroutine<T>(T cmd) where T : ICommand
+		{
+			var handler = this.commandHandlerProvider.GetHandler(cmd.GetType());
+			yield return handler.Undo(cmd);
+		}
+
+		private bool AddCommand<T>(T cmd, bool merge = false) where T : ICommand
+		{
+			var handler = this.commandHandlerProvider.GetHandler(cmd.GetType());
 
 			if (handler == null)
 			{
@@ -48,7 +77,7 @@ namespace MapsExt
 
 			if (handler.IsRedundant(cmd))
 			{
-				return;
+				return false;
 			}
 
 			while (this.commandIndex < this.commands.Count - 1)
@@ -76,8 +105,7 @@ namespace MapsExt
 				this.commandIndex++;
 			}
 
-			// Execute only the new command, NOT the possible result of a merge
-			handler.Execute(cmd);
+			return true;
 		}
 
 		public void PreventNextMerge()
@@ -87,15 +115,25 @@ namespace MapsExt
 
 		public void Execute()
 		{
-			this.commandIndex++;
-			var cmd = this.commands[this.commandIndex];
-			this.commandHandlerProvider.GetHandler(cmd.Item2.GetType()).Execute(cmd.Item2);
+			MapsExtendedEditor.instance.StartCoroutine(this.ExecuteAsync());
 		}
 
 		public void Undo()
 		{
+			MapsExtendedEditor.instance.StartCoroutine(this.UndoAsync());
+		}
+
+		public IEnumerator ExecuteAsync()
+		{
+			this.commandIndex++;
 			var cmd = this.commands[this.commandIndex];
-			this.commandHandlerProvider.GetHandler(cmd.Item2.GetType()).Undo(cmd.Item2);
+			yield return this.ExecuteCommandCoroutine(cmd.Item2);
+		}
+
+		public IEnumerator UndoAsync()
+		{
+			var cmd = this.commands[this.commandIndex];
+			yield return this.UndoCommandCoroutine(cmd.Item2);
 			this.commandIndex--;
 		}
 	}

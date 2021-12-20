@@ -2,11 +2,19 @@
 using UnityEngine;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.Commands;
+using System;
 
 namespace MapsExt.Editor.UI
 {
 	public class MapObjectInspector : MonoBehaviour
 	{
+		[AttributeUsage(AttributeTargets.Field, Inherited = true)]
+		public class Vector2Field : Attribute { }
+		[AttributeUsage(AttributeTargets.Field, Inherited = true)]
+		public class NumberField : Attribute { }
+		[AttributeUsage(AttributeTargets.Field, Inherited = true)]
+		public class BooleanField : Attribute { }
+
 		public Vector2Input positionInput;
 		public Vector2Input sizeInput;
 		public TextSliderInput rotationInput;
@@ -70,7 +78,7 @@ namespace MapsExt.Editor.UI
 		private void PositionChanged(Vector2 value)
 		{
 			var delta = (Vector3) value - this.visualTarget.transform.position;
-			var cmd = new MoveCommand(this.visualTarget.GetComponent<EditorActionHandler>(), delta, this.editor.animationHandler.KeyframeIndex);
+			var cmd = new MoveCommand(this.visualTarget.GetComponent<EditorActionHandler>(), delta);
 			this.editor.commandHistory.Add(cmd);
 			this.editor.UpdateRopeAttachments(false);
 		}
@@ -78,7 +86,7 @@ namespace MapsExt.Editor.UI
 		private void SizeChanged(Vector2 value)
 		{
 			var delta = (Vector3) value - this.visualTarget.transform.localScale;
-			var cmd = new ResizeCommand(this.visualTarget.GetComponent<EditorActionHandler>(), delta, 0, this.editor.animationHandler.KeyframeIndex);
+			var cmd = new ResizeCommand(this.visualTarget.GetComponent<EditorActionHandler>(), delta, 0);
 			this.editor.commandHistory.Add(cmd);
 			this.editor.UpdateRopeAttachments(false);
 		}
@@ -93,7 +101,7 @@ namespace MapsExt.Editor.UI
 			var fromRotation = this.visualTarget.transform.rotation;
 			var toRotation = Quaternion.AngleAxis(value, Vector3.forward);
 			var actionHandler = this.visualTarget.GetComponent<EditorActionHandler>();
-			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation, this.editor.animationHandler.KeyframeIndex);
+			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation);
 			this.editor.commandHistory.Add(cmd, true);
 
 			if (type == TextSliderInput.ChangeType.ChangeEnd)

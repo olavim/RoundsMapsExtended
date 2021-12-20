@@ -7,6 +7,7 @@ using HarmonyLib;
 
 namespace MapsExt.MapObjects
 {
+	[Serializable]
 	public class MapObject
 	{
 		public string mapObjectId = Guid.NewGuid().ToString();
@@ -15,16 +16,8 @@ namespace MapsExt.MapObjects
 		public MapObjectInstance FindInstance(GameObject container)
 		{
 			return container
-					.GetComponentsInChildren<MapObjectInstance>(true)
-					.FirstOrDefault(obj => obj.mapObjectId == this.mapObjectId);
-		}
-
-		public virtual MapObject Move(Vector3 v)
-		{
-			var copy = (MapObject) AccessTools.Constructor(this.GetType()).Invoke(new object[] { });
-			copy.mapObjectId = this.mapObjectId;
-			copy.active = this.active;
-			return copy;
+				.GetComponentsInChildren<MapObjectInstance>(true)
+				.FirstOrDefault(obj => obj.mapObjectId == this.mapObjectId);
 		}
 	}
 
@@ -35,15 +28,16 @@ namespace MapsExt.MapObjects
 	{
 		public static void Serialize(GameObject instance, MapObject target)
 		{
-			target.mapObjectId = instance.GetComponent<MapObjectInstance>().mapObjectId;
+			var mapObjectInstance = instance.GetComponent<MapObjectInstance>();
+			target.mapObjectId = mapObjectInstance.mapObjectId;
 			target.active = instance.activeSelf;
 		}
 
 		public static void Deserialize(MapObject data, GameObject target)
 		{
-			var c = target.GetOrAddComponent<MapObjectInstance>();
-			c.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
-			c.dataType = data.GetType();
+			var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
+			mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
+			mapObjectInstance.dataType = data.GetType();
 			target.SetActive(data.active);
 		}
 	}

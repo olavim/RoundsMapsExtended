@@ -1,4 +1,5 @@
 using MapsExt.MapObjects;
+using System.Collections;
 using UnityEngine;
 
 namespace MapsExt.Editor.Commands
@@ -33,20 +34,22 @@ namespace MapsExt.Editor.Commands
 			this.editor = editor;
 		}
 
-		public override void Execute(ChangeKeyframeDurationCommand cmd)
+		public override IEnumerator Execute(ChangeKeyframeDurationCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
 			animation.keyframes[cmd.frameIndex].duration += cmd.delta;
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
+			yield break;
 		}
 
-		public override void Undo(ChangeKeyframeDurationCommand cmd)
+		public override IEnumerator Undo(ChangeKeyframeDurationCommand cmd)
 		{
 			var instance = cmd.data.FindInstance(this.editor.content).gameObject;
 			var animation = instance.GetComponent<MapObjectAnimation>();
 			animation.keyframes[cmd.frameIndex].duration = cmd.data.animationKeyframes[cmd.frameIndex - 1].duration;
 			animation.keyframes[cmd.frameIndex].UpdateCurve();
+			yield break;
 		}
 
 		public override ChangeKeyframeDurationCommand Merge(ChangeKeyframeDurationCommand cmd1, ChangeKeyframeDurationCommand cmd2)
