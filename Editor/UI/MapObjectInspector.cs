@@ -2,40 +2,61 @@
 using UnityEngine;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.Commands;
+using MapsExt.Editor.MapObjects;
 using System;
+using System.Linq;
+using System.Reflection;
+using UnityEngine.Events;
 
 namespace MapsExt.Editor.UI
 {
 	public class MapObjectInspector : MonoBehaviour
 	{
-		[AttributeUsage(AttributeTargets.Field, Inherited = true)]
-		public class Vector2Field : Attribute { }
-		[AttributeUsage(AttributeTargets.Field, Inherited = true)]
-		public class NumberField : Attribute { }
-		[AttributeUsage(AttributeTargets.Field, Inherited = true)]
-		public class BooleanField : Attribute { }
+		public class InspectorPropertyEntry : Attribute
+		{
+			public string name;
+			public Type commandType;
+			public int handlerIndex;
 
-		public Vector2Input positionInput;
-		public Vector2Input sizeInput;
-		public TextSliderInput rotationInput;
-		public Button animationButton;
-		public AnimationWindow animationWindow;
+			public InspectorPropertyEntry(string name, Type commandType, int handlerIndex)
+			{
+				this.name = name;
+				this.commandType = commandType;
+				this.handlerIndex = handlerIndex;
+			}
+		}
+
+		[AttributeUsage(AttributeTargets.Property, Inherited = true)]
+		public class Vector2Property : InspectorPropertyEntry
+		{
+			public Vector2Property(string name, Type commandType, int handlerIndex = 0) : base(name, commandType, handlerIndex) { }
+		}
+
+		[AttributeUsage(AttributeTargets.Property, Inherited = true)]
+		public class QuaternionProperty : InspectorPropertyEntry
+		{
+			public QuaternionProperty(string name, Type commandType, int handlerIndex = 0) : base(name, commandType, handlerIndex) { }
+		}
+
+		[AttributeUsage(AttributeTargets.Property, Inherited = true)]
+		public class BooleanProperty : InspectorPropertyEntry
+		{
+			public BooleanProperty(string name, Type commandType, int handlerIndex = 0) : base(name, commandType, handlerIndex) { }
+		}
+
+		[AttributeUsage(AttributeTargets.Method, Inherited = true)]
+		public class ButtonBuilder : Attribute { }
 
 		public GameObject visualTarget;
 		public GameObject interactionTarget;
 		public MapEditor editor;
+		public MapEditorUI editorUI;
 
-		private void Start()
-		{
-			this.animationButton.onClick.AddListener(this.OnClickAnimationButton);
-		}
+		private Action onUpdate;
 
 		private void Update()
 		{
-			bool animWindowOpen = this.animationWindow.gameObject.activeSelf;
-			this.animationButton.gameObject.GetComponentInChildren<Text>().text = animWindowOpen
-				? "Close Animation"
-				: "Edit Animation";
+			this.onUpdate?.Invoke();
 		}
 
 		public void Link(GameObject interactionTarget)
@@ -45,81 +66,182 @@ namespace MapsExt.Editor.UI
 
 		public void Link(GameObject interactionTarget, GameObject visualTarget)
 		{
+			this.interactionTarget = interactionTarget;
+			this.visualTarget = visualTarget;
 			this.gameObject.SetActive(true);
 
-			var actionHandler = visualTarget.GetComponent<EditorActionHandler>();
+			foreach (Transform child in this.transform)
+			{
+				GameObject.Destroy(child.gameObject);
+			}
 
-			this.positionInput.Value = visualTarget.transform.position;
-			this.sizeInput.Value = visualTarget.transform.localScale;
-			this.rotationInput.Value = visualTarget.transform.rotation.eulerAngles.z;
+			var specs = visualTarget.GetComponentsInParent<InspectorSpec>();
 
-			this.positionInput.onChanged += this.PositionChanged;
-			this.sizeInput.onChanged += this.SizeChanged;
-			this.rotationInput.onChanged += this.RotationChanged;
+			foreach (var spec in specs)
+			{
+				foreach (var prop in spec.GetType().GetProperties())
+				{
+					var attr = prop.GetCustomAttributes(true).FirstOrDefault();
 
-			this.visualTarget = visualTarget;
-			this.interactionTarget = interactionTarget;
+					if (attr is Vector2Property)
+					{
+						this.AddVector2Property((Vector2Property) attr, prop, spec);
+					}
 
-			this.sizeInput.SetEnabled(actionHandler.CanResize());
-			this.rotationInput.SetEnabled(actionHandler.CanRotate());
+					if (attr is QuaternionProperty)
+					{
+						this.AddQuaternionProperty((QuaternionProperty) attr, prop, spec);
+					}
+
+					if (attr is BooleanProperty && this.editor.animationHandler.animation == null)
+					{
+						this.AddBooleanProperty((BooleanProperty) attr, prop, spec);
+					}
+				}
+			}
+
+			GameObject.Instantiate(Assets.InspectorDividerPrefab, this.transform);
+
+			foreach (var spec in specs)
+			{
+				foreach (var method in spec.GetType().GetMethods())
+				{
+					var attr = method.GetCustomAttributes(true).FirstOrDefault();
+					if (attr is ButtonBuilder)
+					{
+						this.AddButton((ButtonBuilder) attr, method, spec);
+					}
+				}
+			}
+		}
+
+		private void AddVector2Property(Vector2Property attribute, PropertyInfo propInfo, object target)
+		{
+			var instance = GameObject.Instantiate(Assets.InspectorVector2Prefab, this.transform);
+			var prop = instance.GetComponent<InspectorVector2>();
+			prop.label.text = attribute.name;
+			prop.input.SetWithoutEvent((Vector2) propInfo.GetValue(target));
+
+			prop.input.onChanged += value =>
+			{
+				var prevValue = (Vector2) propInfo.GetValue(target);
+				var delta = value - prevValue;
+				var handler = this.interactionTarget.GetComponentsInChildren<EditorActionHandler>()[attribute.handlerIndex];
+
+				var cmdCtor = attribute.commandType.GetConstructor(new[] { typeof(EditorActionHandler), typeof(Vector3) });
+				var cmd = (ICommand) cmdCtor.Invoke(new object[] { handler, (Vector3) delta });
+				this.editor.commandHistory.Add(cmd);
+				this.editor.UpdateRopeAttachments(false);
+			};
+
+			this.onUpdate += () =>
+			{
+				prop.input.SetWithoutEvent((Vector2) propInfo.GetValue(target));
+			};
+		}
+
+		private void AddQuaternionProperty(QuaternionProperty attribute, PropertyInfo propInfo, object target)
+		{
+			var instance = GameObject.Instantiate(Assets.InspectorQuaternionPrefab, this.transform);
+			var prop = instance.GetComponent<InspectorQuaternion>();
+			prop.label.text = attribute.name;
+
+			var initialValue = (Quaternion) propInfo.GetValue(target);
+			prop.input.SetWithoutEvent(initialValue.eulerAngles.z);
+
+			prop.input.onChanged += (value, type) =>
+			{
+				if (type == TextSliderInput.ChangeType.ChangeStart)
+				{
+					this.editor.commandHistory.PreventNextMerge();
+				}
+
+				var prevValue = (Quaternion) propInfo.GetValue(target);
+				var delta = Quaternion.Euler(0, 0, value) * Quaternion.Inverse(prevValue);
+				var handler = this.interactionTarget.GetComponentsInChildren<EditorActionHandler>()[attribute.handlerIndex];
+
+				var cmdCtor = attribute.commandType.GetConstructor(new[] { typeof(EditorActionHandler), typeof(Quaternion) });
+				var cmd = (ICommand) cmdCtor.Invoke(new object[] { handler, delta });
+				this.editor.commandHistory.Add(cmd, true);
+
+				if (type == TextSliderInput.ChangeType.ChangeEnd)
+				{
+					this.editor.UpdateRopeAttachments(false);
+				}
+			};
+
+			this.onUpdate += () =>
+			{
+				var value = (Quaternion) propInfo.GetValue(target);
+				prop.input.SetWithoutEvent(value.eulerAngles.z);
+			};
+		}
+
+		private void AddBooleanProperty(BooleanProperty attribute, PropertyInfo propInfo, object target)
+		{
+			var instance = GameObject.Instantiate(Assets.InspectorBooleanPrefab, this.transform);
+			var prop = instance.GetComponent<InspectorBoolean>();
+			prop.label.text = attribute.name;
+			prop.input.isOn = (bool) propInfo.GetValue(target);
+
+			UnityAction<bool> onValueChanged = value =>
+			{
+				var handler = this.interactionTarget.GetComponentsInChildren<EditorActionHandler>()[attribute.handlerIndex];
+				var cmdCtor = attribute.commandType.GetConstructor(new[] { typeof(EditorActionHandler), typeof(bool) });
+				var cmd = (ICommand) cmdCtor.Invoke(new object[] { handler, value });
+				this.editor.commandHistory.Add(cmd);
+			};
+
+			prop.input.onValueChanged.AddListener(onValueChanged);
+
+			this.onUpdate += () =>
+			{
+				prop.input.onValueChanged.RemoveListener(onValueChanged);
+				prop.input.isOn = (bool) propInfo.GetValue(target);
+				prop.input.onValueChanged.AddListener(onValueChanged);
+			};
+		}
+
+		private void AddButton(ButtonBuilder attribute, MethodInfo methodInfo, object target)
+		{
+			var instance = (GameObject) methodInfo.Invoke(target, new object[] { this.editor, this.editorUI });
+			instance.transform.SetParent(this.transform);
 		}
 
 		public void Unlink()
 		{
-			this.positionInput.onChanged -= this.PositionChanged;
-			this.sizeInput.onChanged -= this.SizeChanged;
-			this.rotationInput.onChanged -= this.RotationChanged;
+			foreach (Transform child in this.transform)
+			{
+				GameObject.Destroy(child.gameObject);
+			}
 
+			this.onUpdate = null;
 			this.visualTarget = null;
 			this.interactionTarget = null;
 			this.gameObject.SetActive(false);
 		}
+	}
 
-		private void PositionChanged(Vector2 value)
-		{
-			var delta = (Vector3) value - this.visualTarget.transform.position;
-			var cmd = new MoveCommand(this.visualTarget.GetComponent<EditorActionHandler>(), delta);
-			this.editor.commandHistory.Add(cmd);
-			this.editor.UpdateRopeAttachments(false);
-		}
+	public class InspectorVector2 : MonoBehaviour
+	{
+		public Text label;
+		public Vector2Input input;
+	}
 
-		private void SizeChanged(Vector2 value)
-		{
-			var delta = (Vector3) value - this.visualTarget.transform.localScale;
-			var cmd = new ResizeCommand(this.visualTarget.GetComponent<EditorActionHandler>(), delta, 0);
-			this.editor.commandHistory.Add(cmd);
-			this.editor.UpdateRopeAttachments(false);
-		}
+	public class InspectorQuaternion : MonoBehaviour
+	{
+		public Text label;
+		public TextSliderInput input;
+	}
 
-		private void RotationChanged(float value, TextSliderInput.ChangeType type)
-		{
-			if (type == TextSliderInput.ChangeType.ChangeStart)
-			{
-				this.editor.commandHistory.PreventNextMerge();
-			}
+	public class InspectorBoolean : MonoBehaviour
+	{
+		public Text label;
+		public Toggle input;
+	}
 
-			var fromRotation = this.visualTarget.transform.rotation;
-			var toRotation = Quaternion.AngleAxis(value, Vector3.forward);
-			var actionHandler = this.visualTarget.GetComponent<EditorActionHandler>();
-			var cmd = new RotateCommand(actionHandler, fromRotation, toRotation);
-			this.editor.commandHistory.Add(cmd, true);
-
-			if (type == TextSliderInput.ChangeType.ChangeEnd)
-			{
-				this.editor.UpdateRopeAttachments(false);
-			}
-		}
-
-		private void OnClickAnimationButton()
-		{
-			if (this.animationWindow.gameObject.activeSelf)
-			{
-				this.animationWindow.Close();
-			}
-			else
-			{
-				this.animationWindow.Open();
-			}
-		}
+	public class InspectorButton : MonoBehaviour
+	{
+		public Button button;
 	}
 }

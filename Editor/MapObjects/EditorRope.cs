@@ -1,9 +1,11 @@
 ﻿using MapsExt.MapObjects;
 using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.UI;
 using System.Collections.Generic;
 using System.Linq;
 using UnboundLib;
 using UnityEngine;
+using MapsExt.Editor.Commands;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -35,6 +37,8 @@ namespace MapsExt.Editor.MapObjects
 			startCollider.size = Vector2.one * 1;
 			endCollider.size = Vector2.one * 1;
 
+			target.GetOrAddComponent<RopeInspectorSpec>();
+
 			var instance = target.GetOrAddComponent<EditorRopeInstance>();
 			target.GetOrAddComponent<Visualizers.RopeVisualizer>();
 
@@ -43,6 +47,14 @@ namespace MapsExt.Editor.MapObjects
 			target.transform.GetChild(1).position = data.endPosition;
 			instance.UpdateAttachments();
 		}
+	}
+
+	public class RopeInspectorSpec : InspectorSpec
+	{
+		[MapObjectInspector.Vector2Property("Anchor Position 1", typeof(MoveCommand), handlerIndex = 0)]
+		public Vector2 position1 => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition();
+		[MapObjectInspector.Vector2Property("Anchor Position 2", typeof(MoveCommand), handlerIndex = 1)]
+		public Vector2 position2 => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition();
 	}
 
 	public class EditorRopeInstance : MonoBehaviour

@@ -126,8 +126,8 @@ namespace MapsExt.Editor.UI
 
 		public void Open()
 		{
-			var handler = this.inspector.interactionTarget.GetComponent<EditorActionHandler>();
-			var anim = handler.GetComponent<MapObjectAnimation>();
+			var target = this.inspector.interactionTarget;
+			var anim = target.GetComponent<MapObjectAnimation>();
 
 			if (anim)
 			{
@@ -135,12 +135,11 @@ namespace MapsExt.Editor.UI
 			}
 			else
 			{
-				this.editor.animationHandler.AddAnimation(handler.GetComponentInParent<MapObjectInstance>().gameObject);
+				this.editor.animationHandler.AddAnimation(target.GetComponentInParent<MapObjectInstance>().gameObject);
 			}
 
 			this.Refresh();
 			this.gameObject.SetActive(true);
-
 		}
 
 		public void Close()

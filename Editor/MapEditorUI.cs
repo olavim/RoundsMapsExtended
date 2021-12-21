@@ -66,13 +66,11 @@ namespace MapsExt.Editor
 		private int resizeDirection;
 		private bool isResizing;
 		private bool isRotating;
-		private List<EditorActionHandler> selectedActionHandlers;
 		private Window[] windows;
 		private bool[] windowWasOpen;
 
 		public void Awake()
 		{
-			this.selectedActionHandlers = new List<EditorActionHandler>();
 			this.isResizing = false;
 			this.isRotating = false;
 
@@ -268,13 +266,6 @@ namespace MapsExt.Editor
 				this.animationWindow.Close();
 			}
 
-			if (this.inspector?.visualTarget)
-			{
-				this.inspector.positionInput.SetWithoutEvent((Vector2) this.inspector.visualTarget.transform.position);
-				this.inspector.sizeInput.SetWithoutEvent((Vector2) this.inspector.visualTarget.transform.localScale);
-				this.inspector.rotationInput.SetWithoutEvent(this.inspector.visualTarget.transform.rotation.eulerAngles.z);
-			}
-
 			if (this.inspector.gameObject.activeSelf && !this.inspector.interactionTarget)
 			{
 				this.inspector.Unlink();
@@ -368,9 +359,6 @@ namespace MapsExt.Editor
 
 			this.inspector.Unlink();
 
-			this.selectedActionHandlers.Clear();
-			this.selectedActionHandlers.AddRange(list);
-
 			if (list.Count == 1)
 			{
 				var handlerGameObject = list[0].gameObject;
@@ -385,12 +373,15 @@ namespace MapsExt.Editor
 				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopMiddle);
 				this.AddRotationHandle(handlerGameObject);
 
-				this.inspector.Link(handlerGameObject);
+				this.inspector.Link(handlerGameObject.GetComponentInParent<MapObjectInstance>().gameObject, handlerGameObject);
 			}
-
-			if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
+			else if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
 			{
 				this.inspector.Link(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.keyframeMapObject);
+			}
+			else if (list.Select(handler => handler.GetComponentInParent<MapObjectInstance>()).Distinct().ToList().Count == 1)
+			{
+				this.inspector.Link(list[0].GetComponentInParent<MapObjectInstance>().gameObject);
 			}
 
 			bool canAnimate = list.Count == 1 && list[0].GetComponent<SpatialMapObjectInstance>();

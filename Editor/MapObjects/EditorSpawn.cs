@@ -2,6 +2,8 @@
 using MapsExt.Editor.ActionHandlers;
 using UnityEngine;
 using UnboundLib;
+using MapsExt.Editor.UI;
+using MapsExt.Editor.Commands;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -23,7 +25,14 @@ namespace MapsExt.Editor.MapObjects
 			SpawnSpec.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
 			target.gameObject.GetOrAddComponent<SpawnActionHandler>();
+			target.gameObject.GetOrAddComponent<SpawnInspectorSpec>();
 			target.transform.SetAsLastSibling();
 		}
+	}
+
+	public class SpawnInspectorSpec : InspectorSpec
+	{
+		[MapObjectInspector.Vector2Property("Position", typeof(MoveCommand))]
+		public Vector2 position => this.transform.position;
 	}
 }

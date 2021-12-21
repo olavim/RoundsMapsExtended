@@ -43,9 +43,9 @@ namespace MapsExt.Editor.MapObjects
 		[EditorMapObjectPrefab]
 		public static GameObject Prefab => BoxDestructibleSpec.Prefab;
 		[EditorMapObjectSerializer]
-		public static SerializerAction<BoxDestructible> Serialize => EditorSpatialSerializer.BuildSerializer<BoxDestructible>(BoxDestructibleSpec.Serialize);
+		public static SerializerAction<BoxDestructible> Serialize => EditorDamageableSerializer.BuildSerializer<BoxDestructible>(BoxDestructibleSpec.Serialize);
 		[EditorMapObjectDeserializer]
-		public static DeserializerAction<BoxDestructible> Deserialize => EditorSpatialSerializer.BuildDeserializer<BoxDestructible>(BoxDestructibleSpec.Deserialize);
+		public static DeserializerAction<BoxDestructible> Deserialize => EditorDamageableSerializer.BuildDeserializer<BoxDestructible>(BoxDestructibleSpec.Deserialize);
 	}
 
 	[EditorMapObjectSpec(typeof(Ground), "Ground", "Static")]

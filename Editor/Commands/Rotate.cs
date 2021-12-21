@@ -12,6 +12,16 @@ namespace MapsExt.Editor.Commands
 		public readonly Quaternion toRotation;
 		public readonly int frameIndex;
 
+		public RotateCommand(EditorActionHandler handler, Quaternion delta)
+		{
+			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new[] { handler });
+			this.fromRotation = handler.transform.rotation;
+			this.toRotation = this.fromRotation * delta;
+			this.frameIndex = handler.frameIndex;
+		}
+
+		public RotateCommand(EditorActionHandler handler, Quaternion fromRotation, Quaternion toRotation) : this(new[] { handler }, fromRotation, toRotation) { }
+
 		public RotateCommand(IEnumerable<EditorActionHandler> handlers, Quaternion fromRotation, Quaternion toRotation)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(handlers);
@@ -21,14 +31,6 @@ namespace MapsExt.Editor.Commands
 			var e = handlers.GetEnumerator();
 			e.MoveNext();
 			this.frameIndex = e.Current.frameIndex;
-		}
-
-		public RotateCommand(EditorActionHandler handler, Quaternion fromRotation, Quaternion toRotation)
-		{
-			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handler });
-			this.fromRotation = fromRotation;
-			this.toRotation = toRotation;
-			this.frameIndex = handler.frameIndex;
 		}
 
 		public RotateCommand(RotateCommand cmd, Quaternion fromRotation, Quaternion toRotation)

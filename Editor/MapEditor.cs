@@ -93,6 +93,7 @@ namespace MapsExt.Editor
 			this.commandHandlerProvider.RegisterHandler(new DeleteKeyframeCommandHandler(this));
 			this.commandHandlerProvider.RegisterHandler(new ChangeKeyframeDurationCommandHandler(this));
 			this.commandHandlerProvider.RegisterHandler(new ChangeKeyframeEasingCommandHandler(this));
+			this.commandHandlerProvider.RegisterHandler(new SetDamageableByEnvironmentCommandHandler(this));
 
 			this.commandHistory = new CommandHistory(this.commandHandlerProvider);
 
@@ -323,7 +324,7 @@ namespace MapsExt.Editor
 				this.ClearSelected();
 
 				// When editing animation, don't allow selecting other map objects
-				if (this.animationHandler.animation != null && list.Any(obj => obj == this.animationHandler.keyframeMapObject))
+				if (this.animationHandler.animation != null && list.Any(obj => obj.gameObject == this.animationHandler.keyframeMapObject))
 				{
 					this.AddSelected(this.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>());
 				}
@@ -343,7 +344,7 @@ namespace MapsExt.Editor
 			EditorActionHandler handler = null;
 
 			// When editing animation, don't allow selecting other map objects
-			if (this.animationHandler.animation != null && handlers.Any(obj => obj == this.animationHandler.keyframeMapObject))
+			if (this.animationHandler.animation != null && handlers.Any(obj => obj.gameObject == this.animationHandler.keyframeMapObject))
 			{
 				handler = this.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
 			}

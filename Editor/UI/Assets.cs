@@ -7,37 +7,15 @@ namespace MapsExt.Editor.UI
 	{
 		private static readonly AssetBundle bundle;
 
-		public static GameObject OpenDialogPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/file browser.prefab");
-			}
-		}
-
-		public static GameObject SaveDialogPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/save dialog.prefab");
-			}
-		}
-
-		public static GameObject KeyframeSettingsPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/keyframe settings.prefab");
-			}
-		}
-
-		public static GameObject FoldoutPrefab
-		{
-			get
-			{
-				return Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/foldout.prefab");
-			}
-		}
+		public static GameObject OpenDialogPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/file browser.prefab");
+		public static GameObject SaveDialogPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/save dialog.prefab");
+		public static GameObject KeyframeSettingsPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/keyframe settings.prefab");
+		public static GameObject FoldoutPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/foldout.prefab");
+		public static GameObject InspectorDividerPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/inspectordivider.prefab");
+		public static GameObject InspectorVector2Prefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/inspectorvector2.prefab");
+		public static GameObject InspectorQuaternionPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/inspectorquaternion.prefab");
+		public static GameObject InspectorBooleanPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/inspectorboolean.prefab");
+		public static GameObject InspectorButtonPrefab => Assets.bundle.LoadAsset<GameObject>("assets/mapsextendededitor/inspectorbutton.prefab");
 
 		static Assets()
 		{

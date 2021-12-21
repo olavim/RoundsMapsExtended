@@ -2,7 +2,7 @@
 
 namespace MapsExt.MapObjects
 {
-	public class BoxDestructible : SpatialMapObject { }
+	public class BoxDestructible : DamageableMapObject { }
 
 	[MapObjectSpec(typeof(BoxDestructible))]
 	public static class BoxDestructibleSpec
@@ -13,13 +13,13 @@ namespace MapsExt.MapObjects
 		[MapsExt.MapObjectSerializer]
 		public static void Serialize(GameObject instance, BoxDestructible target)
 		{
-			SpatialSerializer.Serialize(instance, target);
+			DamageableSerializer.Serialize(instance, target);
 		}
 
 		[MapObjectDeserializer]
 		public static void Deserialize(BoxDestructible data, GameObject target)
 		{
-			SpatialSerializer.Deserialize(data, target);
+			DamageableSerializer.Deserialize(data, target);
 		}
 	}
 }

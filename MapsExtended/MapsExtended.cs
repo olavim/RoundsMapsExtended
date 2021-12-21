@@ -355,6 +355,12 @@ namespace MapsExt
 	[HarmonyPatch(typeof(DamageBox), "Collide")]
 	class DamageBox_Collide
 	{
+		public static bool Prefix(Collision2D collision)
+		{
+			var dmgInstance = collision.transform.GetComponent<DamageableMapObjectInstance>();
+			return dmgInstance == null || dmgInstance.damageableByEnvironment;
+		}
+
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
 			var list = instructions.ToList();
@@ -440,6 +446,15 @@ namespace MapsExt
 			}
 
 			return newInstructions;
+		}
+	}
+
+	[HarmonyPatch(typeof(Sonigon.Internal.Voice), "SetVolumeRatioUpdate")]
+	class SonigonDebugPatch
+	{
+		public static bool Prefix(Sonigon.SoundContainer ___soundContainer)
+		{
+			return ___soundContainer != null;
 		}
 	}
 }

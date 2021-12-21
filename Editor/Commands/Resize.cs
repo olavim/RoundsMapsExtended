@@ -12,6 +12,12 @@ namespace MapsExt.Editor.Commands
 		public readonly int resizeDirection;
 		public readonly int frameIndex;
 
+		public ResizeCommand(EditorActionHandler handler, Vector3 delta) : this(handler, delta, 0) { }
+
+		public ResizeCommand(EditorActionHandler handler, Vector3 delta, int resizeDirection) : this(new[] { handler }, delta, resizeDirection) { }
+
+		public ResizeCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta) : this(handlers, delta, 0) { }
+
 		public ResizeCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta, int resizeDirection)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(handlers);
@@ -21,14 +27,6 @@ namespace MapsExt.Editor.Commands
 			var e = handlers.GetEnumerator();
 			e.MoveNext();
 			this.frameIndex = e.Current.frameIndex;
-		}
-
-		public ResizeCommand(EditorActionHandler handler, Vector3 delta, int resizeDirection)
-		{
-			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handler });
-			this.delta = delta;
-			this.resizeDirection = resizeDirection;
-			this.frameIndex = handler.frameIndex;
 		}
 
 		public ResizeCommand(ResizeCommand cmd, Vector3 delta)
