@@ -32,7 +32,13 @@ namespace MapsExt.Editor.MapObjects
 
 	public class SpawnInspectorSpec : InspectorSpec
 	{
-		[MapObjectInspector.Vector2Property("Position", typeof(MoveCommand))]
-		public Vector2 position => this.transform.position;
+		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
+		{
+			builder.Property<Vector2>(
+				"Position",
+				value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value),
+				() => this.transform.position
+			);
+		}
 	}
 }

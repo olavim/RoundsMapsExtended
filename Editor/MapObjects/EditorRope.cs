@@ -55,6 +55,21 @@ namespace MapsExt.Editor.MapObjects
 		public Vector2 position1 => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition();
 		[MapObjectInspector.Vector2Property("Anchor Position 2", typeof(MoveCommand), handlerIndex = 1)]
 		public Vector2 position2 => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition();
+
+		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
+		{
+			builder.Property<Vector2>(
+				"Anchor Position 1",
+				value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[0], this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition(), value),
+				() => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition()
+			);
+
+			builder.Property<Vector2>(
+				"Anchor Position 2",
+				value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[1], this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition(), value),
+				() => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition()
+			);
+		}
 	}
 
 	public class EditorRopeInstance : MonoBehaviour

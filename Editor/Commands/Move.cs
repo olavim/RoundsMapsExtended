@@ -11,6 +11,10 @@ namespace MapsExt.Editor.Commands
 		public readonly Vector3 delta;
 		public readonly int frameIndex;
 
+		public MoveCommand(EditorActionHandler handler, Vector3 from, Vector3 to) : this(new[] { handler }, to - from) { }
+
+		public MoveCommand(EditorActionHandler handler, Vector3 delta) : this(new[] { handler }, delta) { }
+
 		public MoveCommand(IEnumerable<EditorActionHandler> handlers, Vector3 delta)
 		{
 			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(handlers);
@@ -19,13 +23,6 @@ namespace MapsExt.Editor.Commands
 			var e = handlers.GetEnumerator();
 			e.MoveNext();
 			this.frameIndex = e.Current.frameIndex;
-		}
-
-		public MoveCommand(EditorActionHandler handler, Vector3 delta)
-		{
-			this.handlerLocators = ActionHandlerLocator.FromActionHandlers(new EditorActionHandler[] { handler });
-			this.delta = delta;
-			this.frameIndex = handler.frameIndex;
 		}
 
 		public MoveCommand(MoveCommand cmd, Vector3 delta)

@@ -16,7 +16,6 @@ namespace MapsExt.Editor.MapObjects
 		public static void Deserialize(SpatialMapObject data, GameObject target)
 		{
 			target.GetOrAddComponent<SpatialActionHandler>();
-			target.GetOrAddComponent<SpatialInspectorSpec>();
 		}
 
 		// Helper methods to make simple editor map object specs less verbose to write
@@ -35,6 +34,7 @@ namespace MapsExt.Editor.MapObjects
 			DeserializerAction<T> result = null;
 
 			result += (data, target) => EditorSpatialSerializer.Deserialize((T) data, target);
+			result += (data, target) => target.GetOrAddComponent<SpatialInspectorSpec>();
 			result += (data, target) => action((T) data, target);
 
 			return result;
@@ -43,48 +43,46 @@ namespace MapsExt.Editor.MapObjects
 
 	public class SpatialInspectorSpec : InspectorSpec
 	{
-		[MapObjectInspector.Vector2Property("Position", typeof(MoveCommand))]
-		public Vector2 position => this.transform.position;
-		[MapObjectInspector.Vector2Property("Size", typeof(ResizeCommand))]
-		public Vector2 size => this.transform.localScale;
-		[MapObjectInspector.QuaternionProperty("Rotation", typeof(RotateCommand))]
-		public Quaternion rotation => this.transform.rotation;
-
-		private Action onUpdate;
-
-		[MapObjectInspector.ButtonBuilder]
-		public GameObject AnimationButton(MapEditor editor, MapEditorUI editorUI)
+		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
-			var instance = GameObject.Instantiate(Assets.InspectorButtonPrefab);
-			var button = instance.GetComponent<InspectorButton>().button;
+			builder.Property<Vector2>(
+				"Position",
+				value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value),
+				() => this.transform.position
+			);
 
-			button.onClick.AddListener(() =>
-			{
-				if (editorUI.animationWindow.gameObject.activeSelf)
-				{
-					editorUI.animationWindow.Close();
-				}
-				else
-				{
-					editorUI.animationWindow.Open();
-				}
-			});
+			builder.Property<Vector2>(
+				"Size",
+				value => new ResizeCommand(this.GetComponent<EditorActionHandler>(), this.transform.localScale, value),
+				() => this.transform.localScale
+			);
 
-			this.onUpdate += () =>
-			{
-				if (button)
+			builder.Property<Quaternion>(
+				"Rotation",
+				value => new RotateCommand(this.GetComponent<EditorActionHandler>(), this.transform.rotation, value),
+				() => this.transform.rotation
+			);
+
+			builder.Divider();
+
+			builder.Button(
+				() =>
+				{
+					if (editorUI.animationWindow.gameObject.activeSelf)
+					{
+						editorUI.animationWindow.Close();
+					}
+					else
+					{
+						editorUI.animationWindow.Open();
+					}
+				},
+				button =>
 				{
 					bool animWindowOpen = editorUI.animationWindow.gameObject.activeSelf;
 					button.GetComponentInChildren<Text>().text = animWindowOpen ? "Close Animation" : "Edit Animation";
 				}
-			};
-
-			return instance;
-		}
-
-		private void Update()
-		{
-			this.onUpdate?.Invoke();
+			);
 		}
 	}
 }

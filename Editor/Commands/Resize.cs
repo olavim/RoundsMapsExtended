@@ -12,6 +12,8 @@ namespace MapsExt.Editor.Commands
 		public readonly int resizeDirection;
 		public readonly int frameIndex;
 
+		public ResizeCommand(EditorActionHandler handler, Vector3 from, Vector3 to) : this(handler, to - from, 0) { }
+
 		public ResizeCommand(EditorActionHandler handler, Vector3 delta) : this(handler, delta, 0) { }
 
 		public ResizeCommand(EditorActionHandler handler, Vector3 delta, int resizeDirection) : this(new[] { handler }, delta, resizeDirection) { }
