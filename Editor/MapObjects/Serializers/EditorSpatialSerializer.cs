@@ -14,7 +14,7 @@ namespace MapsExt.Editor.MapObjects
 		}
 
 		// Helper methods to make simple editor map object specs less verbose to write
-		internal static SerializerAction<T> BuildSerializer<T>(SerializerAction<T> action) where T : SpatialMapObject
+		public static SerializerAction<T> BuildSerializer<T>(SerializerAction<T> action) where T : SpatialMapObject
 		{
 			SerializerAction<T> result = null;
 
@@ -24,7 +24,7 @@ namespace MapsExt.Editor.MapObjects
 			return result;
 		}
 
-		internal static DeserializerAction<T> BuildDeserializer<T>(DeserializerAction<T> action) where T : SpatialMapObject
+		public static DeserializerAction<T> BuildDeserializer<T>(DeserializerAction<T> action) where T : SpatialMapObject
 		{
 			DeserializerAction<T> result = null;
 
