@@ -11,6 +11,8 @@ namespace MapsExt.Editor
 		private MapEditor editor;
 		private float mouseDownSince;
 		private Vector3 mouseDownPosition;
+		private Vector3 rightMouseDownPosition;
+		private Vector3 cameraStartPosition;
 		private bool isSelecting;
 		private bool isDragging;
 
@@ -44,6 +46,16 @@ namespace MapsExt.Editor
 			if (Input.GetMouseButtonUp(0))
 			{
 				this.HandleMouseUp();
+			}
+			
+			if(Input.GetMouseButtonDown(1))
+			{
+				this.HandleRightMouseDown();
+			}
+			
+			if (Input.GetMouseButton(1))
+			{
+				this.HandleRightMouse();
 			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -140,6 +152,28 @@ namespace MapsExt.Editor
 				this.isDragging = false;
 				this.editor.OnDragEnd();
 			}
+		}
+
+		private void HandleRightMouseDown()
+		{
+				rightMouseDownPosition = Input.mousePosition;
+				cameraStartPosition = MainCam.instance.cam.transform.position;
+		}
+
+		private void HandleRightMouse()
+		{
+			var mainCam =  MainCam.instance.cam;
+			var mousePos = Input.mousePosition;
+			var offset = mainCam.ScreenToWorldPoint(rightMouseDownPosition) - mainCam.ScreenToWorldPoint(mousePos);
+			offset.z = 0;
+
+			// this is the camera that is used to render the map
+			var cam1 = mainCam.gameObject;
+			cam1.transform.position = cameraStartPosition+offset;
+			
+			// this is the camera that is used to render the lighting and shadows
+			var cam2 = mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>();
+			cam2.transform.position = cameraStartPosition+offset;
 		}
 	}
 }
