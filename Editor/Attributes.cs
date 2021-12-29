@@ -24,6 +24,17 @@ namespace MapsExt.Editor
 		}
 	}
 
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+	public class EditorInspectorSpec : Attribute
+	{
+		public Type inspectorSpecType;
+
+		public EditorInspectorSpec(Type inspectorSpecType)
+		{
+			this.inspectorSpecType = inspectorSpecType;
+		}
+	}
+
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
 	public class EditorMapObjectSerializer : Attribute { }
 

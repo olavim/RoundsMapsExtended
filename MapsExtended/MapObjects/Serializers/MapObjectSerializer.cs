@@ -19,6 +19,11 @@ namespace MapsExt.MapObjects
 				.GetComponentsInChildren<MapObjectInstance>(true)
 				.FirstOrDefault(obj => obj.mapObjectId == this.mapObjectId);
 		}
+
+		public override string ToString()
+		{
+			return $"MapObject ({this.GetType()})\nid: {this.mapObjectId}";
+		}
 	}
 
 	public delegate void SerializerAction<T>(GameObject instance, T target) where T : MapObject;
@@ -55,13 +60,13 @@ namespace MapsExt.MapObjects
 		public void FixShadow()
 		{
 			var collider = this.gameObject.GetComponent<Collider2D>();
+			var sf = this.gameObject.GetComponent<SFPolygon>();
 
-			if (collider == null)
+			if (!collider || !sf)
 			{
 				return;
 			}
 
-			var sf = this.gameObject.GetOrAddComponent<SFPolygon>();
 			sf.opacity = 0.5f;
 
 			if (collider is PolygonCollider2D || collider is BoxCollider2D)

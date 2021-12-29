@@ -288,6 +288,11 @@ namespace MapsExt.Editor
 				this.tempSpawn = null;
 			}
 
+			foreach (Transform child in this.simulatedContent.transform)
+			{
+				GameObject.Destroy(child.gameObject);
+			}
+
 			this.content.SetActive(true);
 			this.simulatedContent.SetActive(false);
 			this.animationHandler.enabled = true;

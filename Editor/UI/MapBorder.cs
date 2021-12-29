@@ -22,7 +22,7 @@ namespace MapsExt.UI
 			lr.widthMultiplier = 0.2f;
 			lr.positionCount = positions.Length;
 			lr.SetPositions(positions);
-			lr.startColor = new Color(0.5f, 0.5f, 0.2f, 0.3f);
+			lr.startColor = new Color(0.5f, 0.5f, 0.6f, 0.02f);
 			lr.endColor = lr.startColor;
 			lr.loop = true;
 		}

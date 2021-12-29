@@ -8,6 +8,7 @@ using MapsExt.Editor.Commands;
 namespace MapsExt.Editor.MapObjects
 {
 	[EditorMapObjectSpec(typeof(Spawn), "Spawn")]
+	[EditorInspectorSpec(typeof(SpawnInspectorSpec))]
 	public static class EditorSpawnSpec
 	{
 		[EditorMapObjectPrefab]
@@ -25,7 +26,6 @@ namespace MapsExt.Editor.MapObjects
 			SpawnSpec.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
 			target.gameObject.GetOrAddComponent<SpawnActionHandler>();
-			target.gameObject.GetOrAddComponent<SpawnInspectorSpec>();
 			target.transform.SetAsLastSibling();
 		}
 	}

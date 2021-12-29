@@ -194,7 +194,6 @@ namespace MapsExt
 				yield return null;
 			}
 
-			yield return null;
 			onLoad?.Invoke();
 		}
 	}
@@ -407,8 +406,25 @@ namespace MapsExt
 		}
 	}
 
+	[HarmonyPatch(typeof(PhotonMapObject), "Start")]
+	class PhotonMapObjectPatch_Start
+	{
+		public static bool Prefix(PhotonMapObject __instance)
+		{
+			var view = __instance.GetComponent<PhotonView>();
+			if (view?.InstantiationData?.Length >= 1 && (view.InstantiationData[0] as string) == "lateInstantiated")
+			{
+				__instance.SetFieldValue("photonSpawned", true);
+				__instance.SetFieldValue("map", __instance.GetComponentInParent<Map>());
+				return false;
+			}
+
+			return true;
+		}
+	}
+
 	[HarmonyPatch(typeof(PhotonMapObject), "Update")]
-	class PhotonMapObjectPatch
+	class PhotonMapObjectPatch_Update
 	{
 		public static void OnPhotonInstantiate(GameObject instance, PhotonMapObject mapObject)
 		{
@@ -436,7 +452,7 @@ namespace MapsExt
 				{
 					newInstructions.Add(list[i]);
 					newInstructions.Add(new CodeInstruction(OpCodes.Ldarg_0));
-					newInstructions.Add(CodeInstruction.Call(typeof(PhotonMapObjectPatch), "OnPhotonInstantiate"));
+					newInstructions.Add(CodeInstruction.Call(typeof(PhotonMapObjectPatch_Update), "OnPhotonInstantiate"));
 					i++;
 				}
 				else
@@ -455,6 +471,48 @@ namespace MapsExt
 		public static bool Prefix(Sonigon.SoundContainer ___soundContainer)
 		{
 			return ___soundContainer != null;
+		}
+	}
+
+	[HarmonyPatch(typeof(MapTransition), "Toggle")]
+	class MapTransitionTogglePatch
+	{
+		public static void Prefix(GameObject obj, bool enabled)
+		{
+			var anim = obj.GetComponent<MapObjectAnimation>();
+			if (anim)
+			{
+				anim.enabled = enabled;
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(PlayerManager), "MovePlayers")]
+	class PlayerManagerPatch_MovePlayers
+	{
+		public static void Prefix(PlayerManager __instance)
+		{
+			__instance.GetExtraData().movingPlayer = new bool[__instance.players.Count];
+
+			for (int i = 0; i < __instance.players.Count; i++)
+			{
+				__instance.GetExtraData().movingPlayer[i] = true;
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(PlayerManager), "Move")]
+	class GM_ArmsRace_Patch_PointTransition
+	{
+		static IEnumerator Postfix(IEnumerator e, PlayerManager __instance, PlayerVelocity player)
+		{
+			while (e.MoveNext())
+			{
+				yield return e.Current;
+			}
+
+			int index = __instance.players.FindIndex(p => p.data.playerVel == player);
+			__instance.GetExtraData().movingPlayer[index] = false;
 		}
 	}
 }

@@ -23,14 +23,16 @@ namespace MapsExt.Editor.Commands
 		public CreateCommand(IEnumerable<MapObject> data)
 		{
 			this.data = data.ToArray();
+
+			foreach (var mapObject in this.data)
+			{
+				mapObject.mapObjectId = Guid.NewGuid().ToString();
+			}
+
 			this.initialized = true;
 		}
 
-		public CreateCommand(MapObject data)
-		{
-			this.data = new MapObject[] { data };
-			this.initialized = true;
-		}
+		public CreateCommand(MapObject data) : this(new[] { data }) { }
 	}
 
 	public class CreateCommandHandler : CommandHandler<CreateCommand>
@@ -61,9 +63,6 @@ namespace MapsExt.Editor.Commands
 					}
 					else
 					{
-						var mapObjInstance = obj.GetComponent<MapObjectInstance>();
-						mapObjInstance.mapObjectId = Guid.NewGuid().ToString();
-
 						foreach (var handler in handlers)
 						{
 							handler.Move(new Vector3(1, -1, 0));

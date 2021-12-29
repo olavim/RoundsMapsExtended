@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using MapsExt.MapObjects;
-using UnboundLib;
 using MapsExt.Editor.UI;
 using MapsExt.Editor.Commands;
 using MapsExt.Editor.ActionHandlers;
-using UnityEngine.UI;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -32,7 +30,6 @@ namespace MapsExt.Editor.MapObjects
 
 			result += (data, target) => EditorSpatialSerializer.Deserialize((T) data, target);
 			result += (data, target) => EditorDamageableSerializer.Deserialize((T) data, target);
-			result += (data, target) => target.GetOrAddComponent<DamageableInspectorSpec>();
 			result += (data, target) => action((T) data, target);
 
 			return result;

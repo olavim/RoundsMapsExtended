@@ -10,6 +10,7 @@ using MapsExt.Editor.Commands;
 namespace MapsExt.Editor.MapObjects
 {
 	[EditorMapObjectSpec(typeof(Rope), "Rope")]
+	[EditorInspectorSpec(typeof(RopeInspectorSpec))]
 	public static class EditorRopeSpec
 	{
 		[EditorMapObjectPrefab]
@@ -37,8 +38,6 @@ namespace MapsExt.Editor.MapObjects
 			startCollider.size = Vector2.one * 1;
 			endCollider.size = Vector2.one * 1;
 
-			target.GetOrAddComponent<RopeInspectorSpec>();
-
 			var instance = target.GetOrAddComponent<EditorRopeInstance>();
 			target.GetOrAddComponent<Visualizers.RopeVisualizer>();
 
@@ -51,11 +50,6 @@ namespace MapsExt.Editor.MapObjects
 
 	public class RopeInspectorSpec : InspectorSpec
 	{
-		[MapObjectInspector.Vector2Property("Anchor Position 1", typeof(MoveCommand), handlerIndex = 0)]
-		public Vector2 position1 => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition();
-		[MapObjectInspector.Vector2Property("Anchor Position 2", typeof(MoveCommand), handlerIndex = 1)]
-		public Vector2 position2 => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition();
-
 		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
 			builder.Property<Vector2>(

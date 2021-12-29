@@ -11,6 +11,11 @@ namespace MapsExt.MapObjects
 		public Vector3 scale = Vector3.one * 2;
 		public Quaternion rotation = Quaternion.identity;
 		public List<AnimationKeyframe> animationKeyframes = new List<AnimationKeyframe>();
+
+		public override string ToString()
+		{
+			return $"{base.ToString()}\nposition: {this.position}\nsize: {this.scale}\nrotation: {this.rotation.eulerAngles.z}\nkeyframes: {this.animationKeyframes.Count}";
+		}
 	}
 
 	/// <summary>
@@ -55,6 +60,8 @@ namespace MapsExt.MapObjects
 
 				for (int i = 0; i < dataFrames.Count; i++)
 				{
+					dataFrames[i].UpdateCurve();
+
 					if (i < anim.keyframes.Count)
 					{
 						anim.keyframes[i] = dataFrames[i];

@@ -5,7 +5,6 @@ using UnboundLib;
 using MapsExt.Editor.UI;
 using MapsExt.Editor.Commands;
 using UnityEngine.UI;
-using System;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -34,7 +33,6 @@ namespace MapsExt.Editor.MapObjects
 			DeserializerAction<T> result = null;
 
 			result += (data, target) => EditorSpatialSerializer.Deserialize((T) data, target);
-			result += (data, target) => target.GetOrAddComponent<SpatialInspectorSpec>();
 			result += (data, target) => action((T) data, target);
 
 			return result;

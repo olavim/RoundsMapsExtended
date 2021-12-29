@@ -5,6 +5,7 @@ using MapsExt.UI;
 namespace MapsExt.Editor.MapObjects
 {
 	[EditorMapObjectSpec(typeof(Ball), "Ball", "Dynamic")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorBallSpec
 	{
 		[EditorMapObjectPrefab]
@@ -16,6 +17,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObjectSpec(typeof(Box), "Box", "Dynamic")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorBoxSpec
 	{
 		[EditorMapObjectPrefab]
@@ -27,6 +29,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObjectSpec(typeof(BoxBackground), "Box (Background)", "Dynamic")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorBoxBackgroundSpec
 	{
 		[EditorMapObjectPrefab]
@@ -38,6 +41,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObjectSpec(typeof(Ground), "Ground", "Static")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorGroundSpec
 	{
 		[EditorMapObjectPrefab]
@@ -49,6 +53,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObjectSpec(typeof(GroundCircle), "Ground (Circle)", "Static")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorGroundCircleSpec
 	{
 		[EditorMapObjectPrefab]
@@ -60,6 +65,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObjectSpec(typeof(MapsExt.MapObjects.Saw), "Saw", "Static")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorSawSpec
 	{
 		[EditorMapObjectPrefab]
@@ -71,6 +77,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObjectSpec(typeof(SawDynamic), "Saw", "Dynamic")]
+	[EditorInspectorSpec(typeof(SpatialInspectorSpec))]
 	public static class EditorSawDynamicSpec
 	{
 		[EditorMapObjectPrefab]

@@ -191,13 +191,11 @@ namespace MapsExt
 			{
 				/* We don't need to care about the photon instantiation dance (see above comment) when instantiating PhotonMapObjects
 				 * after the map transition has already been done.
+				 *
+				 * The "lateInstantiated" flag is checked in a PhotonMapObject patch to initialize some required properties.
 				 */
-				instance = PhotonNetwork.Instantiate(this.GetInstanceName(data.GetType()), Vector3.zero, Quaternion.identity);
-
-				MapsExtended.instance.ExecuteAfterFrames(1, () =>
-				{
-					instance.transform.SetParent(parent);
-				});
+				instance = PhotonNetwork.Instantiate(this.GetInstanceName(data.GetType()), Vector3.zero, Quaternion.identity, 0, new object[] { "lateInstantiated" });
+				instance.transform.SetParent(parent);
 			}
 
 

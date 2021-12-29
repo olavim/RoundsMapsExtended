@@ -111,6 +111,7 @@ namespace MapsExt.Editor
 				try
 				{
 					var attr = type.GetCustomAttribute<EditorMapObjectSpec>();
+					var inspectorSpec = type.GetCustomAttribute<EditorInspectorSpec>();
 					var prefab =
 						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(EditorMapObjectPrefab)) ??
 						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(MapObjectPrefab));
@@ -136,10 +137,20 @@ namespace MapsExt.Editor
 						throw new Exception($"{type.Name} is not a valid map object spec: Missing deserializer method or property");
 					}
 
+					DeserializerAction<MapObject> deserializerWithInspectorSpec = (MapObject data, GameObject target) =>
+					{
+						deserializer(data, target);
+
+						if (inspectorSpec != null && !target.GetComponent(inspectorSpec.inspectorSpecType))
+						{
+							target.AddComponent(inspectorSpec.inspectorSpecType);
+						}
+					};
+
 					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
 					this.mapObjectManager.RegisterType(attr.dataType, prefab);
 					this.mapObjectManager.RegisterSerializer(attr.dataType, serializer);
-					this.mapObjectManager.RegisterDeserializer(attr.dataType, deserializer);
+					this.mapObjectManager.RegisterDeserializer(attr.dataType, deserializerWithInspectorSpec);
 					this.mapObjectAttributes.Add(attr);
 				}
 				catch (Exception ex)

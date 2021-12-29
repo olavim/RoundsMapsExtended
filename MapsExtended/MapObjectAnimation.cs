@@ -2,7 +2,7 @@ using MapsExt.MapObjects;
 using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
-using System.Collections;
+using Photon.Pun;
 
 namespace MapsExt
 {
@@ -22,65 +22,105 @@ namespace MapsExt
 			}
 		}
 
+		private readonly float syncThreshold = 1f / 60f;
+
 		public List<AnimationKeyframe> keyframes = new List<AnimationKeyframe>();
 		public bool playOnAwake = true;
 		public bool IsPlaying { get; private set; }
 
 		private RigidBodyParams originalRigidBody;
-		private float timeOverflow;
+		private float elapsedTime;
+		private int currentFrameIndex;
+		private bool mapEntered;
 
-		public void OnEnable()
+		private string rpcKey;
+
+		private void Awake()
+		{
+			var rb = this.gameObject.GetComponent<Rigidbody2D>();
+
+			if (rb)
+			{
+				this.originalRigidBody = new RigidBodyParams(rb);
+			}
+			else
+			{
+				rb = this.gameObject.AddComponent<Rigidbody2D>();
+			}
+
+			rb.gravityScale = 0;
+			rb.constraints = RigidbodyConstraints2D.FreezeAll;
+			rb.isKinematic = true;
+			rb.useFullKinematicContacts = true;
+		}
+
+		private void OnEnable()
 		{
 			this.ExecuteAfterFrames(1, () =>
 			{
-				var photonMapObject = this.gameObject.GetComponent<PhotonMapObject>();
+				var photonMapObject = this.GetComponent<PhotonMapObject>();
 				if (photonMapObject && (bool) photonMapObject.GetFieldValue("photonSpawned") == false)
 				{
 					return;
 				}
 
-				var rb = this.gameObject.GetComponent<Rigidbody2D>();
-
-				if (rb)
-				{
-					this.originalRigidBody = new RigidBodyParams(rb);
-				}
-				else
-				{
-					rb = this.gameObject.AddComponent<Rigidbody2D>();
-				}
-
-				rb.gravityScale = 0;
-				rb.constraints = RigidbodyConstraints2D.FreezeAll;
-				rb.isKinematic = true;
-				rb.useFullKinematicContacts = true;
-
 				if (this.playOnAwake)
 				{
-					this.ExecuteAfterFrames(1, () =>
-					{
-						this.Play();
-					});
+					this.Play();
 				}
 			});
 		}
 
-		public void OnDisable()
+		private void OnDisable()
 		{
 			this.Stop();
+		}
 
-			var rb = this.gameObject.GetComponent<Rigidbody2D>();
+		private void Start()
+		{
+			var map = this.GetComponentInParent<Map>();
+			this.mapEntered = map.hasEntered;
+			map.mapIsReadyAction += () => this.mapEntered = true;
+			map.mapMovingOutAction += () => this.mapEntered = false;
 
-			if (this.originalRigidBody == null)
+			this.rpcKey = $"MapObject {map.GetFieldValue("levelID")} {this.transform.GetSiblingIndex()}";
+			var childRPC = MapManager.instance.GetComponent<ChildRPC>();
+
+			if (childRPC.childRPCsVector2.ContainsKey(this.rpcKey))
 			{
-				GameObject.Destroy(rb);
+				childRPC.childRPCsVector2[this.rpcKey] = this.RPCA_SyncAnimation;
 			}
 			else
 			{
-				rb.gravityScale = this.originalRigidBody.gravityScale;
-				rb.constraints = RigidbodyConstraints2D.None;
-				rb.isKinematic = this.originalRigidBody.isKinematic;
-				rb.useFullKinematicContacts = this.originalRigidBody.useFullKinematicContacts;
+				childRPC.childRPCsVector2.Add(this.rpcKey, this.RPCA_SyncAnimation);
+			}
+		}
+
+		private void OnDestroy()
+		{
+			MapManager.instance?.GetComponent<ChildRPC>()?.childRPCsVector2.Remove(this.rpcKey);
+		}
+
+		private void Update()
+		{
+			if (!this.IsPlaying || !this.mapEntered || PlayerManager.instance.GetExtraData().movingPlayers)
+			{
+				return;
+			}
+
+			this.ApplyKeyframe(this.currentFrameIndex, this.elapsedTime);
+			this.elapsedTime += TimeHandler.deltaTime;
+
+			// The first frame is considered as having a zero duration
+			if (this.currentFrameIndex == 0 || this.elapsedTime > this.keyframes[this.currentFrameIndex].duration)
+			{
+				this.elapsedTime -= this.currentFrameIndex == 0 ? 0 : this.keyframes[this.currentFrameIndex].duration;
+				this.currentFrameIndex = (this.currentFrameIndex + 1) % this.keyframes.Count;
+
+				if (PhotonNetwork.IsMasterClient)
+				{
+					MapManager.instance.GetComponent<ChildRPC>().CallFunction(this.rpcKey, new Vector2(this.currentFrameIndex, this.elapsedTime));
+				}
 			}
 		}
 
@@ -93,44 +133,13 @@ namespace MapsExt
 		public void Play()
 		{
 			this.IsPlaying = true;
-			this.timeOverflow = 0;
-			this.StartCoroutine(this.PlayCoroutine());
+			this.elapsedTime = 0;
+			this.currentFrameIndex = 0;
 		}
 
 		public void Stop()
 		{
-			this.StopAllCoroutines();
-			this.ApplyKeyframe(0);
 			this.IsPlaying = false;
-		}
-
-		private IEnumerator PlayCoroutine()
-		{
-			this.ApplyKeyframe(0);
-
-			while (this.IsPlaying && this.keyframes.Count > 1)
-			{
-				for (int i = 1; i < this.keyframes.Count; i++)
-				{
-					yield return this.AnimateKeyframe(i);
-				}
-			}
-		}
-
-		private IEnumerator AnimateKeyframe(int frameIndex)
-		{
-			var frame = this.keyframes[frameIndex];
-			float elapsedTime = this.timeOverflow;
-
-			while (elapsedTime < frame.duration)
-			{
-				this.ApplyKeyframe(frameIndex, elapsedTime);
-				elapsedTime += TimeHandler.deltaTime;
-				yield return null;
-			}
-
-			this.timeOverflow = elapsedTime - frame.duration;
-			this.ApplyKeyframe(frameIndex, frame.duration);
 		}
 
 		private void ApplyKeyframe(int frameIndex, float time = 0)
@@ -147,6 +156,21 @@ namespace MapsExt
 			this.transform.position = Vector3.Lerp(startFrame.position, endFrame.position, curveValue);
 			this.transform.localScale = Vector3.Lerp(startFrame.scale, endFrame.scale, curveValue);
 			this.transform.rotation = Quaternion.Lerp(startFrame.rotation, endFrame.rotation, curveValue);
+		}
+
+		private void RPCA_SyncAnimation(Vector2 frameAndTime)
+		{
+			int newFrame = (int) frameAndTime[0];
+			float newElapsedTime = frameAndTime[1];
+
+			if (
+				this.currentFrameIndex != newFrame ||
+				Mathf.Abs(this.elapsedTime - newElapsedTime) > this.syncThreshold
+			)
+			{
+				this.currentFrameIndex = newFrame;
+				this.elapsedTime = newElapsedTime;
+			}
 		}
 	}
 }
