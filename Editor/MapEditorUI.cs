@@ -95,7 +95,7 @@ namespace MapsExt.Editor
 
 				foreach (var entry in mapObjects[category])
 				{
-					UnityAction action = () => this.editor.commandHistory.Add(new CreateCommand(entry.Item2));
+					UnityAction action = () => this.editor.ExecuteCommand(new CreateCommand(entry.Item2));
 					builder.SubItem(b => b.Label(entry.Item1).Action(action));
 				}
 
@@ -104,7 +104,7 @@ namespace MapsExt.Editor
 
 			foreach (var entry in mapObjects[""])
 			{
-				UnityAction action = () => this.editor.commandHistory.Add(new CreateCommand(entry.Item2));
+				UnityAction action = () => this.editor.ExecuteCommand(new CreateCommand(entry.Item2));
 				var builder = new MenuItemBuilder().Label(entry.Item1).Action(action);
 				this.toolbar.mapObjectMenu.AddItem(builder.Item());
 			}
@@ -246,8 +246,8 @@ namespace MapsExt.Editor
 				this.editor.OnRotateEnd();
 			}
 
-			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.commandHistory.CanUndo());
-			this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.commandHistory.CanRedo());
+			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.CanUndo());
+			this.toolbar.editMenu.SetItemEnabled("Redo", this.editor.CanRedo());
 			this.toolbar.editMenu.SetItemEnabled("Copy", this.editor.animationHandler.animation == null);
 			this.toolbar.editMenu.SetItemEnabled("Paste", this.editor.animationHandler.animation == null);
 
@@ -313,13 +313,13 @@ namespace MapsExt.Editor
 
 		public void OnClickUndo()
 		{
-			this.editor.commandHistory.Undo();
+			this.editor.OnUndo();
 			this.animationWindow.Refresh();
 		}
 
 		public void OnClickRedo()
 		{
-			this.editor.commandHistory.Execute();
+			this.editor.OnRedo();
 			this.animationWindow.Refresh();
 		}
 

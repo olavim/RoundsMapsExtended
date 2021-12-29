@@ -129,7 +129,7 @@ namespace MapsExt.Editor.UI
 				c.input.onChanged += value =>
 				{
 					var cmd = propertyVector2.getCommand(value);
-					this.editor.commandHistory.Add(cmd);
+					this.editor.ExecuteCommand(cmd);
 					propertyVector2.onChanged?.Invoke();
 				};
 
@@ -148,15 +148,15 @@ namespace MapsExt.Editor.UI
 				{
 					if (changeType == TextSliderInput.ChangeType.ChangeStart)
 					{
-						this.editor.commandHistory.PreventNextMerge();
+						this.editor.PreventNextCommandMerge();
 					}
 
 					var cmd = propertyQuaternion.getCommand(Quaternion.Euler(0, 0, value));
-					this.editor.commandHistory.Add(cmd, true);
+					this.editor.ExecuteCommand(cmd, true);
 
 					if (changeType == TextSliderInput.ChangeType.ChangeEnd)
 					{
-						this.editor.UpdateRopeAttachments(false);
+						this.editor.UpdateRopeAttachments();
 						propertyQuaternion.onChanged?.Invoke();
 					}
 				};
@@ -175,7 +175,7 @@ namespace MapsExt.Editor.UI
 				UnityAction<bool> onValueChanged = value =>
 				{
 					var cmd = propertyBool.getCommand(value);
-					this.editor.commandHistory.Add(cmd);
+					this.editor.ExecuteCommand(cmd);
 				};
 
 				prop.input.onValueChanged.AddListener(onValueChanged);

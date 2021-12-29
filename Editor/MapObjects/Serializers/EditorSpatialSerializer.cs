@@ -47,17 +47,17 @@ namespace MapsExt.Editor.MapObjects
 			builder.Property<Vector2>("Position")
 				.CommandGetter(value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value))
 				.ValueGetter(() => this.transform.position)
-				.ChangeEvent(() => editor.UpdateRopeAttachments(false));
+				.ChangeEvent(() => editor.UpdateRopeAttachments());
 
 			builder.Property<Vector2>("Size")
 				.CommandGetter(value => new ResizeCommand(this.GetComponent<EditorActionHandler>(), this.transform.localScale, value))
 				.ValueGetter(() => this.transform.localScale)
-				.ChangeEvent(() => editor.UpdateRopeAttachments(false));
+				.ChangeEvent(() => editor.UpdateRopeAttachments());
 
 			builder.Property<Quaternion>("Rotation")
 				.CommandGetter(value => new RotateCommand(this.GetComponent<EditorActionHandler>(), this.transform.rotation, value))
 				.ValueGetter(() => this.transform.rotation)
-				.ChangeEvent(() => editor.UpdateRopeAttachments(false));
+				.ChangeEvent(() => editor.UpdateRopeAttachments());
 
 			builder.Divider();
 

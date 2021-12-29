@@ -64,12 +64,12 @@ namespace MapsExt.Editor.UI
 			{
 				if (type == TextSliderInput.ChangeType.ChangeStart)
 				{
-					this.editor.commandHistory.PreventNextMerge();
+					this.editor.PreventNextCommandMerge();
 				}
 
 				float durationDelta = value - anim.keyframes[keyframe].duration;
 				var cmd = new ChangeKeyframeDurationCommand(anim.gameObject, durationDelta, keyframe);
-				this.editor.commandHistory.Add(cmd, true);
+				this.editor.ExecuteCommand(cmd, true);
 
 				anim.keyframes[keyframe].UpdateCurve();
 			};
@@ -83,7 +83,7 @@ namespace MapsExt.Editor.UI
 					AnimationKeyframe.CurveType.Linear;
 
 				var cmd = new ChangeKeyframeEasingCommand(anim.gameObject, curveType, keyframe);
-				this.editor.commandHistory.Add(cmd);
+				this.editor.ExecuteCommand(cmd);
 			};
 
 			keyframeSettings.onClick += () =>
@@ -107,7 +107,7 @@ namespace MapsExt.Editor.UI
 		{
 			var anim = this.editor.animationHandler.animation;
 			var cmd = new AddKeyframeCommand(anim.gameObject, new AnimationKeyframe(anim.keyframes[anim.keyframes.Count - 1]), anim.keyframes.Count);
-			this.editor.commandHistory.Add(cmd);
+			this.editor.ExecuteCommand(cmd);
 
 			this.inspector.Unlink();
 			this.inspector.Link(this.editor.animationHandler.keyframeMapObject);
@@ -117,7 +117,7 @@ namespace MapsExt.Editor.UI
 		private void DeleteAnimationKeyframe()
 		{
 			var cmd = new DeleteKeyframeCommand(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.KeyframeIndex);
-			this.editor.commandHistory.Add(cmd);
+			this.editor.ExecuteCommand(cmd);
 
 			this.inspector.Unlink();
 			this.inspector.Link(this.editor.animationHandler.keyframeMapObject);

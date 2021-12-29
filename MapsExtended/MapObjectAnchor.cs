@@ -37,6 +37,7 @@ namespace MapsExt
 
 		public GameObject target { get; private set; }
 		public bool IsAttached => this.target != this.gameObject;
+		public bool autoUpdatePosition = true;
 
 		private Offset offset;
 
@@ -48,13 +49,18 @@ namespace MapsExt
 
 		private void Update()
 		{
-			if (this.IsAttached)
+			if (this.IsAttached && this.autoUpdatePosition)
 			{
-				this.transform.position = this.GetPosition();
+				this.UpdatePosition();
 			}
 		}
 
-		public Vector3 GetPosition()
+		public void UpdatePosition()
+		{
+			this.transform.position = this.GetAnchoredPosition();
+		}
+
+		public Vector3 GetAnchoredPosition()
 		{
 			if (this.target == null)
 			{
@@ -79,9 +85,9 @@ namespace MapsExt
 			return pos - dir;
 		}
 
-		public void UpdateAttachment(bool allowDetach = true)
+		public void UpdateAttachment()
 		{
-			var pos = this.GetPosition();
+			var pos = this.transform.position;
 			var colliders = Physics2D.OverlapPointAll(pos);
 
 			var collider =
@@ -90,10 +96,7 @@ namespace MapsExt
 
 			if (collider == null)
 			{
-				if (allowDetach)
-				{
-					this.Detach();
-				}
+				this.Detach();
 			}
 			else
 			{
@@ -144,13 +147,8 @@ namespace MapsExt
 			return bounds;
 		}
 
-		public void Detach()
+		private void Detach()
 		{
-			if (this.IsAttached)
-			{
-				this.transform.position = this.GetPosition();
-			}
-
 			this.target = this.gameObject;
 			this.offset = new Offset();
 		}

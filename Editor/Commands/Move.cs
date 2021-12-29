@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace MapsExt.Editor.Commands
 {
-	public class MoveCommand : ICommand
+	public class MoveCommand : ICommand, ISpatialCommand
 	{
-		public readonly ActionHandlerLocator[] handlerLocators;
+		public ActionHandlerLocator[] handlerLocators { get; private set; }
 		public readonly Vector3 delta;
 		public readonly int frameIndex;
 

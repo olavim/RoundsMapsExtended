@@ -20,18 +20,21 @@ namespace MapsExt.Editor.MapObjects
 		public static void Serialize(GameObject instance, Rope target)
 		{
 			var ropeInstance = instance.GetComponent<EditorRopeInstance>();
-			target.startPosition = ropeInstance.GetAnchor(0).GetPosition();
-			target.endPosition = ropeInstance.GetAnchor(1).GetPosition();
+			target.startPosition = ropeInstance.GetAnchor(0).transform.position;
+			target.endPosition = ropeInstance.GetAnchor(1).transform.position;
 		}
 
 		[EditorMapObjectDeserializer]
 		public static void Deserialize(Rope data, GameObject target)
 		{
-			target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
+			var anchor1 = target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorActionHandler>();
 
-			target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
+			var anchor2 = target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorActionHandler>();
+
+			anchor1.autoUpdatePosition = false;
+			anchor2.autoUpdatePosition = false;
 
 			var startCollider = target.transform.GetChild(0).gameObject.GetOrAddComponent<BoxCollider2D>();
 			var endCollider = target.transform.GetChild(1).gameObject.GetOrAddComponent<BoxCollider2D>();
@@ -41,7 +44,6 @@ namespace MapsExt.Editor.MapObjects
 			var instance = target.GetOrAddComponent<EditorRopeInstance>();
 			target.GetOrAddComponent<Visualizers.RopeVisualizer>();
 
-			instance.Detach();
 			target.transform.GetChild(0).position = data.startPosition;
 			target.transform.GetChild(1).position = data.endPosition;
 			instance.UpdateAttachments();
@@ -53,11 +55,11 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
 			builder.Property<Vector2>("Anchor Position 1")
-				.CommandGetter(value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[0], this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition(), value))
-				.ValueGetter(() => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition());
+				.CommandGetter(value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[0], this.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position, value))
+				.ValueGetter(() => this.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position);
 			builder.Property<Vector2>("Anchor Position 2")
-				.CommandGetter(value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[1], this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition(), value))
-				.ValueGetter(() => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition());
+				.CommandGetter(value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[1], this.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position, value))
+				.ValueGetter(() => this.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position);
 		}
 	}
 
@@ -75,19 +77,11 @@ namespace MapsExt.Editor.MapObjects
 			return this.anchors[index];
 		}
 
-		public void UpdateAttachments(bool allowDetach = true)
+		public void UpdateAttachments()
 		{
 			foreach (var anchor in this.anchors)
 			{
-				anchor.UpdateAttachment(allowDetach);
-			}
-		}
-
-		public void Detach()
-		{
-			foreach (var anchor in this.anchors)
-			{
-				anchor.Detach();
+				anchor.UpdateAttachment();
 			}
 		}
 	}

@@ -8,12 +8,17 @@ using System.Collections.Generic;
 namespace MapsExt.Editor.Commands
 {
 	public interface ICommand { }
+	public interface ISpatialCommand
+	{
+		ActionHandlerLocator[] handlerLocators { get; }
+	}
 
 	public interface ICommandHandler
 	{
 		IEnumerator Execute(ICommand cmd);
 		IEnumerator Undo(ICommand cmd);
 		ICommand Merge(ICommand cmd1, ICommand cmd2);
+		bool CanMerge(ICommand cmd1, ICommand cmd2);
 		bool IsRedundant(ICommand cmd);
 	}
 
@@ -22,6 +27,7 @@ namespace MapsExt.Editor.Commands
 		IEnumerator Execute(T cmd);
 		IEnumerator Undo(T cmd);
 		T Merge(T cmd1, T cmd2);
+		bool CanMerge(T cmd1, T cmd2);
 		bool IsRedundant(T cmd);
 	}
 

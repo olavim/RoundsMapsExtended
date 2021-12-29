@@ -32,8 +32,6 @@ namespace MapsExt.Editor.Commands
 
 		public override IEnumerator Execute(DeleteCommand cmd)
 		{
-			this.editor.DetachRopes();
-
 			foreach (var mapObject in cmd.data)
 			{
 				var instance = mapObject.FindInstance(this.editor.content).gameObject;
@@ -48,7 +46,7 @@ namespace MapsExt.Editor.Commands
 
 			this.editor.ResetSpawnLabels();
 			this.editor.ClearSelected();
-			this.editor.UpdateRopeAttachments(true);
+			this.editor.UpdateRopeAttachments();
 
 			yield break;
 		}
@@ -72,7 +70,7 @@ namespace MapsExt.Editor.Commands
 			}
 
 			this.editor.ResetSpawnLabels();
-			this.editor.UpdateRopeAttachments(false);
+			this.editor.UpdateRopeAttachments();
 		}
 
 		public override DeleteCommand Merge(DeleteCommand cmd1, DeleteCommand cmd2)

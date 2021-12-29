@@ -20,7 +20,6 @@ namespace MapsExt.Editor
 		public string currentMapName;
 		public bool isSimulating;
 		public bool snapToGrid;
-		public CommandHistory commandHistory;
 		public GameObject content;
 		public GameObject simulatedContent;
 		public MapEditorAnimationHandler animationHandler;
@@ -54,6 +53,7 @@ namespace MapsExt.Editor
 			}
 		}
 
+		private CommandHistory commandHistory;
 		private bool isCreatingSelection;
 		private bool isDraggingMapObjects;
 		private bool isResizingMapObject;
@@ -84,6 +84,7 @@ namespace MapsExt.Editor
 			this.selectionGroupPositionOffsets = new Dictionary<GameObject, Vector3>();
 
 			this.commandHandlerProvider = new CommandHandlerProvider();
+			this.commandHandlerProvider.RegisterHandler(new CompositeCommandHandler(this.commandHandlerProvider));
 			this.commandHandlerProvider.RegisterHandler(new CreateCommandHandler(this));
 			this.commandHandlerProvider.RegisterHandler(new DeleteCommandHandler(this));
 			this.commandHandlerProvider.RegisterHandler(new MoveCommandHandler(this));
@@ -183,6 +184,26 @@ namespace MapsExt.Editor
 		public void OnPaste()
 		{
 			this.StartCoroutine(this.OnPasteCoroutine());
+		}
+
+		public void OnUndo()
+		{
+			this.commandHistory.Undo();
+		}
+
+		public void OnRedo()
+		{
+			this.commandHistory.Execute();
+		}
+
+		public bool CanUndo()
+		{
+			return this.commandHistory.CanUndo();
+		}
+
+		public bool CanRedo()
+		{
+			return this.commandHistory.CanRedo();
 		}
 
 		private IEnumerator OnPasteCoroutine()
@@ -309,9 +330,10 @@ namespace MapsExt.Editor
 
 			this.ExecuteAfterFrames(1, () =>
 			{
+				this.commandHistory = new CommandHistory(this.commandHandlerProvider);
 				this.ResetSpawnLabels();
 				this.ClearSelected();
-				this.UpdateRopeAttachments(false);
+				this.UpdateRopeAttachments();
 			});
 		}
 
@@ -447,7 +469,7 @@ namespace MapsExt.Editor
 		public void OnDragEnd()
 		{
 			this.isDraggingMapObjects = false;
-			this.UpdateRopeAttachments(false);
+			this.UpdateRopeAttachments();
 		}
 
 		public void OnResizeStart(int resizeDirection)
@@ -467,7 +489,7 @@ namespace MapsExt.Editor
 		public void OnResizeEnd()
 		{
 			this.isResizingMapObject = false;
-			this.UpdateRopeAttachments(false);
+			this.UpdateRopeAttachments();
 		}
 
 		public void OnRotateStart()
@@ -483,7 +505,7 @@ namespace MapsExt.Editor
 		public void OnRotateEnd()
 		{
 			this.isRotatingMapObject = false;
-			this.UpdateRopeAttachments(false);
+			this.UpdateRopeAttachments();
 		}
 
 		private void DragMapObjects()
@@ -516,8 +538,7 @@ namespace MapsExt.Editor
 						return !anchor || !anchor.IsAttached || !this.selectedActionHandlers.Any(h => h.gameObject == anchor.target);
 					});
 
-				var cmd = new MoveCommand(handlersToMove, delta);
-				this.commandHistory.Add(cmd, true);
+				this.ExecuteCommand(new MoveCommand(handlersToMove, delta), true);
 			}
 
 			this.prevMouse += mouseDelta;
@@ -538,9 +559,7 @@ namespace MapsExt.Editor
 
 			if (sizeDelta != Vector3.zero)
 			{
-				var cmd = new ResizeCommand(this.selectedActionHandlers, sizeDelta, this.resizeDirection);
-				this.commandHistory.Add(cmd, true);
-
+				this.ExecuteCommand(new ResizeCommand(this.selectedActionHandlers, sizeDelta, this.resizeDirection), true);
 				this.prevMouse += mouseDelta;
 				this.prevCell = mouseCell;
 			}
@@ -560,8 +579,38 @@ namespace MapsExt.Editor
 			angle = EditorUtils.Snap(angle, this.snapToGrid ? 15f : 2f);
 			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-			var cmd = new RotateCommand(this.selectedActionHandlers, handler.transform.rotation, toRotation);
-			this.commandHistory.Add(cmd, true);
+			this.ExecuteCommand(new RotateCommand(this.selectedActionHandlers, handler.transform.rotation, toRotation), true);
+		}
+
+		public void ExecuteCommand(ICommand cmd, bool merge = false)
+		{
+			this.commandHistory.StartComposite();
+			this.commandHistory.Add(cmd);
+
+			if (cmd is ISpatialCommand)
+			{
+				var attachedAnchors = this.content.GetComponentsInChildren<MapObjectAnchor>().Where(a => a.IsAttached).ToList();
+				attachedAnchors.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
+
+				foreach (var locator in (cmd as ISpatialCommand).handlerLocators)
+				{
+					var handler = locator.FindActionHandler(this.content);
+					var handlerAnchors = attachedAnchors.Where(a => a.target == handler.gameObject);
+
+					foreach (var anchor in handlerAnchors)
+					{
+						var anchorDelta = anchor.GetAnchoredPosition() - anchor.transform.position;
+						this.commandHistory.Add(new MoveCommand(anchor.GetComponent<RopeAnchorActionHandler>(), anchorDelta));
+					}
+				}
+			}
+
+			this.commandHistory.EndComposite(merge);
+		}
+
+		public void PreventNextCommandMerge()
+		{
+			this.commandHistory.PreventNextMerge();
 		}
 
 		public void OnNudgeSelectedMapObjects(Vector2 delta)
@@ -621,31 +670,11 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void UpdateRopeAttachments(bool allowDetach)
+		public void UpdateRopeAttachments()
 		{
 			foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
 			{
-				rope.UpdateAttachments(allowDetach);
-			}
-		}
-
-		public void DetachRopes()
-		{
-			foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
-			{
-				rope.Detach();
-			}
-		}
-
-		private void DetachSelectedRopes()
-		{
-			var anchors = this.selectedActionHandlers
-				.Select(obj => obj.GetComponent<MapObjectAnchor>())
-				.Where(handler => handler != null);
-
-			foreach (var anchor in anchors)
-			{
-				anchor.Detach();
+				rope.UpdateAttachments();
 			}
 		}
 	}

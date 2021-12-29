@@ -75,8 +75,8 @@ namespace MapsExt.Visualizers
 				return;
 			}
 
-			var pos1 = this.rope.GetAnchor(0).GetPosition();
-			var pos2 = this.rope.GetAnchor(1).GetPosition();
+			var pos1 = this.rope.GetAnchor(0).transform.position;
+			var pos2 = this.rope.GetAnchor(1).transform.position;
 
 			this.renderer.SetPositions(new Vector3[] { pos1, pos2 });
 			this.startGraphic.transform.position = MainCam.instance.cam.WorldToScreenPoint(pos1);

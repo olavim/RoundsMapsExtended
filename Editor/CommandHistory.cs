@@ -3,6 +3,7 @@ using MapsExt.Editor.Commands;
 using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Linq;
 
 namespace MapsExt
 {
@@ -12,6 +13,7 @@ namespace MapsExt
 		private List<Tuple<int, ICommand>> commands;
 		private int commandIndex;
 		private int commandMergeId;
+		private int compositeStartIndex;
 
 		public CommandHistory(CommandHandlerProvider commandHandlerProvider)
 		{
@@ -29,6 +31,20 @@ namespace MapsExt
 		public bool CanUndo()
 		{
 			return this.commandIndex >= 0;
+		}
+
+		public void StartComposite()
+		{
+			this.compositeStartIndex = this.commandIndex + 1;
+		}
+
+		public void EndComposite(bool merge = false)
+		{
+			var cmd = new CompositeCommand(this.commands.Skip(this.compositeStartIndex).Select(c => c.Item2).ToArray());
+			this.commands = this.commands.Take(this.compositeStartIndex).ToList();
+			this.commandIndex = this.compositeStartIndex - 1;
+			this.compositeStartIndex = -1;
+			this.AddCommand(cmd, merge);
 		}
 
 		/// <summary>Adds a new command to the command history and executes it.</summary>
@@ -75,7 +91,7 @@ namespace MapsExt
 				throw new ArgumentException($"No handler registered for command type {cmd.GetType().Name}");
 			}
 
-			if (handler.IsRedundant(cmd))
+			if (handler.IsRedundant(cmd) && this.compositeStartIndex == -1)
 			{
 				return false;
 			}
@@ -88,7 +104,7 @@ namespace MapsExt
 			System.Tuple<int, ICommand> prevCmd = this.commands.Count > 0 ? this.commands[this.commandIndex] : null;
 
 			// Merge new command with the previous one if it's possible and was requested
-			if (merge && prevCmd?.Item1 == this.commandMergeId && prevCmd?.Item2.GetType() == cmd.GetType())
+			if (merge && prevCmd?.Item1 == this.commandMergeId && handler.CanMerge(prevCmd?.Item2, cmd))
 			{
 				var mergedCmd = handler.Merge((T) prevCmd.Item2, cmd);
 				this.commands[this.commandIndex] = new Tuple<int, ICommand>(this.commandMergeId, mergedCmd);

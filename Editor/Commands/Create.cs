@@ -80,13 +80,11 @@ namespace MapsExt.Editor.Commands
 			}
 
 			this.editor.ResetSpawnLabels();
-			this.editor.UpdateRopeAttachments(false);
+			this.editor.UpdateRopeAttachments();
 		}
 
 		public override IEnumerator Undo(CreateCommand cmd)
 		{
-			this.editor.DetachRopes();
-
 			foreach (var mapObject in cmd.data)
 			{
 				var instance = mapObject.FindInstance(this.editor.content).gameObject;
@@ -101,7 +99,7 @@ namespace MapsExt.Editor.Commands
 
 			this.editor.ClearSelected();
 			this.editor.ResetSpawnLabels();
-			this.editor.UpdateRopeAttachments(true);
+			this.editor.UpdateRopeAttachments();
 			yield break;
 		}
 

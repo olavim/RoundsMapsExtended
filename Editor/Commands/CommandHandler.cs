@@ -7,11 +7,17 @@ namespace MapsExt.Editor.Commands
 		IEnumerator ICommandHandler.Execute(ICommand cmd) => this.Execute((T) cmd);
 		IEnumerator ICommandHandler.Undo(ICommand cmd) => this.Undo((T) cmd);
 		ICommand ICommandHandler.Merge(ICommand cmd1, ICommand cmd2) => this.Merge((T) cmd1, (T) cmd2);
+		bool ICommandHandler.CanMerge(ICommand cmd1, ICommand cmd2) => (cmd1 is T) && (cmd2 is T) && this.CanMerge((T) cmd1, (T) cmd2);
 		bool ICommandHandler.IsRedundant(ICommand cmd) => this.IsRedundant((T) cmd);
 
 		public abstract IEnumerator Execute(T cmd);
 		public abstract IEnumerator Undo(T cmd);
 		public abstract T Merge(T cmd1, T cmd2);
 		public abstract bool IsRedundant(T cmd);
+
+		public virtual bool CanMerge(T cmd1, T cmd2)
+		{
+			return true;
+		}
 	}
 }

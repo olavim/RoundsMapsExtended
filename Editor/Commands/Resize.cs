@@ -5,9 +5,9 @@ using System.Collections;
 
 namespace MapsExt.Editor.Commands
 {
-	public class ResizeCommand : ICommand
+	public class ResizeCommand : ICommand, ISpatialCommand
 	{
-		public readonly ActionHandlerLocator[] handlerLocators;
+		public ActionHandlerLocator[] handlerLocators { get; private set; }
 		public readonly Vector3 delta;
 		public readonly int resizeDirection;
 		public readonly int frameIndex;

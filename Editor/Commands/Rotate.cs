@@ -5,9 +5,9 @@ using System.Collections;
 
 namespace MapsExt.Editor.Commands
 {
-	public class RotateCommand : ICommand
+	public class RotateCommand : ICommand, ISpatialCommand
 	{
-		public readonly ActionHandlerLocator[] handlerLocators;
+		public ActionHandlerLocator[] handlerLocators { get; private set; }
 		public readonly Quaternion fromRotation;
 		public readonly Quaternion toRotation;
 		public readonly int frameIndex;

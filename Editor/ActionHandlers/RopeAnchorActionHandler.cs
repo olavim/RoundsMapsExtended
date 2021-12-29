@@ -11,7 +11,6 @@ namespace MapsExt.Editor.ActionHandlers
 		public override bool Move(Vector3 positionDelta)
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();
-			anchor.Detach();
 			this.transform.position += positionDelta;
 			anchor.UpdateAttachment();
 			return true;
