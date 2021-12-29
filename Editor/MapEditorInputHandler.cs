@@ -48,14 +48,14 @@ namespace MapsExt.Editor
 				this.HandleMouseUp();
 			}
 			
-			if(Input.GetMouseButtonDown(1))
+			if(Input.GetMouseButtonDown(2))
 			{
-				this.HandleRightMouseDown();
+				this.HandleMiddleMouseDown();
 			}
 			
-			if (Input.GetMouseButton(1))
+			if (Input.GetMouseButton(2))
 			{
-				this.HandleRightMouse();
+				this.HandleMiddleMouse();
 			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -154,13 +154,13 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void HandleRightMouseDown()
+		private void HandleMiddleMouseDown()
 		{
 				rightMouseDownPosition = Input.mousePosition;
 				cameraStartPosition = MainCam.instance.cam.transform.position;
 		}
 
-		private void HandleRightMouse()
+		private void HandleMiddleMouse()
 		{
 			var mainCam =  MainCam.instance.cam;
 			var mousePos = Input.mousePosition;
