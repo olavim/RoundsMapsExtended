@@ -34,11 +34,9 @@ namespace MapsExt.Editor.MapObjects
 	{
 		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
-			builder.Property<Vector2>(
-				"Position",
-				value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value),
-				() => this.transform.position
-			);
+			builder.Property<Vector2>("Position")
+				.CommandGetter(value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value))
+				.ValueGetter(() => this.transform.position);
 		}
 	}
 }

@@ -52,17 +52,12 @@ namespace MapsExt.Editor.MapObjects
 	{
 		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
-			builder.Property<Vector2>(
-				"Anchor Position 1",
-				value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[0], this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition(), value),
-				() => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition()
-			);
-
-			builder.Property<Vector2>(
-				"Anchor Position 2",
-				value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[1], this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition(), value),
-				() => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition()
-			);
+			builder.Property<Vector2>("Anchor Position 1")
+				.CommandGetter(value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[0], this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition(), value))
+				.ValueGetter(() => this.GetComponent<EditorRopeInstance>().GetAnchor(0).GetPosition());
+			builder.Property<Vector2>("Anchor Position 2")
+				.CommandGetter(value => new MoveCommand(this.GetComponentsInChildren<EditorActionHandler>()[1], this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition(), value))
+				.ValueGetter(() => this.GetComponent<EditorRopeInstance>().GetAnchor(1).GetPosition());
 		}
 	}
 

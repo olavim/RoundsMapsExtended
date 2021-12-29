@@ -41,15 +41,13 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
 			base.OnInspectorLayout(builder, editor, editorUI);
-			int dividerIndex = builder.layout.elements.FindIndex(el => el is InspectorDivider);
+			int dividerIndex = builder.propertyBuilders.FindIndex(el => el is InspectorDividerBuilder);
 
-			var prop = new InspectorLayoutProperty<bool>(
-				"Damageable by Environment",
-				value => new SetDamageableByEnvironmentCommand(this.GetComponent<EditorActionHandler>(), value),
-				() => this.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment
-			);
+			var propBuilder = builder.Property<bool>("Damageable by Environment")
+				.CommandGetter(value => new SetDamageableByEnvironmentCommand(this.GetComponent<EditorActionHandler>(), value))
+				.ValueGetter(() => this.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment);
 
-			builder.layout.elements.Insert(dividerIndex, prop);
+			builder.propertyBuilders.Insert(dividerIndex, propBuilder);
 		}
 	}
 }

@@ -5,6 +5,7 @@ using UnboundLib;
 using MapsExt.Editor.UI;
 using MapsExt.Editor.Commands;
 using UnityEngine.UI;
+using System;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -43,44 +44,26 @@ namespace MapsExt.Editor.MapObjects
 	{
 		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
 		{
-			builder.Property<Vector2>(
-				"Position",
-				value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value),
-				() => this.transform.position
-			);
+			builder.Property<Vector2>("Position")
+				.CommandGetter(value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value))
+				.ValueGetter(() => this.transform.position)
+				.ChangeEvent(() => editor.UpdateRopeAttachments(false));
 
-			builder.Property<Vector2>(
-				"Size",
-				value => new ResizeCommand(this.GetComponent<EditorActionHandler>(), this.transform.localScale, value),
-				() => this.transform.localScale
-			);
+			builder.Property<Vector2>("Size")
+				.CommandGetter(value => new ResizeCommand(this.GetComponent<EditorActionHandler>(), this.transform.localScale, value))
+				.ValueGetter(() => this.transform.localScale)
+				.ChangeEvent(() => editor.UpdateRopeAttachments(false));
 
-			builder.Property<Quaternion>(
-				"Rotation",
-				value => new RotateCommand(this.GetComponent<EditorActionHandler>(), this.transform.rotation, value),
-				() => this.transform.rotation
-			);
+			builder.Property<Quaternion>("Rotation")
+				.CommandGetter(value => new RotateCommand(this.GetComponent<EditorActionHandler>(), this.transform.rotation, value))
+				.ValueGetter(() => this.transform.rotation)
+				.ChangeEvent(() => editor.UpdateRopeAttachments(false));
 
 			builder.Divider();
 
-			builder.Button(
-				() =>
-				{
-					if (editorUI.animationWindow.gameObject.activeSelf)
-					{
-						editorUI.animationWindow.Close();
-					}
-					else
-					{
-						editorUI.animationWindow.Open();
-					}
-				},
-				button =>
-				{
-					bool animWindowOpen = editorUI.animationWindow.gameObject.activeSelf;
-					button.GetComponentInChildren<Text>().text = animWindowOpen ? "Close Animation" : "Edit Animation";
-				}
-			);
+			builder.Button()
+				.ClickEvent(() => editorUI.animationWindow.SetOpen(!editorUI.animationWindow.gameObject.activeSelf))
+				.UpdateEvent(button => button.GetComponentInChildren<Text>().text = editorUI.animationWindow.gameObject.activeSelf ? "Close Animation" : "Edit Animation");
 		}
 	}
 }

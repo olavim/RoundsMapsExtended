@@ -130,6 +130,7 @@ namespace MapsExt.Editor.UI
 				{
 					var cmd = propertyVector2.getCommand(value);
 					this.editor.commandHistory.Add(cmd);
+					propertyVector2.onChanged?.Invoke();
 				};
 
 				this.onUpdate += () => c.input.SetWithoutEvent(propertyVector2.getValue());
@@ -156,6 +157,7 @@ namespace MapsExt.Editor.UI
 					if (changeType == TextSliderInput.ChangeType.ChangeEnd)
 					{
 						this.editor.UpdateRopeAttachments(false);
+						propertyQuaternion.onChanged?.Invoke();
 					}
 				};
 
@@ -221,40 +223,127 @@ namespace MapsExt.Editor.UI
 
 	public class InspectorLayoutBuilder
 	{
-		public InspectorLayout layout = new InspectorLayout();
-
-		public InspectorLayoutBuilder Property<T>(string name, Func<T, ICommand> getCommand, Func<T> getValue)
+		public InspectorLayout layout
 		{
-			this.layout.elements.Add(new InspectorLayoutProperty<T>(name, getCommand, getValue));
-			return this;
+			get
+			{
+				var l = new InspectorLayout();
+				l.elements = this.propertyBuilders.Select(b => b.element).ToList();
+				return l;
+			}
 		}
 
-		public InspectorLayoutBuilder Button(Action onClick, Action<Button> onUpdate)
+		public List<ILayoutElementBuilder> propertyBuilders = new List<ILayoutElementBuilder>();
+
+		public InspectorPropertyBuilder<T> Property<T>(string name)
 		{
-			this.layout.elements.Add(new InspectorLayoutButton(onClick, onUpdate));
-			return this;
+			var builder = new InspectorPropertyBuilder<T>();
+			this.propertyBuilders.Add(builder.Name(name));
+			return builder;
 		}
 
-		public InspectorLayoutBuilder Divider()
+		public InspectorButtonBuilder Button()
 		{
-			this.layout.elements.Add(new InspectorDivider());
-			return this;
+			var builder = new InspectorButtonBuilder();
+			this.propertyBuilders.Add(builder);
+			return builder;
+		}
+
+		public InspectorDividerBuilder Divider()
+		{
+			var builder = new InspectorDividerBuilder();
+			this.propertyBuilders.Add(builder);
+			return builder;
 		}
 	}
 
 	public interface ILayoutElement { }
+	public interface ILayoutElementBuilder
+	{
+		ILayoutElement element { get; }
+	}
+
+	public class InspectorPropertyBuilder<T> : ILayoutElementBuilder
+	{
+		public ILayoutElement element { get; private set; }
+
+		public InspectorPropertyBuilder()
+		{
+			this.element = new InspectorLayoutProperty<T>();
+		}
+
+		public InspectorPropertyBuilder<T> Name(string name)
+		{
+			(this.element as InspectorLayoutProperty<T>).name = name;
+			return this;
+		}
+
+		public InspectorPropertyBuilder<T> CommandGetter(Func<T, ICommand> getCommand)
+		{
+			(this.element as InspectorLayoutProperty<T>).getCommand = getCommand;
+			return this;
+		}
+
+		public InspectorPropertyBuilder<T> ValueGetter(Func<T> getValue)
+		{
+			(this.element as InspectorLayoutProperty<T>).getValue = getValue;
+			return this;
+		}
+
+		public InspectorPropertyBuilder<T> ChangeEvent(Action onChanged)
+		{
+			(this.element as InspectorLayoutProperty<T>).onChanged = onChanged;
+			return this;
+		}
+	}
+
+	public class InspectorButtonBuilder : ILayoutElementBuilder
+	{
+		public ILayoutElement element { get; private set; }
+
+		public InspectorButtonBuilder()
+		{
+			this.element = new InspectorLayoutButton();
+		}
+
+		public InspectorButtonBuilder ClickEvent(Action onClick)
+		{
+			(this.element as InspectorLayoutButton).onClick = onClick;
+			return this;
+		}
+
+		public InspectorButtonBuilder UpdateEvent(Action<Button> onUpdate)
+		{
+			(this.element as InspectorLayoutButton).onUpdate = onUpdate;
+			return this;
+		}
+	}
+
+	public class InspectorDividerBuilder : ILayoutElementBuilder
+	{
+		public ILayoutElement element { get; private set; }
+
+		public InspectorDividerBuilder()
+		{
+			this.element = new InspectorDivider();
+		}
+	}
 
 	public class InspectorLayoutProperty<T> : ILayoutElement
 	{
 		public string name;
 		public Func<T, ICommand> getCommand;
 		public Func<T> getValue;
+		public Action onChanged { get; set; }
 
-		public InspectorLayoutProperty(string name, Func<T, ICommand> getCommand, Func<T> getValue)
+		public InspectorLayoutProperty() { }
+
+		public InspectorLayoutProperty(string name, Func<T, ICommand> getCommand, Func<T> getValue, Action onChanged = null)
 		{
 			this.name = name;
 			this.getCommand = getCommand;
 			this.getValue = getValue;
+			this.onChanged = onChanged;
 		}
 	}
 
@@ -262,6 +351,8 @@ namespace MapsExt.Editor.UI
 	{
 		public Action onClick;
 		public Action<Button> onUpdate;
+
+		public InspectorLayoutButton() { }
 
 		public InspectorLayoutButton(Action onClick, Action<Button> onUpdate)
 		{

@@ -152,5 +152,17 @@ namespace MapsExt.Editor.UI
 				GameObject.Destroy(child.gameObject);
 			}
 		}
+
+		public void SetOpen(bool open)
+		{
+			if (open)
+			{
+				this.Open();
+			}
+			else
+			{
+				this.Close();
+			}
+		}
 	}
 }

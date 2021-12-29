@@ -447,6 +447,7 @@ namespace MapsExt.Editor
 		public void OnDragEnd()
 		{
 			this.isDraggingMapObjects = false;
+			this.UpdateRopeAttachments(false);
 		}
 
 		public void OnResizeStart(int resizeDirection)
