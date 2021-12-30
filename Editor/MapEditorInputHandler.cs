@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnboundLib;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace MapsExt.Editor
@@ -56,6 +57,11 @@ namespace MapsExt.Editor
 			if (Input.GetMouseButton(2))
 			{
 				this.HandleMiddleMouse();
+			}
+
+			if (Input.GetKeyDown(KeyCode.C) && !Input.GetKeyDown(KeyCode.LeftControl))
+			{
+					ResetCameras();
 			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -174,6 +180,15 @@ namespace MapsExt.Editor
 			// this is the camera that is used to render the lighting and shadows
 			var cam2 = mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>();
 			cam2.transform.position = cameraStartPosition+offset;
+		}
+
+		private void ResetCameras()
+		{
+			var mainCam =  MainCam.instance.cam;
+			mainCam.transform.SetXPosition(0);
+			mainCam.transform.SetYPosition(0);
+			mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>().transform.SetXPosition(0);
+			mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>().transform.SetYPosition(0);
 		}
 	}
 }
