@@ -8,8 +8,7 @@ namespace MapsExt.Editor.UI
 		public float padding;
 		public int position;
 
-		private Vector3 prevReferencePosition;
-		private Vector3 prevReferenceScale;
+		private Rect prevReferenceBounds;
 
 		public void Awake()
 		{
@@ -41,20 +40,20 @@ namespace MapsExt.Editor.UI
 			var refPos = this.referenceGameObject.transform.position;
 			var refScale = this.referenceGameObject.transform.localScale;
 
-			var bounds = UIUtils.WorldToScreenRect(new Rect(refPos.x - (refScale.x / 2f), refPos.y - (refScale.y / 2f), refScale.x, refScale.y));
-			bounds.x -= this.padding;
-			bounds.y -= this.padding;
-			bounds.width += 2 * this.padding;
-			bounds.height += 2 * this.padding;
+			var refBounds = UIUtils.WorldToScreenRect(new Rect(refPos.x - (refScale.x / 2f), refPos.y - (refScale.y / 2f), refScale.x, refScale.y));
+			refBounds.x -= this.padding;
+			refBounds.y -= this.padding;
+			refBounds.width += 2 * this.padding;
+			refBounds.height += 2 * this.padding;
 
-			if (refPos != this.prevReferencePosition || refScale != this.prevReferenceScale)
+			if (refBounds != this.prevReferenceBounds)
 			{
 				var directionMulti = TogglePosition.directionMultipliers[this.position] * 0.5f;
 
 				var rt = this.gameObject.GetComponent<RectTransform>();
 				rt.anchoredPosition = new Vector2(
-					bounds.center.x + (bounds.width * directionMulti.x),
-					bounds.center.y + (bounds.height * directionMulti.y)
+					refBounds.center.x + (refBounds.width * directionMulti.x),
+					refBounds.center.y + (refBounds.height * directionMulti.y)
 				);
 				rt.rotation = Quaternion.identity;
 			}
@@ -63,11 +62,10 @@ namespace MapsExt.Editor.UI
 
 			if (rotationDelta != 0)
 			{
-				this.transform.RotateAround(bounds.center, Vector3.forward, rotationDelta);
+				this.transform.RotateAround(refBounds.center, Vector3.forward, rotationDelta);
 			}
 
-			this.prevReferencePosition = refPos;
-			this.prevReferenceScale = refScale;
+			this.prevReferenceBounds = refBounds;
 		}
 	}
 }

@@ -12,8 +12,7 @@ namespace MapsExt.Editor
 		private MapEditor editor;
 		private float mouseDownSince;
 		private Vector3 mouseDownPosition;
-		private Vector3 rightMouseDownPosition;
-		private Vector3 cameraStartPosition;
+		private Vector3 middleMouseDownPosition;
 		private bool isSelecting;
 		private bool isDragging;
 
@@ -48,20 +47,15 @@ namespace MapsExt.Editor
 			{
 				this.HandleMouseUp();
 			}
-			
-			if(Input.GetMouseButtonDown(2))
-			{
-				this.HandleMiddleMouseDown();
-			}
-			
+
 			if (Input.GetMouseButton(2))
 			{
 				this.HandleMiddleMouse();
 			}
 
-			if (Input.GetKeyDown(KeyCode.C) && !Input.GetKeyDown(KeyCode.LeftControl))
+			if (Input.GetKeyDown(KeyCode.C) && !Input.GetKey(KeyCode.LeftControl))
 			{
-					ResetCameras();
+				this.ResetCameras();
 			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -162,33 +156,36 @@ namespace MapsExt.Editor
 
 		private void HandleMiddleMouseDown()
 		{
-				rightMouseDownPosition = Input.mousePosition;
-				cameraStartPosition = MainCam.instance.cam.transform.position;
+			this.middleMouseDownPosition = Input.mousePosition;
 		}
 
 		private void HandleMiddleMouse()
 		{
-			var mainCam =  MainCam.instance.cam;
+			var mainCam = MainCam.instance.cam;
 			var mousePos = Input.mousePosition;
-			var offset = mainCam.ScreenToWorldPoint(rightMouseDownPosition) - mainCam.ScreenToWorldPoint(mousePos);
-			offset.z = 0;
 
-			// this is the camera that is used to render the map
-			var cam1 = mainCam.gameObject;
-			cam1.transform.position = cameraStartPosition+offset;
-			
-			// this is the camera that is used to render the lighting and shadows
-			var cam2 = mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>();
-			cam2.transform.position = cameraStartPosition+offset;
+			var mouseDelta = mainCam.ScreenToWorldPoint(this.middleMouseDownPosition) - mainCam.ScreenToWorldPoint(mousePos);
+			mouseDelta.z = 0;
+
+			// Move main camera
+			mainCam.transform.position += mouseDelta;
+
+			// Move lighting and shadow camera
+			var lightingCam = mainCam.transform.parent.Find("Lighting").GetComponentInChildren<Camera>();
+			lightingCam.transform.position += mouseDelta;
+
+			this.middleMouseDownPosition = mousePos;
 		}
 
 		private void ResetCameras()
 		{
-			var mainCam =  MainCam.instance.cam;
+			var mainCam = MainCam.instance.cam;
+			var lightingCam = mainCam.transform.parent.Find("Lighting").GetComponentInChildren<Camera>();
+
 			mainCam.transform.SetXPosition(0);
 			mainCam.transform.SetYPosition(0);
-			mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>().transform.SetXPosition(0);
-			mainCam.transform.parent.GetChild(1).GetComponentInChildren<Camera>().transform.SetYPosition(0);
+			lightingCam.transform.SetXPosition(0);
+			lightingCam.transform.SetYPosition(0);
 		}
 	}
 }
