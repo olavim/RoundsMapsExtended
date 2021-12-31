@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnboundLib;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace MapsExt.Editor
@@ -11,6 +12,7 @@ namespace MapsExt.Editor
 		private MapEditor editor;
 		private float mouseDownSince;
 		private Vector3 mouseDownPosition;
+		private Vector3 middleMouseDownPosition;
 		private bool isSelecting;
 		private bool isDragging;
 
@@ -44,6 +46,16 @@ namespace MapsExt.Editor
 			if (Input.GetMouseButtonUp(0))
 			{
 				this.HandleMouseUp();
+			}
+
+			if (Input.GetMouseButton(2))
+			{
+				this.HandleMiddleMouse();
+			}
+
+			if (Input.GetKeyDown(KeyCode.C) && !Input.GetKey(KeyCode.LeftControl))
+			{
+				this.ResetCameras();
 			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -140,6 +152,40 @@ namespace MapsExt.Editor
 				this.isDragging = false;
 				this.editor.OnDragEnd();
 			}
+		}
+
+		private void HandleMiddleMouseDown()
+		{
+			this.middleMouseDownPosition = Input.mousePosition;
+		}
+
+		private void HandleMiddleMouse()
+		{
+			var mainCam = MainCam.instance.cam;
+			var mousePos = Input.mousePosition;
+
+			var mouseDelta = mainCam.ScreenToWorldPoint(this.middleMouseDownPosition) - mainCam.ScreenToWorldPoint(mousePos);
+			mouseDelta.z = 0;
+
+			// Move main camera
+			mainCam.transform.position += mouseDelta;
+
+			// Move lighting and shadow camera
+			var lightingCam = mainCam.transform.parent.Find("Lighting").GetComponentInChildren<Camera>();
+			lightingCam.transform.position += mouseDelta;
+
+			this.middleMouseDownPosition = mousePos;
+		}
+
+		private void ResetCameras()
+		{
+			var mainCam = MainCam.instance.cam;
+			var lightingCam = mainCam.transform.parent.Find("Lighting").GetComponentInChildren<Camera>();
+
+			mainCam.transform.SetXPosition(0);
+			mainCam.transform.SetYPosition(0);
+			lightingCam.transform.SetXPosition(0);
+			lightingCam.transform.SetYPosition(0);
 		}
 	}
 }
