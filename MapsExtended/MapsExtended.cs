@@ -24,7 +24,7 @@ namespace MapsExt
 	public class MapsExtended : BaseUnityPlugin
 	{
 		private const string ModId = "io.olavim.rounds.mapsextended";
-		public const string Version = "0.9.4";
+		public const string Version = "0.9.5";
 
 #if DEBUG
 		public static readonly bool DEBUG = true;

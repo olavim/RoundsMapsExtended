@@ -48,6 +48,11 @@ namespace MapsExt.Editor
 				this.HandleMouseUp();
 			}
 
+			if (Input.GetMouseButtonDown(2))
+			{
+				this.HandleMiddleMouseDown();
+			}
+
 			if (Input.GetMouseButton(2))
 			{
 				this.HandleMiddleMouse();

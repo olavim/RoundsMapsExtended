@@ -13,8 +13,8 @@ using MapsExt.MapObjects;
 namespace MapsExt.Editor
 {
 	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
-	[BepInDependency("io.olavim.rounds.mapsextended", "0.9.0")]
-	[BepInPlugin(ModId, "MapsExtended.Editor", Version)]
+	[BepInDependency("io.olavim.rounds.mapsextended", MapsExtended.Version)]
+	[BepInPlugin(ModId, "MapsExtended.Editor", MapsExtended.Version)]
 	public class MapsExtendedEditor : BaseUnityPlugin
 	{
 		private const string ModId = "io.olavim.rounds.mapsextended.editor";
