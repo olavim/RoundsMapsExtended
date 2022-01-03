@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using HarmonyLib;
 using UnboundLib;
 
 namespace MapsExt.MapObjects
@@ -15,21 +14,18 @@ namespace MapsExt.MapObjects
 		}
 	}
 
-	[MapObjectSpec(typeof(Rope))]
-	public static class RopeSpec
+	[MapObjectBlueprint]
+	public class RopeBP : BaseMapObjectBlueprint<Rope>
 	{
-		[MapObjectPrefab]
-		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
+		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
-		[MapObjectSerializer]
-		public static void Serialize(GameObject instance, Rope target)
+		public override void Serialize(GameObject instance, Rope target)
 		{
 			target.startPosition = instance.transform.position;
 			target.endPosition = instance.transform.GetChild(0).position;
 		}
 
-		[MapObjectDeserializer]
-		public static void Deserialize(Rope data, GameObject target)
+		public override void Deserialize(Rope data, GameObject target)
 		{
 			target.transform.position = data.startPosition;
 			target.transform.GetChild(0).position = data.endPosition;

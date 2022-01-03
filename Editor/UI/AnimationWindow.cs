@@ -110,24 +110,30 @@ namespace MapsExt.Editor.UI
 			this.editor.ExecuteCommand(cmd);
 
 			this.inspector.Unlink();
-			this.inspector.Link(this.editor.animationHandler.keyframeMapObject);
+
+			var mapObjectInstance = anim.GetComponent<MapObjectInstance>();
+			var actionHandler = this.editor.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
+			this.inspector.Link(mapObjectInstance, actionHandler);
 			this.Refresh();
 		}
 
 		private void DeleteAnimationKeyframe()
 		{
-			var cmd = new DeleteKeyframeCommand(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.KeyframeIndex);
+			var anim = this.editor.animationHandler.animation;
+			var cmd = new DeleteKeyframeCommand(anim.gameObject, this.editor.animationHandler.KeyframeIndex);
 			this.editor.ExecuteCommand(cmd);
 
 			this.inspector.Unlink();
-			this.inspector.Link(this.editor.animationHandler.keyframeMapObject);
+
+			var mapObjectInstance = anim.GetComponent<MapObjectInstance>();
+			var actionHandler = this.editor.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
+			this.inspector.Link(mapObjectInstance, actionHandler);
 			this.Refresh();
 		}
 
 		public void Open()
 		{
-			var target = this.inspector.interactionTarget;
-			var anim = target.GetComponent<MapObjectAnimation>();
+			var anim = this.inspector.target.GetComponent<MapObjectAnimation>();
 
 			if (anim)
 			{
@@ -135,7 +141,7 @@ namespace MapsExt.Editor.UI
 			}
 			else
 			{
-				this.editor.animationHandler.AddAnimation(target.GetComponentInParent<MapObjectInstance>().gameObject);
+				this.editor.animationHandler.AddAnimation(this.inspector.target.gameObject);
 			}
 
 			this.Refresh();

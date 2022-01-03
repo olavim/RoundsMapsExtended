@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using MapsExt.MapObjects;
 
 namespace MapsExt.Editor.UI
 {
@@ -48,10 +49,9 @@ namespace MapsExt.Editor.UI
 		[AttributeUsage(AttributeTargets.Method, Inherited = true)]
 		public class ButtonBuilder : Attribute { }
 
-		public GameObject visualTarget;
-		public GameObject interactionTarget;
+		public MapObjectInstance target;
+		public EditorActionHandler targetHandler;
 		public MapEditor editor;
-		public MapEditorUI editorUI;
 
 		public Action onUpdate;
 
@@ -60,15 +60,10 @@ namespace MapsExt.Editor.UI
 			this.onUpdate?.Invoke();
 		}
 
-		public void Link(GameObject interactionTarget)
+		public void Link(MapObjectInstance target, EditorActionHandler targetHandler)
 		{
-			this.Link(interactionTarget, interactionTarget);
-		}
-
-		public void Link(GameObject interactionTarget, GameObject visualTarget)
-		{
-			this.interactionTarget = interactionTarget;
-			this.visualTarget = visualTarget;
+			this.target = target;
+			this.targetHandler = targetHandler;
 			this.gameObject.SetActive(true);
 
 			foreach (Transform child in this.transform)
@@ -76,24 +71,24 @@ namespace MapsExt.Editor.UI
 				GameObject.Destroy(child.gameObject);
 			}
 
-			var specs = visualTarget.GetComponentsInParent<InspectorSpec>();
+			var blueprint = MapsExtendedEditor.instance.mapObjectManager.blueprints[this.target.dataType];
 
-			var builder = new InspectorLayoutBuilder();
-			foreach (var spec in specs)
+			if (blueprint is IInspectable)
 			{
-				spec.OnInspectorLayout(builder, this.editor, this.editorUI);
-			}
+				var builder = new InspectorLayoutBuilder();
+				((IInspectable) blueprint).OnInspectorLayout(this, builder);
 
-			foreach (var elem in builder.layout.elements)
-			{
-				var instance = this.GetLayoutElementInstance(elem);
-
-				if (!instance)
+				foreach (var elem in builder.layout.elements)
 				{
-					throw new NotSupportedException($"Unknown inspector element: {elem.GetType()}");
-				}
+					var instance = this.GetLayoutElementInstance(elem);
 
-				instance.transform.SetParent(this.transform);
+					if (!instance)
+					{
+						throw new NotSupportedException($"Unknown inspector element: {elem.GetType()}");
+					}
+
+					instance.transform.SetParent(this.transform);
+				}
 			}
 		}
 
@@ -106,8 +101,8 @@ namespace MapsExt.Editor.UI
 				GameObject.Destroy(child.gameObject);
 			}
 
-			this.visualTarget = null;
-			this.interactionTarget = null;
+			this.target = null;
+			this.targetHandler = null;
 			this.gameObject.SetActive(false);
 		}
 

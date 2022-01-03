@@ -1,14 +1,11 @@
 ﻿using System;
-using UnityEngine;
-using UnboundLib;
-using System.Linq;
 using System.Collections.Generic;
-using HarmonyLib;
+using System.Linq;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	[Serializable]
-	public class MapObject
+	public abstract class MapObject
 	{
 		public string mapObjectId = Guid.NewGuid().ToString();
 		public bool active = true;
@@ -23,27 +20,6 @@ namespace MapsExt.MapObjects
 		public override string ToString()
 		{
 			return $"MapObject ({this.GetType()})\nid: {this.mapObjectId}";
-		}
-	}
-
-	public delegate void SerializerAction<T>(GameObject instance, T target) where T : MapObject;
-	public delegate void DeserializerAction<T>(T data, GameObject target) where T : MapObject;
-
-	public static class BaseMapObjectSerializer
-	{
-		public static void Serialize(GameObject instance, MapObject target)
-		{
-			var mapObjectInstance = instance.GetComponent<MapObjectInstance>();
-			target.mapObjectId = mapObjectInstance.mapObjectId;
-			target.active = instance.activeSelf;
-		}
-
-		public static void Deserialize(MapObject data, GameObject target)
-		{
-			var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
-			mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
-			mapObjectInstance.dataType = data.GetType();
-			target.SetActive(data.active);
 		}
 	}
 

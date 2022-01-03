@@ -79,14 +79,14 @@ namespace MapsExt.Editor
 
 			foreach (var attr in MapsExtendedEditor.instance.mapObjectAttributes)
 			{
-				string category = attr.category ?? "";
+				string category = attr.Item2.category ?? "";
 
 				if (!mapObjects.ContainsKey(category))
 				{
 					mapObjects.Add(category, new List<Tuple<string, Type>>());
 				}
 
-				mapObjects[category].Add(new Tuple<string, Type>(attr.label, attr.dataType));
+				mapObjects[category].Add(new Tuple<string, Type>(attr.Item2.label, attr.Item1));
 			}
 
 			foreach (var category in mapObjects.Keys.Where(k => k != ""))
@@ -224,6 +224,11 @@ namespace MapsExt.Editor
 
 		public void Update()
 		{
+			if (this.editor.isSimulating)
+			{
+				return;
+			}
+
 			if (Input.GetMouseButtonDown(0) && this.isResizing)
 			{
 				this.editor.OnResizeStart(this.resizeDirection);
@@ -261,12 +266,16 @@ namespace MapsExt.Editor
 				this.toolbar.mapObjectMenu.SetState(Menu.MenuState.DISABLED);
 			}
 
-			if (this.animationWindow.gameObject.activeSelf && !this.editor.animationHandler.animation)
+			if (!this.animationWindow.gameObject.activeSelf && this.editor.animationHandler.animation)
+			{
+				this.animationWindow.Open();
+			}
+			else if (this.animationWindow.gameObject.activeSelf && !this.editor.animationHandler.animation)
 			{
 				this.animationWindow.Close();
 			}
 
-			if (this.inspector.gameObject.activeSelf && !this.inspector.interactionTarget)
+			if (this.inspector.gameObject.activeSelf && !this.inspector.target)
 			{
 				this.inspector.Unlink();
 			}
@@ -373,19 +382,22 @@ namespace MapsExt.Editor
 				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopMiddle);
 				this.AddRotationHandle(handlerGameObject);
 
-				this.inspector.Link(handlerGameObject.GetComponentInParent<MapObjectInstance>().gameObject, handlerGameObject);
+				var mapObjectInstance = this.editor.animationHandler.animation
+					? this.editor.animationHandler.animation.GetComponent<MapObjectInstance>()
+					: list[0].GetComponentInParent<MapObjectInstance>();
+
+				this.inspector.Link(mapObjectInstance, list[0]);
 			}
 			else if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
 			{
-				this.inspector.Link(this.editor.animationHandler.animation.gameObject, this.editor.animationHandler.keyframeMapObject);
+				var mapObjectInstance = this.editor.animationHandler.animation.GetComponent<MapObjectInstance>();
+				var actionHandler = this.editor.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
+				this.inspector.Link(mapObjectInstance, actionHandler);
 			}
 			else if (list.Select(handler => handler.GetComponentInParent<MapObjectInstance>()).Distinct().ToList().Count == 1)
 			{
-				this.inspector.Link(list[0].GetComponentInParent<MapObjectInstance>().gameObject);
+				this.inspector.Link(list[0].GetComponentInParent<MapObjectInstance>(), list[0]);
 			}
-
-			bool canAnimate = list.Count == 1 && list[0].GetComponent<SpatialMapObjectInstance>();
-			this.toolbar.editMenu.SetItemEnabled("Animation...", canAnimate);
 
 			foreach (var handler in list)
 			{

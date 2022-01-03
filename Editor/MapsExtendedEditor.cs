@@ -11,6 +11,7 @@ using HarmonyLib;
 using UnboundLib;
 using MapsExt.MapObjects;
 using Jotunn.Utils;
+using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -25,7 +26,7 @@ namespace MapsExt.Editor
 		public static MapsExtendedEditor instance;
 
 		public bool editorActive = false;
-		public List<EditorMapObjectSpec> mapObjectAttributes = new List<EditorMapObjectSpec>();
+		public List<Tuple<Type, EditorMapObjectBlueprint>> mapObjectAttributes = new List<Tuple<Type, EditorMapObjectBlueprint>>();
 
 		internal MapObjectManager mapObjectManager;
 		internal GameObject frontParticles;
@@ -104,54 +105,23 @@ namespace MapsExt.Editor
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObjectSpec>() != null);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObjectBlueprint>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
 				try
 				{
-					var attr = type.GetCustomAttribute<EditorMapObjectSpec>();
-					var inspectorSpec = type.GetCustomAttribute<EditorInspectorSpec>();
-					var prefab =
-						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(EditorMapObjectPrefab)) ??
-						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(MapObjectPrefab));
-					var serializer =
-						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(EditorMapObjectSerializer)) ??
-						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(MapObjectSerializer));
-					var deserializer =
-						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(EditorMapObjectDeserializer)) ??
-						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
+					var attr = type.GetCustomAttribute<EditorMapObjectBlueprint>();
+					var dataType = this.GetBlueprintDataType(type);
 
-					if (prefab == null)
+					if (dataType == null)
 					{
-						throw new Exception($"{type.Name} is not a valid map object spec: Missing prefab property");
+						throw new Exception($"Invalid editor blueprint: {type.Name} does not inherit from {typeof(IMapObjectBlueprint<>)}");
 					}
 
-					if (serializer == null)
-					{
-						throw new Exception($"{type.Name} is not a valid map object spec: Missing serializer method or property");
-					}
-
-					if (deserializer == null)
-					{
-						throw new Exception($"{type.Name} is not a valid map object spec: Missing deserializer method or property");
-					}
-
-					DeserializerAction<MapObject> deserializerWithInspectorSpec = (MapObject data, GameObject target) =>
-					{
-						deserializer(data, target);
-
-						if (inspectorSpec != null && !target.GetComponent(inspectorSpec.inspectorSpecType))
-						{
-							target.AddComponent(inspectorSpec.inspectorSpecType);
-						}
-					};
-
-					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
-					this.mapObjectManager.RegisterType(attr.dataType, prefab);
-					this.mapObjectManager.RegisterSerializer(attr.dataType, serializer);
-					this.mapObjectManager.RegisterDeserializer(attr.dataType, deserializerWithInspectorSpec);
-					this.mapObjectAttributes.Add(attr);
+					var blueprint = (IMapObjectBlueprint) AccessTools.CreateInstance(type);
+					this.mapObjectManager.RegisterBlueprint(dataType, blueprint);
+					this.mapObjectAttributes.Add(new Tuple<Type, EditorMapObjectBlueprint>(dataType, attr));
 				}
 				catch (Exception ex)
 				{
@@ -162,6 +132,19 @@ namespace MapsExt.Editor
 #endif
 				}
 			}
+		}
+
+		private Type GetBlueprintDataType(Type blueprintType)
+		{
+			foreach (Type interfaceType in blueprintType.GetInterfaces())
+			{
+				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectBlueprint<>))
+				{
+					return interfaceType.GetGenericArguments()[0];
+				}
+			}
+
+			return null;
 		}
 
 		private void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)

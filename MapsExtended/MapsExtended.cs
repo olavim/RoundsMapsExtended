@@ -90,36 +90,21 @@ namespace MapsExt
 		private void OnRegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObjectSpec>() != null);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObjectBlueprint>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
 				try
 				{
-					var attr = type.GetCustomAttribute<MapObjectSpec>();
-					var prefab = ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(MapObjectPrefab));
-					var serializer = ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(MapObjectSerializer));
-					var deserializer = ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
+					var dataType = this.GetBlueprintDataType(type);
 
-					if (prefab == null)
+					if (dataType == null)
 					{
-						throw new Exception($"{type.Name} is not a valid map object spec: Missing prefab property");
+						throw new Exception($"Invalid blueprint: {type.Name} does not inherit from {typeof(IMapObjectBlueprint<>)}");
 					}
 
-					if (serializer == null)
-					{
-						throw new Exception($"{type.Name} is not a valid map object spec: Missing serializer method or property");
-					}
-
-					if (deserializer == null)
-					{
-						throw new Exception($"{type.Name} is not a valid map object spec: Missing deserializer method or property");
-					}
-
-					// Getting methods with reflection makes it possible to call explicit interface implementations later when exact types are not known
-					this.mapObjectManager.RegisterType(attr.dataType, prefab);
-					this.mapObjectManager.RegisterSerializer(attr.dataType, serializer);
-					this.mapObjectManager.RegisterDeserializer(attr.dataType, deserializer);
+					var blueprint = (IMapObjectBlueprint) AccessTools.CreateInstance(type);
+					this.mapObjectManager.RegisterBlueprint(dataType, blueprint);
 				}
 				catch (Exception ex)
 				{
@@ -130,6 +115,19 @@ namespace MapsExt
 #endif
 				}
 			}
+		}
+
+		private Type GetBlueprintDataType(Type blueprintType)
+		{
+			foreach (Type interfaceType in blueprintType.GetInterfaces())
+			{
+				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectBlueprint<>))
+				{
+					return interfaceType.GetGenericArguments()[0];
+				}
+			}
+
+			return null;
 		}
 
 		public void DrawDebugGUI(GameObject menu)

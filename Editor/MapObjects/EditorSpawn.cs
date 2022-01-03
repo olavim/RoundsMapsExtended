@@ -7,36 +7,31 @@ using MapsExt.Editor.Commands;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorMapObjectSpec(typeof(Spawn), "Spawn")]
-	[EditorInspectorSpec(typeof(SpawnInspectorSpec))]
-	public static class EditorSpawnSpec
+	[EditorMapObjectBlueprint("Spawn")]
+	public class EditorSpawnBP : BaseEditorMapObjectBlueprint<Spawn>, IInspectable
 	{
-		[EditorMapObjectPrefab]
-		public static GameObject Prefab => SpawnSpec.Prefab;
-
-		[EditorMapObjectSerializer]
-		public static void Serialize(GameObject instance, Spawn target)
+		public override void Serialize(GameObject instance, Spawn target)
 		{
-			SpawnSpec.Serialize(instance, target);
+			this.baseBlueprint.Serialize(instance, target);
 		}
 
-		[EditorMapObjectDeserializer]
-		public static void Deserialize(Spawn data, GameObject target)
+		public override void Deserialize(Spawn data, GameObject target)
 		{
-			SpawnSpec.Deserialize(data, target);
+			this.baseBlueprint.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
 			target.gameObject.GetOrAddComponent<SpawnActionHandler>();
 			target.transform.SetAsLastSibling();
 		}
-	}
 
-	public class SpawnInspectorSpec : InspectorSpec
-	{
-		public override void OnInspectorLayout(InspectorLayoutBuilder builder, MapEditor editor, MapEditorUI editorUI)
+		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Position")
-				.CommandGetter(value => new MoveCommand(this.GetComponent<EditorActionHandler>(), this.transform.position, value))
-				.ValueGetter(() => this.transform.position);
+				.CommandGetter(value => new MoveCommand(
+					inspector.targetHandler,
+					inspector.targetHandler.transform.position,
+					value
+				))
+				.ValueGetter(() => inspector.targetHandler.transform.position);
 		}
 	}
 }

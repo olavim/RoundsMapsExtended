@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using HarmonyLib;
 
 namespace MapsExt.MapObjects
 {
@@ -10,14 +9,12 @@ namespace MapsExt.MapObjects
 		public Vector3 position = Vector3.zero;
 	}
 
-	[MapObjectSpec(typeof(Spawn))]
-	public static class SpawnSpec
+	[MapObjectBlueprint]
+	public class SpawnBP : BaseMapObjectBlueprint<Spawn>
 	{
-		[MapObjectPrefab]
-		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
+		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 
-		[MapsExt.MapObjectSerializer]
-		public static void Serialize(GameObject instance, Spawn target)
+		public override void Serialize(GameObject instance, Spawn target)
 		{
 			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
 			target.id = spawnPoint.ID;
@@ -25,8 +22,7 @@ namespace MapsExt.MapObjects
 			target.position = instance.transform.position;
 		}
 
-		[MapObjectDeserializer]
-		public static void Deserialize(Spawn data, GameObject target)
+		public override void Deserialize(Spawn data, GameObject target)
 		{
 			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
 			spawnPoint.ID = data.id;

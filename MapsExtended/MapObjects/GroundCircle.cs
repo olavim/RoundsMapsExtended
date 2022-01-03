@@ -6,22 +6,14 @@ namespace MapsExt.MapObjects
 {
 	public class GroundCircle : SpatialMapObject { }
 
-	[MapObjectSpec(typeof(GroundCircle))]
-	public static class GroundCircleSpec
+	[MapObjectBlueprint]
+	public class GroundCircleBP : SpatialMapObjectBlueprint<GroundCircle>
 	{
-		[MapObjectPrefab]
-		public static GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
+		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
 
-		[MapsExt.MapObjectSerializer]
-		public static void Serialize(GameObject instance, GroundCircle target)
+		public override void Deserialize(GroundCircle data, GameObject target)
 		{
-			SpatialSerializer.Serialize(instance, target);
-		}
-
-		[MapObjectDeserializer]
-		public static void Deserialize(GroundCircle data, GameObject target)
-		{
-			SpatialSerializer.Deserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<EllipseTransformer>();
 		}
 	}

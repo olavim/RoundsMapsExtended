@@ -1,30 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Linq;
 using UnboundLib;
-using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class SpatialMapObject : MapObject
+	public abstract class SpatialMapObjectBlueprint<T> : BaseMapObjectBlueprint<T> where T : SpatialMapObject
 	{
-		public Vector3 position = Vector3.zero;
-		public Vector3 scale = Vector3.one * 2;
-		public Quaternion rotation = Quaternion.identity;
-		public List<AnimationKeyframe> animationKeyframes = new List<AnimationKeyframe>();
-
-		public override string ToString()
-		{
-			return $"{base.ToString()}\nposition: {this.position}\nsize: {this.scale}\nrotation: {this.rotation.eulerAngles.z}\nkeyframes: {this.animationKeyframes.Count}";
-		}
-	}
-
-	/// <summary>
-	///	Spatial map objects represent map objects that are described with position, scale and rotation.
-	///	Typical spatial map objects are, for example, boxes and obstacles.
-	/// </summary>
-	public static class SpatialSerializer
-	{
-		public static void Serialize(GameObject instance, SpatialMapObject target)
+		public override void Serialize(GameObject instance, T target)
 		{
 			target.position = instance.transform.position;
 			target.scale = instance.transform.localScale;
@@ -40,7 +22,7 @@ namespace MapsExt.MapObjects
 			}
 		}
 
-		public static void Deserialize(SpatialMapObject data, GameObject target)
+		public override void Deserialize(T data, GameObject target)
 		{
 			/* SpatialMapObjectInstance doesn't add any functionality, but it offers a convenient way
 			 * to find "spatial" map objects from scene.
@@ -81,6 +63,4 @@ namespace MapsExt.MapObjects
 			}
 		}
 	}
-
-	public class SpatialMapObjectInstance : MonoBehaviour { }
 }

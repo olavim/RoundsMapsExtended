@@ -174,6 +174,22 @@ namespace MapsExt.Editor
 			this.onAnimationChanged?.Invoke();
 		}
 
+		public void ToggleAnimation(GameObject target)
+		{
+			if (this.animation)
+			{
+				this.SetAnimation(null);
+			}
+			else if (target.GetComponent<MapObjectAnimation>())
+			{
+				this.SetAnimation(target.GetComponent<MapObjectAnimation>());
+			}
+			else
+			{
+				this.AddAnimation(target);
+			}
+		}
+
 		public void SetKeyframe(int frameIndex)
 		{
 			if (this.keyframeMapObject)

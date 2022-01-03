@@ -6,22 +6,14 @@ namespace MapsExt.MapObjects
 {
 	public class SawDynamic : SpatialMapObject { }
 
-	[MapObjectSpec(typeof(SawDynamic))]
-	public static class SawDynamicSpec
+	[MapObjectBlueprint]
+	public class SawDynamicBP : SpatialMapObjectBlueprint<SawDynamic>
 	{
-		[MapObjectPrefab]
-		public static GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
+		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
 
-		[MapsExt.MapObjectSerializer]
-		public static void Serialize(GameObject instance, SawDynamic target)
+		public override void Deserialize(SawDynamic data, GameObject target)
 		{
-			SpatialSerializer.Serialize(instance, target);
-		}
-
-		[MapObjectDeserializer]
-		public static void Deserialize(SawDynamic data, GameObject target)
-		{
-			SpatialSerializer.Deserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<SawTransformer>();
 			target.GetOrAddComponent<EllipseTransformer>();
 		}

@@ -6,22 +6,14 @@ namespace MapsExt.MapObjects
 {
 	public class Ball : SpatialMapObject { }
 
-	[MapObjectSpec(typeof(Ball))]
-	public static class BallSpec
+	[MapObjectBlueprint]
+	public class BallBP : SpatialMapObjectBlueprint<Ball>
 	{
-		[MapObjectPrefab]
-		public static GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Ball_Big");
+		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Ball_Big");
 
-		[MapObjectSerializer]
-		public static void Serialize(GameObject instance, Ball target)
+		public override void Deserialize(Ball data, GameObject target)
 		{
-			SpatialSerializer.Serialize(instance, target);
-		}
-
-		[MapObjectDeserializer]
-		public static void Deserialize(Ball data, GameObject target)
-		{
-			SpatialSerializer.Deserialize(data, target);
+			base.Deserialize(data, target);
 			target.GetOrAddComponent<EllipseTransformer>();
 		}
 	}
