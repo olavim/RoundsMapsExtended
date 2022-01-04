@@ -6,11 +6,22 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		public int frameIndex = 0;
 
-		public abstract bool CanMove();
-		public abstract bool CanResize();
-		public abstract bool CanRotate();
-		public abstract bool Move(Vector3 positionDelta);
-		public abstract bool Resize(Vector3 sizeDelta, int resizeDirection);
-		public abstract bool SetRotation(Quaternion rotation);
+		public virtual bool CanResize => false;
+		public virtual bool CanRotate => false;
+
+		public virtual void Move(Vector3 positionDelta)
+		{
+
+		}
+
+		public virtual void Resize(Vector3 sizeDelta, int resizeDirection)
+		{
+
+		}
+
+		public virtual void SetRotation(Quaternion rotation)
+		{
+
+		}
 	}
 }

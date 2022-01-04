@@ -37,4 +37,7 @@ The mod has been split into two separate BepInEx plugins. The **MapsExtended** p
 Folders:
 - **MapsExtended**: The core plugin C# project
 - **Editor**: The editor plugin C# project
-- **Editor.UI**: Some Unity assets have been created for the editor, and this project includes scripts used in those assets.
+
+## Custom map objects
+
+See [the wiki](https://github.com/olavim/RoundsMapsExtended/wiki/Modding-quickstart) for a basic guide on how to add custom map objects in MapsExtended.

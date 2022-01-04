@@ -4,26 +4,25 @@ namespace MapsExt.Editor.ActionHandlers
 {
 	public class SpatialActionHandler : EditorActionHandler
 	{
-		public override bool CanMove() => true;
-		public override bool CanResize() => true;
-		public override bool CanRotate() => true;
+		public override bool CanResize => true;
+		public override bool CanRotate => true;
 
-		public override bool Move(Vector3 positionDelta)
+		public override void Move(Vector3 positionDelta)
 		{
-			return this.Move(positionDelta, 0);
+			this.Move(positionDelta, 0);
 		}
 
-		public override bool Resize(Vector3 sizeDelta, int resizeDirection)
+		public override void Resize(Vector3 sizeDelta, int resizeDirection)
 		{
-			return this.Resize(sizeDelta, resizeDirection, 0);
+			this.Resize(sizeDelta, resizeDirection, 0);
 		}
 
-		public override bool SetRotation(Quaternion rotation)
+		public override void SetRotation(Quaternion rotation)
 		{
-			return this.SetRotation(rotation, 0);
+			this.SetRotation(rotation, 0);
 		}
 
-		public bool Move(Vector3 positionDelta, int keyframe)
+		public void Move(Vector3 positionDelta, int keyframe)
 		{
 			var animation = this.GetComponent<MapObjectAnimation>();
 
@@ -36,11 +35,9 @@ namespace MapsExt.Editor.ActionHandlers
 			{
 				this.transform.position += positionDelta;
 			}
-
-			return true;
 		}
 
-		public bool Resize(Vector3 sizeDelta, int resizeDirection, int keyframe)
+		public void Resize(Vector3 sizeDelta, int resizeDirection, int keyframe)
 		{
 			float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().GridSize;
 			bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().snapToGrid;
@@ -77,7 +74,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			if (newScale == currentScale)
 			{
-				return false;
+				return;
 			}
 
 			var positionDelta = currentRotation * Vector3.Scale(scaleDelta, directionMulti);
@@ -93,11 +90,9 @@ namespace MapsExt.Editor.ActionHandlers
 				this.transform.localScale = newScale;
 				this.transform.position += positionDelta * 0.5f;
 			}
-
-			return true;
 		}
 
-		public bool SetRotation(Quaternion rotation, int keyframe)
+		public void SetRotation(Quaternion rotation, int keyframe)
 		{
 			var animation = this.GetComponent<MapObjectAnimation>();
 
@@ -110,8 +105,6 @@ namespace MapsExt.Editor.ActionHandlers
 			{
 				this.transform.rotation = rotation;
 			}
-
-			return true;
 		}
 	}
 }

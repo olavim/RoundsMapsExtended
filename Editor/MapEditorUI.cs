@@ -418,7 +418,7 @@ namespace MapsExt.Editor
 
 		private void AddResizeHandle(GameObject mapObject, int direction)
 		{
-			if (!mapObject.GetComponent<EditorActionHandler>().CanResize())
+			if (!mapObject.GetComponent<EditorActionHandler>().CanResize)
 			{
 				return;
 			}
@@ -462,7 +462,7 @@ namespace MapsExt.Editor
 
 		private void AddRotationHandle(GameObject mapObject)
 		{
-			if (!mapObject.GetComponent<EditorActionHandler>().CanRotate())
+			if (!mapObject.GetComponent<EditorActionHandler>().CanRotate)
 			{
 				return;
 			}
