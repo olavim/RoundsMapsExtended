@@ -19,7 +19,7 @@ namespace MapsExt.Editor.MapObjects
 		{
 			this.baseBlueprint.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
-			target.gameObject.GetOrAddComponent<MoveActionHandler>();
+			target.gameObject.GetOrAddComponent<MoveHandler>();
 			target.transform.SetAsLastSibling();
 		}
 

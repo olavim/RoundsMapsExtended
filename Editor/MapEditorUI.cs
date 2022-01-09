@@ -2,12 +2,9 @@
 using System.Collections.Specialized;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.UI.ProceduralImage;
 using UnityEngine.Events;
 using MapsExt.Editor.UI;
 using MapsExt.MapObjects;
-using MapsExt.Editor.ActionHandlers;
-using MapsExt.Editor.Commands;
 using System;
 using System.Linq;
 
@@ -63,9 +60,12 @@ namespace MapsExt.Editor
 		private Texture2D selectionTexture;
 		private Window[] windows;
 		private bool[] windowWasOpen;
+		private Vector2 resolution;
 
 		public void Awake()
 		{
+			this.resolution = new Vector2(Screen.width, Screen.height);
+
 			var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
 			mapObjects.Add("", new List<Tuple<string, Type>>());
 
@@ -219,6 +219,27 @@ namespace MapsExt.Editor
 			if (this.editor.isSimulating)
 			{
 				return;
+			}
+
+			var newResolution = this.GetComponent<RectTransform>().sizeDelta;
+
+			if (newResolution != this.resolution)
+			{
+				float extraOffset = 35;
+
+				foreach (var window in this.windows)
+				{
+					var size = window.GetComponent<RectTransform>().sizeDelta;
+
+					window.transform.position = new Vector2(
+						newResolution.x - (size.x / 2f) - 5,
+						newResolution.y - (size.y / 2f) - extraOffset
+					);
+
+					extraOffset += size.y + 5;
+				}
+
+				this.resolution = newResolution;
 			}
 
 			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.CanUndo());

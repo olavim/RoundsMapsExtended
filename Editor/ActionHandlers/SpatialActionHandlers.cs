@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class MoveActionHandler : ActionHandler<MoveCommand>
+	public class MoveHandler : ActionHandler<MoveCommand>
 	{
 		public override void Handle(MoveCommand cmd)
 		{
@@ -11,7 +11,7 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class ResizeActionHandler : ActionHandler<ResizeCommand>
+	public class ResizeHandler : ActionHandler<ResizeCommand>
 	{
 		public override void Handle(ResizeCommand cmd)
 		{
@@ -58,7 +58,7 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class RotateActionHandler : ActionHandler<RotateCommand>
+	public class RotateHandler : ActionHandler<RotateCommand>
 	{
 		public override void Handle(RotateCommand cmd)
 		{

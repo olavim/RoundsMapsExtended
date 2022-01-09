@@ -2,7 +2,7 @@
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class AnimationMoveActionHandler : MoveActionHandler
+	public class AnimationMoveHandler : MoveHandler
 	{
 		public MapObjectAnimation animation;
 		public int frameIndex;
@@ -14,7 +14,7 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class AnimationResizeActionHandler : ResizeActionHandler
+	public class AnimationResizeHandler : ResizeHandler
 	{
 		public MapObjectAnimation animation;
 		public int frameIndex;
@@ -26,7 +26,7 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class AnimationRotateActionHandler : RotateActionHandler
+	public class AnimationRotateHandler : RotateHandler
 	{
 		public MapObjectAnimation animation;
 		public int frameIndex;

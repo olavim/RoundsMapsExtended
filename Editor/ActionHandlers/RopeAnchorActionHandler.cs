@@ -2,7 +2,7 @@
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class RopeAnchorActionHandler : ActionHandler<MoveCommand>
+	public class RopeAnchorMoveHandler : ActionHandler<MoveCommand>
 	{
 		public override void Handle(MoveCommand cmd)
 		{

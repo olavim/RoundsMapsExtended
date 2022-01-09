@@ -227,26 +227,26 @@ namespace MapsExt.Editor
 						renderer.gameObject.layer = MAPOBJECT_LAYER;
 					}
 
-					if (instance.GetComponent<MoveActionHandler>())
+					if (instance.GetComponent<MoveHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<MoveActionHandler>());
-						var handler = instance.AddComponent<AnimationMoveActionHandler>();
+						GameObject.Destroy(instance.GetComponent<MoveHandler>());
+						var handler = instance.AddComponent<AnimationMoveHandler>();
 						handler.animation = this.animation;
 						handler.frameIndex = this.KeyframeIndex;
 					}
 
-					if (instance.GetComponent<ResizeActionHandler>())
+					if (instance.GetComponent<ResizeHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<ResizeActionHandler>());
-						var handler = instance.AddComponent<AnimationResizeActionHandler>();
+						GameObject.Destroy(instance.GetComponent<ResizeHandler>());
+						var handler = instance.AddComponent<AnimationResizeHandler>();
 						handler.animation = this.animation;
 						handler.frameIndex = this.KeyframeIndex;
 					}
 
-					if (instance.GetComponent<RotateActionHandler>())
+					if (instance.GetComponent<RotateHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<RotateActionHandler>());
-						var handler = instance.AddComponent<AnimationRotateActionHandler>();
+						GameObject.Destroy(instance.GetComponent<RotateHandler>());
+						var handler = instance.AddComponent<AnimationRotateHandler>();
 						handler.animation = this.animation;
 						handler.frameIndex = this.KeyframeIndex;
 					}

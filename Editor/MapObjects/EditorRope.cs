@@ -24,10 +24,10 @@ namespace MapsExt.Editor.MapObjects
 		public override void Deserialize(Rope data, GameObject target)
 		{
 			var anchor1 = target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
-			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorActionHandler>();
+			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorMoveHandler>();
 
 			var anchor2 = target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
-			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorActionHandler>();
+			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorMoveHandler>();
 
 			anchor1.autoUpdatePosition = false;
 			anchor2.autoUpdatePosition = false;

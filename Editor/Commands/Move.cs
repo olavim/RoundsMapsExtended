@@ -14,10 +14,5 @@ namespace MapsExt.Editor.Commands
 		{
 			this.delta = delta;
 		}
-
-		public MoveCommand(MoveCommand cmd, Vector3 delta)
-		{
-			this.delta = delta;
-		}
 	}
 }

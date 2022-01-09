@@ -164,7 +164,10 @@ namespace MapsExt.Editor
 			{
 				if (dict.ContainsKey(mapObject.mapObjectId))
 				{
+					// This map object already exists in the scene, so we just recover its state
 					MapsExtendedEditor.instance.mapObjectManager.Deserialize(mapObject, dict[mapObject.mapObjectId]);
+
+					// Mark a map object as "handled" by removing it from the dictionary
 					dict.Remove(mapObject.mapObjectId);
 				}
 				else
@@ -173,6 +176,7 @@ namespace MapsExt.Editor
 				}
 			}
 
+			// Destroy map objects remaining in the dictionary since they don't exist in the new state
 			foreach (var id in dict.Keys)
 			{
 				if (dict[id] == this.animationHandler.animation?.gameObject)
@@ -211,7 +215,7 @@ namespace MapsExt.Editor
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.content, mapObject, obj =>
 				{
-					var handlers = obj.GetComponentsInChildren<MoveActionHandler>();
+					var handlers = obj.GetComponentsInChildren<MoveHandler>();
 
 					foreach (var handler in handlers)
 					{

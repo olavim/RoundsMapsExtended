@@ -8,19 +8,12 @@ namespace MapsExt.Editor.Commands
 		public readonly int resizeDirection;
 
 		public ResizeCommand(Vector3 from, Vector3 to) : this(to - from, 0) { }
-
 		public ResizeCommand(Vector3 delta) : this(delta, 0) { }
 
 		public ResizeCommand(Vector3 delta, int resizeDirection)
 		{
 			this.delta = delta;
 			this.resizeDirection = resizeDirection;
-		}
-
-		public ResizeCommand(ResizeCommand cmd, Vector3 delta)
-		{
-			this.delta = delta;
-			this.resizeDirection = cmd.resizeDirection;
 		}
 	}
 }
