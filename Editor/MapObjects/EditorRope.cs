@@ -48,18 +48,10 @@ namespace MapsExt.Editor.MapObjects
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Anchor Position 1")
-				.CommandGetter(value => new MoveCommand(
-					inspector.target.GetComponentsInChildren<EditorActionHandler>()[0],
-					inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position,
-					value
-				))
+				.ValueSetter(value => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position = value)
 				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position);
 			builder.Property<Vector2>("Anchor Position 2")
-				.CommandGetter(value => new MoveCommand(
-					inspector.target.GetComponentsInChildren<EditorActionHandler>()[1],
-					inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position,
-					value
-				))
+				.ValueSetter(value => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position = value)
 				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position);
 		}
 	}

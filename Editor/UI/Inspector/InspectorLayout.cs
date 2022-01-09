@@ -2,6 +2,7 @@
 using MapsExt.Editor.Commands;
 using System;
 using System.Collections.Generic;
+using MapsExt.Editor.ActionHandlers;
 
 namespace MapsExt.Editor.UI
 {
@@ -15,18 +16,20 @@ namespace MapsExt.Editor.UI
 	public class InspectorLayoutProperty<T> : ILayoutElement
 	{
 		public string name;
-		public Func<T, ICommand> getCommand;
 		public Func<T> getValue;
-		public Action onChanged { get; set; }
+		public Action<T> onChangeStart { get; set; }
+		public Action<T> setValue { get; set; }
+		public Action<T> onChanged { get; set; }
 
 		public InspectorLayoutProperty() { }
 
-		public InspectorLayoutProperty(string name, Func<T, ICommand> getCommand, Func<T> getValue, Action onChanged = null)
+		public InspectorLayoutProperty(string name, Action<T> onChangeStart, Action<T> onChanged, Action<T> onChangeEnd, Func<T> getValue)
 		{
 			this.name = name;
-			this.getCommand = getCommand;
 			this.getValue = getValue;
-			this.onChanged = onChanged;
+			this.onChangeStart = onChangeStart;
+			this.setValue = onChanged;
+			this.onChanged = onChangeEnd;
 		}
 	}
 

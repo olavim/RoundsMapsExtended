@@ -45,7 +45,7 @@ namespace MapsExt.Editor.UI
 		public class ButtonBuilder : Attribute { }
 
 		public MapObjectInstance target;
-		public EditorActionHandler targetHandler;
+		public GameObject selectedObject;
 		public MapEditor editor;
 
 		public Action onUpdate;
@@ -55,10 +55,10 @@ namespace MapsExt.Editor.UI
 			this.onUpdate?.Invoke();
 		}
 
-		public void Link(MapObjectInstance target, EditorActionHandler targetHandler)
+		public void Link(MapObjectInstance target, GameObject selectedObject)
 		{
 			this.target = target;
-			this.targetHandler = targetHandler;
+			this.selectedObject = selectedObject;
 			this.gameObject.SetActive(true);
 
 			foreach (Transform child in this.transform)
@@ -97,7 +97,7 @@ namespace MapsExt.Editor.UI
 			}
 
 			this.target = null;
-			this.targetHandler = null;
+			this.selectedObject = null;
 			this.gameObject.SetActive(false);
 		}
 
@@ -116,12 +116,8 @@ namespace MapsExt.Editor.UI
 				c.label.text = propertyVector2.name;
 				c.input.SetWithoutEvent(propertyVector2.getValue());
 
-				c.input.onChanged += value =>
-				{
-					var cmd = propertyVector2.getCommand(value);
-					this.editor.ExecuteCommand(cmd);
-					propertyVector2.onChanged?.Invoke();
-				};
+				var onChanged = this.GetPropertyChangeEvent(propertyVector2);
+				c.input.onChanged += (value) => onChanged(value, ChangeType.All);
 
 				this.onUpdate += () => c.input.SetWithoutEvent(propertyVector2.getValue());
 				return instance;
@@ -134,22 +130,26 @@ namespace MapsExt.Editor.UI
 				c.label.text = propertyQuaternion.name;
 				c.input.SetWithoutEvent(propertyQuaternion.getValue().eulerAngles.z);
 
-				c.input.onChanged += (value, changeType) =>
-				{
-					if (changeType == TextSliderInput.ChangeType.ChangeStart)
-					{
-						this.editor.PreventNextCommandMerge();
-					}
+				var onChanged = this.GetPropertyChangeEvent(propertyQuaternion);
+				c.input.onChanged += (value, type) => onChanged(Quaternion.Euler(0, 0, value), type);
 
-					var cmd = propertyQuaternion.getCommand(Quaternion.Euler(0, 0, value));
-					this.editor.ExecuteCommand(cmd, true);
+				// c.input.onChanged += (value, changeType) =>
+				// {
+				// 	if (changeType == TextSliderInput.ChangeType.ChangeStart)
+				// 	{
+				// 		this.editor.PreventNextCommandMerge();
+				// 	}
 
-					if (changeType == TextSliderInput.ChangeType.ChangeEnd)
-					{
-						this.editor.UpdateRopeAttachments();
-						propertyQuaternion.onChanged?.Invoke();
-					}
-				};
+				// 	var cmd = propertyQuaternion.getCommand(Quaternion.Euler(0, 0, value));
+				// 	var delegates = propertyQuaternion.getCommandDelegates();
+				// 	this.editor.ExecuteCommand(cmd, delegates, true);
+
+				// 	if (changeType == TextSliderInput.ChangeType.ChangeEnd)
+				// 	{
+				// 		this.editor.UpdateRopeAttachments();
+				// 		propertyQuaternion.onChanged?.Invoke();
+				// 	}
+				// };
 
 				this.onUpdate += () => c.input.SetWithoutEvent(propertyQuaternion.getValue().eulerAngles.z);
 				return instance;
@@ -162,11 +162,8 @@ namespace MapsExt.Editor.UI
 				prop.label.text = propertyBool.name;
 				prop.input.isOn = propertyBool.getValue();
 
-				UnityAction<bool> onValueChanged = value =>
-				{
-					var cmd = propertyBool.getCommand(value);
-					this.editor.ExecuteCommand(cmd);
-				};
+				var onChanged = this.GetPropertyChangeEvent(propertyBool);
+				UnityAction<bool> onValueChanged = value => onChanged(value, ChangeType.All);
 
 				prop.input.onValueChanged.AddListener(onValueChanged);
 
@@ -203,6 +200,34 @@ namespace MapsExt.Editor.UI
 			}
 
 			return null;
+		}
+
+		private Action<T, ChangeType> GetPropertyChangeEvent<T>(InspectorLayoutProperty<T> prop)
+		{
+			return (value, type) =>
+			{
+				if (type == ChangeType.All)
+				{
+					prop.onChangeStart?.Invoke(value);
+					prop.setValue?.Invoke(value);
+					prop.onChanged?.Invoke(value);
+				}
+
+				if (type == ChangeType.ChangeStart)
+				{
+					prop.onChangeStart?.Invoke(value);
+				}
+
+				if (type == ChangeType.Change)
+				{
+					prop.setValue?.Invoke(value);
+				}
+
+				if (type == ChangeType.ChangeEnd)
+				{
+					prop.onChanged?.Invoke(value);
+				}
+			};
 		}
 	}
 

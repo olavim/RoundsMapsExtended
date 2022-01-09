@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace MapsExt
 {
-	class EditorPointerEvents : MonoBehaviour, IPointerDownHandler
+	class PointerDownHandler : MonoBehaviour, IPointerDownHandler
 	{
 		public Action<GameObject> pointerDown;
 

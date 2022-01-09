@@ -36,7 +36,26 @@ namespace MapsExt.Editor
 
 			this.suppressNotification = false;
 
-			// Only Reset is supported, which is weird, but we don't care about it anyway
+			this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, (IList) this.ToArray(), oldItems));
+		}
+
+		public void Remove(IEnumerable<T> list)
+		{
+			if (list == null)
+			{
+				throw new ArgumentNullException("list");
+			}
+
+			this.suppressNotification = true;
+			IList oldItems = this.ToArray();
+
+			foreach (T item in list)
+			{
+				this.Remove(item);
+			}
+
+			this.suppressNotification = false;
+
 			this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, (IList) this.ToArray(), oldItems));
 		}
 	}

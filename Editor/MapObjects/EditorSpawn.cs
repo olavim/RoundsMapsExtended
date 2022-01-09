@@ -19,19 +19,15 @@ namespace MapsExt.Editor.MapObjects
 		{
 			this.baseBlueprint.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
-			target.gameObject.GetOrAddComponent<SpawnActionHandler>();
+			target.gameObject.GetOrAddComponent<MoveActionHandler>();
 			target.transform.SetAsLastSibling();
 		}
 
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Position")
-				.CommandGetter(value => new MoveCommand(
-					inspector.targetHandler,
-					inspector.targetHandler.transform.position,
-					value
-				))
-				.ValueGetter(() => inspector.targetHandler.transform.position);
+				.ValueSetter(value => inspector.selectedObject.transform.position = value)
+				.ValueGetter(() => inspector.selectedObject.transform.position);
 		}
 	}
 }

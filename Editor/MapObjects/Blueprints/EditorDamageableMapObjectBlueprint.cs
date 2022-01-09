@@ -1,7 +1,5 @@
 ﻿using MapsExt.MapObjects;
 using MapsExt.Editor.UI;
-using MapsExt.Editor.Commands;
-using MapsExt.Editor.ActionHandlers;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -13,7 +11,7 @@ namespace MapsExt.Editor.MapObjects
 			int dividerIndex = builder.propertyBuilders.FindIndex(el => el is InspectorDividerBuilder);
 
 			var propBuilder = builder.Property<bool>("Damageable by Environment")
-				.CommandGetter(value => new SetDamageableByEnvironmentCommand(inspector.targetHandler, value))
+				.ValueSetter(value => inspector.target.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment = value)
 				.ValueGetter(() => inspector.target.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment);
 
 			builder.propertyBuilders.Insert(dividerIndex, propBuilder);

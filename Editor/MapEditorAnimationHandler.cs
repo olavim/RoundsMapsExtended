@@ -103,9 +103,24 @@ namespace MapsExt.Editor
 
 		public void Update()
 		{
-			if (!this.editor || this.editor.isSimulating)
+			if (!this.editor || this.editor.isSimulating || !this.animation)
 			{
 				return;
+			}
+
+			this.Refresh();
+		}
+
+		public void Refresh()
+		{
+			if (this.animation.gameObject.activeSelf)
+			{
+				this.animation.gameObject.SetActive(false);
+			}
+
+			if (this.KeyframeIndex >= this.animation.keyframes.Count)
+			{
+				this.SetKeyframe(this.animation.keyframes.Count - 1);
 			}
 
 			this.RefreshKeyframeMapObject();
@@ -212,13 +227,35 @@ namespace MapsExt.Editor
 						renderer.gameObject.layer = MAPOBJECT_LAYER;
 					}
 
+					if (instance.GetComponent<MoveActionHandler>())
+					{
+						GameObject.Destroy(instance.GetComponent<MoveActionHandler>());
+						var handler = instance.AddComponent<AnimationMoveActionHandler>();
+						handler.animation = this.animation;
+						handler.frameIndex = this.KeyframeIndex;
+					}
+
+					if (instance.GetComponent<ResizeActionHandler>())
+					{
+						GameObject.Destroy(instance.GetComponent<ResizeActionHandler>());
+						var handler = instance.AddComponent<AnimationResizeActionHandler>();
+						handler.animation = this.animation;
+						handler.frameIndex = this.KeyframeIndex;
+					}
+
+					if (instance.GetComponent<RotateActionHandler>())
+					{
+						GameObject.Destroy(instance.GetComponent<RotateActionHandler>());
+						var handler = instance.AddComponent<AnimationRotateActionHandler>();
+						handler.animation = this.animation;
+						handler.frameIndex = this.KeyframeIndex;
+					}
+
 					instance.transform.SetAsLastSibling();
-					var handler = instance.GetComponent<EditorActionHandler>();
-					handler.frameIndex = this.KeyframeIndex;
 
 					this.keyframeMapObject = instance;
 					this.editor.ClearSelected();
-					this.editor.AddSelected(handler);
+					this.editor.AddSelected(instance);
 				});
 			}
 			else
@@ -254,7 +291,7 @@ namespace MapsExt.Editor
 			frameData.rotation = frame.rotation;
 			frameData.animationKeyframes.Clear();
 
-			MapsExtendedEditor.instance.SpawnObject(this.editor.content, frameData, cb);
+			MapsExtendedEditor.instance.SpawnObject(this.gameObject, frameData, cb);
 		}
 
 		public void RefreshKeyframeMapObject()
@@ -263,6 +300,10 @@ namespace MapsExt.Editor
 			{
 				return;
 			}
+
+			this.animation.transform.position = this.animation.keyframes[0].position;
+			this.animation.transform.localScale = this.animation.keyframes[0].scale;
+			this.animation.transform.rotation = this.animation.keyframes[0].rotation;
 
 			this.keyframeMapObject.transform.position = this.Keyframe.position;
 			this.keyframeMapObject.transform.localScale = this.Keyframe.scale;

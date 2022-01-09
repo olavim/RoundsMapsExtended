@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using MapsExt.Editor.Commands;
-using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
 
 namespace MapsExt.Editor.UI
@@ -62,16 +60,14 @@ namespace MapsExt.Editor.UI
 
 			keyframeSettings.onDurationChanged += (value, type) =>
 			{
-				if (type == TextSliderInput.ChangeType.ChangeStart)
-				{
-					this.editor.PreventNextCommandMerge();
-				}
-
 				float durationDelta = value - anim.keyframes[keyframe].duration;
-				var cmd = new ChangeKeyframeDurationCommand(anim.gameObject, durationDelta, keyframe);
-				this.editor.ExecuteCommand(cmd, true);
-
+				anim.keyframes[keyframe].duration = value;
 				anim.keyframes[keyframe].UpdateCurve();
+
+				if (type == ChangeType.ChangeEnd)
+				{
+					this.editor.TakeSnaphot();
+				}
 			};
 
 			keyframeSettings.onEasingChanged += value =>
@@ -82,8 +78,10 @@ namespace MapsExt.Editor.UI
 					value == "In and Out" ? AnimationKeyframe.CurveType.EaseInOut :
 					AnimationKeyframe.CurveType.Linear;
 
-				var cmd = new ChangeKeyframeEasingCommand(anim.gameObject, curveType, keyframe);
-				this.editor.ExecuteCommand(cmd);
+				anim.keyframes[keyframe].curveType = curveType;
+				anim.keyframes[keyframe].UpdateCurve();
+
+				this.editor.TakeSnaphot();
 			};
 
 			keyframeSettings.onClick += () =>
@@ -106,28 +104,42 @@ namespace MapsExt.Editor.UI
 		private void AddAnimationKeyframe()
 		{
 			var anim = this.editor.animationHandler.animation;
-			var cmd = new AddKeyframeCommand(anim.gameObject, new AnimationKeyframe(anim.keyframes[anim.keyframes.Count - 1]), anim.keyframes.Count);
-			this.editor.ExecuteCommand(cmd);
+			var newFrame = new AnimationKeyframe(anim.keyframes[anim.keyframes.Count - 1]);
+			int frameIndex = anim.keyframes.Count;
+
+			if (anim.keyframes.Count == 0)
+			{
+				anim.playOnAwake = false;
+				anim.Initialize((SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(anim.gameObject));
+			}
+
+			anim.keyframes.Insert(frameIndex, newFrame);
+			this.editor.animationHandler.SetKeyframe(frameIndex);
+			this.editor.TakeSnaphot();
 
 			this.inspector.Unlink();
 
 			var mapObjectInstance = anim.GetComponent<MapObjectInstance>();
-			var actionHandler = this.editor.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
-			this.inspector.Link(mapObjectInstance, actionHandler);
+			this.inspector.Link(mapObjectInstance, this.editor.animationHandler.keyframeMapObject);
 			this.Refresh();
 		}
 
 		private void DeleteAnimationKeyframe()
 		{
 			var anim = this.editor.animationHandler.animation;
-			var cmd = new DeleteKeyframeCommand(anim.gameObject, this.editor.animationHandler.KeyframeIndex);
-			this.editor.ExecuteCommand(cmd);
+			anim.keyframes.RemoveAt(this.editor.animationHandler.KeyframeIndex);
+
+			if (this.editor.animationHandler.KeyframeIndex >= anim.keyframes.Count)
+			{
+				this.editor.animationHandler.SetKeyframe(anim.keyframes.Count - 1);
+			}
+
+			this.editor.TakeSnaphot();
 
 			this.inspector.Unlink();
 
 			var mapObjectInstance = anim.GetComponent<MapObjectInstance>();
-			var actionHandler = this.editor.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
-			this.inspector.Link(mapObjectInstance, actionHandler);
+			this.inspector.Link(mapObjectInstance, this.editor.animationHandler.keyframeMapObject);
 			this.Refresh();
 		}
 

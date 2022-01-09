@@ -7,13 +7,6 @@ namespace MapsExt.Editor.UI
 {
 	public class TextSliderInput : MonoBehaviour
 	{
-		public enum ChangeType
-		{
-			ChangeStart,
-			Change,
-			ChangeEnd
-		}
-
 		public Slider slider;
 		public InputField input;
 

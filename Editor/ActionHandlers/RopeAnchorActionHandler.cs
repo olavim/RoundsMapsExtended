@@ -1,13 +1,13 @@
-﻿using UnityEngine;
+﻿using MapsExt.Editor.Commands;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class RopeAnchorActionHandler : EditorActionHandler
+	public class RopeAnchorActionHandler : ActionHandler<MoveCommand>
 	{
-		public override void Move(Vector3 positionDelta)
+		public override void Handle(MoveCommand cmd)
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();
-			this.transform.position += positionDelta;
+			this.transform.position += cmd.delta;
 			anchor.UpdateAttachment();
 		}
 	}

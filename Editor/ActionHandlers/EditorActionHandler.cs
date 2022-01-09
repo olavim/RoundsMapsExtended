@@ -1,27 +1,26 @@
-﻿using UnityEngine;
+﻿using MapsExt.Editor.Commands;
+using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public abstract class EditorActionHandler : MonoBehaviour
+	public interface IActionHandler
 	{
-		public int frameIndex = 0;
+		void Handle(ICommand cmd);
+	}
 
-		public virtual bool CanResize => false;
-		public virtual bool CanRotate => false;
+	public interface IActionHandler<T> : IActionHandler where T : ICommand
+	{
+		void Handle(T cmd);
+	}
 
-		public virtual void Move(Vector3 positionDelta)
-		{
+	public abstract class ActionHandler : MonoBehaviour, IActionHandler
+	{
+		public abstract void Handle(ICommand cmd);
+	}
 
-		}
-
-		public virtual void Resize(Vector3 sizeDelta, int resizeDirection)
-		{
-
-		}
-
-		public virtual void SetRotation(Quaternion rotation)
-		{
-
-		}
+	public abstract class ActionHandler<T> : ActionHandler, IActionHandler<T> where T : ICommand
+	{
+		public override void Handle(ICommand cmd) => this.Handle((T) cmd);
+		public abstract void Handle(T cmd);
 	}
 }

@@ -240,7 +240,6 @@ namespace MapsExt.Editor
 				damageable.disabled = true;
 			}
 
-			// this.FixRenderLayers(go);
 			this.ResetAnimations(container);
 		}
 

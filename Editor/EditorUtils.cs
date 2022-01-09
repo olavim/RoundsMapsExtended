@@ -7,18 +7,18 @@ namespace MapsExt.Editor
 {
 	public static class EditorUtils
 	{
-		public static List<EditorActionHandler> GetHoveredActionHandlers()
+		public static List<ActionHandler> GetHoveredActionHandlers()
 		{
 			var mousePos = Input.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var colliders = Physics2D.OverlapPointAll(mouseWorldPos);
-			return colliders.SelectMany(c => c.GetComponentsInChildren<EditorActionHandler>()).ToList();
+			return colliders.SelectMany(c => c.GetComponentsInChildren<ActionHandler>()).ToList();
 		}
 
-		public static List<EditorActionHandler> GetContainedActionHandlers(Rect rect)
+		public static List<ActionHandler> GetContainedActionHandlers(Rect rect)
 		{
 			var colliders = Physics2D.OverlapAreaAll(rect.min, rect.max);
-			return colliders.SelectMany(c => c.GetComponentsInChildren<EditorActionHandler>()).ToList();
+			return colliders.SelectMany(c => c.GetComponentsInChildren<ActionHandler>()).ToList();
 		}
 
 		public static Vector3 SnapToGrid(Vector3 pos, float gridSize)

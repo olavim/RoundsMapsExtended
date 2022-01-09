@@ -9,6 +9,7 @@ namespace MapsExt.Editor.UI
 		public int position;
 
 		private Rect prevReferenceBounds;
+		private Vector2 canvasSize;
 
 		public void Awake()
 		{
@@ -22,6 +23,7 @@ namespace MapsExt.Editor.UI
 				this.gameObject.AddComponent<RectTransform>();
 			}
 
+			this.canvasSize = this.GetComponentInParent<Canvas>().GetComponent<RectTransform>().sizeDelta;
 			this.UpdatePosition();
 		}
 
@@ -55,6 +57,7 @@ namespace MapsExt.Editor.UI
 					refBounds.center.x + (refBounds.width * directionMulti.x),
 					refBounds.center.y + (refBounds.height * directionMulti.y)
 				);
+				rt.anchoredPosition -= this.canvasSize / 2;
 				rt.rotation = Quaternion.identity;
 			}
 

@@ -60,20 +60,12 @@ namespace MapsExt.Editor
 		public Window inspectorWindow;
 		public AnimationWindow animationWindow;
 		public MapObjectInspector inspector;
-
 		private Texture2D selectionTexture;
-
-		private int resizeDirection;
-		private bool isResizing;
-		private bool isRotating;
 		private Window[] windows;
 		private bool[] windowWasOpen;
 
 		public void Awake()
 		{
-			this.isResizing = false;
-			this.isRotating = false;
-
 			var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
 			mapObjects.Add("", new List<Tuple<string, Type>>());
 
@@ -95,7 +87,7 @@ namespace MapsExt.Editor
 
 				foreach (var entry in mapObjects[category])
 				{
-					UnityAction action = () => this.editor.ExecuteCommand(new CreateCommand(entry.Item2));
+					UnityAction action = () => this.editor.CreateMapObject(entry.Item2);
 					builder.SubItem(b => b.Label(entry.Item1).Action(action));
 				}
 
@@ -104,7 +96,7 @@ namespace MapsExt.Editor
 
 			foreach (var entry in mapObjects[""])
 			{
-				UnityAction action = () => this.editor.ExecuteCommand(new CreateCommand(entry.Item2));
+				UnityAction action = () => this.editor.CreateMapObject(entry.Item2);
 				var builder = new MenuItemBuilder().Label(entry.Item1).Action(action);
 				this.toolbar.mapObjectMenu.AddItem(builder.Item());
 			}
@@ -216,7 +208,7 @@ namespace MapsExt.Editor
 
 		public void Start()
 		{
-			this.editor.selectedActionHandlers.CollectionChanged += this.HandleSelectedObjectsChanged;
+			this.editor.selectedObjects.CollectionChanged += this.HandleSelectedObjectsChanged;
 			this.windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
 			this.windowWasOpen = new bool[this.windows.Length];
 			this.selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
@@ -227,28 +219,6 @@ namespace MapsExt.Editor
 			if (this.editor.isSimulating)
 			{
 				return;
-			}
-
-			if (Input.GetMouseButtonDown(0) && this.isResizing)
-			{
-				this.editor.OnResizeStart(this.resizeDirection);
-			}
-
-			if (Input.GetMouseButtonDown(0) && this.isRotating)
-			{
-				this.editor.OnRotateStart();
-			}
-
-			if (Input.GetMouseButtonUp(0) && this.isResizing)
-			{
-				this.isResizing = false;
-				this.editor.OnResizeEnd();
-			}
-
-			if (Input.GetMouseButtonUp(0) && this.isRotating)
-			{
-				this.isRotating = false;
-				this.editor.OnRotateEnd();
 			}
 
 			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.CanUndo());
@@ -354,7 +324,7 @@ namespace MapsExt.Editor
 
 		public void HandleSelectedObjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var list = this.editor.selectedActionHandlers;
+			var list = this.editor.selectedObjects;
 
 			foreach (Transform child in this.transform)
 			{
@@ -372,16 +342,6 @@ namespace MapsExt.Editor
 			{
 				var handlerGameObject = list[0].gameObject;
 
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopLeft);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopRight);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.BottomLeft);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.BottomRight);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.MiddleLeft);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.MiddleRight);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.BottomMiddle);
-				this.AddResizeHandle(handlerGameObject, AnchorPosition.TopMiddle);
-				this.AddRotationHandle(handlerGameObject);
-
 				var mapObjectInstance = this.editor.animationHandler.animation
 					? this.editor.animationHandler.animation.GetComponent<MapObjectInstance>()
 					: list[0].GetComponentInParent<MapObjectInstance>();
@@ -391,8 +351,7 @@ namespace MapsExt.Editor
 			else if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
 			{
 				var mapObjectInstance = this.editor.animationHandler.animation.GetComponent<MapObjectInstance>();
-				var actionHandler = this.editor.animationHandler.keyframeMapObject.GetComponent<EditorActionHandler>();
-				this.inspector.Link(mapObjectInstance, actionHandler);
+				this.inspector.Link(mapObjectInstance, this.editor.animationHandler.keyframeMapObject);
 			}
 			else if (list.Select(handler => handler.GetComponentInParent<MapObjectInstance>()).Distinct().ToList().Count == 1)
 			{
@@ -414,97 +373,6 @@ namespace MapsExt.Editor
 
 				go.transform.SetParent(this.transform);
 			}
-		}
-
-		private void AddResizeHandle(GameObject mapObject, int direction)
-		{
-			if (!mapObject.GetComponent<EditorActionHandler>().CanResize)
-			{
-				return;
-			}
-
-			var go = new GameObject("Toggle");
-
-			go.AddComponent<GraphicRaycaster>();
-			var canvas = go.GetComponent<Canvas>();
-			canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-			var aligner = go.AddComponent<UI.UIAligner>();
-			aligner.referenceGameObject = mapObject;
-			aligner.position = direction;
-
-			var image = go.AddComponent<Image>();
-			image.rectTransform.sizeDelta = new Vector2(10f, 10f);
-
-			var button = go.AddComponent<Button>();
-			button.colors = new ColorBlock()
-			{
-				colorMultiplier = 1,
-				fadeDuration = 0.1f,
-				normalColor = new Color(1, 1, 1),
-				highlightedColor = new Color(0.8f, 0.8f, 0.8f),
-				pressedColor = new Color(0.6f, 0.6f, 0.6f)
-			};
-
-			var events = go.AddComponent<EditorPointerEvents>();
-
-			events.pointerDown += hoveredObj =>
-			{
-				if (!this.isRotating && !this.isResizing)
-				{
-					this.isResizing = true;
-					this.resizeDirection = direction;
-				}
-			};
-
-			go.transform.SetParent(this.transform);
-		}
-
-		private void AddRotationHandle(GameObject mapObject)
-		{
-			if (!mapObject.GetComponent<EditorActionHandler>().CanRotate)
-			{
-				return;
-			}
-
-			var go = new GameObject("RotationHandle");
-
-			go.AddComponent<GraphicRaycaster>();
-			var canvas = go.GetComponent<Canvas>();
-			canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-			var aligner = go.AddComponent<UI.UIAligner>();
-			aligner.referenceGameObject = mapObject;
-			aligner.position = AnchorPosition.TopMiddle;
-			aligner.padding = 48f;
-
-			var image = go.AddComponent<ProceduralImage>();
-			image.rectTransform.sizeDelta = new Vector2(12f, 12f);
-
-			var modifier = go.AddComponent<UniformModifier>();
-			modifier.Radius = 6;
-
-			var button = go.AddComponent<Button>();
-			button.colors = new ColorBlock()
-			{
-				colorMultiplier = 1,
-				fadeDuration = 0.1f,
-				normalColor = new Color(1, 1, 1),
-				highlightedColor = new Color(0.8f, 0.8f, 0.8f),
-				pressedColor = new Color(0.6f, 0.6f, 0.6f)
-			};
-
-			var events = go.AddComponent<EditorPointerEvents>();
-
-			events.pointerDown += hoveredObj =>
-			{
-				if (!this.isRotating && !this.isResizing)
-				{
-					this.isRotating = true;
-				}
-			};
-
-			go.transform.SetParent(this.transform);
 		}
 
 		public void OnGUI()

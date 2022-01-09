@@ -42,5 +42,18 @@ namespace MapsExt
 		{
 			return ExtensionMethods.pmData.GetOrCreateValue(instance);
 		}
+
+		public static bool TryRemoveComponent<T>(this GameObject instance) where T : Component
+		{
+			var comp = instance.GetComponent<T>();
+
+			if (comp)
+			{
+				GameObject.Destroy(comp);
+				return true;
+			}
+
+			return false;
+		}
 	}
 }

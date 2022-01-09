@@ -1,5 +1,4 @@
 ﻿using UnityEngine.UI;
-using MapsExt.Editor.Commands;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -62,21 +61,21 @@ namespace MapsExt.Editor.UI
 			return this;
 		}
 
-		public InspectorPropertyBuilder<T> CommandGetter(Func<T, ICommand> getCommand)
+		public InspectorPropertyBuilder<T> ValueSetter(Action<T> setValue)
 		{
-			(this.element as InspectorLayoutProperty<T>).getCommand = getCommand;
+			(this.element as InspectorLayoutProperty<T>).setValue = setValue;
+			return this;
+		}
+
+		public InspectorPropertyBuilder<T> OnChange(Action<T> onChanged)
+		{
+			(this.element as InspectorLayoutProperty<T>).onChanged = onChanged;
 			return this;
 		}
 
 		public InspectorPropertyBuilder<T> ValueGetter(Func<T> getValue)
 		{
 			(this.element as InspectorLayoutProperty<T>).getValue = getValue;
-			return this;
-		}
-
-		public InspectorPropertyBuilder<T> ChangeEvent(Action onChanged)
-		{
-			(this.element as InspectorLayoutProperty<T>).onChanged = onChanged;
 			return this;
 		}
 	}

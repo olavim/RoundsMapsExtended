@@ -12,7 +12,7 @@ namespace MapsExt.Editor.UI
 		public ColorBlock colors;
 
 		public Action onClick;
-		public Action<float, TextSliderInput.ChangeType> onDurationChanged;
+		public Action<float, ChangeType> onDurationChanged;
 		public Action<string> onEasingChanged;
 
 		public float Duration { get; private set; }
@@ -47,7 +47,7 @@ namespace MapsExt.Editor.UI
 			};
 		}
 
-		private void UpdateDuration(float value, TextSliderInput.ChangeType type)
+		private void UpdateDuration(float value, ChangeType type)
 		{
 			this.Duration = value;
 			this.onDurationChanged?.Invoke(this.Duration, type);

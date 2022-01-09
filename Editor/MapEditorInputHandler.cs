@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace MapsExt.Editor
@@ -120,12 +121,12 @@ namespace MapsExt.Editor
 			this.mouseDownSince = Time.time * 1000;
 			this.mouseDownPosition = Input.mousePosition;
 
-			var list = EditorUtils.GetHoveredActionHandlers();
+			var list = EditorUtils.GetHoveredActionHandlers().Select(h => h.gameObject).Distinct();
 
-			if (list.Exists(this.editor.IsActionHandlerSelected))
+			if (list.Any(this.editor.IsSelected))
 			{
 				this.isDragging = true;
-				this.editor.OnDragStart();
+				this.editor.OnPointerDown();
 			}
 			else
 			{
@@ -153,7 +154,7 @@ namespace MapsExt.Editor
 			if (this.isDragging)
 			{
 				this.isDragging = false;
-				this.editor.OnDragEnd();
+				this.editor.OnPointerUp();
 			}
 		}
 	}

@@ -98,7 +98,11 @@ namespace MapsExt
 
 		private void OnDestroy()
 		{
-			MapManager.instance?.GetComponent<ChildRPC>()?.childRPCsVector2.Remove(this.rpcKey);
+			var childRPC = MapManager.instance?.GetComponent<ChildRPC>();
+			if (childRPC.childRPCsVector2.ContainsKey(this.rpcKey))
+			{
+				childRPC.childRPCsVector2.Remove(this.rpcKey);
+			}
 		}
 
 		private void Update()
