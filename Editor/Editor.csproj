@@ -71,6 +71,10 @@
 			<SpecificVersion>False</SpecificVersion>
 			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.dll</HintPath>
 		</Reference>
+		<Reference Include="InControl">
+			<SpecificVersion>False</SpecificVersion>
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\InControl.dll</HintPath>
+		</Reference>
 		<Reference Include="Sirenix.Serialization.Config">
 			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
 		</Reference>

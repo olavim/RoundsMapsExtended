@@ -1,26 +1,36 @@
-﻿using MapsExt.Editor.Commands;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class MoveHandler : ActionHandler<MoveCommand>
+	public class PositionHandler : MapObjectActionHandler
 	{
-		public override void Handle(MoveCommand cmd)
+		public virtual void Move(Vector3 delta)
 		{
-			this.transform.position += cmd.delta;
+			this.transform.position += delta;
+		}
+
+		public virtual void SetPosition(Vector3 position)
+		{
+			this.transform.position = position;
 		}
 	}
 
-	public class ResizeHandler : ActionHandler<ResizeCommand>
+	public class SizeHandler : MapObjectActionHandler
 	{
-		public override void Handle(ResizeCommand cmd)
+		public virtual void Resize(Vector3 delta, int resizeDirection = 0)
 		{
+			this.SetSize(this.transform.localScale + delta, resizeDirection);
+		}
+
+		public virtual void SetSize(Vector3 size, int resizeDirection = 0)
+		{
+			var delta = size - this.transform.localScale;
 			float gridSize = this.gameObject.GetComponentInParent<Editor.MapEditor>().GridSize;
 			bool snapToGrid = this.gameObject.GetComponentInParent<Editor.MapEditor>().snapToGrid;
 
-			var directionMulti = Editor.AnchorPosition.directionMultipliers[cmd.resizeDirection];
-			var scaleMulti = Editor.AnchorPosition.sizeMultipliers[cmd.resizeDirection];
-			var scaleDelta = Vector3.Scale(cmd.delta, scaleMulti);
+			var directionMulti = Editor.AnchorPosition.directionMultipliers[resizeDirection];
+			var scaleMulti = Editor.AnchorPosition.sizeMultipliers[resizeDirection];
+			var scaleDelta = Vector3.Scale(delta, scaleMulti);
 
 			var currentScale = this.transform.localScale;
 			var currentRotation = this.transform.rotation;
@@ -58,11 +68,11 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class RotateHandler : ActionHandler<RotateCommand>
+	public class RotationHandler : MapObjectActionHandler
 	{
-		public override void Handle(RotateCommand cmd)
+		public virtual void SetRotation(Quaternion rotation)
 		{
-			this.transform.rotation = cmd.toRotation;
+			this.transform.rotation = rotation;
 		}
 	}
 }

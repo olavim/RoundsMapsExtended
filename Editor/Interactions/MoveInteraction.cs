@@ -1,5 +1,4 @@
 using MapsExt.Editor.ActionHandlers;
-using MapsExt.Editor.Commands;
 using System.Linq;
 using UnityEngine;
 
@@ -109,9 +108,9 @@ namespace MapsExt.Editor.Interactions
 
 			if (delta != Vector3.zero)
 			{
-				foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<ActionHandler<MoveCommand>>()))
+				foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<PositionHandler>()))
 				{
-					handler.Handle(new MoveCommand(delta));
+					handler.Move(delta);
 				}
 			}
 

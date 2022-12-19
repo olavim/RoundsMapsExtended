@@ -3,7 +3,6 @@ using MapsExt.Editor.ActionHandlers;
 using UnityEngine;
 using UnboundLib;
 using MapsExt.Editor.UI;
-using MapsExt.Editor.Commands;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -19,14 +18,14 @@ namespace MapsExt.Editor.MapObjects
 		{
 			this.baseBlueprint.Deserialize(data, target);
 			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
-			target.gameObject.GetOrAddComponent<MoveHandler>();
+			target.gameObject.GetOrAddComponent<PositionHandler>();
 			target.transform.SetAsLastSibling();
 		}
 
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Position")
-				.ValueSetter(value => inspector.selectedObject.transform.position = value)
+				.ValueSetter(value => inspector.selectedObject.GetComponent<PositionHandler>().SetPosition(value))
 				.ValueGetter(() => inspector.selectedObject.transform.position);
 		}
 	}

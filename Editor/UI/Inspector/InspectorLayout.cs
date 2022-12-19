@@ -1,8 +1,6 @@
 ﻿using UnityEngine.UI;
-using MapsExt.Editor.Commands;
 using System;
 using System.Collections.Generic;
-using MapsExt.Editor.ActionHandlers;
 
 namespace MapsExt.Editor.UI
 {

@@ -24,6 +24,7 @@ namespace MapsExt
 
 		private readonly float syncThreshold = 1f / 60f;
 
+		public List<IAnimationComponent> components = new List<IAnimationComponent>();
 		public List<AnimationKeyframe> keyframes = new List<AnimationKeyframe>();
 		public bool playOnAwake = true;
 		public bool IsPlaying { get; private set; }
@@ -128,10 +129,10 @@ namespace MapsExt
 			}
 		}
 
-		public void Initialize(SpatialMapObject mapObject)
+		public void Initialize(IMapObjectAnimation anim)
 		{
 			this.keyframes.Clear();
-			this.keyframes.Add(new AnimationKeyframe(mapObject));
+			this.keyframes.Add(new AnimationKeyframe(anim));
 		}
 
 		public void Play()
@@ -157,9 +158,14 @@ namespace MapsExt
 			var endFrame = this.keyframes[frameIndex];
 
 			float curveValue = endFrame.curve.Evaluate(time / endFrame.duration);
-			this.transform.position = Vector3.Lerp(startFrame.position, endFrame.position, curveValue);
-			this.transform.localScale = Vector3.Lerp(startFrame.scale, endFrame.scale, curveValue);
-			this.transform.rotation = Quaternion.Lerp(startFrame.rotation, endFrame.rotation, curveValue);
+
+			for (int i = 0; i < this.components.Count; i++)
+			{
+				var comp = this.components[i];
+				var startValue = startFrame.componentValues[i];
+				var endValue = endFrame.componentValues[i];
+				comp.Lerp(startValue, endValue, curveValue);
+			}
 		}
 
 		private void RPCA_SyncAnimation(Vector2 frameAndTime)

@@ -1,5 +1,4 @@
 using MapsExt.Editor.ActionHandlers;
-using MapsExt.Editor.Commands;
 using System.Collections.Specialized;
 using System.Linq;
 using UnityEngine;
@@ -72,7 +71,7 @@ namespace MapsExt.Editor.Interactions
 			var mousePos = Input.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
-			this.editor.grid.transform.rotation = this.editor.SelectedMapObjects[0].transform.rotation;
+			this.editor.grid.transform.rotation = this.editor.selectedObjects[0].transform.rotation;
 
 			this.isResizingMapObjects = true;
 			this.resizeDirection = resizeDirection;
@@ -101,9 +100,9 @@ namespace MapsExt.Editor.Interactions
 
 			if (sizeDelta != Vector3.zero)
 			{
-				foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<ActionHandler<ResizeCommand>>()))
+				foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<SizeHandler>()))
 				{
-					handler.Handle(new ResizeCommand(sizeDelta, this.resizeDirection));
+					handler.Resize(sizeDelta, this.resizeDirection);
 				}
 
 				this.prevMouse += mouseDelta;
@@ -113,7 +112,7 @@ namespace MapsExt.Editor.Interactions
 
 		private void AddResizeHandle(GameObject mapObject, int direction)
 		{
-			if (!mapObject.GetComponent<ActionHandler<ResizeCommand>>())
+			if (!mapObject.GetComponent<SizeHandler>())
 			{
 				return;
 			}

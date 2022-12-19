@@ -1,14 +1,13 @@
 using MapsExt.MapObjects;
-using UnityEngine;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MapsExt
 {
 	public class AnimationKeyframe
 	{
-		public Vector3 position;
-		public Vector3 scale;
-		public Quaternion rotation;
+		public List<IAnimationComponentValue> componentValues;
 		public float duration;
 		public CurveType curveType;
 
@@ -17,20 +16,16 @@ namespace MapsExt
 
 		public AnimationKeyframe()
 		{
-			this.position = Vector3.zero;
-			this.scale = Vector3.one;
-			this.rotation = Quaternion.identity;
+			this.componentValues = new List<IAnimationComponentValue>();
 			this.duration = 1;
 			this.curveType = CurveType.Linear;
 
 			this.UpdateCurve();
 		}
 
-		public AnimationKeyframe(SpatialMapObject mapObject)
+		public AnimationKeyframe(IMapObjectAnimation anim)
 		{
-			this.position = mapObject.position;
-			this.scale = mapObject.scale;
-			this.rotation = mapObject.rotation;
+			this.componentValues = anim.GetAnimationComponents().Select(c => c.Value).ToList();
 			this.duration = 1;
 			this.curveType = CurveType.Linear;
 
@@ -39,9 +34,7 @@ namespace MapsExt
 
 		public AnimationKeyframe(AnimationKeyframe frame)
 		{
-			this.position = frame.position;
-			this.scale = frame.scale;
-			this.rotation = frame.rotation;
+			this.componentValues = frame.componentValues.ToList();
 			this.duration = frame.duration;
 			this.curveType = frame.curveType;
 
@@ -51,6 +44,11 @@ namespace MapsExt
 		public void UpdateCurve()
 		{
 			this.curve = this.GetCurve();
+		}
+
+		public T GetComponentValue<T>() where T : IAnimationComponentValue
+		{
+			return (T) this.componentValues.Find(v => v.GetType().IsSubclassOf(typeof(T)));
 		}
 
 		private BezierAnimationCurve GetCurve()

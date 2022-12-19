@@ -1,40 +1,40 @@
-﻿using MapsExt.Editor.Commands;
+﻿using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class AnimationMoveHandler : MoveHandler
+	public class AnimationMoveHandler : PositionHandler
 	{
 		public MapObjectAnimation animation;
 		public int frameIndex;
 
-		public override void Handle(MoveCommand cmd)
+		public override void SetPosition(Vector3 position)
 		{
-			base.Handle(cmd);
-			this.animation.keyframes[this.frameIndex].position = this.transform.position;
+			base.SetPosition(position);
+			this.animation.keyframes[this.frameIndex].GetComponentValue<PositionComponentValue>().Value = this.transform.position;
 		}
 	}
 
-	public class AnimationResizeHandler : ResizeHandler
+	public class AnimationResizeHandler : SizeHandler
 	{
 		public MapObjectAnimation animation;
 		public int frameIndex;
 
-		public override void Handle(ResizeCommand cmd)
+		public override void SetSize(Vector3 scale, int resizeDirection)
 		{
-			base.Handle(cmd);
-			this.animation.keyframes[this.frameIndex].scale = this.transform.localScale;
+			base.SetSize(scale, resizeDirection);
+			this.animation.keyframes[this.frameIndex].GetComponentValue<ScaleComponentValue>().Value = this.transform.localScale;
 		}
 	}
 
-	public class AnimationRotateHandler : RotateHandler
+	public class AnimationRotateHandler : RotationHandler
 	{
 		public MapObjectAnimation animation;
 		public int frameIndex;
 
-		public override void Handle(RotateCommand cmd)
+		public override void SetRotation(Quaternion rotation)
 		{
-			base.Handle(cmd);
-			this.animation.keyframes[this.frameIndex].rotation = this.transform.rotation;
+			base.SetRotation(rotation);
+			this.animation.keyframes[this.frameIndex].GetComponentValue<RotationComponentValue>().Value = this.transform.rotation;
 		}
 	}
 }

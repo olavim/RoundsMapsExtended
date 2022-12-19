@@ -92,9 +92,9 @@ namespace MapsExt.Editor
 
 			var baseObject = this.animation.gameObject;
 			var firstFrame = this.animation.keyframes[0];
-			baseObject.transform.position = firstFrame.position;
-			baseObject.transform.localScale = firstFrame.scale;
-			baseObject.transform.rotation = firstFrame.rotation;
+			baseObject.transform.position = firstFrame.GetComponentValue<PositionComponentValue>().Value;
+			baseObject.transform.localScale = firstFrame.GetComponentValue<ScaleComponentValue>().Value;
+			baseObject.transform.rotation = firstFrame.GetComponentValue<RotationComponentValue>().Value;
 			baseObject.SetActive(true);
 
 			this.prevKeyframe = this.KeyframeIndex;
@@ -227,25 +227,25 @@ namespace MapsExt.Editor
 						renderer.gameObject.layer = MAPOBJECT_LAYER;
 					}
 
-					if (instance.GetComponent<MoveHandler>())
+					if (instance.GetComponent<PositionHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<MoveHandler>());
+						GameObject.Destroy(instance.GetComponent<PositionHandler>());
 						var handler = instance.AddComponent<AnimationMoveHandler>();
 						handler.animation = this.animation;
 						handler.frameIndex = this.KeyframeIndex;
 					}
 
-					if (instance.GetComponent<ResizeHandler>())
+					if (instance.GetComponent<SizeHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<ResizeHandler>());
+						GameObject.Destroy(instance.GetComponent<SizeHandler>());
 						var handler = instance.AddComponent<AnimationResizeHandler>();
 						handler.animation = this.animation;
 						handler.frameIndex = this.KeyframeIndex;
 					}
 
-					if (instance.GetComponent<RotateHandler>())
+					if (instance.GetComponent<ActionHandlers.RotationHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<RotateHandler>());
+						GameObject.Destroy(instance.GetComponent<ActionHandlers.RotationHandler>());
 						var handler = instance.AddComponent<AnimationRotateHandler>();
 						handler.animation = this.animation;
 						handler.frameIndex = this.KeyframeIndex;
@@ -274,7 +274,11 @@ namespace MapsExt.Editor
 			{
 				for (int i = 0; i <= this.KeyframeIndex; i++)
 				{
-					points.Add(i == this.KeyframeIndex ? this.keyframeMapObject.transform.position : this.animation.keyframes[i].position);
+					points.Add(
+						i == this.KeyframeIndex
+							? this.keyframeMapObject.transform.position
+							: (Vector3) this.animation.keyframes[i].GetComponentValue<PositionComponentValue>().Value
+					);
 				}
 			}
 
@@ -286,10 +290,10 @@ namespace MapsExt.Editor
 			var frameData = (SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animation.gameObject);
 			frameData.mapObjectId = $"{frameData.mapObjectId}:keyframeMapObject";
 			frameData.active = true;
-			frameData.position = frame.position;
-			frameData.scale = frame.scale;
-			frameData.rotation = frame.rotation;
-			frameData.animationKeyframes.Clear();
+			frameData.position = frame.GetComponentValue<PositionComponentValue>().Value;
+			frameData.scale = frame.GetComponentValue<ScaleComponentValue>().Value;
+			frameData.rotation = frame.GetComponentValue<RotationComponentValue>().Value;
+			frameData.keyframes.Clear();
 
 			MapsExtendedEditor.instance.SpawnObject(this.gameObject, frameData, cb);
 		}
@@ -301,13 +305,13 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.animation.transform.position = this.animation.keyframes[0].position;
-			this.animation.transform.localScale = this.animation.keyframes[0].scale;
-			this.animation.transform.rotation = this.animation.keyframes[0].rotation;
+			this.animation.transform.position = this.animation.keyframes[0].GetComponentValue<PositionComponentValue>().Value;
+			this.animation.transform.localScale = this.animation.keyframes[0].GetComponentValue<ScaleComponentValue>().Value;
+			this.animation.transform.rotation = this.animation.keyframes[0].GetComponentValue<RotationComponentValue>().Value;
 
-			this.keyframeMapObject.transform.position = this.Keyframe.position;
-			this.keyframeMapObject.transform.localScale = this.Keyframe.scale;
-			this.keyframeMapObject.transform.rotation = this.Keyframe.rotation;
+			this.keyframeMapObject.transform.position = this.Keyframe.GetComponentValue<PositionComponentValue>().Value;
+			this.keyframeMapObject.transform.localScale = this.Keyframe.GetComponentValue<ScaleComponentValue>().Value;
+			this.keyframeMapObject.transform.rotation = this.Keyframe.GetComponentValue<RotationComponentValue>().Value;
 		}
 	}
 }

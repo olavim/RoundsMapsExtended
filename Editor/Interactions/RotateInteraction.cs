@@ -1,5 +1,4 @@
 using MapsExt.Editor.ActionHandlers;
-using MapsExt.Editor.Commands;
 using System.Collections.Specialized;
 using System.Linq;
 using UnityEngine;
@@ -87,15 +86,15 @@ namespace MapsExt.Editor.Interactions
 			angle = EditorUtils.Snap(angle, this.editor.snapToGrid ? 15f : 2f);
 			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-			foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<ActionHandler<RotateCommand>>()))
+			foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<ActionHandlers.RotationHandler>()))
 			{
-				handler.Handle(new RotateCommand(selectedObj.transform.rotation, toRotation));
+				handler.SetRotation(toRotation);
 			}
 		}
 
 		private void AddRotationHandle(GameObject mapObject)
 		{
-			if (!mapObject.GetComponent<ActionHandler<RotateCommand>>())
+			if (!mapObject.GetComponent<ActionHandlers.RotationHandler>())
 			{
 				return;
 			}

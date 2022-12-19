@@ -7,7 +7,6 @@ using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
 using MapsExt.Editor.MapObjects;
-using MapsExt.Editor.Commands;
 using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections;
@@ -30,28 +29,6 @@ namespace MapsExt.Editor
 		{
 			get { return this.grid.cellSize.x; }
 			set { this.grid.cellSize = Vector3.one * value; }
-		}
-
-		public MapObjectInstance[] SelectedMapObjectInstances
-		{
-			get
-			{
-				// If a map object is being animated, it's also selected
-				return this.animationHandler.animation
-					? new[] { this.animationHandler.animation.gameObject.GetComponent<MapObjectInstance>() }
-					: this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>()).Distinct().ToArray();
-			}
-		}
-
-		public GameObject[] SelectedMapObjects
-		{
-			get
-			{
-				// If a map object is being animated, it's also selected
-				return this.animationHandler.animation
-					? new[] { this.animationHandler.animation.gameObject }
-					: this.selectedObjects.Select(obj => obj.gameObject).Distinct().ToArray();
-			}
 		}
 
 		private StateHistory stateHistory;
@@ -83,6 +60,15 @@ namespace MapsExt.Editor
 			if (this.isCreatingSelection)
 			{
 				this.UpdateSelection();
+			}
+
+			var devices = InControl.InputManager.ActiveDevices;
+			foreach (var device in devices)
+			{
+				if (device.Direction.Left.WasPressed)
+				{
+					UnityEngine.Debug.Log("Hoplaa!");
+				}
 			}
 		}
 
@@ -215,11 +201,9 @@ namespace MapsExt.Editor
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.content, mapObject, obj =>
 				{
-					var handlers = obj.GetComponentsInChildren<MoveHandler>();
-
-					foreach (var handler in handlers)
+					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
 					{
-						handler.Handle(new MoveCommand(1, -1));
+						handler.Move(new Vector3(1, -1, 0));
 					}
 
 					this.AddSelected(obj);
@@ -272,9 +256,11 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			foreach (var instance in this.SelectedMapObjectInstances)
+			var mapObjects = this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
+
+			foreach (var instance in mapObjects)
 			{
-				if (instance.gameObject == this.animationHandler.animation?.gameObject)
+				if (instance == this.animationHandler.animation?.gameObject)
 				{
 					this.animationHandler.SetAnimation(null);
 				}
@@ -412,7 +398,7 @@ namespace MapsExt.Editor
 			this.selectionRect = Rect.zero;
 		}
 
-		public void OnClickActionHandlers(List<ActionHandler> handlers)
+		public void OnClickActionHandlers(List<MapObjectActionHandler> handlers)
 		{
 			var objects = handlers.Select(h => h.gameObject).Distinct().ToList();
 			objects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
@@ -473,9 +459,9 @@ namespace MapsExt.Editor
 
 		public void OnNudgeSelectedMapObjects(Vector2 delta)
 		{
-			foreach (var handler in this.SelectedMapObjects.SelectMany(obj => obj.GetComponents<ActionHandler<MoveCommand>>()))
+			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<PositionHandler>()))
 			{
-				handler.Handle(new MoveCommand(delta));
+				handler.Move(delta);
 			}
 
 			this.TakeSnaphot();

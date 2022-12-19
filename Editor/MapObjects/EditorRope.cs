@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnboundLib;
 using UnityEngine;
-using MapsExt.Editor.Commands;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -48,11 +47,17 @@ namespace MapsExt.Editor.MapObjects
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Anchor Position 1")
-				.ValueSetter(value => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position = value)
+				.ValueSetter(value => this.GetAnchorHandler(inspector.target, 0).SetPosition(value))
 				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position);
+
 			builder.Property<Vector2>("Anchor Position 2")
-				.ValueSetter(value => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position = value)
+				.ValueSetter(value => this.GetAnchorHandler(inspector.target, 1).SetPosition(value))
 				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position);
+		}
+
+		private RopeAnchorMoveHandler GetAnchorHandler(MapObjectInstance target, int anchor)
+		{
+			return target.GetComponent<EditorRopeInstance>().GetAnchor(anchor).GetComponent<RopeAnchorMoveHandler>();
 		}
 	}
 
