@@ -16,6 +16,7 @@ using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
 using UnboundLib.Utils;
+using Sirenix.Utilities;
 
 namespace MapsExt
 {
@@ -24,7 +25,7 @@ namespace MapsExt
 	public class MapsExtended : BaseUnityPlugin
 	{
 		private const string ModId = "io.olavim.rounds.mapsextended";
-		public const string Version = "0.9.5";
+		public const string Version = "0.10.0";
 
 #if DEBUG
 		public static readonly bool DEBUG = true;
@@ -36,6 +37,8 @@ namespace MapsExt
 
 		public MapObjectManager mapObjectManager;
 		public List<CustomMap> maps;
+		public Dictionary<string, List<CustomMap>> moddedMaps;
+		public List<CustomMap> personalMaps;
 		public bool forceCustomMaps = false;
 		public CustomMap loadedMap;
 		public string loadedMapSceneName;
@@ -143,10 +146,24 @@ namespace MapsExt
 			var personalMapsFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
 			Directory.CreateDirectory(personalMapsFolder);
 			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
+			moddedMaps = new Dictionary<string, List<CustomMap>>();
+			personalMaps = new List<CustomMap>();
 
-			this.maps = new List<CustomMap>();
-			this.maps.AddRange(pluginMapPaths.Select(MapsExtended.LoadMapData));
-			this.maps.AddRange(personalMapPaths.Select(MapsExtended.LoadMapData));
+			foreach (var path in pluginMapPaths)
+			{
+				string packName = Path.GetDirectoryName(path).Replace("_"," ");
+				if(packName.Contains("-"))
+					packName = packName.Substring(packName.IndexOf("-")+1);
+				packName = packName.Trim();
+				if (!moddedMaps.ContainsKey(packName))
+					moddedMaps[packName] = new List<CustomMap>();
+				moddedMaps[packName].Add(MapsExtended.LoadMapData(path));
+			}
+			this.personalMaps.AddRange(personalMapPaths.Select(MapsExtended.LoadMapData));
+
+			maps = new List<CustomMap>();
+			maps.AddRange(personalMaps);
+			moddedMaps.Values.ForEach(m => maps.AddRange(m));
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
@@ -164,8 +181,21 @@ namespace MapsExt
 				levelsToRedraw?.Remove(level);
 				allLevels.Remove(level);
 			}
-
-			LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
+			Dictionary<string,string> mapNames = new Dictionary<string,string>();
+			foreach (var map in personalMaps)
+			{
+				mapNames["MapsExtended:" + map.id] = map.name;
+			}
+			LevelManager.RegisterNamedMaps(this.personalMaps.Select(m => "MapsExtended:" + m.id), mapNames,"Personal");
+			foreach(var mod in moddedMaps.Keys)
+			{
+				mapNames.Clear();
+				foreach (var map in moddedMaps[mod])
+				{
+					mapNames["MapsExtended:" + map.id] = map.name;
+				}
+				LevelManager.RegisterNamedMaps(this.moddedMaps[mod].Select(m => "MapsExtended:" + m.id), mapNames, mod);
+			}
 		}
 
 		private static CustomMap LoadMapData(string path)
