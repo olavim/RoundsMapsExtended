@@ -4,6 +4,8 @@ using MapsExt.Editor.ActionHandlers;
 using System;
 using UnityEngine.Events;
 using MapsExt.MapObjects;
+using System.Collections.Generic;
+using HarmonyLib;
 
 namespace MapsExt.Editor.UI
 {
@@ -66,24 +68,28 @@ namespace MapsExt.Editor.UI
 				GameObject.Destroy(child.gameObject);
 			}
 
-			var blueprint = MapsExtendedEditor.instance.mapObjectManager.blueprints[this.target.dataType];
+			var dataTypeProperties = MapsExtendedEditor.instance.mapObjectManager.dataTypeProperties;
+			var builder = new InspectorLayoutBuilder();
 
-			if (blueprint is IInspectable)
+			foreach (var prop in dataTypeProperties.GetValueOrDefault(this.target.dataType, new List<Type>()))
 			{
-				var builder = new InspectorLayoutBuilder();
-				((IInspectable) blueprint).OnInspectorLayout(this, builder);
-
-				foreach (var elem in builder.layout.elements)
+				if (typeof(IInspectable).IsAssignableFrom(prop))
 				{
-					var instance = this.GetLayoutElementInstance(elem);
-
-					if (!instance)
-					{
-						throw new NotSupportedException($"Unknown inspector element: {elem.GetType()}");
-					}
-
-					instance.transform.SetParent(this.transform);
+					var inspectable = (IInspectable) AccessTools.CreateInstance(prop);
+					inspectable.OnInspectorLayout(this, builder);
 				}
+			}
+
+			foreach (var elem in builder.layout.elements)
+			{
+				var instance = this.GetLayoutElementInstance(elem);
+
+				if (!instance)
+				{
+					throw new NotSupportedException($"Unknown inspector element: {elem.GetType()}");
+				}
+
+				instance.transform.SetParent(this.transform);
 			}
 		}
 

@@ -28,7 +28,7 @@ namespace MapsExt
 				var param = Expression.Parameter(requestedType, name);
 				methodParameters.Add(param);
 
-				var convertedParam = currentType == requestedType ? (Expression)param : Expression.Convert(param, currentType);
+				var convertedParam = currentType == requestedType ? (Expression) param : Expression.Convert(param, currentType);
 				convertedMethodParameters.Add(convertedParam);
 			}
 
@@ -47,7 +47,7 @@ namespace MapsExt
 		static TDelegate ConvertDelegate<TDelegate>(Delegate del) where TDelegate : Delegate
 		{
 			var delegates = del.GetInvocationList().Select(inv => ConvertMethod<TDelegate>(inv.Target, inv.Method)).ToArray();
-			return (TDelegate)Delegate.Combine(delegates);
+			return (TDelegate) Delegate.Combine(delegates);
 		}
 
 		/// <summary>
@@ -84,6 +84,26 @@ namespace MapsExt
 				.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.FirstOrDefault(m => m.GetCustomAttribute(attributeType) != null)
 				?.GetValue(null) as T;
+		}
+
+		public static IEnumerable<Type> GetParentTypes(this Type type)
+		{
+			if (type == null)
+			{
+				yield break;
+			}
+
+			foreach (var i in type.GetInterfaces())
+			{
+				yield return i;
+			}
+
+			var currentBaseType = type.BaseType;
+			while (currentBaseType != null)
+			{
+				yield return currentBaseType;
+				currentBaseType = currentBaseType.BaseType;
+			}
 		}
 	}
 }

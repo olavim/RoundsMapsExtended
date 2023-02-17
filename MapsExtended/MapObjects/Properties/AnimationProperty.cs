@@ -1,17 +1,21 @@
-﻿using System.Linq;
+using System.Collections.Generic;
+using System.Linq;
 using UnboundLib;
 using UnityEngine;
 
-namespace MapsExt.MapObjects
+namespace MapsExt.MapObjects.Properties
 {
-	public abstract class SpatialMapObjectBlueprint<T> : BaseMapObjectBlueprint<T> where T : SpatialMapObject
+	public interface IMapObjectAnimation
 	{
-		public override void Serialize(GameObject instance, T target)
-		{
-			target.position = instance.transform.position;
-			target.scale = instance.transform.localScale;
-			target.rotation = instance.transform.rotation;
+		List<AnimationKeyframe> keyframes { get; set; }
+		List<IAnimationComponent> GetAnimationComponents();
+	}
 
+	[MapObjectProperty]
+	public class AnimationProperty : IMapObjectProperty<IMapObjectAnimation>
+	{
+		public virtual void Serialize(GameObject instance, IMapObjectAnimation target)
+		{
 			var anim = instance.GetComponent<MapObjectAnimation>();
 			if (anim && anim.keyframes.Count > 0)
 			{
@@ -22,23 +26,15 @@ namespace MapsExt.MapObjects
 			}
 		}
 
-		public override void Deserialize(T data, GameObject target)
+		public virtual void Deserialize(IMapObjectAnimation data, GameObject target)
 		{
-			/* SpatialMapObjectInstance doesn't add any functionality, but it offers a convenient way
-			 * to find "spatial" map objects from scene.
-			 */
-			target.GetOrAddComponent<SpatialMapObjectInstance>();
-
-			target.transform.position = data.position;
-			target.transform.localScale = data.scale;
-			target.transform.rotation = data.rotation;
-
 			if (data.keyframes != null && data.keyframes.Count > 0)
 			{
 				var dataFrames = data.keyframes.ToList();
 				dataFrames.Insert(0, new AnimationKeyframe(data));
 
 				var anim = target.GetOrAddComponent<MapObjectAnimation>();
+				anim.components = data.GetAnimationComponents();
 
 				for (int i = 0; i < dataFrames.Count; i++)
 				{

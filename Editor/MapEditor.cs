@@ -35,7 +35,7 @@ namespace MapsExt.Editor
 		private bool isCreatingSelection;
 		private Vector3 selectionStartPosition;
 		private Rect selectionRect;
-		private List<MapObject> clipboardMapObjects;
+		private List<MapObjectData> clipboardMapObjects;
 
 		private GameObject tempSpawn;
 
@@ -61,15 +61,6 @@ namespace MapsExt.Editor
 			{
 				this.UpdateSelection();
 			}
-
-			var devices = InControl.InputManager.ActiveDevices;
-			foreach (var device in devices)
-			{
-				if (device.Direction.Left.WasPressed)
-				{
-					UnityEngine.Debug.Log("Hoplaa!");
-				}
-			}
 		}
 
 		public void SaveMap(string filename)
@@ -91,7 +82,7 @@ namespace MapsExt.Editor
 			{
 				id = Guid.NewGuid().ToString(),
 				name = name,
-				mapObjects = new List<MapObject>()
+				mapObjects = new List<MapObjectData>()
 			};
 
 			var mapObjects = this.content.GetComponentsInChildren<MapObjectInstance>(true);
@@ -113,7 +104,7 @@ namespace MapsExt.Editor
 
 		public void OnCopy()
 		{
-			this.clipboardMapObjects = new List<MapObject>();
+			this.clipboardMapObjects = new List<MapObjectData>();
 			var mapObjectInstances = this.selectedObjects
 				.Select(obj => obj.GetComponent<MapObjectInstance>() ?? obj.GetComponentInParent<MapObjectInstance>())
 				.Distinct();
@@ -204,6 +195,7 @@ namespace MapsExt.Editor
 					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
 					{
 						handler.Move(new Vector3(1, -1, 0));
+						handler.OnChange();
 					}
 
 					this.AddSelected(obj);
@@ -285,7 +277,7 @@ namespace MapsExt.Editor
 
 			if (this.content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
-				MapsExtendedEditor.instance.SpawnObject(this.content, new Spawn(), instance =>
+				MapsExtendedEditor.instance.SpawnObject(this.content, new SpawnData(), instance =>
 				{
 					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this.tempSpawn = instance;
@@ -462,6 +454,7 @@ namespace MapsExt.Editor
 			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<PositionHandler>()))
 			{
 				handler.Move(delta);
+				handler.OnChange();
 			}
 
 			this.TakeSnaphot();

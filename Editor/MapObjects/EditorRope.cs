@@ -1,6 +1,8 @@
 ﻿using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
+using MapsExt.Editor.MapObjects.Properties;
 using System.Collections.Generic;
 using System.Linq;
 using UnboundLib;
@@ -8,19 +10,23 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorMapObjectBlueprint("Rope")]
-	public class EditorRopeBP : BaseMapObjectBlueprint<Rope>, IInspectable
+	[EditorMapObject("Rope")]
+	public class EditorRope : IMapObject<RopeData>
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
+		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
+	}
 
-		public override void Serialize(GameObject instance, Rope target)
+	[EditorMapObjectProperty]
+	public class EditorRopeProperty : IMapObjectProperty<RopeData>, IInspectable
+	{
+		public void Serialize(GameObject instance, RopeData target)
 		{
 			var ropeInstance = instance.GetComponent<EditorRopeInstance>();
 			target.startPosition = ropeInstance.GetAnchor(0).transform.position;
 			target.endPosition = ropeInstance.GetAnchor(1).transform.position;
 		}
 
-		public override void Deserialize(Rope data, GameObject target)
+		public void Deserialize(RopeData data, GameObject target)
 		{
 			var anchor1 = target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorMoveHandler>();

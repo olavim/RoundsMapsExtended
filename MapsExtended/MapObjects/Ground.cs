@@ -2,11 +2,11 @@
 
 namespace MapsExt.MapObjects
 {
-	public class Ground : SpatialMapObject { }
+	public class GroundData : SpatialMapObjectData { }
 
-	[MapObjectBlueprint]
-	public class GroundBP : SpatialMapObjectBlueprint<Ground>
+	[MapObject]
+	public class Ground : IMapObject<GroundData>
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground");
+		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground");
 	}
 }

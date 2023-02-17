@@ -9,6 +9,6 @@ namespace MapsExt
 	{
 		public string id;
 		public string name;
-		public List<MapObject> mapObjects;
+		public List<MapObjectData> mapObjects;
 	}
 }

@@ -103,6 +103,7 @@ namespace MapsExt.Editor.Interactions
 				foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<SizeHandler>()))
 				{
 					handler.Resize(sizeDelta, this.resizeDirection);
+					handler.OnChange();
 				}
 
 				this.prevMouse += mouseDelta;

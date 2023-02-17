@@ -1,12 +1,16 @@
-﻿using UnityEngine;
+﻿using MapsExt.MapObjects.Properties;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class BoxDestructible : DamageableMapObject { }
-
-	[MapObjectBlueprint]
-	public class BoxDestructibleBP : DamageableMapObjectBlueprint<BoxDestructible>
+	public class BoxDestructibleData : SpatialMapObjectData, IMapObjectDamageable
 	{
-		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Box_Destructible");
+		public bool damageableByEnvironment { get; set; } = false;
+	}
+
+	[MapObject]
+	public class BoxDestructible : IMapObject<BoxDestructibleData>
+	{
+		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Box_Destructible");
 	}
 }

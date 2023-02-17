@@ -15,6 +15,7 @@ using UnboundLib.Utils.UI;
 using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using UnboundLib.Utils;
 
 namespace MapsExt
@@ -39,6 +40,7 @@ namespace MapsExt
 		public bool forceCustomMaps = false;
 		public CustomMap loadedMap;
 		public string loadedMapSceneName;
+		public Action<Assembly> RegisterMapObjectPropertiesAction;
 		public Action<Assembly> RegisterMapObjectsAction;
 
 		internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
@@ -63,11 +65,13 @@ namespace MapsExt
 				}
 			};
 
+			this.RegisterMapObjectPropertiesAction += this.OnRegisterMapObjectProperties;
 			this.RegisterMapObjectsAction += this.OnRegisterMapObjects;
 		}
 
 		public void Start()
 		{
+			this.RegisterMapObjectProperties();
 			this.RegisterMapObjects();
 			this.UpdateMapFiles();
 
@@ -82,29 +86,63 @@ namespace MapsExt
 			UnityEngine.Debug.Log(UnityEngine.StackTraceUtility.ExtractStackTrace());
 		}
 
+		public void RegisterMapObjectProperties()
+		{
+			this.RegisterMapObjectPropertiesAction?.Invoke(Assembly.GetCallingAssembly());
+		}
+
 		public void RegisterMapObjects()
 		{
 			this.RegisterMapObjectsAction?.Invoke(Assembly.GetCallingAssembly());
 		}
 
+		private void OnRegisterMapObjectProperties(Assembly assembly)
+		{
+			var types = assembly.GetTypes();
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObjectProperty>() != null);
+
+			foreach (var propertyType in typesWithAttribute)
+			{
+				try
+				{
+					var propertyTargetType = MapObjectUtils.GetMapObjectPropertyTargetType(propertyType);
+
+					if (propertyTargetType == null)
+					{
+						throw new Exception($"Invalid serializer: {propertyType.Name} does not inherit from {typeof(IMapObjectProperty<>)}");
+					}
+
+					this.mapObjectManager.RegisterProperty(propertyTargetType, propertyType);
+				}
+				catch (Exception ex)
+				{
+					UnityEngine.Debug.LogError($"Could not register map object serializer {propertyType.Name}: {ex.Message}");
+
+#if DEBUG
+					UnityEngine.Debug.LogError(ex.StackTrace);
+#endif
+				}
+			}
+		}
+
 		private void OnRegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObjectBlueprint>() != null);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObject>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
 				try
 				{
-					var dataType = this.GetBlueprintDataType(type);
+					var dataType = MapObjectUtils.GetMapObjectDataType(type);
 
 					if (dataType == null)
 					{
-						throw new Exception($"Invalid blueprint: {type.Name} does not inherit from {typeof(IMapObjectBlueprint<>)}");
+						throw new Exception($"Invalid map object: {type.Name} does not inherit from {typeof(IMapObject<>)}");
 					}
 
-					var blueprint = (IMapObjectBlueprint) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterBlueprint(dataType, blueprint);
+					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
+					this.mapObjectManager.RegisterMapObject(dataType, mapObject);
 				}
 				catch (Exception ex)
 				{
@@ -115,19 +153,6 @@ namespace MapsExt
 #endif
 				}
 			}
-		}
-
-		private Type GetBlueprintDataType(Type blueprintType)
-		{
-			foreach (Type interfaceType in blueprintType.GetInterfaces())
-			{
-				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectBlueprint<>))
-				{
-					return interfaceType.GetGenericArguments()[0];
-				}
-			}
-
-			return null;
 		}
 
 		public void DrawDebugGUI(GameObject menu)

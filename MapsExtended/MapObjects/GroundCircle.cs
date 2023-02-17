@@ -1,20 +1,13 @@
-﻿using UnityEngine;
-using UnboundLib;
-using MapsExt.Transformers;
+﻿using MapsExt.MapObjects.Properties;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class GroundCircle : SpatialMapObject { }
+	public class GroundCircleData : SpatialMapObjectData, IMapObjectEllipse { }
 
-	[MapObjectBlueprint]
-	public class GroundCircleBP : SpatialMapObjectBlueprint<GroundCircle>
+	[MapObject]
+	public class GroundCircle : IMapObject<GroundCircleData>
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
-
-		public override void Deserialize(GroundCircle data, GameObject target)
-		{
-			base.Deserialize(data, target);
-			target.GetOrAddComponent<EllipseTransformer>();
-		}
+		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
 	}
 }

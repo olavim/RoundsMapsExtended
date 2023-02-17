@@ -1,4 +1,4 @@
-using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
@@ -133,6 +133,7 @@ namespace MapsExt
 		{
 			this.keyframes.Clear();
 			this.keyframes.Add(new AnimationKeyframe(anim));
+			this.components = anim.GetAnimationComponents();
 		}
 
 		public void Play()
@@ -162,9 +163,9 @@ namespace MapsExt
 			for (int i = 0; i < this.components.Count; i++)
 			{
 				var comp = this.components[i];
-				var startValue = startFrame.componentValues[i];
-				var endValue = endFrame.componentValues[i];
-				comp.Lerp(startValue, endValue, curveValue);
+				var startValue = startFrame.componentValues[i].Value;
+				var endValue = endFrame.componentValues[i].Value;
+				comp.Lerp(this.gameObject, startValue, endValue, curveValue);
 			}
 		}
 

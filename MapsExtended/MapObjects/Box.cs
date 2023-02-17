@@ -2,11 +2,11 @@
 
 namespace MapsExt.MapObjects
 {
-	public class Box : SpatialMapObject { }
+	public class BoxData : SpatialMapObjectData { }
 
-	[MapObjectBlueprint]
-	public class BoxBP : SpatialMapObjectBlueprint<Box>
+	[MapObject]
+	public class Box : IMapObject<BoxData>
 	{
-		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Box");
+		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Box");
 	}
 }

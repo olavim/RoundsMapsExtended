@@ -1,21 +1,13 @@
-﻿using MapsExt.Transformers;
+﻿using MapsExt.MapObjects.Properties;
 using UnityEngine;
-using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
-	public class Saw : SpatialMapObject { }
+	public class SawData : SpatialMapObjectData, IMapObjectEllipse, IMapObjectSaw { }
 
-	[MapObjectBlueprint]
-	public class SawBP : SpatialMapObjectBlueprint<Saw>
+	[MapObject]
+	public class Saw : IMapObject<SawData>
 	{
-		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat");
-
-		public override void Deserialize(Saw data, GameObject target)
-		{
-			base.Deserialize(data, target);
-			target.GetOrAddComponent<SawTransformer>();
-			target.GetOrAddComponent<EllipseTransformer>();
-		}
+		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat");
 	}
 }

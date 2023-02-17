@@ -110,7 +110,7 @@ namespace MapsExt.Editor.UI
 			if (anim.keyframes.Count == 0)
 			{
 				anim.playOnAwake = false;
-				anim.Initialize((SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(anim.gameObject));
+				anim.Initialize((SpatialMapObjectData) MapsExtendedEditor.instance.mapObjectManager.Serialize(anim.gameObject));
 			}
 
 			anim.keyframes.Insert(frameIndex, newFrame);

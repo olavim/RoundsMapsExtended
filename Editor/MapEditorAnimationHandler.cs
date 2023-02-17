@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using MapsExt.MapObjects;
 using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections.Generic;
 using MapsExt.Editor.UI;
+using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor
 {
@@ -92,9 +92,14 @@ namespace MapsExt.Editor
 
 			var baseObject = this.animation.gameObject;
 			var firstFrame = this.animation.keyframes[0];
-			baseObject.transform.position = firstFrame.GetComponentValue<PositionComponentValue>().Value;
-			baseObject.transform.localScale = firstFrame.GetComponentValue<ScaleComponentValue>().Value;
-			baseObject.transform.rotation = firstFrame.GetComponentValue<RotationComponentValue>().Value;
+
+			for (int i = 0; i < this.animation.components.Count; i++)
+			{
+				var comp = this.animation.components[i];
+				var value = firstFrame.componentValues[i].Value;
+				comp.Lerp(baseObject, value, value, 0);
+			}
+
 			baseObject.SetActive(true);
 
 			this.prevKeyframe = this.KeyframeIndex;
@@ -179,10 +184,16 @@ namespace MapsExt.Editor
 			this.curtain.SetActive(true);
 			this.RefreshParticles();
 
+			var mapObject = MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animation.gameObject);
+
 			if (this.animation.keyframes.Count == 0)
 			{
-				var mapObject = (SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animation.gameObject);
-				this.animation.Initialize(mapObject);
+				this.animation.Initialize((IMapObjectAnimation) mapObject);
+			}
+
+			foreach (var componentValue in this.animation.keyframes[0].componentValues)
+			{
+				componentValue.SetValueFrom(mapObject);
 			}
 
 			this.SetKeyframe(0);
@@ -202,6 +213,19 @@ namespace MapsExt.Editor
 			else
 			{
 				this.AddAnimation(target);
+			}
+		}
+
+		private void ReplaceActionHandler<T, K>(GameObject instance)
+			where T : MapObjectActionHandler
+			where K : Component, IAnimationActionHandler
+		{
+			if (instance.GetComponent<T>())
+			{
+				GameObject.Destroy(instance.GetComponent<T>());
+				var handler = instance.AddComponent<K>();
+				handler.animation = this.animation;
+				handler.frameIndex = this.KeyframeIndex;
 			}
 		}
 
@@ -227,28 +251,16 @@ namespace MapsExt.Editor
 						renderer.gameObject.layer = MAPOBJECT_LAYER;
 					}
 
-					if (instance.GetComponent<PositionHandler>())
+					foreach (var handler in instance.GetComponentsInChildren<MapObjectActionHandler>())
 					{
-						GameObject.Destroy(instance.GetComponent<PositionHandler>());
-						var handler = instance.AddComponent<AnimationMoveHandler>();
-						handler.animation = this.animation;
-						handler.frameIndex = this.KeyframeIndex;
-					}
-
-					if (instance.GetComponent<SizeHandler>())
-					{
-						GameObject.Destroy(instance.GetComponent<SizeHandler>());
-						var handler = instance.AddComponent<AnimationResizeHandler>();
-						handler.animation = this.animation;
-						handler.frameIndex = this.KeyframeIndex;
-					}
-
-					if (instance.GetComponent<ActionHandlers.RotationHandler>())
-					{
-						GameObject.Destroy(instance.GetComponent<ActionHandlers.RotationHandler>());
-						var handler = instance.AddComponent<AnimationRotateHandler>();
-						handler.animation = this.animation;
-						handler.frameIndex = this.KeyframeIndex;
+						handler.OnChange += () =>
+						{
+							var frameData = MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
+							foreach (var componentValue in this.animation.keyframes[frameIndex].componentValues)
+							{
+								componentValue.SetValueFrom(frameData);
+							}
+						};
 					}
 
 					instance.transform.SetAsLastSibling();
@@ -287,13 +299,17 @@ namespace MapsExt.Editor
 
 		private void SpawnKeyframeMapObject(AnimationKeyframe frame, Action<GameObject> cb)
 		{
-			var frameData = (SpatialMapObject) MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animation.gameObject);
+			var frameData = MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animation.gameObject);
 			frameData.mapObjectId = $"{frameData.mapObjectId}:keyframeMapObject";
 			frameData.active = true;
-			frameData.position = frame.GetComponentValue<PositionComponentValue>().Value;
-			frameData.scale = frame.GetComponentValue<ScaleComponentValue>().Value;
-			frameData.rotation = frame.GetComponentValue<RotationComponentValue>().Value;
-			frameData.keyframes.Clear();
+			((IMapObjectAnimation) frameData).keyframes.Clear();
+
+			for (int i = 0; i < this.animation.components.Count; i++)
+			{
+				var comp = this.animation.components[i];
+				var value = frame.componentValues[i].Value;
+				comp.Lerp(frameData, value, value, 0);
+			}
 
 			MapsExtendedEditor.instance.SpawnObject(this.gameObject, frameData, cb);
 		}
@@ -305,13 +321,14 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.animation.transform.position = this.animation.keyframes[0].GetComponentValue<PositionComponentValue>().Value;
-			this.animation.transform.localScale = this.animation.keyframes[0].GetComponentValue<ScaleComponentValue>().Value;
-			this.animation.transform.rotation = this.animation.keyframes[0].GetComponentValue<RotationComponentValue>().Value;
-
-			this.keyframeMapObject.transform.position = this.Keyframe.GetComponentValue<PositionComponentValue>().Value;
-			this.keyframeMapObject.transform.localScale = this.Keyframe.GetComponentValue<ScaleComponentValue>().Value;
-			this.keyframeMapObject.transform.rotation = this.Keyframe.GetComponentValue<RotationComponentValue>().Value;
+			for (int i = 0; i < this.animation.components.Count; i++)
+			{
+				var comp = this.animation.components[i];
+				var baseFrameValue = this.animation.keyframes[0].componentValues[i].Value;
+				var currentFrameValue = this.Keyframe.componentValues[i].Value;
+				comp.Lerp(this.animation.gameObject, baseFrameValue, baseFrameValue, 0);
+				comp.Lerp(this.keyframeMapObject, currentFrameValue, currentFrameValue, 0);
+			}
 		}
 	}
 }

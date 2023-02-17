@@ -1,4 +1,4 @@
-using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace MapsExt
 
 		public AnimationKeyframe(IMapObjectAnimation anim)
 		{
-			this.componentValues = anim.GetAnimationComponents().Select(c => c.Value).ToList();
+			this.componentValues = anim.GetAnimationComponents().Select(c => c.Value.Clone()).ToList();
 			this.duration = 1;
 			this.curveType = CurveType.Linear;
 
@@ -34,7 +34,7 @@ namespace MapsExt
 
 		public AnimationKeyframe(AnimationKeyframe frame)
 		{
-			this.componentValues = frame.componentValues.ToList();
+			this.componentValues = frame.componentValues.Select(v => v.Clone()).ToList();
 			this.duration = frame.duration;
 			this.curveType = frame.curveType;
 
@@ -48,7 +48,7 @@ namespace MapsExt
 
 		public T GetComponentValue<T>() where T : IAnimationComponentValue
 		{
-			return (T) this.componentValues.Find(v => v.GetType().IsSubclassOf(typeof(T)));
+			return (T) this.componentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
 		}
 
 		private BezierAnimationCurve GetCurve()

@@ -1,14 +1,14 @@
 using UnityEngine;
 
-namespace MapsExt.MapObjects
+namespace MapsExt.MapObjects.Properties
 {
 	public interface IMapObjectPosition
 	{
 		Vector3 position { get; set; }
 	}
 
-	[MapObjectSerializer]
-	public class PositionSerializer : IMapObjectSerializer<IMapObjectPosition>
+	[MapObjectProperty]
+	public class PositionProperty : IMapObjectProperty<IMapObjectPosition>
 	{
 		public virtual void Serialize(GameObject instance, IMapObjectPosition target)
 		{

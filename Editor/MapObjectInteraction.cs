@@ -10,12 +10,12 @@ namespace MapsExt
 	{
 		public class StateTransition
 		{
-			public MapObject fromState;
-			public MapObject toState;
+			public MapObjectData fromState;
+			public MapObjectData toState;
 			public MapObjectInstance target;
 		}
 
-		private static List<Tuple<MapObjectInstance, MapObject>> startState;
+		private static List<Tuple<MapObjectInstance, MapObjectData>> startState;
 		private static MapObjectManager cachedMapObjectManager;
 
 		public static void BeginInteraction(MapObjectManager mapObjectManager, IEnumerable<GameObject> objects)
@@ -31,12 +31,12 @@ namespace MapsExt
 			}
 
 			MapObjectInteraction.cachedMapObjectManager = mapObjectManager;
-			MapObjectInteraction.startState = new List<Tuple<MapObjectInstance, MapObject>>();
+			MapObjectInteraction.startState = new List<Tuple<MapObjectInstance, MapObjectData>>();
 
 			foreach (var instance in instances)
 			{
 				var state = mapObjectManager.Serialize(instance);
-				MapObjectInteraction.startState.Add(new Tuple<MapObjectInstance, MapObject>(instance, state));
+				MapObjectInteraction.startState.Add(new Tuple<MapObjectInstance, MapObjectData>(instance, state));
 			}
 
 			return true;
@@ -106,7 +106,7 @@ namespace MapsExt
 			return this.stateTransitions.FirstOrDefault(t => t.target.gameObject == target);
 		}
 
-		private void SetState(MapObject state, MapObjectInstance target)
+		private void SetState(MapObjectData state, MapObjectInstance target)
 		{
 			this.mapObjectManager.Deserialize(state, target.gameObject);
 		}

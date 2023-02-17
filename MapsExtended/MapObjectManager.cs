@@ -21,7 +21,9 @@ namespace MapsExt
 			return MapObjectManager.mapObjectBundle.LoadAsset<TObj>(name);
 		}
 
-		public readonly Dictionary<Type, IMapObjectBlueprint> blueprints = new Dictionary<Type, IMapObjectBlueprint>();
+		public readonly Dictionary<Type, IMapObject> mapObjects = new Dictionary<Type, IMapObject>();
+		public readonly Dictionary<Type, Type> mapObjectProperties = new Dictionary<Type, Type>();
+		public readonly Dictionary<Type, List<Type>> dataTypeProperties = new Dictionary<Type, List<Type>>();
 
 		private string NetworkID { get; set; }
 
@@ -36,17 +38,40 @@ namespace MapsExt
 			MapObjectManager.syncStores.Add(id, new TargetSyncedStore<int>());
 		}
 
-		public void RegisterBlueprint(Type dataType, IMapObjectBlueprint blueprint)
+		public void RegisterProperty(Type propertyTargetType, Type propertyType)
 		{
-			this.blueprints.Add(dataType, blueprint);
+			this.mapObjectProperties.Add(propertyTargetType, propertyType);
+		}
 
-			if (blueprint.Prefab.GetComponent<PhotonMapObject>())
+		public void RegisterMapObject(Type dataType, IMapObject mapObject)
+		{
+			this.mapObjects.Add(dataType, mapObject);
+
+			if (mapObject.Prefab.GetComponent<PhotonMapObject>())
 			{
-				PhotonNetwork.PrefabPool.RegisterPrefab(this.GetInstanceName(dataType), blueprint.Prefab);
+				PhotonNetwork.PrefabPool.RegisterPrefab(this.GetInstanceName(dataType), mapObject.Prefab);
 
 				// PhotonMapObject has a hard-coded prefab name prefix / resource location
-				PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), blueprint.Prefab);
+				PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), mapObject.Prefab);
 			}
+
+			var list = new List<Type>();
+			Type propertyType;
+
+			if (this.mapObjectProperties.TryGetValue(dataType, out propertyType))
+			{
+				list.Add(propertyType);
+			}
+
+			foreach (Type type in ReflectionUtils.GetParentTypes(dataType))
+			{
+				if (this.mapObjectProperties.TryGetValue(type, out propertyType))
+				{
+					list.Add(propertyType);
+				}
+			}
+
+			this.dataTypeProperties.Add(dataType, list);
 		}
 
 		private string GetInstanceName(Type type)
@@ -54,7 +79,7 @@ namespace MapsExt
 			return $"{this.NetworkID}/{type.FullName}";
 		}
 
-		public MapObject Serialize(GameObject go)
+		public MapObjectData Serialize(GameObject go)
 		{
 			var mapObjectInstance = go.GetComponent<MapObjectInstance>();
 
@@ -66,7 +91,7 @@ namespace MapsExt
 			return this.Serialize(mapObjectInstance);
 		}
 
-		public MapObject Serialize(MapObjectInstance mapObjectInstance)
+		public MapObjectData Serialize(MapObjectInstance mapObjectInstance)
 		{
 			if (mapObjectInstance == null)
 			{
@@ -78,21 +103,27 @@ namespace MapsExt
 				throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}): missing dataType");
 			}
 
-			if (this.blueprints.TryGetValue(mapObjectInstance.dataType, out IMapObjectBlueprint bp))
+			if (this.mapObjects.TryGetValue(mapObjectInstance.dataType, out IMapObject mapObject))
 			{
 				try
 				{
-					var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
+					var data = (MapObjectData) AccessTools.CreateInstance(mapObjectInstance.dataType);
 
 					data.mapObjectId = mapObjectInstance.mapObjectId;
 					data.active = mapObjectInstance.gameObject.activeSelf;
 
-					bp.Serialize(mapObjectInstance.gameObject, data);
+					foreach (var prop in this.dataTypeProperties.GetValueOrDefault(mapObjectInstance.dataType, new List<Type>()))
+					{
+						var instance = AccessTools.CreateInstance(prop);
+						var serializer = prop.GetMethod("Serialize");
+						serializer.Invoke(instance, new object[] { mapObjectInstance.gameObject, data });
+					}
+
 					return data;
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not serialize map object instance with blueprint: {bp.GetType()}");
+					UnityEngine.Debug.LogError($"Could not serialize map object instance with blueprint: {mapObject.GetType()}");
 					ex.Rethrow();
 					throw;
 				}
@@ -103,21 +134,41 @@ namespace MapsExt
 			}
 		}
 
-		public void Deserialize(MapObject data, GameObject target)
+		public void Deserialize(MapObjectData data, GameObject target)
 		{
-			var bp = this.blueprints[data.GetType()];
 
-			var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
-			mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
-			mapObjectInstance.dataType = data.GetType();
-			target.SetActive(data.active);
+			if (this.mapObjects.TryGetValue(data.GetType(), out IMapObject mapObject))
+			{
+				try
+				{
+					var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
+					mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
+					mapObjectInstance.dataType = data.GetType();
+					target.SetActive(data.active);
 
-			bp.Deserialize(data, target);
+					foreach (var prop in this.dataTypeProperties.GetValueOrDefault(data.GetType(), new List<Type>()))
+					{
+						var instance = AccessTools.CreateInstance(prop);
+						var serializer = prop.GetMethod("Deserialize");
+						serializer.Invoke(instance, new object[] { data, target });
+					}
+				}
+				catch (Exception ex)
+				{
+					UnityEngine.Debug.LogError($"Could not deserialize map object instance for type: {data.GetType()}");
+					ex.Rethrow();
+					throw;
+				}
+			}
+			else
+			{
+				throw new ArgumentException($"MapObject not found for type {data.GetType()}");
+			}
 		}
 
-		public void Instantiate(MapObject data, Transform parent, Action<GameObject> onInstantiate = null)
+		public void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null)
 		{
-			var bp = this.blueprints[data.GetType()];
+			var bp = this.mapObjects[data.GetType()];
 
 			var syncStore = MapObjectManager.syncStores[this.NetworkID];
 			int instantiationID = syncStore.Allocate(parent);
@@ -185,7 +236,7 @@ namespace MapsExt
 			onInstantiate?.Invoke(instance);
 		}
 
-		private IEnumerator SyncInstantiation(object target, int instantiationID, MapObject data, Action<GameObject> onInstantiate)
+		private IEnumerator SyncInstantiation(object target, int instantiationID, MapObjectData data, Action<GameObject> onInstantiate)
 		{
 			var syncStore = MapObjectManager.syncStores[this.NetworkID];
 			yield return syncStore.WaitForValue(target, instantiationID);

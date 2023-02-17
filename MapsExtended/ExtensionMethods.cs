@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using UnityEngine;
 using ExceptionDispatchInfo = System.Runtime.ExceptionServices.ExceptionDispatchInfo;
+using System.Collections.Generic;
 
 namespace MapsExt
 {
@@ -54,6 +55,11 @@ namespace MapsExt
 			}
 
 			return false;
+		}
+
+		public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
+		{
+			return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
 		}
 	}
 }

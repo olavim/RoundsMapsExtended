@@ -1,14 +1,14 @@
 using UnityEngine;
 
-namespace MapsExt.MapObjects
+namespace MapsExt.MapObjects.Properties
 {
 	public interface IMapObjectRotation
 	{
 		Quaternion rotation { get; set; }
 	}
 
-	[MapObjectSerializer]
-	public class RotationSerializer : IMapObjectSerializer<IMapObjectRotation>
+	[MapObjectProperty]
+	public class RotationProperty : IMapObjectProperty<IMapObjectRotation>
 	{
 		public virtual void Serialize(GameObject instance, IMapObjectRotation target)
 		{

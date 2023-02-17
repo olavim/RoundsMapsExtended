@@ -1,4 +1,3 @@
-using MapsExt.Editor.ActionHandlers;
 using System.Collections.Specialized;
 using System.Linq;
 using UnityEngine;
@@ -89,6 +88,7 @@ namespace MapsExt.Editor.Interactions
 			foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<ActionHandlers.RotationHandler>()))
 			{
 				handler.SetRotation(toRotation);
+				handler.OnChange();
 			}
 		}
 

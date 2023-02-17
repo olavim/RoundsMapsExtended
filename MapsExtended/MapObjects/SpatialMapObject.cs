@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MapsExt.MapObjects.Properties;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MapsExt.MapObjects
@@ -7,7 +8,7 @@ namespace MapsExt.MapObjects
 	/// Spatial map objects represent map objects that are described with position, scale and rotation.
 	/// Typical spatial map objects are, for example, boxes and other obstacles.
 	/// </summary>
-	public abstract class SpatialMapObject : MapObject, IMapObjectAnimation, IMapObjectPosition, IMapObjectScale, IMapObjectRotation
+	public abstract class SpatialMapObjectData : MapObjectData, IMapObjectAnimation, IMapObjectPosition, IMapObjectScale, IMapObjectRotation
 	{
 		private readonly List<IAnimationComponent> animationComponents;
 
@@ -16,7 +17,7 @@ namespace MapsExt.MapObjects
 		public Quaternion rotation { get; set; } = Quaternion.identity;
 		public List<AnimationKeyframe> keyframes { get; set; } = new List<AnimationKeyframe>();
 
-		public SpatialMapObject()
+		public SpatialMapObjectData()
 		{
 			this.animationComponents = new List<IAnimationComponent>()
 			{

@@ -2,10 +2,22 @@
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class AnimationMoveHandler : PositionHandler
+	public interface IAnimationActionHandler
 	{
-		public MapObjectAnimation animation;
-		public int frameIndex;
+		MapObjectAnimation animation { get; set; }
+		int frameIndex { get; set; }
+	}
+
+	public class AnimationPositionHandler : PositionHandler, IAnimationActionHandler
+	{
+		public MapObjectAnimation animation { get; set; }
+		public int frameIndex { get; set; }
+
+		public override void Move(Vector3 delta)
+		{
+			base.Move(delta);
+			this.animation.keyframes[this.frameIndex].GetComponentValue<PositionComponentValue>().Value = this.transform.position;
+		}
 
 		public override void SetPosition(Vector3 position)
 		{
@@ -14,10 +26,10 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class AnimationResizeHandler : SizeHandler
+	public class AnimationSizeHandler : SizeHandler, IAnimationActionHandler
 	{
-		public MapObjectAnimation animation;
-		public int frameIndex;
+		public MapObjectAnimation animation { get; set; }
+		public int frameIndex { get; set; }
 
 		public override void SetSize(Vector3 scale, int resizeDirection)
 		{
@@ -26,10 +38,10 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 	}
 
-	public class AnimationRotateHandler : RotationHandler
+	public class AnimationRotationHandler : RotationHandler, IAnimationActionHandler
 	{
-		public MapObjectAnimation animation;
-		public int frameIndex;
+		public MapObjectAnimation animation { get; set; }
+		public int frameIndex { get; set; }
 
 		public override void SetRotation(Quaternion rotation)
 		{

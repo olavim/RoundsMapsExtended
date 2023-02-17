@@ -2,6 +2,6 @@
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorMapObjectBlueprint("Box (Destructible)", "Dynamic")]
-	public class EditorBoxDestructibleBP : EditorDamageableMapObjectBlueprint<BoxDestructible> { }
+	[EditorMapObject("Box (Destructible)", "Dynamic")]
+	public class EditorBoxDestructible : BoxDestructible { }
 }

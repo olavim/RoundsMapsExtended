@@ -1,14 +1,14 @@
 using UnityEngine;
 
-namespace MapsExt.MapObjects
+namespace MapsExt.MapObjects.Properties
 {
 	public interface IMapObjectScale
 	{
 		Vector3 scale { get; set; }
 	}
 
-	[MapObjectSerializer]
-	public class ScaleSerializer : IMapObjectSerializer<IMapObjectScale>
+	[MapObjectProperty]
+	public class ScaleProperty : IMapObjectProperty<IMapObjectScale>
 	{
 		public virtual void Serialize(GameObject instance, IMapObjectScale target)
 		{

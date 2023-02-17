@@ -10,8 +10,10 @@ using UnityEngine.Rendering.PostProcessing;
 using HarmonyLib;
 using UnboundLib;
 using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using Jotunn.Utils;
 using MapsExt.Editor.MapObjects;
+using MapsExt.Editor.MapObjects.Properties;
 
 namespace MapsExt.Editor
 {
@@ -26,7 +28,7 @@ namespace MapsExt.Editor
 		public static MapsExtendedEditor instance;
 
 		public bool editorActive = false;
-		public List<Tuple<Type, EditorMapObjectBlueprint>> mapObjectAttributes = new List<Tuple<Type, EditorMapObjectBlueprint>>();
+		public List<Tuple<Type, EditorMapObject>> mapObjectAttributes = new List<Tuple<Type, EditorMapObject>>();
 
 		internal MapObjectManager mapObjectManager;
 		internal GameObject frontParticles;
@@ -61,15 +63,16 @@ namespace MapsExt.Editor
 			Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
 
 			string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}MapsExtended.Editor.UI.dll");
 			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}NetTopologySuite.dll");
 			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}System.Buffers.dll");
 
+			MapsExtended.instance.RegisterMapObjectPropertiesAction += this.RegisterMapObjectSerializers;
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
 		public void Start()
 		{
+			MapsExtended.instance.RegisterMapObjectProperties();
 			MapsExtended.instance.RegisterMapObjects();
 
 			Unbound.RegisterMenu("Map Editor", () =>
@@ -102,26 +105,55 @@ namespace MapsExt.Editor
 			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
 		}
 
+		private void RegisterMapObjectSerializers(Assembly assembly)
+		{
+			var types = assembly.GetTypes();
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObjectProperty>() != null);
+
+			foreach (var propertyType in typesWithAttribute)
+			{
+				try
+				{
+					var propertyTargetType = MapObjectUtils.GetMapObjectPropertyTargetType(propertyType);
+
+					if (propertyTargetType == null)
+					{
+						throw new Exception($"Invalid editor serializer: {propertyType.Name} does not inherit from {typeof(IMapObjectProperty<>)}");
+					}
+
+					this.mapObjectManager.RegisterProperty(propertyTargetType, propertyType);
+				}
+				catch (Exception ex)
+				{
+					UnityEngine.Debug.LogError($"Could not register map object serializer {propertyType.Name}: {ex.Message}");
+
+#if DEBUG
+					UnityEngine.Debug.LogError(ex.StackTrace);
+#endif
+				}
+			}
+		}
+
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObjectBlueprint>() != null);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObject>() != null);
 
 			foreach (var type in typesWithAttribute)
 			{
 				try
 				{
-					var attr = type.GetCustomAttribute<EditorMapObjectBlueprint>();
-					var dataType = this.GetBlueprintDataType(type);
+					var attr = type.GetCustomAttribute<EditorMapObject>();
+					var dataType = MapObjectUtils.GetMapObjectDataType(type);
 
 					if (dataType == null)
 					{
-						throw new Exception($"Invalid editor blueprint: {type.Name} does not inherit from {typeof(IMapObjectBlueprint<>)}");
+						throw new Exception($"Invalid editor blueprint: {type.Name} does not inherit from {typeof(IMapObject<>)}");
 					}
 
-					var blueprint = (IMapObjectBlueprint) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterBlueprint(dataType, blueprint);
-					this.mapObjectAttributes.Add(new Tuple<Type, EditorMapObjectBlueprint>(dataType, attr));
+					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
+					this.mapObjectManager.RegisterMapObject(dataType, mapObject);
+					this.mapObjectAttributes.Add(new Tuple<Type, EditorMapObject>(dataType, attr));
 				}
 				catch (Exception ex)
 				{
@@ -132,19 +164,6 @@ namespace MapsExt.Editor
 #endif
 				}
 			}
-		}
-
-		private Type GetBlueprintDataType(Type blueprintType)
-		{
-			foreach (Type interfaceType in blueprintType.GetInterfaces())
-			{
-				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectBlueprint<>))
-				{
-					return interfaceType.GetGenericArguments()[0];
-				}
-			}
-
-			return null;
 		}
 
 		private void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)
@@ -182,11 +201,11 @@ namespace MapsExt.Editor
 
 		public void SpawnObject(GameObject container, Type type, Action<GameObject> cb)
 		{
-			var mapObject = (MapObject) AccessTools.CreateInstance(type);
+			var mapObject = (MapObjectData) AccessTools.CreateInstance(type);
 			this.SpawnObject(container, mapObject, cb);
 		}
 
-		public void SpawnObject(GameObject container, MapObject data, Action<GameObject> cb = null)
+		public void SpawnObject(GameObject container, MapObjectData data, Action<GameObject> cb = null)
 		{
 			this.mapObjectManager.Instantiate(data, container.transform, instance =>
 			{

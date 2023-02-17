@@ -2,24 +2,24 @@
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorMapObjectBlueprint("Ball", "Dynamic")]
-	public class EditorBallBP : EditorSpatialMapObjectBlueprint<Ball> { }
+	[EditorMapObject("Ball", "Dynamic")]
+	public class EditorBall : Ball { }
 
-	[EditorMapObjectBlueprint("Box", "Dynamic")]
-	public class EditorBoxBP : EditorSpatialMapObjectBlueprint<Box> { }
+	[EditorMapObject("Box", "Dynamic")]
+	public class EditorBox : Box { }
 
-	[EditorMapObjectBlueprint("Box (Background)", "Dynamic")]
-	public class EditorBoxBackgroundBP : EditorSpatialMapObjectBlueprint<BoxBackground> { }
+	[EditorMapObject("Box (Background)", "Dynamic")]
+	public class EditorBoxBackground : BoxBackground { }
 
-	[EditorMapObjectBlueprint("Ground", "Static")]
-	public class EditorGroundBP : EditorSpatialMapObjectBlueprint<Ground> { }
+	[EditorMapObject("Ground", "Static")]
+	public class EditorGround : Ground { }
 
-	[EditorMapObjectBlueprint("Ground (Circle)", "Static")]
-	public class EditorGroundCircleBP : EditorSpatialMapObjectBlueprint<GroundCircle> { }
+	[EditorMapObject("Ground (Circle)", "Static")]
+	public class EditorGroundCircle : GroundCircle { }
 
-	[EditorMapObjectBlueprint("Saw", "Static")]
-	public class EditorSawBP : EditorSpatialMapObjectBlueprint<MapsExt.MapObjects.Saw> { }
+	[EditorMapObject("Saw", "Static")]
+	public class EditorSaw : MapsExt.MapObjects.Saw { }
 
-	[EditorMapObjectBlueprint("Saw", "Dynamic")]
-	public class EditorSawDynamicBP : EditorSpatialMapObjectBlueprint<SawDynamic> { }
+	[EditorMapObject("Saw", "Dynamic")]
+	public class EditorSawDynamic : SawDynamic { }
 }

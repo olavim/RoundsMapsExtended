@@ -1,36 +1,37 @@
-﻿using UnityEngine;
+﻿using MapsExt.MapObjects.Properties;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class Spawn : MapObject
+	public class SpawnData : MapObjectData, IMapObjectPosition
 	{
 		public int id = 0;
 		public int teamID = 0;
-		public Vector3 position = Vector3.zero;
+		public Vector3 position { get; set; } = Vector3.zero;
 	}
 
-	[MapObjectBlueprint]
-	public class SpawnBP : BaseMapObjectBlueprint<Spawn>
+	[MapObject]
+	public class Spawn : IMapObject<SpawnData>
 	{
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
+	}
 
-		public override void Serialize(GameObject instance, Spawn target)
+	[MapObjectProperty]
+	public class SpawnProperty : IMapObjectProperty<SpawnData>
+	{
+		public virtual void Serialize(GameObject instance, SpawnData target)
 		{
 			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
 			target.id = spawnPoint.ID;
 			target.teamID = spawnPoint.TEAMID;
-			target.position = instance.transform.position;
 		}
 
-		public override void Deserialize(Spawn data, GameObject target)
+		public virtual void Deserialize(SpawnData data, GameObject target)
 		{
 			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
 			spawnPoint.ID = data.id;
 			spawnPoint.TEAMID = data.teamID;
 			spawnPoint.localStartPos = data.position;
-			target.transform.position = data.position;
 		}
 	}
-
-	public class SpawnInstance : MapObjectInstance { };
 }

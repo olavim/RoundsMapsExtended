@@ -1,21 +1,13 @@
-﻿using MapsExt.Transformers;
+﻿using MapsExt.MapObjects.Properties;
 using UnityEngine;
-using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
-	public class SawDynamic : SpatialMapObject { }
+	public class SawDynamicData : SpatialMapObjectData, IMapObjectEllipse, IMapObjectSaw { }
 
-	[MapObjectBlueprint]
-	public class SawDynamicBP : SpatialMapObjectBlueprint<SawDynamic>
+	[MapObject]
+	public class SawDynamic : IMapObject<SawDynamicData>
 	{
-		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
-
-		public override void Deserialize(SawDynamic data, GameObject target)
-		{
-			base.Deserialize(data, target);
-			target.GetOrAddComponent<SawTransformer>();
-			target.GetOrAddComponent<EllipseTransformer>();
-		}
+		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw");
 	}
 }

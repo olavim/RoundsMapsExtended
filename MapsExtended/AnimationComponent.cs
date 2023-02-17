@@ -1,4 +1,5 @@
 using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using UnityEngine;
 
 namespace MapsExt
@@ -6,69 +7,80 @@ namespace MapsExt
 	public interface IAnimationComponent
 	{
 		IAnimationComponentValue Value { get; }
-		void Lerp(object start, object end, float value);
+		void Lerp(GameObject go, object start, object end, float value);
+		void Lerp(MapObjectData data, object start, object end, float value);
 	}
 
 	public interface IAnimationComponent<T> : IAnimationComponent
 	{
 		new IAnimationComponentValue<T> Value { get; }
-		void Lerp(T start, T end, float value);
+		void Lerp(GameObject go, T start, T end, float value);
+		void Lerp(MapObjectData data, T start, T end, float value);
 	}
 
 	public abstract class AnimationComponent<T> : IAnimationComponent<T>
 	{
 		IAnimationComponentValue IAnimationComponent.Value => this.Value;
-		public abstract IAnimationComponentValue<T> Value { get; }
+		public IAnimationComponentValue<T> Value { get; protected set; }
 
-		public void Lerp(object start, object end, float value) => this.Lerp((T) start, (T) end, value);
-		public abstract void Lerp(T start, T end, float value);
+		public void Lerp(GameObject go, object start, object end, float value) => this.Lerp(go, (T) start, (T) end, value);
+		public abstract void Lerp(GameObject go, T start, T end, float value);
+
+		public void Lerp(MapObjectData data, object start, object end, float value) => this.Lerp(data, (T) start, (T) end, value);
+		public abstract void Lerp(MapObjectData data, T start, T end, float value);
 	}
 
 	public class PositionComponent : AnimationComponent<Vector2>
 	{
-		private IMapObjectPosition mapObject;
-		public override IAnimationComponentValue<Vector2> Value => new PositionComponentValue(this.mapObject.position);
-
 		public PositionComponent(IMapObjectPosition mapObject)
 		{
-			this.mapObject = mapObject;
+			this.Value = new PositionComponentValue(mapObject.position);
 		}
 
-		public override void Lerp(Vector2 start, Vector2 end, float value)
+		public override void Lerp(GameObject go, Vector2 start, Vector2 end, float value)
 		{
-			this.mapObject.position = Vector2.Lerp(start, end, value);
+			go.transform.position = Vector2.Lerp(start, end, value);
+		}
+
+		public override void Lerp(MapObjectData data, Vector2 start, Vector2 end, float value)
+		{
+			((IMapObjectPosition) data).position = Vector2.Lerp(start, end, value);
 		}
 	}
 
 	public class ScaleComponent : AnimationComponent<Vector2>
 	{
-		private IMapObjectScale mapObject;
-		public override IAnimationComponentValue<Vector2> Value => new ScaleComponentValue(this.mapObject.scale);
-
 		public ScaleComponent(IMapObjectScale mapObject)
 		{
-			this.mapObject = mapObject;
+			this.Value = new ScaleComponentValue(mapObject.scale);
 		}
 
-		public override void Lerp(Vector2 start, Vector2 end, float value)
+		public override void Lerp(GameObject go, Vector2 start, Vector2 end, float value)
 		{
-			this.mapObject.scale = Vector2.Lerp(start, end, value);
+			go.transform.localScale = Vector2.Lerp(start, end, value);
+		}
+
+		public override void Lerp(MapObjectData data, Vector2 start, Vector2 end, float value)
+		{
+			((IMapObjectScale) data).scale = Vector2.Lerp(start, end, value);
 		}
 	}
 
 	public class RotationComponent : AnimationComponent<Quaternion>
 	{
-		private IMapObjectRotation mapObject;
-		public override IAnimationComponentValue<Quaternion> Value => new RotationComponentValue(this.mapObject.rotation);
-
 		public RotationComponent(IMapObjectRotation mapObject)
 		{
-			this.mapObject = mapObject;
+			this.Value = new RotationComponentValue(mapObject.rotation);
 		}
 
-		public override void Lerp(Quaternion start, Quaternion end, float value)
+		public override void Lerp(GameObject go, Quaternion start, Quaternion end, float value)
 		{
-			this.mapObject.rotation = Quaternion.Lerp(start, end, value);
+			go.transform.rotation = Quaternion.Lerp(start, end, value);
+		}
+
+		public override void Lerp(MapObjectData data, Quaternion start, Quaternion end, float value)
+		{
+			((IMapObjectRotation) data).rotation = Quaternion.Lerp(start, end, value);
 		}
 	}
 }

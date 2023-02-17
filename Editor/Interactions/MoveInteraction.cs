@@ -111,6 +111,7 @@ namespace MapsExt.Editor.Interactions
 				foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<PositionHandler>()))
 				{
 					handler.Move(delta);
+					handler.OnChange();
 				}
 			}
 

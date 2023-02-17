@@ -1,20 +1,13 @@
-﻿using UnityEngine;
-using UnboundLib;
-using MapsExt.Transformers;
+﻿using MapsExt.MapObjects.Properties;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class Ball : SpatialMapObject { }
+	public class BallData : SpatialMapObjectData, IMapObjectEllipse { }
 
-	[MapObjectBlueprint]
-	public class BallBP : SpatialMapObjectBlueprint<Ball>
+	[MapObject]
+	public class Ball : IMapObject<BallData>
 	{
-		public override GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Ball_Big");
-
-		public override void Deserialize(Ball data, GameObject target)
-		{
-			base.Deserialize(data, target);
-			target.GetOrAddComponent<EllipseTransformer>();
-		}
+		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Ball_Big");
 	}
 }
