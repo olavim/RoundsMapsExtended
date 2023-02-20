@@ -14,16 +14,18 @@ using MapsExt.MapObjects.Properties;
 using Jotunn.Utils;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.MapObjects.Properties;
+using System.Collections;
 
 namespace MapsExt.Editor
 {
 	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
-	[BepInDependency("io.olavim.rounds.mapsextended", "0.9.0")]
-	[BepInPlugin(ModId, "MapsExtended.Editor", Version)]
+	[BepInDependency(MapsExtended.ModId, MapsExtended.ModVersion)]
+	[BepInPlugin(ModId, ModName, ModVersion)]
 	public class MapsExtendedEditor : BaseUnityPlugin
 	{
-		private const string ModId = "io.olavim.rounds.mapsextended.editor";
-		public const string Version = MapsExtended.Version;
+		public const string ModId = "io.olavim.rounds.mapsextended.editor";
+		public const string ModName = "MapsExtended.Editor";
+		public const string ModVersion = MapsExtended.ModVersion;
 
 		public static MapsExtendedEditor instance;
 
@@ -75,15 +77,7 @@ namespace MapsExt.Editor
 			MapsExtended.instance.RegisterMapObjectProperties();
 			MapsExtended.instance.RegisterMapObjects();
 
-			Unbound.RegisterMenu("Map Editor", () =>
-			{
-				AccessTools.Field(typeof(UnboundLib.Utils.UI.ModOptions), "showingModOptions").SetValue(null, false);
-				GameManager.instance.isPlaying = true;
-
-				this.editorActive = true;
-				MapManager.instance.RPCA_LoadLevel("MapEditor");
-				SceneManager.sceneLoaded += this.OnEditorLevelLoad;
-			}, (obj) => { }, null, false);
+			Unbound.RegisterMenu("Map Editor", this.OpenEditor, (obj) => { }, null, false);
 
 			this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
 			this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
@@ -103,6 +97,32 @@ namespace MapsExt.Editor
 			layer.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
 
 			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
+		}
+
+		public void OpenEditor()
+		{
+			this.StartCoroutine(this.OpenEditorCoroutine());
+		}
+
+		public IEnumerator OpenEditorCoroutine()
+		{
+			if (this.editorActive)
+			{
+				var op = SceneManager.UnloadSceneAsync("MapEditor");
+				MapManager.instance.currentMap = null;
+
+				while (!op.isDone)
+				{
+					yield return null;
+				}
+			}
+
+			AccessTools.Field(typeof(UnboundLib.Utils.UI.ModOptions), "showingModOptions").SetValue(null, false);
+			GameManager.instance.isPlaying = true;
+
+			this.editorActive = true;
+			MapManager.instance.RPCA_LoadLevel("MapEditor");
+			SceneManager.sceneLoaded += this.OnEditorLevelLoad;
 		}
 
 		private void RegisterMapObjectSerializers(Assembly assembly)
@@ -214,7 +234,8 @@ namespace MapsExt.Editor
 				var rig = instance.GetComponent<Rigidbody2D>();
 				if (rig)
 				{
-					this.ExecuteAfterFrames(1, () => this.SetPhysicsActive(rig, false));
+					this.SetPhysicsActive(rig, false);
+					// this.ExecuteAfterFrames(1, () => this.SetPhysicsActive(rig, false));
 				}
 
 				cb?.Invoke(instance);

@@ -21,11 +21,12 @@ using UnboundLib.Utils;
 namespace MapsExt
 {
 	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
-	[BepInPlugin(ModId, "MapsExtended", Version)]
+	[BepInPlugin(ModId, ModName, ModVersion)]
 	public class MapsExtended : BaseUnityPlugin
 	{
-		private const string ModId = "io.olavim.rounds.mapsextended";
-		public const string Version = "0.9.2";
+		public const string ModId = "io.olavim.rounds.mapsextended";
+		public const string ModName = "MapsExtended";
+		public const string ModVersion = "0.9.2";
 
 #if DEBUG
 		public static readonly bool DEBUG = true;

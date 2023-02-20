@@ -2,8 +2,8 @@
 	<Import Project="..\MapsExtended.props" />
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\AssetsEmbedded\mapbase" />
-		<EmbeddedResource Include="..\AssetsEmbedded\mapobjects" />
+		<ProjectReference Include="..\MapsExtended\MapsExtended.csproj" Private="false" />
+		<ProjectReference Include="..\Editor\MapsExtended.Editor.csproj" Private="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -67,5 +67,18 @@
 			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+			<SpecificVersion>False</SpecificVersion>
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UI.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.UIModule">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="6.10.0" />
 	</ItemGroup>
 </Project>

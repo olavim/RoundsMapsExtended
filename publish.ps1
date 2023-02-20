@@ -40,17 +40,24 @@ Write-Host "Publishing for $Target from $TargetPath"
 # Plugin name without ".dll"
 $name = "$TargetAssembly" -Replace ('.dll')
 
-if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor")) {
+if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended.Test")) {
+	Write-Host ""
 	Write-Host "Updating local installation in $RoundsPath"
 	
 	$plug = New-Item -Type Directory -Path "$RoundsPath\BepInEx\plugins\$name" -Force
-	Write-Host "Copy $TargetAssembly to $plug"
+	Write-Host "  Copy $TargetAssembly to $plug"
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
 
 	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$plug" -Force
 		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$plug" -Force
 	}
+
+	if ($name.Equals("MapsExtended.Test")) {
+		Copy-Item -Path "$TargetPath\FluentAssertions.dll" -Destination "$plug" -Force
+	}
+
+	Write-Host ""
 }
 
 # Release packages for ThunderStore
