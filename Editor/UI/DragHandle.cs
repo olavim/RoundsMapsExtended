@@ -15,12 +15,12 @@ namespace MapsExt.Editor.UI
 
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			this.offset = target.transform.position - Input.mousePosition;
+			this.offset = target.transform.position - EditorInput.mousePosition;
 		}
 
 		public void OnDrag(PointerEventData data)
 		{
-			this.target.transform.position = Input.mousePosition + this.offset;
+			this.target.transform.position = EditorInput.mousePosition + this.offset;
 		}
 	}
 }

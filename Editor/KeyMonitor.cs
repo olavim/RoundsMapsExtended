@@ -56,7 +56,7 @@ namespace MapsExt.Editor
 
 		private bool GetHeldKey(KeyCode code)
 		{
-			if (!Input.GetKey(code))
+			if (!EditorInput.GetKey(code))
 			{
 				this.heldKeys[code] = 0;
 				return false;

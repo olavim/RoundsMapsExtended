@@ -364,7 +364,7 @@ namespace MapsExt.Editor
 
 		public void OnSelectionStart()
 		{
-			this.selectionStartPosition = Input.mousePosition;
+			this.selectionStartPosition = EditorInput.mousePosition;
 			this.isCreatingSelection = true;
 		}
 
@@ -472,7 +472,7 @@ namespace MapsExt.Editor
 
 		private void UpdateSelection()
 		{
-			var mousePos = Input.mousePosition;
+			var mousePos = EditorInput.mousePosition;
 
 			float width = Mathf.Abs(this.selectionStartPosition.x - mousePos.x);
 			float height = Mathf.Abs(this.selectionStartPosition.y - mousePos.y);
@@ -495,6 +495,19 @@ namespace MapsExt.Editor
 		public void AddSelected(IEnumerable<GameObject> list)
 		{
 			this.selectedObjects.AddRange(list);
+		}
+
+		public void SelectAll()
+		{
+			this.ClearSelected();
+
+			var list = new List<GameObject>();
+			foreach (Transform child in this.content.transform)
+			{
+				list.Add(child.gameObject);
+			}
+
+			this.AddSelected(list);
 		}
 
 		public void ResetSpawnLabels()

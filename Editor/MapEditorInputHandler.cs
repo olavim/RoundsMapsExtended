@@ -37,37 +37,37 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			if (Input.GetMouseButtonDown(0))
+			if (EditorInput.GetMouseButtonDown(0))
 			{
 				this.HandleMouseDown();
 			}
 
-			if (Input.GetMouseButtonUp(0))
+			if (EditorInput.GetMouseButtonUp(0))
 			{
 				this.HandleMouseUp();
 			}
 
-			if (Input.GetKeyDown(KeyCode.LeftShift))
+			if (EditorInput.GetKeyDown(KeyCode.LeftShift))
 			{
 				this.editor.OnToggleSnapToGrid(false);
 			}
 
-			if (Input.GetKeyUp(KeyCode.LeftShift))
+			if (EditorInput.GetKeyUp(KeyCode.LeftShift))
 			{
 				this.editor.OnToggleSnapToGrid(true);
 			}
 
-			if (Input.GetKeyDown(KeyCode.Delete))
+			if (EditorInput.GetKeyDown(KeyCode.Delete))
 			{
 				this.editor.OnDeleteSelectedMapObjects();
 			}
 
-			if (Input.mouseScrollDelta.y > 0 || Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.KeypadPlus))
+			if (EditorInput.mouseScrollDelta.y > 0 || EditorInput.GetKeyDown(KeyCode.Plus) || EditorInput.GetKeyDown(KeyCode.KeypadPlus))
 			{
 				this.HandleZoom(1);
 			}
 
-			if (Input.mouseScrollDelta.y < 0 || Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
+			if (EditorInput.mouseScrollDelta.y < 0 || EditorInput.GetKeyDown(KeyCode.Minus) || EditorInput.GetKeyDown(KeyCode.KeypadMinus))
 			{
 				this.HandleZoom(-1);
 			}
@@ -90,12 +90,12 @@ namespace MapsExt.Editor
 
 		private void HandleNudge(Vector2 nudge)
 		{
-			if (Input.GetKey(KeyCode.LeftShift))
+			if (EditorInput.GetKey(KeyCode.LeftShift))
 			{
 				nudge *= 2f;
 			}
 
-			if (Input.GetKey(KeyCode.LeftControl))
+			if (EditorInput.GetKey(KeyCode.LeftControl))
 			{
 				nudge /= 2f;
 			}
@@ -119,9 +119,9 @@ namespace MapsExt.Editor
 			}
 
 			this.mouseDownSince = Time.time * 1000;
-			this.mouseDownPosition = Input.mousePosition;
+			this.mouseDownPosition = EditorInput.mousePosition;
 
-			var list = EditorUtils.GetHoveredActionHandlers().Select(h => h.gameObject).Distinct();
+			var list = EditorUtils.GetActionHandlersAt(this.mouseDownPosition).Select(h => h.gameObject).Distinct();
 
 			if (list.Any(this.editor.IsSelected))
 			{
@@ -138,11 +138,12 @@ namespace MapsExt.Editor
 		private void HandleMouseUp()
 		{
 			var mouseUpTime = Time.time * 1000;
-			var mouseDelta = this.mouseDownPosition - Input.mousePosition;
+			var newMousePosition = EditorInput.mousePosition;
+			var mouseDelta = this.mouseDownPosition - newMousePosition;
 
 			if (mouseDelta.magnitude <= this.clickPositionEpsilon && mouseUpTime - this.mouseDownSince <= this.clickTimeMsEpsilon)
 			{
-				this.editor.OnClickActionHandlers(EditorUtils.GetHoveredActionHandlers());
+				this.editor.OnClickActionHandlers(EditorUtils.GetActionHandlersAt(newMousePosition));
 			}
 
 			if (this.isSelecting)

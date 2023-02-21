@@ -28,7 +28,7 @@ namespace MapsExt.Editor.Interactions
 
 		public void OnPointerDown()
 		{
-			var mousePos = Input.mousePosition;
+			var mousePos = EditorInput.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.prevMouse = mouseWorldPos;
@@ -89,7 +89,7 @@ namespace MapsExt.Editor.Interactions
 
 		private void DragMapObjects()
 		{
-			var mousePos = Input.mousePosition;
+			var mousePos = EditorInput.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var mouseCell = this.editor.grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this.prevMouse;

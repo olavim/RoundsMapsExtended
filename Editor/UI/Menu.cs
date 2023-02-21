@@ -108,7 +108,7 @@ namespace MapsExt.Editor.UI
 
 			bool isHovered = this.IsMouseInsideMenu();
 
-			if (this.openTrigger == MenuTrigger.CLICK && Input.GetMouseButtonDown(0) && !isHovered)
+			if (this.openTrigger == MenuTrigger.CLICK && EditorInput.GetMouseButtonDown(0) && !isHovered)
 			{
 				this.SetState(MenuState.INACTIVE);
 			}
@@ -129,7 +129,7 @@ namespace MapsExt.Editor.UI
 
 			var calledItem = sortedItems.Find(item =>
 			{
-				return Input.GetKeyDown(item.keyBinding.key.code) && item.keyBinding.modifiers.All(m => Input.GetKey(m.code));
+				return EditorInput.GetKeyDown(item.keyBinding.key.code) && item.keyBinding.modifiers.All(m => EditorInput.GetKey(m.code));
 			});
 
 			if (calledItem != null && !calledItem.disabled)
@@ -248,7 +248,7 @@ namespace MapsExt.Editor.UI
 		{
 			var rectTransforms = this.gameObject.GetComponentsInChildren<RectTransform>().ToList();
 			rectTransforms.Add(this.gameObject.GetComponent<RectTransform>());
-			return rectTransforms.Any(rt => RectTransformUtility.RectangleContainsScreenPoint(rt, Input.mousePosition));
+			return rectTransforms.Any(rt => RectTransformUtility.RectangleContainsScreenPoint(rt, EditorInput.mousePosition));
 		}
 
 		public void AddItem(MenuItem item)

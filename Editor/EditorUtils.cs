@@ -7,10 +7,9 @@ namespace MapsExt.Editor
 {
 	public static class EditorUtils
 	{
-		public static List<MapObjectActionHandler> GetHoveredActionHandlers()
+		public static List<MapObjectActionHandler> GetActionHandlersAt(Vector3 position)
 		{
-			var mousePos = Input.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(position.x, position.y));
 			var colliders = Physics2D.OverlapPointAll(mouseWorldPos);
 			return colliders.SelectMany(c => c.GetComponentsInChildren<MapObjectActionHandler>()).ToList();
 		}

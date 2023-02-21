@@ -33,7 +33,7 @@ namespace MapsExt.Editor.Interactions
 				this.RotateMapObjects();
 			}
 
-			if (Input.GetMouseButtonUp(0) && this.isRotatingMapObjects)
+			if (EditorInput.GetMouseButtonUp(0) && this.isRotatingMapObjects)
 			{
 				this.OnRotateEnd();
 			}
@@ -57,7 +57,7 @@ namespace MapsExt.Editor.Interactions
 
 		private void OnRotateStart()
 		{
-			var mousePos = Input.mousePosition;
+			var mousePos = EditorInput.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.isRotatingMapObjects = true;
@@ -73,7 +73,7 @@ namespace MapsExt.Editor.Interactions
 
 		private void RotateMapObjects()
 		{
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(EditorInput.mousePosition.x, EditorInput.mousePosition.y));
 			var selectedObj = this.editor.selectedObjects[0];
 
 			var mousePos = mouseWorldPos;

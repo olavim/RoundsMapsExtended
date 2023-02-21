@@ -30,6 +30,7 @@ namespace MapsExt.Editor
 		public static MapsExtendedEditor instance;
 
 		public bool editorActive = false;
+		public bool editorClosing = false;
 		public List<Tuple<Type, EditorMapObject>> mapObjectAttributes = new List<Tuple<Type, EditorMapObject>>();
 
 		internal MapObjectManager mapObjectManager;
@@ -55,6 +56,7 @@ namespace MapsExt.Editor
 				if (mode == LoadSceneMode.Single)
 				{
 					this.editorActive = false;
+					this.editorClosing = false;
 					this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
 					this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
 
@@ -104,25 +106,54 @@ namespace MapsExt.Editor
 			this.StartCoroutine(this.OpenEditorCoroutine());
 		}
 
+		public void CloseEditor()
+		{
+			this.StartCoroutine(this.CloseEditorCoroutine());
+		}
+
 		public IEnumerator OpenEditorCoroutine()
 		{
-			if (this.editorActive)
-			{
-				var op = SceneManager.UnloadSceneAsync("MapEditor");
-				MapManager.instance.currentMap = null;
-
-				while (!op.isDone)
-				{
-					yield return null;
-				}
-			}
+			yield return this.CloseEditorCoroutine();
 
 			AccessTools.Field(typeof(UnboundLib.Utils.UI.ModOptions), "showingModOptions").SetValue(null, false);
 			GameManager.instance.isPlaying = true;
 
-			this.editorActive = true;
 			MapManager.instance.RPCA_LoadLevel("MapEditor");
 			SceneManager.sceneLoaded += this.OnEditorLevelLoad;
+
+			while (!this.editorActive)
+			{
+				yield return null;
+			}
+		}
+
+		public IEnumerator CloseEditorCoroutine()
+		{
+			while (this.editorClosing)
+			{
+				yield return null;
+			}
+
+			if (!this.editorActive)
+			{
+				yield break;
+			}
+
+			this.editorClosing = true;
+			var op = SceneManager.UnloadSceneAsync("MapEditor");
+			MapManager.instance.currentMap = null;
+
+			while (!op.isDone)
+			{
+				yield return null;
+			}
+
+			this.editorActive = false;
+			this.editorClosing = false;
+
+			MapManager.instance.isTestingMap = false;
+			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(true);
+			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOnline();
 		}
 
 		private void RegisterMapObjectSerializers(Assembly assembly)
@@ -190,6 +221,7 @@ namespace MapsExt.Editor
 		{
 			SceneManager.sceneLoaded -= this.OnEditorLevelLoad;
 
+			this.editorActive = true;
 			var map = MapManager.instance.currentMap.Map;
 			map.SetFieldValue("hasCalledReady", true);
 

@@ -14,11 +14,14 @@ namespace MapsExt.Test
 		public const string ModName = "MapsExtended.Test";
 		public const string ModVersion = "0.0.1";
 
+		public static MapsExtendedTest instance;
+
 		internal new static ManualLogSource Logger { get; private set; }
 
 		public void Awake()
 		{
 			MapsExtendedTest.Logger = base.Logger;
+			MapsExtendedTest.instance = this;
 		}
 
 		public void Start()

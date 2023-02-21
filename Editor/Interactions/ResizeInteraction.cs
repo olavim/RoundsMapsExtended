@@ -36,7 +36,7 @@ namespace MapsExt.Editor.Interactions
 				this.ResizeMapObjects();
 			}
 
-			if (Input.GetMouseButtonUp(0) && this.isResizingMapObjects)
+			if (EditorInput.GetMouseButtonUp(0) && this.isResizingMapObjects)
 			{
 				this.OnResizeEnd();
 			}
@@ -68,7 +68,7 @@ namespace MapsExt.Editor.Interactions
 
 		private void OnResizeStart(int resizeDirection)
 		{
-			var mousePos = Input.mousePosition;
+			var mousePos = EditorInput.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.editor.grid.transform.rotation = this.editor.selectedObjects[0].transform.rotation;
@@ -88,7 +88,7 @@ namespace MapsExt.Editor.Interactions
 
 		private void ResizeMapObjects()
 		{
-			var mousePos = Input.mousePosition;
+			var mousePos = EditorInput.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var mouseCell = this.editor.grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this.prevMouse;

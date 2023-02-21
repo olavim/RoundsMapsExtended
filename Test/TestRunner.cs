@@ -11,102 +11,127 @@ namespace MapsExt.Test
 	{
 		public IEnumerator DiscoverAndRun()
 		{
-			var discoverer = new TestDiscoverer();
-			var tests = discoverer.FindTests();
-
-			var testsByClass = new Dictionary<Type, List<TestInfo>>();
-			foreach (var test in tests)
-			{
-				if (!testsByClass.ContainsKey(test.ClassType))
-				{
-					testsByClass.Add(test.ClassType, new List<TestInfo>());
-				}
-
-				testsByClass[test.ClassType].Add(test);
-			}
-
 			int testsPassed = 0;
 			int testsFailed = 0;
 
-			foreach (var type in testsByClass.Keys)
+			foreach (var type in typeof(MapsExtendedTest).Assembly.GetTypes())
 			{
-				var instance = AccessTools.CreateInstance(type);
-				var beforeEach = discoverer.FindBeforeEach(type);
+				var executions = this.GetExecutionGroups(type).ToList();
 
-				foreach (var testInfo in testsByClass[type])
+				if (executions.Count == 0)
 				{
-					foreach (var beforeEachInfo in beforeEach)
-					{
-						yield return this.RunTest(instance, beforeEachInfo);
-						if (!beforeEachInfo.Result.pass)
-						{
-							testInfo.Result = beforeEachInfo.Result;
-							break;
-						}
-					}
+					continue;
+				}
 
-					if (testInfo.Result == null)
-					{
-						yield return this.RunTest(instance, testInfo);
-					}
+				var instance = AccessTools.CreateInstance(type);
 
-					if (testInfo.Result.pass)
+				for (int i = 0; i < executions.Count; i++)
+				{
+					var exec = executions[i];
+					yield return this.Run(instance, exec);
+
+					if (exec.Result.pass && i != 0 && i != executions.Count - 1)
 					{
+						MapsExtendedTest.Logger.LogInfo($"  [PASS] [{type.Name}] {exec.Name}");
 						testsPassed++;
-						MapsExtendedTest.Logger.LogInfo($"  [PASS] [{type.Name}] {testInfo.Name}");
 					}
-					else
+
+					if (!exec.Result.pass)
 					{
+						MapsExtendedTest.Logger.LogInfo($"  [FAIL] [{type.Name}] {exec.Name}: {exec.Result.failReason}");
 						testsFailed++;
-						MapsExtendedTest.Logger.LogError($"  [FAIL] [{type.Name}] {testInfo.Name}: {testInfo.Result.failReason}");
 					}
 				}
 			}
 
-			MapsExtendedTest.Logger.LogInfo($"Tests total: {tests.Length}");
+			MapsExtendedTest.Logger.LogInfo($"Tests total: {testsPassed + testsFailed}");
 			MapsExtendedTest.Logger.LogInfo($"Tests passed: {testsPassed}");
 			MapsExtendedTest.Logger.LogInfo($"Tests failed: {testsFailed}");
 		}
 
-		public IEnumerator RunTest(object instance, TestInfo test)
+		public IEnumerable<TestExecutionGroup> GetExecutionGroups(Type type)
 		{
-			if (test.MethodInfo.ReturnType == typeof(IEnumerator))
-			{
-				var enumerator = (IEnumerator) test.MethodInfo.Invoke(instance, new object[] { });
-				bool moveNext = true;
+			var executions = new List<TestExecutionGroup>();
 
-				while (moveNext)
+			var testSteps = this.FindSteps<Test>(type);
+
+			if (testSteps.Length == 0)
+			{
+				return executions;
+			}
+
+			var beforeEachSteps = this.FindSteps<BeforeEach>(type);
+			var afterEachSteps = this.FindSteps<AfterEach>(type);
+			var beforeAllSteps = this.FindSteps<BeforeAll>(type);
+			var afterAllSteps = this.FindSteps<AfterAll>(type);
+
+			executions.Add(new TestExecutionGroup("Before All", beforeAllSteps));
+
+			foreach (var testStep in testSteps)
+			{
+				var steps = new List<TestStepInfo>();
+				steps.AddRange(beforeEachSteps);
+				steps.Add(testStep);
+				steps.AddRange(afterEachSteps);
+				executions.Add(new TestExecutionGroup(testStep.Name, steps));
+			}
+
+			executions.Add(new TestExecutionGroup("After All", afterAllSteps));
+
+			return executions;
+		}
+
+		public IEnumerator Run(object instance, TestExecutionGroup execution)
+		{
+			foreach (var step in execution.Steps)
+			{
+				if (step.MethodInfo.ReturnType == typeof(IEnumerator))
+				{
+					var enumerator = (IEnumerator) step.MethodInfo.Invoke(instance, new object[] { });
+					bool moveNext = true;
+
+					while (moveNext)
+					{
+						try
+						{
+							moveNext = enumerator.MoveNext();
+						}
+						catch (Exception e)
+						{
+							execution.Result = ExecutionResult.Fail(e.Message);
+							yield break;
+						}
+
+						if (moveNext)
+						{
+							yield return enumerator.Current;
+						}
+					}
+				}
+				else
 				{
 					try
 					{
-						moveNext = enumerator.MoveNext();
+						step.MethodInfo.Invoke(instance, new object[] { });
 					}
-					catch (Exception e)
+					catch (TargetInvocationException e)
 					{
-						test.Result = TestResult.Fail(e.Message);
+						execution.Result = ExecutionResult.Fail(e.GetBaseException().Message);
 						yield break;
 					}
-
-					if (moveNext)
-					{
-						yield return enumerator.Current;
-					}
-				}
-			}
-			else
-			{
-				try
-				{
-					test.MethodInfo.Invoke(instance, new object[] { });
-				}
-				catch (TargetInvocationException e)
-				{
-					test.Result = TestResult.Fail(e.GetBaseException().Message);
-					yield break;
 				}
 			}
 
-			test.Result = TestResult.Pass();
+			execution.Result = ExecutionResult.Pass();
+		}
+
+		private TestStepInfo[] FindSteps<T>(Type testClassType) where T : Attribute
+		{
+			return testClassType
+				.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+				.Where(m => m.GetCustomAttributes<T>().Count() > 0)
+				.Select(m => new TestStepInfo(m.Name, testClassType, m))
+				.ToArray();
 		}
 	}
 }

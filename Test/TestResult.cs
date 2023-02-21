@@ -1,23 +1,23 @@
 namespace MapsExt.Test
 {
-	public class TestResult
+	public class ExecutionResult
 	{
-		public static TestResult Pass()
+		public static ExecutionResult Pass()
 		{
-			return new TestResult(true);
+			return new ExecutionResult(true);
 		}
 
-		public static TestResult Fail(string failReason)
+		public static ExecutionResult Fail(string failReason)
 		{
-			return new TestResult(false, failReason);
+			return new ExecutionResult(false, failReason);
 		}
 
 		public readonly bool pass;
 		public readonly string failReason;
 
-		private TestResult(bool pass) : this(pass, null) { }
+		private ExecutionResult(bool pass) : this(pass, null) { }
 
-		private TestResult(bool pass, string failReason)
+		private ExecutionResult(bool pass, string failReason)
 		{
 			this.pass = pass;
 			this.failReason = failReason;
