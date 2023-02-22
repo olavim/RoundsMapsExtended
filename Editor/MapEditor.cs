@@ -220,7 +220,12 @@ namespace MapsExt.Editor
 
 			MapsExtendedEditor.instance.SpawnObject(this.content, mapObjectType, obj =>
 			{
-				this.AddSelected(obj);
+				var objectsWithHandlers = obj
+					.GetComponentsInChildren<MapObjectActionHandler>()
+					.Select(h => h.gameObject)
+					.Distinct();
+
+				this.AddSelected(objectsWithHandlers);
 				this.ResetSpawnLabels();
 				this.UpdateRopeAttachments();
 				this.TakeSnaphot();

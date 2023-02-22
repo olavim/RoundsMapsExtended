@@ -83,7 +83,6 @@ namespace MapsExt.Editor.Interactions
 		public void OnPointerUp()
 		{
 			this.isDraggingMapObjects = false;
-			this.editor.UpdateRopeAttachments();
 			this.editor.TakeSnaphot();
 		}
 

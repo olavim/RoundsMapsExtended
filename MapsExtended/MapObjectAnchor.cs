@@ -37,7 +37,6 @@ namespace MapsExt
 
 		public GameObject target { get; private set; }
 		public bool IsAttached => this.target != this.gameObject;
-		public bool autoUpdatePosition = true;
 
 		private Offset offset;
 
@@ -49,7 +48,7 @@ namespace MapsExt
 
 		private void Update()
 		{
-			if (this.IsAttached && this.autoUpdatePosition)
+			if (this.IsAttached)
 			{
 				this.UpdatePosition();
 			}
@@ -91,8 +90,8 @@ namespace MapsExt
 			var colliders = Physics2D.OverlapPointAll(pos);
 
 			var collider =
-				colliders.FirstOrDefault(c => c.gameObject.GetComponent<SpatialMapObjectInstance>() != null && c.gameObject == this.target) ??
-				colliders.FirstOrDefault(c => c.gameObject.GetComponent<SpatialMapObjectInstance>() != null);
+				colliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObjectInstance>() != null && c.gameObject == this.target) ??
+				colliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObjectInstance>() != null);
 
 			if (collider == null)
 			{
@@ -147,7 +146,7 @@ namespace MapsExt
 			return bounds;
 		}
 
-		private void Detach()
+		public void Detach()
 		{
 			this.target = this.gameObject;
 			this.offset = new Offset();

@@ -118,6 +118,11 @@ namespace MapsExt.Editor
 
 		public void Refresh()
 		{
+			if (!this.animation)
+			{
+				return;
+			}
+
 			if (this.animation.gameObject.activeSelf)
 			{
 				this.animation.gameObject.SetActive(false);

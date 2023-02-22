@@ -34,9 +34,6 @@ namespace MapsExt.Editor.MapObjects
 			var anchor2 = target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorMoveHandler>();
 
-			anchor1.autoUpdatePosition = false;
-			anchor2.autoUpdatePosition = false;
-
 			var startCollider = target.transform.GetChild(0).gameObject.GetOrAddComponent<BoxCollider2D>();
 			var endCollider = target.transform.GetChild(1).gameObject.GetOrAddComponent<BoxCollider2D>();
 			startCollider.size = Vector2.one * 1;
