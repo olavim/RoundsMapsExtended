@@ -11,6 +11,11 @@ namespace MapsExt.Editor
 
 		private static IInputSource inputSource = defaultInputSource;
 
+		public static bool GetMouseButton(int button)
+		{
+			return EditorInput.inputSource.GetMouseButton(button);
+		}
+
 		public static bool GetMouseButtonDown(int button)
 		{
 			return EditorInput.inputSource.GetMouseButtonDown(button);

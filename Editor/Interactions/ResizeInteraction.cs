@@ -8,13 +8,13 @@ namespace MapsExt.Editor.Interactions
 {
 	public class ResizeInteraction : MonoBehaviour, IEditorInteraction
 	{
-		private MapEditor editor;
+		public GameObject content;
 
+		private MapEditor editor;
 		private bool isResizingMapObjects;
 		private int resizeDirection;
 		private Vector3 prevMouse;
 		private Vector3Int prevCell;
-		private GameObject content;
 
 		private void Start()
 		{
@@ -118,7 +118,7 @@ namespace MapsExt.Editor.Interactions
 				return;
 			}
 
-			var go = new GameObject("Toggle");
+			var go = new GameObject("Resize Handle " + direction);
 
 			var aligner = go.AddComponent<UI.UIAligner>();
 			aligner.referenceGameObject = mapObject;

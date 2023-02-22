@@ -6,6 +6,7 @@ namespace MapsExt.Editor
 	{
 		bool GetMouseButtonDown(int button);
 		bool GetMouseButtonUp(int button);
+		bool GetMouseButton(int button);
 		bool GetKeyDown(KeyCode key);
 		bool GetKeyUp(KeyCode key);
 		bool GetKey(KeyCode key);

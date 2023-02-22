@@ -15,9 +15,12 @@ using Jotunn.Utils;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.MapObjects.Properties;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 namespace MapsExt.Editor
 {
+	public class CustomEventSystem : EventSystem { }
+
 	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
 	[BepInDependency(MapsExtended.ModId, MapsExtended.ModVersion)]
 	[BepInPlugin(ModId, ModName, ModVersion)]
@@ -227,6 +230,8 @@ namespace MapsExt.Editor
 
 			var go = map.gameObject;
 			go.transform.position = Vector3.zero;
+			var baseInput = go.AddComponent<EditorBaseInput>();
+			EventSystem.current.currentInputModule.inputOverride = baseInput;
 
 			MapManager.instance.isTestingMap = true;
 			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);

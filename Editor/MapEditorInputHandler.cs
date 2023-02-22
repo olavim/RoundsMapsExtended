@@ -59,7 +59,7 @@ namespace MapsExt.Editor
 
 			if (EditorInput.GetKeyDown(KeyCode.Delete))
 			{
-				this.editor.OnDeleteSelectedMapObjects();
+				this.HandleDelete();
 			}
 
 			if (EditorInput.mouseScrollDelta.y > 0 || EditorInput.GetKeyDown(KeyCode.Plus) || EditorInput.GetKeyDown(KeyCode.KeypadPlus))
@@ -75,21 +75,38 @@ namespace MapsExt.Editor
 
 		private void HandleZoom(int direction)
 		{
-			if (!EventSystem.current.IsPointerOverGameObject())
+			if (EventSystem.current.IsPointerOverGameObject())
 			{
-				if (direction > 0)
-				{
-					this.editor.OnZoomIn();
-				}
-				else
-				{
-					this.editor.OnZoomOut();
-				}
+				return;
 			}
+
+			if (direction > 0)
+			{
+				this.editor.OnZoomIn();
+			}
+			else
+			{
+				this.editor.OnZoomOut();
+			}
+		}
+
+		private void HandleDelete()
+		{
+			if (EventSystem.current.currentSelectedGameObject != null)
+			{
+				return;
+			}
+
+			this.editor.OnDeleteSelectedMapObjects();
 		}
 
 		private void HandleNudge(Vector2 nudge)
 		{
+			if (EventSystem.current.currentSelectedGameObject != null)
+			{
+				return;
+			}
+
 			if (EditorInput.GetKey(KeyCode.LeftShift))
 			{
 				nudge *= 2f;

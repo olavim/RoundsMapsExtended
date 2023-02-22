@@ -45,6 +45,8 @@ namespace MapsExt.Test
 		public Vector3 mousePosition { get; private set; }
 
 		private Dictionary<KeyCode, bool> keyDict = new Dictionary<KeyCode, bool>();
+		private Dictionary<int, bool> mouseButtonDict = new Dictionary<int, bool>();
+
 		private TtlDictionary<KeyCode, bool> keyDownDict = new TtlDictionary<KeyCode, bool>();
 		private TtlDictionary<KeyCode, bool> keyUpDict = new TtlDictionary<KeyCode, bool>();
 		private TtlDictionary<int, bool> mouseButtonDownDict = new TtlDictionary<int, bool>();
@@ -106,6 +108,16 @@ namespace MapsExt.Test
 		public void SetMouseButtonUp(int button, bool value = true)
 		{
 			this.mouseButtonUpDict.Set(button, value, 1);
+		}
+
+		public bool GetMouseButton(int button)
+		{
+			return this.mouseButtonDict.GetValueOrDefault(button, false);
+		}
+
+		public void SetMouseButton(int button, bool value = true)
+		{
+			this.mouseButtonDict[button] = value;
 		}
 
 		public void SetMousePosition(Vector3 position)

@@ -7,29 +7,11 @@ namespace MapsExt.Editor
 		public Vector2 mouseScrollDelta => Input.mouseScrollDelta;
 		public Vector3 mousePosition => Input.mousePosition;
 
-		public bool GetMouseButtonDown(int button)
-		{
-			return Input.GetMouseButtonDown(button);
-		}
-
-		public bool GetMouseButtonUp(int button)
-		{
-			return Input.GetMouseButtonUp(button);
-		}
-
-		public bool GetKeyDown(KeyCode key)
-		{
-			return Input.GetKeyDown(key);
-		}
-
-		public bool GetKeyUp(KeyCode key)
-		{
-			return Input.GetKeyUp(key);
-		}
-
-		public bool GetKey(KeyCode key)
-		{
-			return Input.GetKey(key);
-		}
+		public bool GetMouseButtonDown(int button) => Input.GetMouseButtonDown(button);
+		public bool GetMouseButtonUp(int button) => Input.GetMouseButtonUp(button);
+		public bool GetMouseButton(int button) => Input.GetMouseButton(button);
+		public bool GetKeyDown(KeyCode key) => Input.GetKeyDown(key);
+		public bool GetKeyUp(KeyCode key) => Input.GetKeyUp(key);
+		public bool GetKey(KeyCode key) => Input.GetKey(key);
 	}
 }

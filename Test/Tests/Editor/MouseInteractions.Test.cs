@@ -4,13 +4,15 @@ using System.Collections.Specialized;
 using System.Linq;
 using FluentAssertions;
 using MapsExt.Editor;
+using MapsExt.Editor.Interactions;
 using MapsExt.MapObjects;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MapsExt.Test.Tests.Editor
 {
-	public class MapObjectTests
+	public class MouseInteractionTests
 	{
 		private MapEditor editor;
 		private MapEditorUI editorUI;
@@ -121,6 +123,22 @@ namespace MapsExt.Test.Tests.Editor
 			((Vector2) box2.transform.position).Should().Be(delta);
 		}
 
+		[Test]
+		public IEnumerator Test_Mouse_ResizeBox()
+		{
+			yield return this.SpawnBox();
+			var box = this.editor.selectedObjects.First();
+
+			((Vector2) box.transform.localScale).Should().Be(new Vector2(2, 2));
+
+			var resizeInteractionContent = this.editor.gameObject.GetComponent<ResizeInteraction>().content;
+			var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + AnchorPosition.TopRight).gameObject;
+
+			yield return this.DragMouse(MainCam.instance.cam.ScreenToWorldPoint(resizeHandle.transform.position), Vector3.one);
+
+			((Vector2) box.transform.localScale).Should().Be(new Vector2(3, 3));
+		}
+
 		private IEnumerator SpawnBox()
 		{
 			bool collectionChanged = false;
@@ -155,16 +173,33 @@ namespace MapsExt.Test.Tests.Editor
 		private IEnumerator MoveSelectedWithMouse(Vector3 delta)
 		{
 			var go = this.editor.selectedObjects.First();
-			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(go.transform.position));
-			yield return this.DragMouse(go.transform.position + delta);
+			yield return this.DragMouse(go.transform.position, delta);
 		}
 
-		private IEnumerator DragMouse(Vector3 pos)
+		private IEnumerator DragMouse(Vector3 worldPosition, Vector3 delta)
 		{
+			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(worldPosition));
 			this.inputSource.SetMouseButtonDown(0);
 			yield return null;
-			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(pos));
+			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(worldPosition + delta));
 			yield return null;
+			this.inputSource.SetMouseButtonUp(0);
+			yield return null;
+		}
+
+		private IEnumerator DragMouseSlowly(Vector3 worldPosition, Vector3 delta)
+		{
+			const float frames = 20;
+
+			this.inputSource.SetMouseButtonDown(0);
+			yield return null;
+
+			for (float i = 0; i < frames; i++)
+			{
+				this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(Vector3.Lerp(worldPosition, worldPosition + delta, i / frames)));
+				yield return null;
+			}
+
 			this.inputSource.SetMouseButtonUp(0);
 			yield return null;
 		}
