@@ -19,7 +19,7 @@ using UnboundLib.Utils;
 
 namespace MapsExt
 {
-	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
+	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, "MapsExtended", Version)]
 	public class MapsExtended : BaseUnityPlugin
 	{

@@ -12,7 +12,7 @@ using MapsExt.MapObjects;
 
 namespace MapsExt.Editor
 {
-	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
+	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInDependency("io.olavim.rounds.mapsextended", MapsExtended.Version)]
 	[BepInPlugin(ModId, "MapsExtended.Editor", MapsExtended.Version)]
 	public class MapsExtendedEditor : BaseUnityPlugin
