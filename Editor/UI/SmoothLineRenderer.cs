@@ -18,7 +18,7 @@ namespace MapsExt.Editor.UI
 
 		private GeometryFactory geometryFactory;
 
-		public void Awake()
+		private void Awake()
 		{
 			this.Renderer = this.gameObject.GetOrAddComponent<MeshRenderer>();
 			this.Renderer.material = new Material(Shader.Find("Sprites/Default"));

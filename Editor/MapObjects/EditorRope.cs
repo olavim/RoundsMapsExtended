@@ -29,10 +29,10 @@ namespace MapsExt.Editor.MapObjects
 		public void Deserialize(RopeData data, GameObject target)
 		{
 			var anchor1 = target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
-			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorMoveHandler>();
+			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
 
 			var anchor2 = target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
-			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorMoveHandler>();
+			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
 
 			var startCollider = target.transform.GetChild(0).gameObject.GetOrAddComponent<BoxCollider2D>();
 			var endCollider = target.transform.GetChild(1).gameObject.GetOrAddComponent<BoxCollider2D>();
@@ -58,9 +58,9 @@ namespace MapsExt.Editor.MapObjects
 				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position);
 		}
 
-		private RopeAnchorMoveHandler GetAnchorHandler(MapObjectInstance target, int anchor)
+		private RopeAnchorPositionHandler GetAnchorHandler(MapObjectInstance target, int anchor)
 		{
-			return target.GetComponent<EditorRopeInstance>().GetAnchor(anchor).GetComponent<RopeAnchorMoveHandler>();
+			return target.GetComponent<EditorRopeInstance>().GetAnchor(anchor).GetComponent<RopeAnchorPositionHandler>();
 		}
 	}
 

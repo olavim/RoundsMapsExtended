@@ -26,14 +26,14 @@ namespace MapsExt.Editor.UI
 		private float maxSliderValue;
 		private float valueOnSliderMouseDown;
 
-		public void Awake()
+		private void Awake()
 		{
 			this.slider.onValueChanged.AddListener(this.UpdateValueSlider);
 			this.input.onValueChanged.AddListener(this.UpdateValueTextInput);
 			this.maxSliderValue = this.slider.maxValue;
 		}
 
-		public void Start()
+		private void Start()
 		{
 			var eventTrigger = this.slider.gameObject.GetComponent<EventTrigger>() ?? this.slider.gameObject.AddComponent<EventTrigger>();
 

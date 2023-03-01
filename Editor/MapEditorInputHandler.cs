@@ -13,24 +13,35 @@ namespace MapsExt.Editor
 		private float mouseDownSince;
 		private Vector3 mouseDownPosition;
 		private bool isSelecting;
-		private bool isDragging;
 
-		public void Awake()
+		private void Awake()
 		{
 			this.editor = this.gameObject.GetComponent<MapEditor>();
 			this.mouseDownSince = 0;
 			this.isSelecting = false;
-			this.isDragging = false;
 
 			// The KeyMonitor component handles pressing and then holding keys in a more familiar way
 			var monitor = this.gameObject.AddComponent<KeyMonitor>();
-			monitor.AddListener(KeyCode.LeftArrow, () => this.HandleNudge(Vector2.left));
-			monitor.AddListener(KeyCode.RightArrow, () => this.HandleNudge(Vector2.right));
-			monitor.AddListener(KeyCode.UpArrow, () => this.HandleNudge(Vector2.up));
-			monitor.AddListener(KeyCode.DownArrow, () => this.HandleNudge(Vector2.down));
+
+			var editorKeys = new KeyCode[] {
+				KeyCode.LeftArrow,
+				KeyCode.RightArrow,
+				KeyCode.UpArrow,
+				KeyCode.DownArrow
+			};
+
+			foreach (var key in editorKeys)
+			{
+				monitor.AddListener(key, () => this.editor.OnKeyDown(key));
+			}
+
+			// monitor.AddListener(KeyCode.LeftArrow, () => this.HandleNudge(Vector2.left));
+			// monitor.AddListener(KeyCode.RightArrow, () => this.HandleNudge(Vector2.right));
+			// monitor.AddListener(KeyCode.UpArrow, () => this.HandleNudge(Vector2.up));
+			// monitor.AddListener(KeyCode.DownArrow, () => this.HandleNudge(Vector2.down));
 		}
 
-		public void Update()
+		private void Update()
 		{
 			if (this.editor.isSimulating)
 			{
@@ -94,38 +105,11 @@ namespace MapsExt.Editor
 		{
 			if (EventSystem.current.currentSelectedGameObject != null)
 			{
+				UnityEngine.Debug.Log(EventSystem.current.currentSelectedGameObject);
 				return;
 			}
 
 			this.editor.OnDeleteSelectedMapObjects();
-		}
-
-		private void HandleNudge(Vector2 nudge)
-		{
-			if (EventSystem.current.currentSelectedGameObject != null)
-			{
-				return;
-			}
-
-			if (EditorInput.GetKey(KeyCode.LeftShift))
-			{
-				nudge *= 2f;
-			}
-
-			if (EditorInput.GetKey(KeyCode.LeftControl))
-			{
-				nudge /= 2f;
-			}
-
-			if (this.editor.GridSize > 0)
-			{
-				nudge *= this.editor.GridSize;
-			}
-
-			if (nudge.magnitude > 0)
-			{
-				this.editor.OnNudgeSelectedMapObjects(nudge);
-			}
 		}
 
 		private void HandleMouseDown()
@@ -142,7 +126,6 @@ namespace MapsExt.Editor
 
 			if (list.Any(this.editor.IsSelected))
 			{
-				this.isDragging = true;
 				this.editor.OnPointerDown();
 			}
 			else
@@ -154,6 +137,8 @@ namespace MapsExt.Editor
 
 		private void HandleMouseUp()
 		{
+			EventSystem.current.SetSelectedGameObject(null);
+
 			var mouseUpTime = Time.time * 1000;
 			var newMousePosition = EditorInput.mousePosition;
 			var mouseDelta = this.mouseDownPosition - newMousePosition;
@@ -169,11 +154,7 @@ namespace MapsExt.Editor
 				this.editor.OnSelectionEnd();
 			}
 
-			if (this.isDragging)
-			{
-				this.isDragging = false;
-				this.editor.OnPointerUp();
-			}
+			this.editor.OnPointerUp();
 		}
 	}
 }

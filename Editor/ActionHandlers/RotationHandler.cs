@@ -1,57 +1,66 @@
-using System.Collections.Specialized;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 
-namespace MapsExt.Editor.Interactions
+namespace MapsExt.Editor.ActionHandlers
 {
-	public class RotateInteraction : MonoBehaviour, IEditorInteraction
+	public class RotationHandler : MapObjectActionHandler
 	{
-		private MapEditor editor;
-		private bool isRotatingMapObjects;
+		public GameObject content;
+
+		private bool isRotating;
 		private Vector3 prevMouse;
-		private GameObject content;
 
-		private void Start()
+		private void Awake()
 		{
-			this.editor = this.GetComponentInParent<MapEditor>();
-			this.editor.selectedObjects.CollectionChanged += this.SelectedMapObjectsChanged;
-
 			this.content = new GameObject("Rotate Interaction Content");
 			this.content.transform.SetParent(this.transform);
+			this.content.transform.localScale = Vector3.one;
+			this.content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
 
 			this.content.AddComponent<GraphicRaycaster>();
 			var canvas = this.content.GetComponent<Canvas>();
-			canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+			canvas.renderMode = RenderMode.WorldSpace;
+			canvas.worldCamera = MainCam.instance.cam;
 		}
 
 		private void Update()
 		{
-			if (this.isRotatingMapObjects)
+			if (this.isRotating)
 			{
 				this.RotateMapObjects();
 			}
+		}
 
-			if (EditorInput.GetMouseButtonUp(0) && this.isRotatingMapObjects)
+		public override void OnPointerUp()
+		{
+			if (this.isRotating)
 			{
 				this.OnRotateEnd();
 			}
 		}
 
-		public void OnPointerDown() { }
-		public void OnPointerUp() { }
+		public virtual void SetRotation(Quaternion rotation)
+		{
+			this.transform.rotation = Quaternion.Euler(rotation.eulerAngles.Round(4));
+			this.OnChange();
+		}
 
-		private void SelectedMapObjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		public virtual Quaternion GetRotation()
+		{
+			return this.transform.rotation;
+		}
+
+		public override void OnSelect()
+		{
+			this.AddRotationHandle();
+		}
+
+		public override void OnDeselect()
 		{
 			foreach (Transform child in this.content.transform)
 			{
 				GameObject.Destroy(child.gameObject);
-			}
-
-			if (this.editor.selectedObjects.Count == 1)
-			{
-				this.AddRotationHandle(this.editor.selectedObjects[0]);
 			}
 		}
 
@@ -60,57 +69,51 @@ namespace MapsExt.Editor.Interactions
 			var mousePos = EditorInput.mousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
-			this.isRotatingMapObjects = true;
+			this.isRotating = true;
 			this.prevMouse = mouseWorldPos;
 		}
 
 		private void OnRotateEnd()
 		{
-			this.isRotatingMapObjects = false;
-			this.editor.UpdateRopeAttachments();
-			this.editor.TakeSnaphot();
+			this.isRotating = false;
+			this.Editor.UpdateRopeAttachments();
+			this.Editor.TakeSnaphot();
 		}
 
 		private void RotateMapObjects()
 		{
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(EditorInput.mousePosition.x, EditorInput.mousePosition.y));
-			var selectedObj = this.editor.selectedObjects[0];
 
 			var mousePos = mouseWorldPos;
-			var objectPos = selectedObj.transform.position;
+			var objectPos = this.transform.position;
 			mousePos.x -= objectPos.x;
 			mousePos.y -= objectPos.y;
 
 			float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
-			angle = EditorUtils.Snap(angle, this.editor.snapToGrid ? 15f : 2f);
+			angle = EditorUtils.Snap(angle, this.Editor.snapToGrid ? 15f : 2f);
 			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-			foreach (var handler in this.editor.selectedObjects.SelectMany(obj => obj.GetComponents<ActionHandlers.RotationHandler>()))
-			{
-				handler.SetRotation(toRotation);
-				handler.OnChange();
-			}
+			this.SetRotation(toRotation);
 		}
 
-		private void AddRotationHandle(GameObject mapObject)
+		private void AddRotationHandle()
 		{
-			if (!mapObject.GetComponent<ActionHandlers.RotationHandler>())
-			{
-				return;
-			}
-
 			var go = new GameObject("Rotation Handle");
 
-			var aligner = go.AddComponent<UI.UIAligner>();
-			aligner.referenceGameObject = mapObject;
-			aligner.position = AnchorPosition.TopMiddle;
-			aligner.padding = 48f;
-
 			var image = go.AddComponent<ProceduralImage>();
-			image.rectTransform.sizeDelta = new Vector2(12f, 12f);
+			image.FalloffDistance = 0.005f;
+
+			var aligner = go.AddComponent<UI.UIAligner>();
+			aligner.referenceGameObject = this.gameObject;
+			aligner.position = AnchorPosition.TopMiddle;
+			aligner.padding = 1.6f;
+
+			var scaler = go.AddComponent<UI.UIScaler>();
+			scaler.referenceGameObject = this.gameObject;
+			scaler.constantSize = new Vector2(0.5f, 0.5f);
 
 			var modifier = go.AddComponent<UniformModifier>();
-			modifier.Radius = 6;
+			modifier.Radius = 0.5f;
 
 			var button = go.AddComponent<Button>();
 			button.colors = new ColorBlock()
@@ -126,13 +129,22 @@ namespace MapsExt.Editor.Interactions
 
 			events.pointerDown += hoveredObj =>
 			{
-				if (!this.isRotatingMapObjects)
+				if (!this.isRotating)
 				{
 					this.OnRotateStart();
 				}
 			};
 
+			events.pointerUp += hoveredObj =>
+			{
+				if (this.isRotating)
+				{
+					this.OnRotateEnd();
+				}
+			};
+
 			go.transform.SetParent(this.content.transform);
+			go.transform.localScale = Vector3.one;
 		}
 	}
 }

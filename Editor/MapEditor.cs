@@ -10,7 +10,7 @@ using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections;
-using MapsExt.Editor.Interactions;
+using System.Reflection;
 
 namespace MapsExt.Editor
 {
@@ -31,17 +31,21 @@ namespace MapsExt.Editor
 			set { this.grid.cellSize = Vector3.one * value; }
 		}
 
+		public GameObject[] internalSelectedObjects;
 		private StateHistory stateHistory;
 		private bool isCreatingSelection;
 		private Vector3 selectionStartPosition;
 		private Rect selectionRect;
 		private List<MapObjectData> clipboardMapObjects;
+		private Dictionary<Type, Type[]> groupActionHandlers;
 
 		private GameObject tempSpawn;
+		private GameObject dummyGroup;
 
-		public void Awake()
+		private void Awake()
 		{
 			this.selectedObjects = new RangeObservableCollection<GameObject>();
+			this.groupActionHandlers = new Dictionary<Type, Type[]>();
 			this.snapToGrid = true;
 			this.isCreatingSelection = false;
 			this.currentMapName = null;
@@ -50,12 +54,21 @@ namespace MapsExt.Editor
 			this.stateHistory = new StateHistory(this.GetMapData());
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
-			this.gameObject.AddComponent<MoveInteraction>();
-			this.gameObject.AddComponent<ResizeInteraction>();
-			this.gameObject.AddComponent<RotateInteraction>();
+
+			var groupActionHandlerTypes = typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupMapObjectActionHandler>() != null);
+			foreach (var type in groupActionHandlerTypes)
+			{
+				this.groupActionHandlers[type] = type.GetCustomAttribute<GroupMapObjectActionHandler>().requiredHandlerTypes;
+			}
 		}
 
-		public void Update()
+		private void Start()
+		{
+			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT);
+			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.LAYER_MAPOBJECT_UI);
+		}
+
+		private void Update()
 		{
 			if (this.isCreatingSelection)
 			{
@@ -195,7 +208,6 @@ namespace MapsExt.Editor
 					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
 					{
 						handler.Move(new Vector3(1, -1, 0));
-						handler.OnChange();
 					}
 
 					this.AddSelected(obj);
@@ -214,11 +226,11 @@ namespace MapsExt.Editor
 			this.TakeSnaphot();
 		}
 
-		public void CreateMapObject(Type mapObjectType)
+		public void CreateMapObject(Type mapObjectDataType)
 		{
 			this.ClearSelected();
 
-			MapsExtendedEditor.instance.SpawnObject(this.content, mapObjectType, obj =>
+			MapsExtendedEditor.instance.SpawnObject(this.content, mapObjectDataType, obj =>
 			{
 				var objectsWithHandlers = obj
 					.GetComponentsInChildren<MapObjectActionHandler>()
@@ -253,7 +265,7 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			var mapObjects = this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
+			GameObject[] mapObjects = this.internalSelectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
 
 			foreach (var instance in mapObjects)
 			{
@@ -440,29 +452,26 @@ namespace MapsExt.Editor
 
 		public void OnPointerDown()
 		{
-			foreach (var interaction in this.GetComponentsInChildren<IEditorInteraction>())
+			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
 			{
-				interaction.OnPointerDown();
+				handler.OnPointerDown();
 			}
 		}
 
 		public void OnPointerUp()
 		{
-			foreach (var interaction in this.GetComponentsInChildren<IEditorInteraction>())
+			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
 			{
-				interaction.OnPointerUp();
+				handler.OnPointerUp();
 			}
 		}
 
-		public void OnNudgeSelectedMapObjects(Vector2 delta)
+		public void OnKeyDown(KeyCode key)
 		{
-			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<PositionHandler>()))
+			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
 			{
-				handler.Move(delta);
-				handler.OnChange();
+				handler.OnKeyDown(key);
 			}
-
-			this.TakeSnaphot();
 		}
 
 		public bool IsSelected(GameObject obj)
@@ -489,7 +498,18 @@ namespace MapsExt.Editor
 
 		public void ClearSelected()
 		{
+			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			{
+				handler.OnDeselect();
+			}
+
+			if (this.dummyGroup != null)
+			{
+				GameObject.Destroy(this.dummyGroup);
+			}
+
 			this.selectedObjects.Clear();
+			this.internalSelectedObjects = null;
 		}
 
 		public void AddSelected(GameObject obj)
@@ -499,7 +519,50 @@ namespace MapsExt.Editor
 
 		public void AddSelected(IEnumerable<GameObject> list)
 		{
-			this.selectedObjects.AddRange(list);
+			if (list.Count() >= 2)
+			{
+				this.dummyGroup = new GameObject("Group");
+				this.dummyGroup.transform.SetParent(this.content.transform);
+
+				this.dummyGroup.AddComponent<BoxCollider2D>();
+
+				var bounds = new Bounds(list.First().transform.position, Vector3.zero);
+				foreach (var obj in list)
+				{
+					bounds.Encapsulate(EditorUtils.GetMapObjectBounds(obj));
+				}
+
+				this.dummyGroup.transform.position = bounds.center;
+				this.dummyGroup.transform.localScale = bounds.size;
+
+				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
+
+				/* Find valid group action handlers.
+				 * A group action handler is valid if all selected map objects have
+				 * all action handlers that are required by the group action handler.
+				 */
+				foreach (var type in this.groupActionHandlers.Keys)
+				{
+					var requiredTypes = this.groupActionHandlers[type];
+					if (list.All(obj => requiredTypes.All(t => obj.GetComponent(t) != null)))
+					{
+						var handler = (IGroupMapObjectActionHandler) this.dummyGroup.AddComponent(type);
+						handler.SetHandlers(list);
+					}
+				}
+				this.selectedObjects.Add(this.dummyGroup);
+			}
+			else
+			{
+				this.selectedObjects.AddRange(list);
+			}
+
+			this.internalSelectedObjects = list.ToArray();
+
+			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			{
+				handler.OnSelect();
+			}
 		}
 
 		public void SelectAll()

@@ -17,12 +17,12 @@ namespace MapsExt.Visualizers
 			this.enabled = enabled;
 		}
 
-		public void Start()
+		private void Start()
 		{
 			this.rope = this.gameObject.GetComponent<EditorRopeInstance>();
 		}
 
-		public void OnEnable()
+		private void OnEnable()
 		{
 			this.renderer = this.gameObject.GetComponent<LineRenderer>();
 			this.renderer.material = new Material(Shader.Find("Sprites/Default"));
@@ -59,7 +59,7 @@ namespace MapsExt.Visualizers
 			endModifier.Radius = 5;
 		}
 
-		public void OnDisable()
+		private void OnDisable()
 		{
 			this.renderer = null;
 			this.startGraphic = null;
@@ -68,7 +68,7 @@ namespace MapsExt.Visualizers
 			GameObject.Destroy(this.transform.Find("Canvas").gameObject);
 		}
 
-		public void LateUpdate()
+		private void LateUpdate()
 		{
 			if (!this.renderer || !this.startGraphic || !this.endGraphic)
 			{

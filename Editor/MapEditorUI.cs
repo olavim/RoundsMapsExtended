@@ -62,9 +62,22 @@ namespace MapsExt.Editor
 		private bool[] windowWasOpen;
 		private Vector2 resolution;
 
-		public void Awake()
+		private void Awake()
 		{
 			this.resolution = new Vector2(Screen.width, Screen.height);
+
+			this.toolbar.fileMenu.AddItem(new MenuItemBuilder().Label("Open...").Action(this.OnClickOpen).KeyBinding(NamedKeyCode.O, NamedKeyCode.Ctrl));
+			this.toolbar.fileMenu.AddItem(new MenuItemBuilder().Label("Save").Action(this.OnClickSave).KeyBinding(NamedKeyCode.S, NamedKeyCode.Ctrl));
+			this.toolbar.fileMenu.AddItem(new MenuItemBuilder().Label("Save As...").Action(this.OnClickSaveAs).KeyBinding(NamedKeyCode.S, NamedKeyCode.Ctrl, NamedKeyCode.Shift));
+			this.toolbar.fileMenu.AddItem(new MenuItemBuilder().Label("Open Map Folder").Action(this.OnClickOpenMapFolder).Item());
+
+			this.toolbar.editMenu.AddItem(new MenuItemBuilder().Label("Copy").Action(this.OnClickCopy).KeyBinding(NamedKeyCode.C, NamedKeyCode.Ctrl));
+			this.toolbar.editMenu.AddItem(new MenuItemBuilder().Label("Paste").Action(this.OnClickPaste).KeyBinding(NamedKeyCode.V, NamedKeyCode.Ctrl));
+			this.toolbar.editMenu.AddItem(new MenuItemBuilder().Label("Undo").Action(this.OnClickUndo).KeyBinding(NamedKeyCode.Z, NamedKeyCode.Ctrl));
+			this.toolbar.editMenu.AddItem(new MenuItemBuilder().Label("Redo").Action(this.OnClickRedo).KeyBinding(NamedKeyCode.Z, NamedKeyCode.Ctrl, NamedKeyCode.Shift));
+
+			this.toolbar.windowMenu.AddItem(new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow));
+			this.toolbar.windowMenu.AddItem(new MenuItemBuilder().Label("Inspector").Action(this.OpenInspectorWindow));
 
 			var mapObjects = new Dictionary<string, List<Tuple<string, Type>>>();
 			mapObjects.Add("", new List<Tuple<string, Type>>());
@@ -206,7 +219,7 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void Start()
+		private void Start()
 		{
 			this.editor.selectedObjects.CollectionChanged += this.HandleSelectedObjectsChanged;
 			this.windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
@@ -214,7 +227,7 @@ namespace MapsExt.Editor
 			this.selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
 		}
 
-		public void Update()
+		private void Update()
 		{
 			if (this.editor.isSimulating)
 			{
@@ -367,7 +380,10 @@ namespace MapsExt.Editor
 					? this.editor.animationHandler.animation.GetComponent<MapObjectInstance>()
 					: list[0].GetComponentInParent<MapObjectInstance>();
 
-				this.inspector.Link(mapObjectInstance, list[0]);
+				if (mapObjectInstance != null)
+				{
+					this.inspector.Link(mapObjectInstance, list[0]);
+				}
 			}
 			else if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
 			{

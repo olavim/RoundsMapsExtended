@@ -2,13 +2,13 @@
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class RopeAnchorMoveHandler : PositionHandler
+	public class RopeAnchorPositionHandler : PositionHandler
 	{
 		public override void Move(Vector3 delta)
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();
 			anchor.Detach();
-			this.transform.position += delta;
+			base.Move(delta);
 			anchor.UpdateAttachment();
 		}
 
@@ -16,7 +16,7 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();
 			anchor.Detach();
-			this.transform.position = position;
+			base.SetPosition(position);
 			anchor.UpdateAttachment();
 		}
 	}

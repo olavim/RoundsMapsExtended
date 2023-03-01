@@ -40,6 +40,13 @@ Write-Host "Publishing for $Target from $TargetPath"
 # Plugin name without ".dll"
 $name = "$TargetAssembly" -Replace ('.dll')
 
+# Create the mdb file
+$pdb = "$TargetPath\$name.pdb"
+if (Test-Path -Path "$pdb") {
+	Write-Host "Create mdb file for plugin $name"
+	Invoke-Expression "& `"$SolutionPath\libs\pdb2mdb.exe`" `"$TargetPath\$TargetAssembly`""
+}
+
 if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor") -or $name.Equals("MapsExtended.Test")) {
 	Write-Host ""
 	Write-Host "Updating local installation in $RoundsPath"
@@ -47,6 +54,8 @@ if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor") -or $na
 	$plug = New-Item -Type Directory -Path "$RoundsPath\BepInEx\plugins\$name" -Force
 	Write-Host "  Copy $TargetAssembly to $plug"
 	Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
+	Copy-Item -Path "$TargetPath\$name.pdb" -Destination "$plug" -Force
+	Copy-Item -Path "$TargetPath\$name.dll.mdb" -Destination "$plug" -Force
 
 	if ($name.Equals("MapsExtended.Editor")) {
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$plug" -Force

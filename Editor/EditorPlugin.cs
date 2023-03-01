@@ -19,8 +19,6 @@ using UnityEngine.EventSystems;
 
 namespace MapsExt.Editor
 {
-	public class CustomEventSystem : EventSystem { }
-
 	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
 	[BepInDependency(MapsExtended.ModId, MapsExtended.ModVersion)]
 	[BepInPlugin(ModId, ModName, ModVersion)]
@@ -29,6 +27,9 @@ namespace MapsExt.Editor
 		public const string ModId = "io.olavim.rounds.mapsextended.editor";
 		public const string ModName = "MapsExtended.Editor";
 		public const string ModVersion = MapsExtended.ModVersion;
+
+		public const int LAYER_ANIMATION_MAPOBJECT = 30;
+		public const int LAYER_MAPOBJECT_UI = 31;
 
 		public static MapsExtendedEditor instance;
 
@@ -40,7 +41,7 @@ namespace MapsExt.Editor
 		internal GameObject frontParticles;
 		internal GameObject mainPostProcessing;
 
-		public void Awake()
+		private void Awake()
 		{
 			MapsExtendedEditor.instance = this;
 
@@ -77,7 +78,7 @@ namespace MapsExt.Editor
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
-		public void Start()
+		private void Start()
 		{
 			MapsExtended.instance.RegisterMapObjectProperties();
 			MapsExtended.instance.RegisterMapObjects();
@@ -92,7 +93,7 @@ namespace MapsExt.Editor
 
 			var camera = cameraGo.AddComponent<Camera>();
 			camera.CopyFrom(MainCam.instance.cam);
-			camera.depth = 10;
+			camera.depth = 2;
 			camera.cullingMask = 0; // Render nothing, only apply post-processing fx
 
 			var layer = cameraGo.AddComponent<PostProcessLayer>();
@@ -256,9 +257,9 @@ namespace MapsExt.Editor
 			});
 		}
 
-		public void SpawnObject(GameObject container, Type type, Action<GameObject> cb)
+		public void SpawnObject(GameObject container, Type dataType, Action<GameObject> cb)
 		{
-			var mapObject = (MapObjectData) AccessTools.CreateInstance(type);
+			var mapObject = (MapObjectData) AccessTools.CreateInstance(dataType);
 			this.SpawnObject(container, mapObject, cb);
 		}
 
@@ -272,7 +273,6 @@ namespace MapsExt.Editor
 				if (rig)
 				{
 					this.SetPhysicsActive(rig, false);
-					// this.ExecuteAfterFrames(1, () => this.SetPhysicsActive(rig, false));
 				}
 
 				cb?.Invoke(instance);
@@ -318,100 +318,6 @@ namespace MapsExt.Editor
 			}
 
 			this.ResetAnimations(container);
-		}
-
-		private void FixRenderLayers(GameObject go)
-		{
-			foreach (var renderer in go.GetComponentsInChildren<Renderer>())
-			{
-				if (renderer is SpriteMask)
-				{
-					continue;
-				}
-
-				var spriteRenderer = renderer as SpriteRenderer;
-				var particleRenderer = renderer as ParticleSystemRenderer;
-
-				if (spriteRenderer)
-				{
-					spriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
-				}
-
-				if (particleRenderer)
-				{
-					particleRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
-				}
-
-				if (renderer.sortingLayerName == "MapParticle")
-				{
-					renderer.sortingOrder = 0;
-				}
-
-				if (renderer.sortingLayerName == "MostFront")
-				{
-					renderer.sortingOrder = 1;
-				}
-
-				if (renderer.sortingLayerName == "Background")
-				{
-					renderer.sortingOrder = 2;
-				}
-
-				renderer.sortingLayerID = SortingLayer.NameToID("MapParticle");
-			}
-
-			foreach (var mask in go.GetComponentsInChildren<SpriteMask>())
-			{
-				int layerID = mask.frontSortingLayerID;
-				mask.frontSortingLayerID = SortingLayer.NameToID("MapParticle");
-				mask.backSortingLayerID = SortingLayer.NameToID("MapParticle");
-
-				if (layerID == SortingLayer.NameToID("MapParticle") || layerID == SortingLayer.NameToID("Default"))
-				{
-					mask.frontSortingOrder = 1;
-					mask.backSortingOrder = 0;
-				}
-
-				if (layerID == SortingLayer.NameToID("MostFront"))
-				{
-					mask.frontSortingOrder = 2;
-					mask.backSortingOrder = 1;
-				}
-
-				if (layerID == SortingLayer.NameToID("Background"))
-				{
-					mask.frontSortingOrder = 3;
-					mask.backSortingOrder = 2;
-				}
-
-				mask.isCustomRangeActive = true;
-			}
-
-			foreach (var parentMask in go.GetComponentsInChildren<SpriteMask>())
-			{
-				if (!parentMask.enabled)
-				{
-					continue;
-				}
-
-				int minOrder = 999;
-				int maxOrder = 0;
-
-				foreach (var childRenderer in parentMask.gameObject.GetComponentsInChildren<Renderer>())
-				{
-					if (!(childRenderer is SpriteMask) && childRenderer.enabled)
-					{
-						minOrder = Mathf.Min(minOrder, childRenderer.sortingOrder);
-						maxOrder = Mathf.Max(maxOrder, childRenderer.sortingOrder);
-					}
-				}
-
-				if (minOrder != 999)
-				{
-					parentMask.frontSortingOrder = maxOrder + 1;
-					parentMask.backSortingOrder = minOrder;
-				}
-			}
 		}
 
 		public void ResetAnimations(GameObject go)

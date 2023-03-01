@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class SawData : SpatialMapObjectData, IMapObjectEllipse, IMapObjectSaw { }
+	public class SawData : SpatialMapObjectData, IMapObjectEllipse { }
 
 	[MapObject]
 	public class Saw : IMapObject<SawData>
 	{
-		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/MapObject_Saw_Stat");
+		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Saw");
 	}
 }

@@ -21,7 +21,7 @@ namespace MapsExt.Editor.UI
 		private Menu activeMenu;
 		private bool simulationEnabled;
 
-		public void Start()
+		private void Start()
 		{
 			this.SetGridSize(gridStep);
 			this.simulationEnabled = false;

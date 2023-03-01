@@ -7,6 +7,7 @@ using System.Reflection;
 
 namespace MapsExt.Test
 {
+	[TestClass(skip: true)]
 	public class TestRunner
 	{
 		public IEnumerator DiscoverAndRun()
@@ -14,16 +15,26 @@ namespace MapsExt.Test
 			int testsPassed = 0;
 			int testsFailed = 0;
 
-			foreach (var type in typeof(MapsExtendedTest).Assembly.GetTypes())
+			var testClasses = typeof(MapsExtendedTest).Assembly.GetTypes()
+				.Where(t => t.GetCustomAttribute<TestClass>() != null && !t.GetCustomAttribute<TestClass>().skip);
+
+			var testClassesWithOnly = testClasses.Where(t => t.GetCustomAttribute<TestClass>().only);
+
+			if (testClassesWithOnly.Count() > 0)
 			{
-				var executions = this.GetExecutionGroups(type).ToList();
+				testClasses = testClassesWithOnly;
+			}
+
+			foreach (var testClass in testClasses)
+			{
+				var executions = this.GetExecutionGroups(testClass).ToList();
 
 				if (executions.Count == 0)
 				{
 					continue;
 				}
 
-				var instance = AccessTools.CreateInstance(type);
+				var instance = AccessTools.CreateInstance(testClass);
 
 				for (int i = 0; i < executions.Count; i++)
 				{
@@ -32,13 +43,13 @@ namespace MapsExt.Test
 
 					if (exec.Result.pass && i != 0 && i != executions.Count - 1)
 					{
-						MapsExtendedTest.Logger.LogInfo($"  [PASS] [{type.Name}] {exec.Name}");
+						MapsExtendedTest.Logger.LogInfo($"  [PASS] [{testClass.Name}] {exec.Name}");
 						testsPassed++;
 					}
 
 					if (!exec.Result.pass)
 					{
-						MapsExtendedTest.Logger.LogInfo($"  [FAIL] [{type.Name}] {exec.Name}: {exec.Result.failReason}");
+						MapsExtendedTest.Logger.LogError($"  [FAIL] [{testClass.Name}] {exec.Name}: {exec.Result.failReason}");
 						testsFailed++;
 					}
 				}
@@ -99,6 +110,7 @@ namespace MapsExt.Test
 						catch (Exception e)
 						{
 							execution.Result = ExecutionResult.Fail(e.Message);
+							MapsExtendedTest.Logger.LogError(e);
 							yield break;
 						}
 

@@ -22,7 +22,7 @@ namespace MapsExt.Editor.UI
 			}
 		}
 
-		public void Start()
+		private void Start()
 		{
 			this.xInput.onValueChanged.AddListener(this.UpdateXValue);
 			this.yInput.onValueChanged.AddListener(this.UpdateYValue);

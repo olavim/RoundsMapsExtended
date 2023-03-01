@@ -52,7 +52,7 @@ namespace MapsExt.Test
 		private TtlDictionary<int, bool> mouseButtonDownDict = new TtlDictionary<int, bool>();
 		private TtlDictionary<int, bool> mouseButtonUpDict = new TtlDictionary<int, bool>();
 
-		public void LateUpdate()
+		private void LateUpdate()
 		{
 			this.keyDownDict.Tick();
 			this.keyUpDict.Tick();

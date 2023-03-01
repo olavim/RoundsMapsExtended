@@ -10,9 +10,6 @@ namespace MapsExt.Editor
 {
 	public class MapEditorAnimationHandler : MonoBehaviour
 	{
-		private const int POSTPROCESS_LAYER = 31;
-		private const int MAPOBJECT_LAYER = 31;
-
 		public MapEditor editor;
 		public MapObjectAnimation animation;
 		public GameObject keyframeMapObject;
@@ -31,9 +28,8 @@ namespace MapsExt.Editor
 		private GameObject curtain;
 		private GameObject particles;
 
-		public void Awake()
+		private void Awake()
 		{
-			this.SetupLayerCamera();
 			this.SetupLayerCurtain();
 
 			this.lineRenderer = this.gameObject.AddComponent<SmoothLineRenderer>();
@@ -41,7 +37,9 @@ namespace MapsExt.Editor
 			this.lineRenderer.Renderer.sortingOrder = 9;
 		}
 
-		// Creates a transparent image that "separates" the bottom and top layers
+		/* Creates a transparent image that "separates" the bottom and top layers. The bottom layer (and curtain)
+		 * is rendered by the main camera, while the top layer is rendered by a second camera.
+		 */
 		private void SetupLayerCurtain()
 		{
 			this.curtain = new GameObject("Curtain");
@@ -58,15 +56,7 @@ namespace MapsExt.Editor
 			image.rectTransform.sizeDelta = new Vector2(Screen.width, Screen.height);
 		}
 
-		/* The bottom layer (and curtain) is rendered by the main camera, while the top layer
-		 * is rendered by a second camera.
-		 */
-		private void SetupLayerCamera()
-		{
-			MainCam.instance.cam.cullingMask = MainCam.instance.cam.cullingMask & ~this.animationCamera.cullingMask;
-		}
-
-		public void OnEnable()
+		private void OnEnable()
 		{
 			if (this.animation == null)
 			{
@@ -80,7 +70,7 @@ namespace MapsExt.Editor
 			this.SetKeyframe(this.prevKeyframe);
 		}
 
-		public void OnDisable()
+		private void OnDisable()
 		{
 			if (this.animation == null)
 			{
@@ -106,7 +96,7 @@ namespace MapsExt.Editor
 			this.SetKeyframe(-1);
 		}
 
-		public void Update()
+		private void Update()
 		{
 			if (!this.editor || this.editor.isSimulating || !this.animation)
 			{
@@ -153,7 +143,7 @@ namespace MapsExt.Editor
 			foreach (var p in this.particles.GetComponentsInChildren<ParticleSystem>())
 			{
 				// Render these particles on the second camera's layer
-				p.gameObject.layer = MAPOBJECT_LAYER;
+				p.gameObject.layer = MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT;
 				p.Play();
 			}
 		}
@@ -221,19 +211,6 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void ReplaceActionHandler<T, K>(GameObject instance)
-			where T : MapObjectActionHandler
-			where K : Component, IAnimationActionHandler
-		{
-			if (instance.GetComponent<T>())
-			{
-				GameObject.Destroy(instance.GetComponent<T>());
-				var handler = instance.AddComponent<K>();
-				handler.animation = this.animation;
-				handler.frameIndex = this.KeyframeIndex;
-			}
-		}
-
 		public void SetKeyframe(int frameIndex)
 		{
 			if (this.keyframeMapObject)
@@ -253,7 +230,7 @@ namespace MapsExt.Editor
 					 */
 					foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
 					{
-						renderer.gameObject.layer = MAPOBJECT_LAYER;
+						renderer.gameObject.layer = MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT;
 					}
 
 					foreach (var handler in instance.GetComponentsInChildren<MapObjectActionHandler>())

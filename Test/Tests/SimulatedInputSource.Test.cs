@@ -9,7 +9,7 @@ namespace MapsExt.Test
 		public Editor.IInputSource inputSource;
 		public int numFramesActive = 0;
 
-		public void Update()
+		private void Update()
 		{
 			if (this.inputSource?.GetMouseButtonDown(0) ?? false)
 			{
@@ -18,6 +18,7 @@ namespace MapsExt.Test
 		}
 	}
 
+	[TestClass]
 	public class SimulatedInputSourceTests
 	{
 		[Test]

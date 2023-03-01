@@ -18,7 +18,7 @@ namespace MapsExt.Visualizers
 			this.enabled = enabled;
 		}
 
-		public void OnEnable()
+		private void OnEnable()
 		{
 			var collider = this.gameObject.AddComponent<BoxCollider2D>();
 			collider.size = new Vector3(3, 3);
@@ -46,7 +46,7 @@ namespace MapsExt.Visualizers
 			this.labelBg.rectTransform.sizeDelta = new Vector2(80f, 30f);
 			this.labelBg.color = new Color(0, 0.57f, 0.45f, 0.2f);
 
-			var modifier  = imageGo.AddComponent<UniformModifier>();
+			var modifier = imageGo.AddComponent<UniformModifier>();
 			modifier.Radius = 8;
 
 			var textGo = new GameObject("Text");
@@ -65,14 +65,14 @@ namespace MapsExt.Visualizers
 			this.positionIndicator.rectTransform.sizeDelta = UIUtils.WorldToScreenRect(new Rect(0, 0, 0.5f, 0.5f)).size;
 		}
 
-		public void OnDisable()
+		private void OnDisable()
 		{
 			GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
 			GameObject.Destroy(this.transform.Find("Canvas").gameObject);
 			GameObject.Destroy(this.transform.Find("Label Collider").gameObject);
 		}
 
-		public void LateUpdate()
+		private void LateUpdate()
 		{
 			var spawnObj = this.gameObject.GetComponent<SpawnPoint>();
 			this.label.text = $"Spawn {spawnObj.ID}";

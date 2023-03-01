@@ -9,7 +9,7 @@ namespace MapsExt.MapObjects
 		public string mapObjectId;
 		public Type dataType;
 
-		public void Start()
+		private void Start()
 		{
 			this.FixShadow();
 		}

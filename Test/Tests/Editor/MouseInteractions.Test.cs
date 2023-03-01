@@ -1,22 +1,21 @@
-using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
 using FluentAssertions;
 using MapsExt.Editor;
-using MapsExt.Editor.Interactions;
 using MapsExt.MapObjects;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MapsExt.Test.Tests.Editor
 {
+	[TestClass]
 	public class MouseInteractionTests
 	{
 		private MapEditor editor;
 		private MapEditorUI editorUI;
 		private SimulatedInputSource inputSource;
+		private EditorTestUtils utils;
 
 		[BeforeAll]
 		public void SetInputSource()
@@ -42,6 +41,7 @@ namespace MapsExt.Test.Tests.Editor
 			var rootGo = GameObject.Find("/Map");
 			this.editor = rootGo.GetComponentInChildren<MapEditor>();
 			this.editorUI = rootGo.GetComponentInChildren<MapEditorUI>();
+			this.utils = new EditorTestUtils(this.editor, this.inputSource);
 		}
 
 		[AfterEach]
@@ -53,9 +53,9 @@ namespace MapsExt.Test.Tests.Editor
 		}
 
 		[Test]
-		public IEnumerator Test_BoxSpawnsInTheMiddle()
+		public IEnumerator Test_SpawnBoxFromMapObjectWindow()
 		{
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 
 			this.editor.content.transform.childCount.Should().Be(1);
 
@@ -65,22 +65,22 @@ namespace MapsExt.Test.Tests.Editor
 		}
 
 		[Test]
-		public IEnumerator Test_Mouse_MoveBox()
+		public IEnumerator Test_MoveBox()
 		{
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 
 			var box = this.editor.selectedObjects.First();
 			var delta = new Vector2(-5, 0);
-			yield return MoveSelectedWithMouse(delta);
+			yield return this.utils.MoveSelectedWithMouse(delta);
 			((Vector2) box.transform.position).Should().Be(delta);
 		}
 
 		[Test]
-		public IEnumerator Test_Mouse_SelectUnderlyingBox()
+		public IEnumerator Test_SelectUnderlyingBox()
 		{
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 			var box1 = this.editor.selectedObjects.First();
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 			var box2 = this.editor.selectedObjects.First();
 
 			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(box1.transform.position));
@@ -92,10 +92,10 @@ namespace MapsExt.Test.Tests.Editor
 		}
 
 		[Test]
-		public IEnumerator Test_Mouse_SelectGroup()
+		public IEnumerator Test_SelectGroup()
 		{
-			yield return this.SpawnBox();
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
+			yield return this.SpawnFromMapObjectWindow("Box");
 
 			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(new Vector3(-5, -5, 0)));
 			this.inputSource.SetMouseButtonDown(0);
@@ -108,38 +108,44 @@ namespace MapsExt.Test.Tests.Editor
 		}
 
 		[Test]
-		public IEnumerator Test_Mouse_MoveGroup()
+		public IEnumerator Test_MoveGroup()
 		{
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 			var box1 = this.editor.selectedObjects.First();
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 			var box2 = this.editor.selectedObjects.First();
 
 			this.editor.SelectAll();
 
 			var delta = new Vector2(-5, 0);
-			yield return MoveSelectedWithMouse(delta);
+			yield return this.utils.MoveSelectedWithMouse(delta);
 			((Vector2) box1.transform.position).Should().Be(delta);
 			((Vector2) box2.transform.position).Should().Be(delta);
 		}
 
 		[Test]
-		public IEnumerator Test_Mouse_ResizeBox()
+		public IEnumerator Test_ResizeBox()
 		{
-			yield return this.SpawnBox();
+			yield return this.SpawnFromMapObjectWindow("Box");
 			var box = this.editor.selectedObjects.First();
 
 			((Vector2) box.transform.localScale).Should().Be(new Vector2(2, 2));
-
-			var resizeInteractionContent = this.editor.gameObject.GetComponent<ResizeInteraction>().content;
-			var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + AnchorPosition.TopRight).gameObject;
-
-			yield return this.DragMouse(MainCam.instance.cam.ScreenToWorldPoint(resizeHandle.transform.position), Vector3.one);
-
+			yield return this.utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
 			((Vector2) box.transform.localScale).Should().Be(new Vector2(3, 3));
 		}
 
-		private IEnumerator SpawnBox()
+		[Test]
+		public IEnumerator Test_RotateBox()
+		{
+			yield return this.SpawnFromMapObjectWindow("Box");
+			var box = this.editor.selectedObjects.First();
+
+			box.transform.rotation.Should().Be(Quaternion.Euler(0, 0, 0));
+			yield return this.utils.RotateSelectedWithMouse(45);
+			box.transform.rotation.Should().Be(Quaternion.Euler(0, 0, 45));
+		}
+
+		private IEnumerator SpawnFromMapObjectWindow(string objectName)
 		{
 			bool collectionChanged = false;
 
@@ -154,7 +160,7 @@ namespace MapsExt.Test.Tests.Editor
 
 			this.editor.selectedObjects.CollectionChanged += OnEditorSelectionChanged;
 
-			var btn = this.GetMapObjectWindowButton("Box");
+			var btn = this.GetMapObjectWindowButton(objectName);
 			btn.Should().NotBeNull();
 			btn.onClick.Invoke();
 
@@ -168,40 +174,6 @@ namespace MapsExt.Test.Tests.Editor
 		{
 			var boxText = this.editorUI.mapObjectWindow.content.GetComponentsInChildren<Text>().Where(t => t.text == label).FirstOrDefault();
 			return boxText.gameObject.GetComponentInParent<Button>();
-		}
-
-		private IEnumerator MoveSelectedWithMouse(Vector3 delta)
-		{
-			var go = this.editor.selectedObjects.First();
-			yield return this.DragMouse(go.transform.position, delta);
-		}
-
-		private IEnumerator DragMouse(Vector3 worldPosition, Vector3 delta)
-		{
-			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(worldPosition));
-			this.inputSource.SetMouseButtonDown(0);
-			yield return null;
-			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(worldPosition + delta));
-			yield return null;
-			this.inputSource.SetMouseButtonUp(0);
-			yield return null;
-		}
-
-		private IEnumerator DragMouseSlowly(Vector3 worldPosition, Vector3 delta)
-		{
-			const float frames = 20;
-
-			this.inputSource.SetMouseButtonDown(0);
-			yield return null;
-
-			for (float i = 0; i < frames; i++)
-			{
-				this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(Vector3.Lerp(worldPosition, worldPosition + delta, i / frames)));
-				yield return null;
-			}
-
-			this.inputSource.SetMouseButtonUp(0);
-			yield return null;
 		}
 	}
 }

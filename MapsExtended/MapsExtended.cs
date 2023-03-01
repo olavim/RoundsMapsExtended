@@ -46,7 +46,7 @@ namespace MapsExt
 
 		internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
 
-		public void Awake()
+		private void Awake()
 		{
 			MapsExtended.instance = this;
 			new Harmony(MapsExtended.ModId).PatchAll();
@@ -70,7 +70,7 @@ namespace MapsExt
 			this.RegisterMapObjectsAction += this.OnRegisterMapObjects;
 		}
 
-		public void Start()
+		private void Start()
 		{
 			this.RegisterMapObjectProperties();
 			this.RegisterMapObjects();
@@ -82,7 +82,7 @@ namespace MapsExt
 			}
 		}
 
-		public void OnDisable()
+		private void OnDisable()
 		{
 			UnityEngine.Debug.Log(UnityEngine.StackTraceUtility.ExtractStackTrace());
 		}

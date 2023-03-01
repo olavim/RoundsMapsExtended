@@ -20,7 +20,7 @@ namespace MapsExt.Editor.UI
 
 		private bool isSelected = false;
 
-		public void Start()
+		private void Start()
 		{
 			this.contentFoldout.foldoutToggle.onClick.AddListener(() =>
 			{

@@ -7,6 +7,6 @@ namespace MapsExt.MapObjects
 	[MapObject]
 	public class Box : IMapObject<BoxData>
 	{
-		public GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Box");
+		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Box");
 	}
 }

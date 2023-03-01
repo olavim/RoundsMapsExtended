@@ -61,5 +61,14 @@ namespace MapsExt
 		{
 			return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
 		}
+
+		public static Vector3 Round(this Vector3 vector, int decimalPlaces)
+		{
+			return new Vector3(
+				(float) System.Math.Round(vector.x, decimalPlaces),
+				(float) System.Math.Round(vector.y, decimalPlaces),
+				(float) System.Math.Round(vector.z, decimalPlaces)
+			);
+		}
 	}
 }

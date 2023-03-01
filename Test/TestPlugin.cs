@@ -18,13 +18,13 @@ namespace MapsExt.Test
 
 		internal new static ManualLogSource Logger { get; private set; }
 
-		public void Awake()
+		private void Awake()
 		{
 			MapsExtendedTest.Logger = base.Logger;
 			MapsExtendedTest.instance = this;
 		}
 
-		public void Start()
+		private void Start()
 		{
 			var runner = new TestRunner();
 			this.StartCoroutine(runner.DiscoverAndRun());

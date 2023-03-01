@@ -32,31 +32,17 @@ namespace MapsExt.Editor
 			return Mathf.Round(num / step) * Mathf.Abs(step);
 		}
 
-		public static Rect GetMapObjectBounds(GameObject go)
+		public static Bounds GetMapObjectBounds(GameObject go)
 		{
-			var colliders = new List<Collider2D>();
-
-			if (go.GetComponent<Collider2D>())
-			{
-				colliders.Add(go.GetComponent<Collider2D>());
-			}
-
-			colliders.AddRange(go.GetComponentsInChildren<Collider2D>());
-
-			float minX = 9999f;
-			float maxX = -9999f;
-			float minY = 9999f;
-			float maxY = -9999f;
+			var colliders = go.GetComponentsInChildren<Collider2D>();
+			var bounds = new Bounds(go.transform.position, Vector3.zero);
 
 			foreach (var collider in colliders)
 			{
-				minX = Mathf.Min(minX, collider.bounds.min.x);
-				maxX = Mathf.Max(maxX, collider.bounds.max.x);
-				minY = Mathf.Min(minY, collider.bounds.min.y);
-				maxY = Mathf.Max(maxY, collider.bounds.max.y);
+				bounds.Encapsulate(collider.bounds);
 			}
 
-			return new Rect(minX, minY, maxX - minX, maxY - minY);
+			return bounds;
 		}
 	}
 }

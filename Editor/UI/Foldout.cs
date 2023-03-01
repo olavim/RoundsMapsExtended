@@ -11,7 +11,7 @@ namespace MapsExt.Editor.UI
 		public GameObject expandedFeature;
 		public GameObject collapsedFeature;
 
-		public void Start()
+		private void Start()
 		{
 			this.foldoutToggle.onClick.AddListener(() =>
 			{
