@@ -16,7 +16,6 @@ using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
 using UnboundLib.Utils;
-using Sirenix.Utilities;
 
 namespace MapsExt
 {
@@ -37,8 +36,6 @@ namespace MapsExt
 
 		public MapObjectManager mapObjectManager;
 		public List<CustomMap> maps;
-		public Dictionary<string, List<CustomMap>> moddedMaps;
-		public List<CustomMap> personalMaps;
 		public bool forceCustomMaps = false;
 		public CustomMap loadedMap;
 		public string loadedMapSceneName;
@@ -142,35 +139,10 @@ namespace MapsExt
 
 		public void UpdateMapFiles()
 		{
-			var pluginMapPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
-			var personalMapsFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
-			Directory.CreateDirectory(personalMapsFolder);
-			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
-			moddedMaps = new Dictionary<string, List<CustomMap>>();
-			personalMaps = new List<CustomMap>();
-
-			foreach (var path in pluginMapPaths)
-			{
-				string packName = Path.GetDirectoryName(path).Replace("_"," ");
-				if(packName.Contains("-"))
-					packName = packName.Substring(packName.IndexOf("-")+1);
-				packName = packName.Trim();
-				if (!moddedMaps.ContainsKey(packName))
-					moddedMaps[packName] = new List<CustomMap>();
-				moddedMaps[packName].Add(MapsExtended.LoadMapData(path));
-			}
-			this.personalMaps.AddRange(personalMapPaths.Select(MapsExtended.LoadMapData));
-
-			maps = new List<CustomMap>();
-			maps.AddRange(personalMaps);
-			moddedMaps.Values.ForEach(m => maps.AddRange(m));
-
-			Logger.LogMessage($"Loaded {maps.Count} custom maps");
-
-			IList<string> activeLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "activeLevels").GetValue(null);
-			IList<string> inactiveLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "inactiveLevels").GetValue(null);
-			IList<string> levelsToRedraw = (IList<string>) AccessTools.Field(typeof(ToggleLevelMenuHandler), "levelsThatNeedToRedrawn").GetValue(ToggleLevelMenuHandler.instance);
-			IDictionary<string, Level> allLevels = LevelManager.levels;
+			var activeLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "activeLevels").GetValue(null);
+			var inactiveLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "inactiveLevels").GetValue(null);
+			var levelsToRedraw = (IList<string>) AccessTools.Field(typeof(ToggleLevelMenuHandler), "levelsThatNeedToRedrawn").GetValue(ToggleLevelMenuHandler.instance);
+			var allLevels = LevelManager.levels;
 
 			var invalidatedLevels = allLevels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
 
@@ -181,21 +153,63 @@ namespace MapsExt
 				levelsToRedraw?.Remove(level);
 				allLevels.Remove(level);
 			}
-			Dictionary<string,string> mapNames = new Dictionary<string,string>();
-			foreach (var map in personalMaps)
+
+			var pluginMapPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
+
+			var personalMapsFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
+			Directory.CreateDirectory(personalMapsFolder);
+
+			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
+
+			var personalMaps = personalMapPaths.Select(MapsExtended.LoadMapData);
+			var pluginMaps = new Dictionary<string, List<CustomMap>>();
+
+			foreach (var path in pluginMapPaths)
+			{
+				string packName = Path.GetDirectoryName(path).Replace("_", " ");
+
+				if (packName.Contains("-"))
+				{
+					packName = packName.Substring(packName.IndexOf("-") + 1);
+				}
+
+				packName = packName.Trim();
+
+				if (!pluginMaps.ContainsKey(packName))
+				{
+					pluginMaps[packName] = new List<CustomMap>();
+				}
+
+				pluginMaps[packName].Add(MapsExtended.LoadMapData(path));
+			}
+
+			this.maps = new List<CustomMap>();
+			this.maps.AddRange(personalMaps);
+
+			foreach (var m in pluginMaps.Values)
+			{
+				this.maps.AddRange(m);
+			}
+
+			Logger.LogMessage($"Loaded {this.maps.Count} custom maps");
+
+			this.RegisterNamedMaps(personalMaps, "Personal");
+
+			foreach (var mod in pluginMaps.Keys)
+			{
+				this.RegisterNamedMaps(pluginMaps[mod], mod);
+			}
+		}
+
+		private void RegisterNamedMaps(IEnumerable<CustomMap> maps, string category)
+		{
+			var mapNames = new Dictionary<string, string>();
+			foreach (var map in maps)
 			{
 				mapNames["MapsExtended:" + map.id] = map.name;
 			}
-			LevelManager.RegisterNamedMaps(this.personalMaps.Select(m => "MapsExtended:" + m.id), mapNames,"Personal");
-			foreach(var mod in moddedMaps.Keys)
-			{
-				mapNames.Clear();
-				foreach (var map in moddedMaps[mod])
-				{
-					mapNames["MapsExtended:" + map.id] = map.name;
-				}
-				LevelManager.RegisterNamedMaps(this.moddedMaps[mod].Select(m => "MapsExtended:" + m.id), mapNames, mod);
-			}
+
+			LevelManager.RegisterNamedMaps(maps.Select(m => "MapsExtended:" + m.id), mapNames, category);
 		}
 
 		private static CustomMap LoadMapData(string path)

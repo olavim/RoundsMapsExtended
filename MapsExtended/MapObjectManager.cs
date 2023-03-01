@@ -20,7 +20,7 @@ namespace MapsExt
 			public DeserializerAction<MapObject> deserializer;
 		}
 
-		private static AssetBundle mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
+		private static AssetBundle mapObjectBundle;
 		private static Dictionary<string, TargetSyncedStore<int>> syncStores = new Dictionary<string, TargetSyncedStore<int>>();
 
 		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
@@ -31,6 +31,14 @@ namespace MapsExt
 		private string NetworkID { get; set; }
 
 		private readonly Dictionary<Type, Spec> specs = new Dictionary<Type, Spec>();
+
+		private void Awake()
+		{
+			if (MapObjectManager.mapObjectBundle == null)
+			{
+				MapObjectManager.mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
+			}
+		}
 
 		public void SetNetworkID(string id)
 		{

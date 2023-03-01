@@ -37,51 +37,51 @@
 		<EmbeddedResource Include="AssetsEmbedded\mapobjects" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="UnboundLib" Version="2.7.3" />
+		<PackageReference Include="UnboundLib" Version="3.2.7" />
 	</ItemGroup>
 
 	<Import Project="..\BuildProps.props" />
 
 	<ItemGroup>
-	<Reference Include="Assembly-CSharp">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Assembly-CSharp.dll</HintPath>
-	</Reference>
-	<Reference Include="0Harmony">
-		<HintPath>$(RoundsFolder)\BepInEx\core\0Harmony.dll</HintPath>
-	</Reference>
-	<Reference Include="BepInEx">
-		<HintPath>$(RoundsFolder)\BepInEx\core\BepInEx.dll</HintPath>
-	</Reference>
-	<Reference Include="PhotonRealtime">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonRealtime.dll</HintPath>
-	</Reference>
-	<Reference Include="PhotonUnityNetworking">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonUnityNetworking.dll</HintPath>
-	</Reference>
-	<Reference Include="Sirenix.Serialization">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.dll</HintPath>
-	</Reference>
-	<Reference Include="Sirenix.Serialization.Config">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
-	</Reference>
-	<Reference Include="Unity.TextMeshPro">
-	  <HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-	</Reference>
-	<Reference Include="UnityEngine">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.dll</HintPath>
-	</Reference>
-	<Reference Include="UnityEngine.AssetBundleModule">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-	</Reference>
-	<Reference Include="UnityEngine.CoreModule">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-	</Reference>
-	<Reference Include="UnityEngine.IMGUIModule">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
-	</Reference>
-	<Reference Include="UnityEngine.Physics2DModule">
-		<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
-	</Reference>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="0Harmony">
+			<HintPath>$(RoundsFolder)\BepInEx\core\0Harmony.dll</HintPath>
+		</Reference>
+		<Reference Include="BepInEx">
+			<HintPath>$(RoundsFolder)\BepInEx\core\BepInEx.dll</HintPath>
+		</Reference>
+		<Reference Include="PhotonRealtime">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonRealtime.dll</HintPath>
+		</Reference>
+		<Reference Include="PhotonUnityNetworking">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonUnityNetworking.dll</HintPath>
+		</Reference>
+		<Reference Include="Sirenix.Serialization">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.dll</HintPath>
+		</Reference>
+		<Reference Include="Sirenix.Serialization.Config">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
+		</Reference>
+		<Reference Include="Unity.TextMeshPro">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.AssetBundleModule">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.IMGUIModule">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.Physics2DModule">
+			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="System" />
