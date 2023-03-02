@@ -29,7 +29,6 @@ namespace MapsExt
 		public bool playOnAwake = true;
 		public bool IsPlaying { get; private set; }
 
-		private RigidBodyParams originalRigidBody;
 		private float elapsedTime;
 		private int currentFrameIndex;
 		private bool mapEntered;
@@ -38,17 +37,7 @@ namespace MapsExt
 
 		private void Awake()
 		{
-			var rb = this.gameObject.GetComponent<Rigidbody2D>();
-
-			if (rb)
-			{
-				this.originalRigidBody = new RigidBodyParams(rb);
-			}
-			else
-			{
-				rb = this.gameObject.AddComponent<Rigidbody2D>();
-			}
-
+			var rb = this.gameObject.GetOrAddComponent<Rigidbody2D>();
 			rb.gravityScale = 0;
 			rb.constraints = RigidbodyConstraints2D.FreezeAll;
 			rb.isKinematic = true;
@@ -60,7 +49,7 @@ namespace MapsExt
 			this.ExecuteAfterFrames(1, () =>
 			{
 				var photonMapObject = this.GetComponent<PhotonMapObject>();
-				if (photonMapObject && (bool) photonMapObject.GetFieldValue("photonSpawned") == false)
+				if (photonMapObject && !(bool) photonMapObject.GetFieldValue("photonSpawned"))
 				{
 					return;
 				}
@@ -87,14 +76,7 @@ namespace MapsExt
 			this.rpcKey = $"MapObject {map.GetFieldValue("levelID")} {this.transform.GetSiblingIndex()}";
 			var childRPC = MapManager.instance.GetComponent<ChildRPC>();
 
-			if (childRPC.childRPCsVector2.ContainsKey(this.rpcKey))
-			{
-				childRPC.childRPCsVector2[this.rpcKey] = this.RPCA_SyncAnimation;
-			}
-			else
-			{
-				childRPC.childRPCsVector2.Add(this.rpcKey, this.RPCA_SyncAnimation);
-			}
+			childRPC.childRPCsVector2[this.rpcKey] = this.RPCA_SyncAnimation;
 		}
 
 		private void OnDestroy()

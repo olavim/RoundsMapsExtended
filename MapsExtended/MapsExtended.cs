@@ -82,6 +82,13 @@ namespace MapsExt
 			}
 		}
 
+#if DEBUG
+		private void Update()
+		{
+			UnityEngine.Debug.developerConsoleVisible = false;
+		}
+#endif
+
 		private void OnDisable()
 		{
 			UnityEngine.Debug.Log(UnityEngine.StackTraceUtility.ExtractStackTrace());

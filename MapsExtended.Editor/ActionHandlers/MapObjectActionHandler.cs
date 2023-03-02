@@ -34,6 +34,6 @@ namespace MapsExt.Editor.ActionHandlers
 
 	public interface IGroupMapObjectActionHandler
 	{
-		void SetHandlers(IEnumerable<GameObject> gameObjects);
+		IEnumerable<GameObject> GameObjects { set; }
 	}
 }

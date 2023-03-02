@@ -28,7 +28,7 @@ namespace MapsExt.MapObjects.Properties
 
 		public virtual void Deserialize(IMapObjectAnimation data, GameObject target)
 		{
-			if (data.keyframes != null && data.keyframes.Count > 0)
+			if (data.keyframes?.Count > 0)
 			{
 				var dataFrames = data.keyframes.ToList();
 				dataFrames.Insert(0, new AnimationKeyframe(data));

@@ -90,10 +90,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this.transform.localScale = newScale;
 
 			var posHandler = this.gameObject.GetComponent<PositionHandler>();
-			if (posHandler != null)
-			{
-				posHandler.Move(positionDelta * 0.5f);
-			}
+			posHandler?.Move(positionDelta * 0.5f);
 		}
 
 		public override void OnSelect()

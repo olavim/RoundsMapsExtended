@@ -117,10 +117,6 @@ namespace MapsExt.Editor.UI
 			this.editor.animationHandler.SetKeyframe(frameIndex);
 			this.editor.TakeSnaphot();
 
-			this.inspector.Unlink();
-
-			var mapObjectInstance = anim.GetComponent<MapObjectInstance>();
-			this.inspector.Link(mapObjectInstance, this.editor.animationHandler.keyframeMapObject);
 			this.Refresh();
 		}
 
@@ -135,11 +131,6 @@ namespace MapsExt.Editor.UI
 			}
 
 			this.editor.TakeSnaphot();
-
-			this.inspector.Unlink();
-
-			var mapObjectInstance = anim.GetComponent<MapObjectInstance>();
-			this.inspector.Link(mapObjectInstance, this.editor.animationHandler.keyframeMapObject);
 			this.Refresh();
 		}
 

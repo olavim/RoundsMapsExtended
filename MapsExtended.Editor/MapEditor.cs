@@ -16,6 +16,7 @@ namespace MapsExt.Editor
 {
 	public class MapEditor : MonoBehaviour
 	{
+		public GameObject activeObject;
 		public RangeObservableCollection<GameObject> selectedObjects;
 		public string currentMapName;
 		public bool isSimulating;
@@ -31,7 +32,6 @@ namespace MapsExt.Editor
 			set { this.grid.cellSize = Vector3.one * value; }
 		}
 
-		public GameObject[] internalSelectedObjects;
 		private StateHistory stateHistory;
 		private bool isCreatingSelection;
 		private Vector3 selectionStartPosition;
@@ -44,6 +44,7 @@ namespace MapsExt.Editor
 
 		private void Awake()
 		{
+			this.activeObject = null;
 			this.selectedObjects = new RangeObservableCollection<GameObject>();
 			this.groupActionHandlers = new Dictionary<Type, Type[]>();
 			this.snapToGrid = true;
@@ -98,9 +99,7 @@ namespace MapsExt.Editor
 				mapObjects = new List<MapObjectData>()
 			};
 
-			var mapObjects = this.content.GetComponentsInChildren<MapObjectInstance>(true);
-
-			foreach (var mapObject in mapObjects)
+			foreach (var mapObject in this.content.GetComponentsInChildren<MapObjectInstance>(true))
 			{
 				var data = MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject);
 
@@ -178,6 +177,12 @@ namespace MapsExt.Editor
 			}
 
 			this.selectedObjects.Remove(this.selectedObjects.Where(obj => obj == null).ToList());
+
+			if (this.selectedObjects.Count == 0)
+			{
+				this.activeObject = null;
+			}
+
 			this.animationHandler.Refresh();
 		}
 
@@ -265,8 +270,7 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			GameObject[] mapObjects = this.internalSelectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
-
+			GameObject[] mapObjects = this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
 			foreach (var instance in mapObjects)
 			{
 				if (instance == this.animationHandler.animation?.gameObject)
@@ -326,8 +330,7 @@ namespace MapsExt.Editor
 					MapsExtendedEditor.instance.SetMapPhysicsActive(this.simulatedContent, true);
 					this.gameObject.GetComponent<Map>().allRigs = this.simulatedContent.GetComponentsInChildren<Rigidbody2D>();
 
-					var ropes = this.simulatedContent.GetComponentsInChildren<MapObjet_Rope>();
-					foreach (var rope in ropes)
+					foreach (var rope in this.simulatedContent.GetComponentsInChildren<MapObjet_Rope>())
 					{
 						rope.Go();
 					}
@@ -452,7 +455,12 @@ namespace MapsExt.Editor
 
 		public void OnPointerDown()
 		{
-			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			if (this.activeObject == null)
+			{
+				return;
+			}
+
+			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
 			{
 				handler.OnPointerDown();
 			}
@@ -460,7 +468,12 @@ namespace MapsExt.Editor
 
 		public void OnPointerUp()
 		{
-			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			if (this.activeObject == null)
+			{
+				return;
+			}
+
+			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
 			{
 				handler.OnPointerUp();
 			}
@@ -468,7 +481,12 @@ namespace MapsExt.Editor
 
 		public void OnKeyDown(KeyCode key)
 		{
-			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			if (this.activeObject == null)
+			{
+				return;
+			}
+
+			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
 			{
 				handler.OnKeyDown(key);
 			}
@@ -498,7 +516,12 @@ namespace MapsExt.Editor
 
 		public void ClearSelected()
 		{
-			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			if (this.activeObject == null)
+			{
+				return;
+			}
+
+			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
 			{
 				handler.OnDeselect();
 			}
@@ -509,7 +532,7 @@ namespace MapsExt.Editor
 			}
 
 			this.selectedObjects.Clear();
-			this.internalSelectedObjects = null;
+			this.activeObject = null;
 		}
 
 		public void AddSelected(GameObject obj)
@@ -524,17 +547,6 @@ namespace MapsExt.Editor
 				this.dummyGroup = new GameObject("Group");
 				this.dummyGroup.transform.SetParent(this.content.transform);
 
-				this.dummyGroup.AddComponent<BoxCollider2D>();
-
-				var bounds = new Bounds(list.First().transform.position, Vector3.zero);
-				foreach (var obj in list)
-				{
-					bounds.Encapsulate(EditorUtils.GetMapObjectBounds(obj));
-				}
-
-				this.dummyGroup.transform.position = bounds.center;
-				this.dummyGroup.transform.localScale = bounds.size;
-
 				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
 
 				/* Find valid group action handlers.
@@ -544,22 +556,25 @@ namespace MapsExt.Editor
 				foreach (var type in this.groupActionHandlers.Keys)
 				{
 					var requiredTypes = this.groupActionHandlers[type];
+					this.dummyGroup.SetActive(false);
 					if (list.All(obj => requiredTypes.All(t => obj.GetComponent(t) != null)))
 					{
 						var handler = (IGroupMapObjectActionHandler) this.dummyGroup.AddComponent(type);
-						handler.SetHandlers(list);
+						handler.GameObjects = list;
 					}
+					this.dummyGroup.SetActive(true);
 				}
-				this.selectedObjects.Add(this.dummyGroup);
+
+				this.activeObject = this.dummyGroup;
 			}
 			else
 			{
-				this.selectedObjects.AddRange(list);
+				this.activeObject = list.First();
 			}
 
-			this.internalSelectedObjects = list.ToArray();
+			this.selectedObjects.AddRange(list);
 
-			foreach (var handler in this.selectedObjects.SelectMany(obj => obj.GetComponents<MapObjectActionHandler>()))
+			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
 			{
 				handler.OnSelect();
 			}

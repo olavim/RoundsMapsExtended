@@ -1,8 +1,6 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
-using MapsExt.Editor.ActionHandlers;
 using System;
-using UnityEngine.Events;
 using MapsExt.MapObjects;
 using System.Collections.Generic;
 using HarmonyLib;
@@ -47,21 +45,30 @@ namespace MapsExt.Editor.UI
 		public class ButtonBuilder : Attribute { }
 
 		public MapObjectInstance target;
-		public GameObject selectedObject;
 		public MapEditor editor;
 
 		public Action onUpdate;
 
 		private void Update()
 		{
+			var instance = this.editor.activeObject?.GetComponent<MapObjectInstance>();
+
+			if (instance != this.target)
+			{
+				this.Unlink();
+
+				if (instance != null)
+				{
+					this.Link(instance);
+				}
+			}
+
 			this.onUpdate?.Invoke();
 		}
 
-		public void Link(MapObjectInstance target, GameObject selectedObject)
+		private void Link(MapObjectInstance target)
 		{
 			this.target = target;
-			this.selectedObject = selectedObject;
-			this.gameObject.SetActive(true);
 
 			foreach (Transform child in this.transform)
 			{
@@ -93,7 +100,7 @@ namespace MapsExt.Editor.UI
 			}
 		}
 
-		public void Unlink()
+		private void Unlink()
 		{
 			this.onUpdate = null;
 
@@ -103,19 +110,11 @@ namespace MapsExt.Editor.UI
 			}
 
 			this.target = null;
-			this.selectedObject = null;
-			this.gameObject.SetActive(false);
 		}
 
 		private GameObject GetLayoutElementInstance(ILayoutElement elem)
 		{
-			var propertyVector2 = elem as InspectorLayoutProperty<Vector2>;
-			var propertyQuaternion = elem as InspectorLayoutProperty<Quaternion>;
-			var propertyBool = elem as InspectorLayoutProperty<bool>;
-			var buttonElem = elem as InspectorLayoutButton;
-			var divider = elem as InspectorDivider;
-
-			if (propertyVector2 != null)
+			if (elem is InspectorLayoutProperty<Vector2> propertyVector2)
 			{
 				var instance = GameObject.Instantiate(Assets.InspectorVector2Prefab);
 				var c = instance.GetComponent<InspectorVector2>();
@@ -129,7 +128,7 @@ namespace MapsExt.Editor.UI
 				return instance;
 			}
 
-			if (propertyQuaternion != null)
+			if (elem is InspectorLayoutProperty<Quaternion> propertyQuaternion)
 			{
 				var instance = GameObject.Instantiate(Assets.InspectorQuaternionPrefab);
 				var c = instance.GetComponent<InspectorQuaternion>();
@@ -139,29 +138,11 @@ namespace MapsExt.Editor.UI
 				var onChanged = this.GetPropertyChangeEvent(propertyQuaternion);
 				c.input.onChanged += (value, type) => onChanged(Quaternion.Euler(0, 0, value), type);
 
-				// c.input.onChanged += (value, changeType) =>
-				// {
-				// 	if (changeType == TextSliderInput.ChangeType.ChangeStart)
-				// 	{
-				// 		this.editor.PreventNextCommandMerge();
-				// 	}
-
-				// 	var cmd = propertyQuaternion.getCommand(Quaternion.Euler(0, 0, value));
-				// 	var delegates = propertyQuaternion.getCommandDelegates();
-				// 	this.editor.ExecuteCommand(cmd, delegates, true);
-
-				// 	if (changeType == TextSliderInput.ChangeType.ChangeEnd)
-				// 	{
-				// 		this.editor.UpdateRopeAttachments();
-				// 		propertyQuaternion.onChanged?.Invoke();
-				// 	}
-				// };
-
 				this.onUpdate += () => c.input.SetWithoutEvent(propertyQuaternion.getValue().eulerAngles.z);
 				return instance;
 			}
 
-			if (propertyBool != null)
+			if (elem is InspectorLayoutProperty<bool> propertyBool)
 			{
 				var instance = GameObject.Instantiate(Assets.InspectorBooleanPrefab);
 				var prop = instance.GetComponent<InspectorBoolean>();
@@ -169,21 +150,21 @@ namespace MapsExt.Editor.UI
 				prop.input.isOn = propertyBool.getValue();
 
 				var onChanged = this.GetPropertyChangeEvent(propertyBool);
-				UnityAction<bool> onValueChanged = value => onChanged(value, ChangeType.All);
+				void OnValueChanged(bool value) => onChanged(value, ChangeType.All);
 
-				prop.input.onValueChanged.AddListener(onValueChanged);
+				prop.input.onValueChanged.AddListener(OnValueChanged);
 
 				this.onUpdate += () =>
 				{
-					prop.input.onValueChanged.RemoveListener(onValueChanged);
+					prop.input.onValueChanged.RemoveListener(OnValueChanged);
 					prop.input.isOn = propertyBool.getValue();
-					prop.input.onValueChanged.AddListener(onValueChanged);
+					prop.input.onValueChanged.AddListener(OnValueChanged);
 				};
 
 				return instance;
 			}
 
-			if (buttonElem != null)
+			if (elem is InspectorLayoutButton buttonElem)
 			{
 				var instance = GameObject.Instantiate(Assets.InspectorButtonPrefab);
 				var button = instance.GetComponentInChildren<Button>();
@@ -200,7 +181,7 @@ namespace MapsExt.Editor.UI
 				return instance;
 			}
 
-			if (divider != null)
+			if (elem is InspectorDivider divider)
 			{
 				return GameObject.Instantiate(Assets.InspectorDividerPrefab);
 			}

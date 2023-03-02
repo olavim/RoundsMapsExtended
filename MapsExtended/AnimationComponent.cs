@@ -21,7 +21,7 @@ namespace MapsExt
 	public abstract class AnimationComponent<T> : IAnimationComponent<T>
 	{
 		IAnimationComponentValue IAnimationComponent.Value => this.Value;
-		public IAnimationComponentValue<T> Value { get; protected set; }
+		public abstract IAnimationComponentValue<T> Value { get; }
 
 		public void Lerp(GameObject go, object start, object end, float value) => this.Lerp(go, (T) start, (T) end, value);
 		public abstract void Lerp(GameObject go, T start, T end, float value);
@@ -32,9 +32,13 @@ namespace MapsExt
 
 	public class PositionComponent : AnimationComponent<Vector2>
 	{
+		public readonly IMapObjectPosition mapObject;
+
+		public override IAnimationComponentValue<Vector2> Value => new PositionComponentValue(this.mapObject.position);
+
 		public PositionComponent(IMapObjectPosition mapObject)
 		{
-			this.Value = new PositionComponentValue(mapObject.position);
+			this.mapObject = mapObject;
 		}
 
 		public override void Lerp(GameObject go, Vector2 start, Vector2 end, float value)
@@ -50,9 +54,13 @@ namespace MapsExt
 
 	public class ScaleComponent : AnimationComponent<Vector2>
 	{
+		public readonly IMapObjectScale mapObject;
+
+		public override IAnimationComponentValue<Vector2> Value => new ScaleComponentValue(this.mapObject.scale);
+
 		public ScaleComponent(IMapObjectScale mapObject)
 		{
-			this.Value = new ScaleComponentValue(mapObject.scale);
+			this.mapObject = mapObject;
 		}
 
 		public override void Lerp(GameObject go, Vector2 start, Vector2 end, float value)
@@ -68,9 +76,13 @@ namespace MapsExt
 
 	public class RotationComponent : AnimationComponent<Quaternion>
 	{
+		public readonly IMapObjectRotation mapObject;
+
+		public override IAnimationComponentValue<Quaternion> Value => new RotationComponentValue(this.mapObject.rotation);
+
 		public RotationComponent(IMapObjectRotation mapObject)
 		{
-			this.Value = new RotationComponentValue(mapObject.rotation);
+			this.mapObject = mapObject;
 		}
 
 		public override void Lerp(GameObject go, Quaternion start, Quaternion end, float value)

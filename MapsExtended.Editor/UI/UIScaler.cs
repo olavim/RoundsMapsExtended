@@ -11,12 +11,11 @@ namespace MapsExt.Editor.UI
 		private void Awake()
 		{
 			this.referenceGameObject = null;
-			this.padding = 16f;
 		}
 
 		private void Start()
 		{
-			var rt = this.gameObject.GetComponent<RectTransform>() ?? this.gameObject.AddComponent<RectTransform>();
+			var rt = this.gameObject.GetComponent<RectTransform>();
 			rt.sizeDelta = Vector2.zero;
 		}
 
@@ -28,26 +27,14 @@ namespace MapsExt.Editor.UI
 			}
 
 			var scale = this.referenceGameObject.transform.localScale;
-			var rt = this.gameObject.GetComponent<RectTransform>();
+			var refSize = this.constantSize == Vector2.zero ? (Vector2) scale : this.constantSize;
 
-			if (this.constantSize != Vector2.zero)
-			{
-				float ratio = MainCam.instance.cam.orthographicSize / 20f;
-				this.transform.localScale = new Vector2(this.constantSize.x / scale.x, this.constantSize.y / scale.y) * ratio;
-				rt.sizeDelta = new Vector2(1, 1);
-				return;
-			}
+			float zoomRatio = MainCam.instance.cam.orthographicSize / 20f;
+			var zoomedScale = new Vector2(refSize.x / scale.x, refSize.y / scale.y) * zoomRatio;
+			var zoomedPadding = new Vector2(this.padding / scale.x, this.padding / scale.y) * zoomRatio * 2f;
+			this.transform.localScale = zoomedScale + zoomedPadding;
 
-			var pos = this.referenceGameObject.transform.position;
-			var bounds = UIUtils.WorldToScreenRect(new Rect(pos.x - (scale.x / 2f), pos.y - (scale.y / 2f), scale.x, scale.y));
-			bounds.x -= this.padding;
-			bounds.y -= this.padding;
-			bounds.width += 2 * this.padding;
-			bounds.height += 2 * this.padding;
-
-			rt.sizeDelta = bounds.size;
-			rt.anchoredPosition = bounds.center;
-			rt.rotation = this.referenceGameObject.transform.rotation;
+			this.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
 		}
 	}
 }

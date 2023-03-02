@@ -13,14 +13,15 @@ namespace MapsExt.Editor.MapObjects.Properties
 		{
 			base.Deserialize(data, target);
 			target.GetOrAddComponent<ActionHandlers.PositionHandler>();
+			target.GetOrAddComponent<ActionHandlers.SelectionHandler>();
 		}
 
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Position")
-				.ValueSetter(value => inspector.selectedObject.GetComponent<ActionHandlers.PositionHandler>().SetPosition(value))
-				.OnChange(value => inspector.editor.UpdateRopeAttachments())
-				.ValueGetter(() => inspector.selectedObject.transform.position);
+				.ValueSetter(value => inspector.target.GetComponent<ActionHandlers.PositionHandler>().SetPosition(value))
+				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
+				.ValueGetter(() => inspector.target.transform.position);
 		}
 	}
 }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
@@ -7,25 +6,30 @@ namespace MapsExt.Editor.ActionHandlers
 	[GroupMapObjectActionHandler(typeof(PositionHandler))]
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
-		private GameObject[] gameObjects;
+		public IEnumerable<GameObject> GameObjects { private get; set; }
+
+		private readonly Dictionary<GameObject, Vector3> localPositions = new Dictionary<GameObject, Vector3>();
+
+		private void Start()
+		{
+			foreach (var obj in this.GameObjects)
+			{
+				this.localPositions[obj] = (Vector2) (obj.GetComponent<PositionHandler>().GetPosition() - this.transform.position);
+			}
+		}
 
 		public override void Move(Vector3 delta)
 		{
-			foreach (var obj in this.gameObjects)
-			{
-				obj.GetComponent<PositionHandler>().Move(delta);
-			}
-			this.transform.position += delta;
+			this.SetPosition(this.transform.position + delta);
 		}
 
 		public override void SetPosition(Vector3 position)
 		{
-			this.Move(position - this.transform.position);
-		}
-
-		public void SetHandlers(IEnumerable<GameObject> gameObjects)
-		{
-			this.gameObjects = gameObjects.ToArray();
+			foreach (var obj in this.GameObjects)
+			{
+				obj.GetComponent<PositionHandler>().SetPosition(position + this.localPositions[obj]);
+			}
+			this.transform.position = position;
 		}
 	}
 }

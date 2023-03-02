@@ -34,7 +34,7 @@ namespace MapsExt.Editor.UI
 			var borderPos = refScale * dirMulti * 0.5f;
 			var paddingPos = new Vector3(this.padding, this.padding, 0) * dirMulti * ratio;
 
-			this.transform.position = refPos + refRotation * (borderPos + paddingPos);
+			this.transform.position = refPos + (refRotation * (borderPos + paddingPos));
 			this.transform.rotation = refRotation;
 		}
 	}

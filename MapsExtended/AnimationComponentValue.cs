@@ -25,9 +25,9 @@ namespace MapsExt
 			set => this.Value = (T) value;
 		}
 
-		public virtual T Value { get; set; } = default;
+		public virtual T Value { get; set; }
 
-		public AnimationComponentValue(T value)
+		protected AnimationComponentValue(T value)
 		{
 			this.Value = value;
 		}

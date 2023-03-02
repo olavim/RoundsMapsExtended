@@ -18,9 +18,9 @@ namespace MapsExt.Editor.MapObjects.Properties
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Quaternion>("Rotation")
-				.ValueSetter(value => inspector.selectedObject.GetComponent<ActionHandlers.RotationHandler>().SetRotation(value))
-				.OnChange(value => inspector.editor.UpdateRopeAttachments())
-				.ValueGetter(() => inspector.selectedObject.transform.rotation);
+				.ValueSetter(value => inspector.target.GetComponent<ActionHandlers.RotationHandler>().SetRotation(value))
+				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
+				.ValueGetter(() => inspector.target.transform.rotation);
 		}
 	}
 }

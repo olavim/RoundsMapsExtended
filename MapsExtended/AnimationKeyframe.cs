@@ -25,7 +25,7 @@ namespace MapsExt
 
 		public AnimationKeyframe(IMapObjectAnimation anim)
 		{
-			this.componentValues = anim.GetAnimationComponents().Select(c => c.Value.Clone()).ToList();
+			this.componentValues = anim.GetAnimationComponents().ConvertAll(c => c.Value.Clone());
 			this.duration = 1;
 			this.curveType = CurveType.Linear;
 
@@ -34,7 +34,7 @@ namespace MapsExt
 
 		public AnimationKeyframe(AnimationKeyframe frame)
 		{
-			this.componentValues = frame.componentValues.Select(v => v.Clone()).ToList();
+			this.componentValues = frame.componentValues.ConvertAll(v => v.Clone());
 			this.duration = frame.duration;
 			this.curveType = frame.curveType;
 

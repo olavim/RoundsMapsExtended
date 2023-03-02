@@ -7,30 +7,14 @@ namespace MapsExt.Editor.ActionHandlers
 	[GroupMapObjectActionHandler(typeof(RotationHandler), typeof(PositionHandler))]
 	public class GroupRotationHandler : RotationHandler, IGroupMapObjectActionHandler
 	{
-		private GameObject[] gameObjects;
-		private Dictionary<GameObject, Vector3> localPositions;
-		private Dictionary<GameObject, float> localAngles;
+		public IEnumerable<GameObject> GameObjects { private get; set; }
 
-		public override void SetRotation(Quaternion rotation)
+		private readonly Dictionary<GameObject, Vector3> localPositions = new Dictionary<GameObject, Vector3>();
+		private readonly Dictionary<GameObject, float> localAngles = new Dictionary<GameObject, float>();
+
+		private void Start()
 		{
-			foreach (var obj in this.gameObjects)
-			{
-				var posHandler = obj.GetComponent<PositionHandler>();
-				var rotHandler = obj.GetComponent<RotationHandler>();
-
-				posHandler.SetPosition(this.transform.position + rotation * localPositions[obj]);
-				rotHandler.SetRotation(Quaternion.Euler(0, 0, localAngles[obj] + rotation.eulerAngles.z));
-			}
-			this.transform.rotation = rotation;
-		}
-
-		public void SetHandlers(IEnumerable<GameObject> gameObjects)
-		{
-			this.gameObjects = gameObjects.ToArray();
-
-			this.localPositions = new Dictionary<GameObject, Vector3>();
-			this.localAngles = new Dictionary<GameObject, float>();
-			foreach (var obj in this.gameObjects)
+			foreach (var obj in this.GameObjects)
 			{
 				var posHandler = obj.GetComponent<PositionHandler>();
 				var rotHandler = obj.GetComponent<RotationHandler>();
@@ -38,6 +22,19 @@ namespace MapsExt.Editor.ActionHandlers
 				this.localPositions[obj] = (Vector2) (posHandler.GetPosition() - this.transform.position);
 				this.localAngles[obj] = rotHandler.GetRotation().eulerAngles.z;
 			}
+		}
+
+		public override void SetRotation(Quaternion rotation)
+		{
+			foreach (var obj in this.GameObjects)
+			{
+				var posHandler = obj.GetComponent<PositionHandler>();
+				var rotHandler = obj.GetComponent<RotationHandler>();
+
+				posHandler.SetPosition((this.transform.position + (rotation * localPositions[obj])).Round(4));
+				rotHandler.SetRotation(Quaternion.Euler(0, 0, localAngles[obj] + rotation.eulerAngles.z));
+			}
+			this.transform.rotation = rotation;
 		}
 	}
 }

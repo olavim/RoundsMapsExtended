@@ -100,8 +100,8 @@ namespace MapsExt.Editor
 
 				foreach (var entry in mapObjects[category])
 				{
-					UnityAction action = () => this.editor.CreateMapObject(entry.Item2);
-					builder.SubItem(b => b.Label(entry.Item1).Action(action));
+					void Action() => this.editor.CreateMapObject(entry.Item2);
+					builder.SubItem(b => b.Label(entry.Item1).Action(Action));
 				}
 
 				this.toolbar.mapObjectMenu.AddItem(builder.Item());
@@ -109,8 +109,8 @@ namespace MapsExt.Editor
 
 			foreach (var entry in mapObjects[""])
 			{
-				UnityAction action = () => this.editor.CreateMapObject(entry.Item2);
-				var builder = new MenuItemBuilder().Label(entry.Item1).Action(action);
+				void Action() => this.editor.CreateMapObject(entry.Item2);
+				var builder = new MenuItemBuilder().Label(entry.Item1).Action(Action);
 				this.toolbar.mapObjectMenu.AddItem(builder.Item());
 			}
 
@@ -221,7 +221,6 @@ namespace MapsExt.Editor
 
 		private void Start()
 		{
-			this.editor.selectedObjects.CollectionChanged += this.HandleSelectedObjectsChanged;
 			this.windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
 			this.windowWasOpen = new bool[this.windows.Length];
 			this.selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
@@ -277,11 +276,6 @@ namespace MapsExt.Editor
 			else if (this.animationWindow.gameObject.activeSelf && !this.editor.animationHandler.animation)
 			{
 				this.animationWindow.Close();
-			}
-
-			if (this.inspector.gameObject.activeSelf && !this.inspector.target)
-			{
-				this.inspector.Unlink();
 			}
 
 			bool animWindowOpen = this.animationWindow.gameObject.activeSelf;
@@ -354,62 +348,6 @@ namespace MapsExt.Editor
 		public void OpenInspectorWindow()
 		{
 			this.inspectorWindow.gameObject.SetActive(true);
-		}
-
-		public void HandleSelectedObjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			var list = this.editor.selectedObjects;
-
-			foreach (Transform child in this.transform)
-			{
-				if (child == this.toolbar.transform || this.windows.Any(w => w.transform == child))
-				{
-					continue;
-				}
-
-				GameObject.Destroy(child.gameObject);
-			}
-
-			this.inspector.Unlink();
-
-			if (list.Count == 1)
-			{
-				var handlerGameObject = list[0].gameObject;
-
-				var mapObjectInstance = this.editor.animationHandler.animation
-					? this.editor.animationHandler.animation.GetComponent<MapObjectInstance>()
-					: list[0].GetComponentInParent<MapObjectInstance>();
-
-				if (mapObjectInstance != null)
-				{
-					this.inspector.Link(mapObjectInstance, list[0]);
-				}
-			}
-			else if (list.Count == 0 && this.editor.animationHandler.animation && this.editor.animationHandler.enabled)
-			{
-				var mapObjectInstance = this.editor.animationHandler.animation.GetComponent<MapObjectInstance>();
-				this.inspector.Link(mapObjectInstance, this.editor.animationHandler.keyframeMapObject);
-			}
-			else if (list.Select(handler => handler.GetComponentInParent<MapObjectInstance>()).Distinct().ToList().Count == 1)
-			{
-				this.inspector.Link(list[0].GetComponentInParent<MapObjectInstance>(), list[0]);
-			}
-
-			foreach (var handler in list)
-			{
-				var go = new GameObject("SelectionBox");
-
-				var canvas = go.AddComponent<Canvas>();
-				canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-				var scaler = go.AddComponent<UI.UIScaler>();
-				scaler.referenceGameObject = handler.gameObject;
-
-				var image = go.AddComponent<Image>();
-				image.color = new Color32(255, 255, 255, 5);
-
-				go.transform.SetParent(this.transform);
-			}
 		}
 
 		public void OnGUI()

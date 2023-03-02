@@ -9,7 +9,6 @@ namespace MapsExt.Editor.ActionHandlers
 		public GameObject content;
 
 		private bool isRotating;
-		private Vector3 prevMouse;
 
 		private void Awake()
 		{
@@ -66,11 +65,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private void OnRotateStart()
 		{
-			var mousePos = EditorInput.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-
 			this.isRotating = true;
-			this.prevMouse = mouseWorldPos;
 		}
 
 		private void OnRotateEnd()
@@ -82,14 +77,12 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private void RotateMapObjects()
 		{
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(EditorInput.mousePosition.x, EditorInput.mousePosition.y));
-
-			var mousePos = mouseWorldPos;
+			var mousePos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(EditorInput.mousePosition.x, EditorInput.mousePosition.y));
 			var objectPos = this.transform.position;
 			mousePos.x -= objectPos.x;
 			mousePos.y -= objectPos.y;
 
-			float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg - 90;
+			float angle = (Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg) - 90;
 			angle = EditorUtils.Snap(angle, this.Editor.snapToGrid ? 15f : 2f);
 			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
@@ -127,7 +120,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			var events = go.AddComponent<PointerDownHandler>();
 
-			events.pointerDown += hoveredObj =>
+			events.pointerDown += _ =>
 			{
 				if (!this.isRotating)
 				{
@@ -135,7 +128,7 @@ namespace MapsExt.Editor.ActionHandlers
 				}
 			};
 
-			events.pointerUp += hoveredObj =>
+			events.pointerUp += _ =>
 			{
 				if (this.isRotating)
 				{

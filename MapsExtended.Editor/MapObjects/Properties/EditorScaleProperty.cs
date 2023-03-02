@@ -18,9 +18,9 @@ namespace MapsExt.Editor.MapObjects.Properties
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Size")
-				.ValueSetter(value => inspector.selectedObject.GetComponent<ActionHandlers.SizeHandler>().SetSize(value))
-				.OnChange(value => inspector.editor.UpdateRopeAttachments())
-				.ValueGetter(() => inspector.selectedObject.transform.localScale);
+				.ValueSetter(value => inspector.target.GetComponent<ActionHandlers.SizeHandler>().SetSize(value))
+				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
+				.ValueGetter(() => inspector.target.transform.localScale);
 		}
 	}
 }

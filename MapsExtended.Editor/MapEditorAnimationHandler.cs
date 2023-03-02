@@ -50,7 +50,6 @@ namespace MapsExt.Editor
 			canvas.sortingLayerID = SortingLayer.NameToID("MostFront");
 			canvas.sortingOrder = 10;
 
-			var renderer = this.curtain.GetComponent<CanvasRenderer>();
 			var image = this.curtain.AddComponent<Image>();
 			image.color = new Color(0.15f, 0.15f, 0.15f, 0.95f);
 			image.rectTransform.sizeDelta = new Vector2(Screen.width, Screen.height);
@@ -102,6 +101,8 @@ namespace MapsExt.Editor
 			{
 				return;
 			}
+
+			this.editor.activeObject = this.keyframeMapObject;
 
 			this.Refresh();
 		}

@@ -52,7 +52,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public virtual void SetPosition(Vector3 position)
 		{
-			this.transform.position = position.Round(4);
+			this.transform.position = position;
 			this.OnChange();
 		}
 
@@ -110,6 +110,7 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			if (this.isDragging)
 			{
+				this.SetPosition(this.transform.position.Round(4));
 				this.isDragging = false;
 				this.Editor.TakeSnaphot();
 			}
