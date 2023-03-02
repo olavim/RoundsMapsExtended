@@ -1,17 +1,16 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
-using MapsExt.Editor;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
 using UnityEngine;
 
-namespace MapsExt.Test.Tests.Editor
+namespace MapsExt.Editor.Tests
 {
 	public class EditorTestUtils
 	{
-		private MapEditor editor;
-		private SimulatedInputSource inputSource;
+		private readonly MapEditor editor;
+		private readonly SimulatedInputSource inputSource;
 
 		public EditorTestUtils(MapEditor editor) : this(editor, null) { }
 

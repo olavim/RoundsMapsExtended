@@ -34,11 +34,6 @@ namespace MapsExt.Editor
 			{
 				monitor.AddListener(key, () => this.editor.OnKeyDown(key));
 			}
-
-			// monitor.AddListener(KeyCode.LeftArrow, () => this.HandleNudge(Vector2.left));
-			// monitor.AddListener(KeyCode.RightArrow, () => this.HandleNudge(Vector2.right));
-			// monitor.AddListener(KeyCode.UpArrow, () => this.HandleNudge(Vector2.up));
-			// monitor.AddListener(KeyCode.DownArrow, () => this.HandleNudge(Vector2.down));
 		}
 
 		private void Update()

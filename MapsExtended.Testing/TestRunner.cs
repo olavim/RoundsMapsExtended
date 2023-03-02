@@ -1,3 +1,4 @@
+using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using System.Collections;
@@ -5,22 +6,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace MapsExt.Test
+namespace MapsExt.Testing
 {
-	[TestClass(skip: true)]
 	public class TestRunner
 	{
+		private readonly ManualLogSource logger;
+		private readonly Assembly assembly;
+
+		public TestRunner(ManualLogSource logger, Assembly assembly = null)
+		{
+			this.logger = logger;
+			this.assembly = assembly ?? Assembly.GetCallingAssembly();
+		}
+
 		public IEnumerator DiscoverAndRun()
 		{
 			int testsPassed = 0;
 			int testsFailed = 0;
 
-			var testClasses = typeof(MapsExtendedTest).Assembly.GetTypes()
-				.Where(t => t.GetCustomAttribute<TestClass>() != null && !t.GetCustomAttribute<TestClass>().skip);
+			var testClasses = this.assembly.GetTypes().Where(t => t.GetCustomAttribute<TestClass>()?.skip == false);
 
 			var testClassesWithOnly = testClasses.Where(t => t.GetCustomAttribute<TestClass>().only);
 
-			if (testClassesWithOnly.Count() > 0)
+			if (testClassesWithOnly.Any())
 			{
 				testClasses = testClassesWithOnly;
 			}
@@ -43,21 +51,21 @@ namespace MapsExt.Test
 
 					if (exec.Result.pass && i != 0 && i != executions.Count - 1)
 					{
-						MapsExtendedTest.Logger.LogInfo($"  [PASS] [{testClass.Name}] {exec.Name}");
+						this.logger.LogInfo($"[PASS] [{testClass.Name}] {exec.Name}");
 						testsPassed++;
 					}
 
 					if (!exec.Result.pass)
 					{
-						MapsExtendedTest.Logger.LogError($"  [FAIL] [{testClass.Name}] {exec.Name}: {exec.Result.failReason}");
+						this.logger.LogError($"[FAIL] [{testClass.Name}] {exec.Name}: {exec.Result.failReason}");
 						testsFailed++;
 					}
 				}
 			}
 
-			MapsExtendedTest.Logger.LogInfo($"Tests total: {testsPassed + testsFailed}");
-			MapsExtendedTest.Logger.LogInfo($"Tests passed: {testsPassed}");
-			MapsExtendedTest.Logger.LogInfo($"Tests failed: {testsFailed}");
+			this.logger.LogInfo($"Tests total: {testsPassed + testsFailed}");
+			this.logger.LogInfo($"Tests passed: {testsPassed}");
+			this.logger.LogInfo($"Tests failed: {testsFailed}");
 		}
 
 		public IEnumerable<TestExecutionGroup> GetExecutionGroups(Type type)
@@ -110,7 +118,7 @@ namespace MapsExt.Test
 						catch (Exception e)
 						{
 							execution.Result = ExecutionResult.Fail(e.Message);
-							MapsExtendedTest.Logger.LogError(e);
+							this.logger.LogError(e);
 							yield break;
 						}
 
@@ -141,7 +149,7 @@ namespace MapsExt.Test
 		{
 			return testClassType
 				.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-				.Where(m => m.GetCustomAttributes<T>().Count() > 0)
+				.Where(m => m.GetCustomAttributes<T>().Any())
 				.Select(m => new TestStepInfo(m.Name, testClassType, m))
 				.ToArray();
 		}

@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Linq;
 using FluentAssertions;
-using MapsExt.Editor;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
+using MapsExt.Testing;
 using UnityEngine;
 
-namespace MapsExt.Test.Tests.Editor
+namespace MapsExt.Editor.Tests
 {
 	[TestClass]
 	public class RopeTests
@@ -36,8 +36,7 @@ namespace MapsExt.Test.Tests.Editor
 		public IEnumerator Test_RopeSpawnsInTheMiddle()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var go = this.editor.selectedObjects.First();
-			var rope = go.GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
 
 			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be(new Vector2(0, 1));
 			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, -1));
@@ -47,7 +46,7 @@ namespace MapsExt.Test.Tests.Editor
 		public IEnumerator Test_AnchorMovesWithAttachedObject_MoveObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var boxGo = this.editor.selectedObjects.First();
 
@@ -69,7 +68,7 @@ namespace MapsExt.Test.Tests.Editor
 		public IEnumerator Test_AnchorMovesWithAttachedObject_RotateObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var boxGo = this.editor.selectedObjects.First();
 
@@ -88,7 +87,7 @@ namespace MapsExt.Test.Tests.Editor
 		public IEnumerator Test_AnchorMovesWithAttachedObject_ResizeObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var boxGo = this.editor.selectedObjects.First();
 

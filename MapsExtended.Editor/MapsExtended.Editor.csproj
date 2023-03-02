@@ -4,8 +4,14 @@
 	<Import Project="..\RoundsReferences.props" />
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\AssetsEmbedded\mapbase" />
-		<EmbeddedResource Include="..\AssetsEmbedded\mapobjects" />
+		<EmbeddedResource Include="..\AssetsEmbedded\uielements" />
+		<EmbeddedResource Include="..\AssetsEmbedded\mapeditor" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="NetTopologySuite" Version="2.4.0" />
+		<PackageReference Include="FluentAssertions" Version="6.10.0" />
+		<ProjectReference Include="..\MapsExtended\MapsExtended.csproj" Private="false" />
+		<ProjectReference Include="..\MapsExtended.Testing\MapsExtended.Testing.csproj" Private="true" />
 	</ItemGroup>
 
 	<ItemGroup>

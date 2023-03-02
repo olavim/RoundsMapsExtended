@@ -1,6 +1,6 @@
-namespace MapsExt.Test
+namespace MapsExt.Testing
 {
-	public class ExecutionResult
+	public sealed class ExecutionResult
 	{
 		public static ExecutionResult Pass()
 		{

@@ -7,14 +7,18 @@
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
 
-	<Import Project=".\BuildProps.props" />
-
 	<ItemGroup>
-		<PackageReference Include="UnboundLib" Version="3.2.7" />
+		<PackageReference Include="UnboundLib" Version="3.2.8" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|AnyCPU'">
+		<DefineConstants>TEST;DEBUG;TRACE</DefineConstants>
 		<DebugType>full</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>

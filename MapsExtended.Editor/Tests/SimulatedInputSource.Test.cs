@@ -1,12 +1,13 @@
 using FluentAssertions;
+using MapsExt.Testing;
 using System.Collections;
 using UnityEngine;
 
-namespace MapsExt.Test
+namespace MapsExt.Editor.Tests
 {
 	class MouseDownLifeCounter : MonoBehaviour
 	{
-		public Editor.IInputSource inputSource;
+		public IInputSource inputSource;
 		public int numFramesActive = 0;
 
 		private void Update()
@@ -24,8 +25,8 @@ namespace MapsExt.Test
 		[Test]
 		public IEnumerator Test_MouseDown_ActiveForOneFrame()
 		{
-			var input = MapsExtendedTest.instance.gameObject.AddComponent<SimulatedInputSource>();
-			var counter = MapsExtendedTest.instance.gameObject.AddComponent<MouseDownLifeCounter>();
+			var input = MapsExtendedEditor.instance.gameObject.AddComponent<SimulatedInputSource>();
+			var counter = MapsExtendedEditor.instance.gameObject.AddComponent<MouseDownLifeCounter>();
 
 			counter.inputSource = input;
 			input.SetMouseButtonDown(0);

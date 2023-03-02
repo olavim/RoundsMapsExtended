@@ -1,15 +1,15 @@
 using System.Collections;
 using System.Linq;
 using FluentAssertions;
-using MapsExt.Editor;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
+using MapsExt.Testing;
 using UnityEngine;
 
-namespace MapsExt.Test.Tests.Editor
+namespace MapsExt.Editor.Tests
 {
-	[TestClass(only: true)]
+	[TestClass]
 	public class HistoryTests
 	{
 		private MapEditor editor;
@@ -19,7 +19,7 @@ namespace MapsExt.Test.Tests.Editor
 		[BeforeAll]
 		public void SetInputSource()
 		{
-			var rootGo = MapsExtendedTest.instance.gameObject;
+			var rootGo = MapsExtendedEditor.instance.gameObject;
 			this.inputSource = rootGo.AddComponent<SimulatedInputSource>();
 			EditorInput.SetInputSource(this.inputSource);
 		}

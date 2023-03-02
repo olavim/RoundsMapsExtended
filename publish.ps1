@@ -3,7 +3,7 @@ param(
 	[System.String]$Version,
 
 	[Parameter(Mandatory)]
-	[ValidateSet('Debug', 'Release')]
+	[ValidateSet('Debug', 'Test', 'Release')]
 	[System.String]$Target,
 	
 	[Parameter(Mandatory)]
@@ -58,12 +58,10 @@ if ($name.Equals("MapsExtended") -or $name.Equals("MapsExtended.Editor") -or $na
 	Copy-Item -Path "$TargetPath\$name.dll.mdb" -Destination "$plug" -Force
 
 	if ($name.Equals("MapsExtended.Editor")) {
+		Copy-Item -Path "$TargetPath\MapsExtended.Testing.dll" -Destination "$plug" -Force
+		Copy-Item -Path "$TargetPath\FluentAssertions.dll" -Destination "$plug" -Force
 		Copy-Item -Path "$TargetPath\NetTopologySuite.dll" -Destination "$plug" -Force
 		Copy-Item -Path "$TargetPath\System.Buffers.dll" -Destination "$plug" -Force
-	}
-
-	if ($name.Equals("MapsExtended.Test")) {
-		Copy-Item -Path "$TargetPath\FluentAssertions.dll" -Destination "$plug" -Force
 	}
 
 	Write-Host ""

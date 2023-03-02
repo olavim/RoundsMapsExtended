@@ -4,11 +4,6 @@
 	<Import Project="..\RoundsReferences.props" />
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\AssetsEmbedded\mapbase" />
-		<EmbeddedResource Include="..\AssetsEmbedded\mapobjects" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="0Harmony">
 			<HintPath>$(RoundsFolder)\BepInEx\core\0Harmony.dll</HintPath>
 			<Private>false</Private>

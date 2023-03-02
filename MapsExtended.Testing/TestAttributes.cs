@@ -1,6 +1,6 @@
 using System;
 
-namespace MapsExt.Test
+namespace MapsExt.Testing
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class TestClass : Attribute

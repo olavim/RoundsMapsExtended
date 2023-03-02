@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace MapsExt.Test
+namespace MapsExt.Testing
 {
 	public class TestStepInfo
 	{

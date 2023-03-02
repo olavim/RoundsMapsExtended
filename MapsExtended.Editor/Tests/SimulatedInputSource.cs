@@ -1,8 +1,7 @@
-using MapsExt.Editor;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MapsExt.Test
+namespace MapsExt.Editor.Tests
 {
 	class TtlDictionary<TKey, TValue>
 	{

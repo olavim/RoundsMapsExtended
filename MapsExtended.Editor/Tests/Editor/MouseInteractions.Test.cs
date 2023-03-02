@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
 using FluentAssertions;
-using MapsExt.Editor;
+using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
+using MapsExt.Testing;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MapsExt.Test.Tests.Editor
+namespace MapsExt.Editor.Tests
 {
 	[TestClass]
 	public class MouseInteractionTests
@@ -20,7 +21,7 @@ namespace MapsExt.Test.Tests.Editor
 		[BeforeAll]
 		public void SetInputSource()
 		{
-			var rootGo = MapsExtendedTest.instance.gameObject;
+			var rootGo = MapsExtendedEditor.instance.gameObject;
 			this.inputSource = rootGo.AddComponent<SimulatedInputSource>();
 			EditorInput.SetInputSource(this.inputSource);
 		}
@@ -104,7 +105,8 @@ namespace MapsExt.Test.Tests.Editor
 			this.inputSource.SetMouseButtonUp(0);
 			yield return null;
 
-			this.editor.selectedObjects.Count.Should().Be(2);
+			this.editor.selectedObjects.Count.Should().Be(1);
+			this.editor.selectedObjects.First().GetComponent<IGroupMapObjectActionHandler>().Should().NotBeNull();
 		}
 
 		[Test]

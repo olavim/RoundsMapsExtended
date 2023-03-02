@@ -20,7 +20,7 @@ using UnboundLib.Utils;
 
 namespace MapsExt
 {
-	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
+	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	public class MapsExtended : BaseUnityPlugin
 	{
@@ -38,7 +38,7 @@ namespace MapsExt
 
 		public MapObjectManager mapObjectManager;
 		public List<CustomMap> maps;
-		public bool forceCustomMaps = false;
+		public bool forceCustomMaps;
 		public CustomMap loadedMap;
 		public string loadedMapSceneName;
 		public Action<Assembly> RegisterMapObjectPropertiesAction;
@@ -58,7 +58,7 @@ namespace MapsExt
 			this.mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
 			this.mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
-			SceneManager.sceneLoaded += (scene, mode) =>
+			SceneManager.sceneLoaded += (_, mode) =>
 			{
 				if (mode == LoadSceneMode.Single)
 				{
@@ -100,9 +100,7 @@ namespace MapsExt
 		private void OnRegisterMapObjectProperties(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObjectProperty>() != null);
-
-			foreach (var propertyType in typesWithAttribute)
+			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<MapObjectProperty>() != null))
 			{
 				try
 				{
@@ -129,9 +127,7 @@ namespace MapsExt
 		private void OnRegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<MapObject>() != null);
-
-			foreach (var type in typesWithAttribute)
+			foreach (var type in types.Where(t => t.GetCustomAttribute<MapObject>() != null))
 			{
 				try
 				{
@@ -210,7 +206,7 @@ namespace MapsExt
 
 			foreach (var mapObject in mapData.mapObjects)
 			{
-				mapObjectManager.Instantiate(mapObject, container.transform, instance => toLoad--);
+				mapObjectManager.Instantiate(mapObject, container.transform, _ => toLoad--);
 			}
 
 			while (toLoad > 0)
@@ -223,7 +219,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapManager), "RPCA_LoadLevel")]
-	class MapManagerPatch_LoadLevel
+	static class MapManagerPatch_LoadLevel
 	{
 		private static void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
 		{
@@ -233,13 +229,13 @@ namespace MapsExt
 			}
 
 			SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
-			Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).Where(m => m != null).FirstOrDefault();
+			Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).FirstOrDefault(m => m != null);
 			MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMap, MapsExtended.instance.mapObjectManager);
 		}
 
 		public static void Prefix(ref string sceneName)
 		{
-			if (sceneName != null && sceneName.StartsWith("MapsExtended:"))
+			if (sceneName?.StartsWith("MapsExtended:") == true)
 			{
 				string id = sceneName.Split(':')[1];
 
@@ -253,7 +249,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapManager), "GetIDFromScene")]
-	class MapManagerPatch_GetIDFromScene
+	static class MapManagerPatch_GetIDFromScene
 	{
 		public static bool Prefix(Scene scene, MapManager __instance, ref int __result)
 		{
@@ -268,7 +264,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapManager), "GetRandomMap")]
-	class MapManagerDebugPatch
+	static class MapManagerDebugPatch
 	{
 		public static bool Prefix(ref string __result)
 		{
@@ -286,7 +282,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapManager), "GetSpawnPoints")]
-	class MapManagerPatch_GetSpawnPoints
+	static class MapManagerPatch_GetSpawnPoints
 	{
 		public static void Postfix(ref SpawnPoint[] __result)
 		{
@@ -333,7 +329,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapTransition), "Toggle")]
-	class MapTransitionPatch_Toggle
+	static class MapTransitionPatch_Toggle
 	{
 		public static void Postfix(GameObject obj, bool enabled)
 		{
@@ -346,7 +342,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapObjet_Rope), "AddJoint")]
-	class RopePatch_AddJoint
+	static class RopePatch_AddJoint
 	{
 		public static void Postfix(MapObjet_Rope __instance, AnchoredJoint2D ___joint)
 		{
@@ -356,7 +352,7 @@ namespace MapsExt
 
 	// Needed to fix collision with animated saws
 	[HarmonyPatch(typeof(NetworkPhysicsObject), "BulletPush")]
-	class NetworkPhysicsObject_BulletPush
+	static class NetworkPhysicsObject_BulletPush
 	{
 		public static bool Prefix(NetworkPhysicsObject __instance)
 		{
@@ -366,7 +362,7 @@ namespace MapsExt
 
 	// Needed to fix collision with animated saws
 	[HarmonyPatch(typeof(NetworkPhysicsObject), "Push")]
-	class NetworkPhysicsObject_Push
+	static class NetworkPhysicsObject_Push
 	{
 		public static bool Prefix(NetworkPhysicsObject __instance)
 		{
@@ -376,7 +372,7 @@ namespace MapsExt
 
 	// Fixes saw collision with destructible boxes
 	[HarmonyPatch(typeof(DamageBox), "Collide")]
-	class DamageBox_Collide
+	static class DamageBox_Collide
 	{
 		public static bool Prefix(Collision2D collision)
 		{
@@ -431,7 +427,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(PhotonMapObject), "Start")]
-	class PhotonMapObjectPatch_Start
+	static class PhotonMapObjectPatch_Start
 	{
 		public static bool Prefix(PhotonMapObject __instance)
 		{
@@ -490,7 +486,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(Sonigon.Internal.Voice), "SetVolumeRatioUpdate")]
-	class SonigonDebugPatch
+	static class SonigonDebugPatch
 	{
 		public static bool Prefix(Sonigon.SoundContainer ___soundContainer)
 		{
@@ -499,7 +495,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(MapTransition), "Toggle")]
-	class MapTransitionTogglePatch
+	static class MapTransitionTogglePatch
 	{
 		public static void Prefix(GameObject obj, bool enabled)
 		{
@@ -512,7 +508,7 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(PlayerManager), "MovePlayers")]
-	class PlayerManagerPatch_MovePlayers
+	static class PlayerManagerPatch_MovePlayers
 	{
 		public static void Prefix(PlayerManager __instance)
 		{
@@ -526,9 +522,9 @@ namespace MapsExt
 	}
 
 	[HarmonyPatch(typeof(PlayerManager), "Move")]
-	class GM_ArmsRace_Patch_PointTransition
+	static class GM_ArmsRace_Patch_PointTransition
 	{
-		static IEnumerator Postfix(IEnumerator e, PlayerManager __instance, PlayerVelocity player)
+		public static IEnumerator Postfix(IEnumerator e, PlayerManager __instance, PlayerVelocity player)
 		{
 			while (e.MoveNext())
 			{

@@ -19,7 +19,7 @@ using UnityEngine.EventSystems;
 
 namespace MapsExt.Editor
 {
-	[BepInDependency("com.willis.rounds.unbound", "2.7.3")]
+	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInDependency(MapsExtended.ModId, MapsExtended.ModVersion)]
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	public class MapsExtendedEditor : BaseUnityPlugin
@@ -33,8 +33,8 @@ namespace MapsExt.Editor
 
 		public static MapsExtendedEditor instance;
 
-		public bool editorActive = false;
-		public bool editorClosing = false;
+		public bool editorActive;
+		public bool editorClosing;
 		public List<Tuple<Type, EditorMapObject>> mapObjectAttributes = new List<Tuple<Type, EditorMapObject>>();
 
 		internal MapObjectManager mapObjectManager;
@@ -55,7 +55,7 @@ namespace MapsExt.Editor
 			this.mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
 			this.mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
-			SceneManager.sceneLoaded += (scene, mode) =>
+			SceneManager.sceneLoaded += (_, mode) =>
 			{
 				if (mode == LoadSceneMode.Single)
 				{
@@ -70,10 +70,6 @@ namespace MapsExt.Editor
 
 			Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
 
-			string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}NetTopologySuite.dll");
-			Assembly.LoadFrom($"{assemblyDir}{Path.DirectorySeparatorChar}System.Buffers.dll");
-
 			MapsExtended.instance.RegisterMapObjectPropertiesAction += this.RegisterMapObjectSerializers;
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
@@ -83,7 +79,7 @@ namespace MapsExt.Editor
 			MapsExtended.instance.RegisterMapObjectProperties();
 			MapsExtended.instance.RegisterMapObjects();
 
-			Unbound.RegisterMenu("Map Editor", this.OpenEditor, (obj) => { }, null, false);
+			Unbound.RegisterMenu("Map Editor", this.OpenEditor, (_) => { }, null, false);
 
 			this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
 			this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
@@ -99,10 +95,15 @@ namespace MapsExt.Editor
 			var layer = cameraGo.AddComponent<PostProcessLayer>();
 			layer.Init((PostProcessResources) MainCam.instance.gameObject.GetComponent<PostProcessLayer>().GetFieldValue("m_Resources"));
 			layer.volumeTrigger = cameraGo.transform;
-			layer.volumeLayer = (1 << LayerMask.NameToLayer("Default Post"));
+			layer.volumeLayer = 1 << LayerMask.NameToLayer("Default Post");
 			layer.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
 
 			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
+
+#if TEST
+			var runner = new MapsExt.Testing.TestRunner(BepInEx.Logging.Logger.CreateLogSource("MapsExtended.Editor Tests"));
+			this.StartCoroutine(runner.DiscoverAndRun());
+#endif
 		}
 
 		public void OpenEditor()
@@ -331,8 +332,7 @@ namespace MapsExt.Editor
 
 		public void SetMapPhysicsActive(GameObject container, bool active)
 		{
-			var rigs = container.GetComponentsInChildren<Rigidbody2D>();
-			foreach (var rig in rigs)
+			foreach (var rig in container.GetComponentsInChildren<Rigidbody2D>())
 			{
 				this.SetPhysicsActive(rig, active);
 			}
@@ -352,7 +352,7 @@ namespace MapsExt.Editor
 	}
 
 	[HarmonyPatch(typeof(ArtHandler), "Update")]
-	class ArtHandlerPatch
+	static class ArtHandlerPatch
 	{
 		public static bool Prefix()
 		{

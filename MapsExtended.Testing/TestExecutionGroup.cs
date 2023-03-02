@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MapsExt.Test
+namespace MapsExt.Testing
 {
 	public class TestExecutionGroup
 	{
