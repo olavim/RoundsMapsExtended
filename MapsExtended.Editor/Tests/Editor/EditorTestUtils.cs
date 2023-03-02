@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Specialized;
-using System.Linq;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
 using UnityEngine;
@@ -44,13 +43,13 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator MoveSelectedWithMouse(Vector3 delta)
 		{
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 
 		public IEnumerator ResizeSelectedWithMouse(Vector3 delta, int anchorPosition)
 		{
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 			var resizeInteractionContent = go.GetComponent<SizeHandler>().content;
 			var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + anchorPosition).gameObject;
 			yield return this.DragMouse(resizeHandle.transform.position, delta);
@@ -58,7 +57,7 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator RotateSelectedWithMouse(float degrees)
 		{
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 			var resizeInteractionContent = go.GetComponent<MapsExt.Editor.ActionHandlers.RotationHandler>().content;
 			var handle = resizeInteractionContent.transform.Find("Rotation Handle").gameObject;
 

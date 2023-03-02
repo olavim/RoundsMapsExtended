@@ -53,15 +53,15 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_Spawn()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 			var id = go.GetComponent<MapObjectInstance>().mapObjectId;
 
 			this.editor.OnUndo();
 			this.editor.content.transform.childCount.Should().Be(0);
-			this.editor.selectedObjects.Count.Should().Be(0);
+			this.editor.activeObject.Should().BeNull();
 			this.editor.OnRedo();
 			this.editor.content.transform.childCount.Should().Be(1);
-			this.editor.selectedObjects.Count.Should().Be(0);
+			this.editor.activeObject.Should().BeNull();
 
 			var instance = this.editor.content.transform.GetChild(0).GetComponent<MapObjectInstance>();
 			instance.mapObjectId.Should().Be(id);
@@ -71,7 +71,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_MoveWithMouse()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 
 			yield return this.utils.MoveSelectedWithMouse(new Vector3(1, 0));
 			((Vector2) go.transform.position).Should().Be(new Vector2(1, 0));
@@ -85,7 +85,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_ResizeWithMouse()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 
 			yield return this.utils.ResizeSelectedWithMouse(new Vector3(2, 0), AnchorPosition.MiddleRight);
 			((Vector2) go.transform.localScale).Should().Be(new Vector2(4, 2));
@@ -99,7 +99,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RotateWithMouse()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 
 			yield return this.utils.RotateSelectedWithMouse(45);
 			go.transform.rotation.Should().Be(Quaternion.Euler(0, 0, 45));
@@ -113,7 +113,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_MoveWithNudge()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.selectedObjects.First();
+			var go = this.editor.activeObject;
 
 			this.editor.OnKeyDown(KeyCode.RightArrow);
 			((Vector2) go.transform.position).Should().Be(new Vector2(0.25f, 0));
@@ -127,9 +127,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RopeAttachment()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.selectedObjects.First();
+			var boxGo = this.editor.activeObject;
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.content.transform.GetChild(1).GetComponent<EditorRopeInstance>();
+			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
 			rope.GetAnchor(0).GetComponent<PositionHandler>().SetPosition(new Vector3(0.25f, 0.5f, 0));
 			rope.GetAnchor(1).GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));

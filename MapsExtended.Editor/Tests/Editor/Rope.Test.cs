@@ -36,7 +36,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RopeSpawnsInTheMiddle()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
+			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
 			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be(new Vector2(0, 1));
 			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, -1));
@@ -46,9 +46,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_MoveObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
+			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.selectedObjects.First();
+			var boxGo = this.editor.activeObject;
 
 			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 0, 0));
 			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
@@ -68,9 +68,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_RotateObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
+			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.selectedObjects.First();
+			var boxGo = this.editor.activeObject;
 
 			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 0.25f, 0));
 			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
@@ -87,9 +87,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_ResizeObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.content.transform.GetChild(0).GetComponent<EditorRopeInstance>();
+			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.selectedObjects.First();
+			var boxGo = this.editor.activeObject;
 
 			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(-0.25f, 0, 0));
 			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
