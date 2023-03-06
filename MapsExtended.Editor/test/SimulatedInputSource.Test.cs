@@ -1,7 +1,7 @@
 using FluentAssertions;
-using MapsExt.Testing;
 using System.Collections;
 using UnityEngine;
+using Surity;
 
 namespace MapsExt.Editor.Tests
 {

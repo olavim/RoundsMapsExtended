@@ -4,9 +4,9 @@ using System.Linq;
 using FluentAssertions;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
-using MapsExt.Testing;
 using UnityEngine;
 using UnityEngine.UI;
+using Surity;
 
 namespace MapsExt.Editor.Tests
 {

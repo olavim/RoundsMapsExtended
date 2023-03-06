@@ -99,11 +99,6 @@ namespace MapsExt.Editor
 			layer.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
 
 			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
-
-#if TEST
-			var runner = new MapsExt.Testing.TestRunner(BepInEx.Logging.Logger.CreateLogSource("MapsExtended.Editor Tests"));
-			this.StartCoroutine(runner.DiscoverAndRun());
-#endif
 		}
 
 		public void OpenEditor()

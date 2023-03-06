@@ -4,7 +4,7 @@ using FluentAssertions;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
-using MapsExt.Testing;
+using Surity;
 using UnityEngine;
 
 namespace MapsExt.Editor.Tests

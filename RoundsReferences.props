@@ -1,5 +1,11 @@
 <Project>
 	<ItemGroup>
+		<PackageReference Include="UnboundLib" Version="3.2.8">
+			<IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
 		<Reference Include="AmplifyColor">
 			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\AmplifyColor.dll</HintPath>
 			<Private>false</Private>
