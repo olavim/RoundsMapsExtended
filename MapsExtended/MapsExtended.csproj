@@ -1,10 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="..\BuildProps.props" />
 	<Import Project="..\RoundsReferences.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Include="..\assets\mapbase" />
 		<EmbeddedResource Include="..\assets\mapobjects" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MapsExtended.SourceGen\MapsExtended.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>

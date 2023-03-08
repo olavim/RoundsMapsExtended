@@ -14,6 +14,7 @@ using UnboundLib;
 using UnboundLib.Utils.UI;
 using Photon.Pun;
 using System.Collections;
+using MapsExt.SourceGen;
 using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 using UnboundLib.Utils;
@@ -22,11 +23,12 @@ namespace MapsExt
 {
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, ModName, ModVersion)]
-	public sealed class MapsExtended : BaseUnityPlugin
+	[MSBuildProperty("Version")]
+	public sealed partial class MapsExtended : BaseUnityPlugin
 	{
 		public const string ModId = "io.olavim.rounds.mapsextended";
 		public const string ModName = "MapsExtended";
-		public const string ModVersion = "0.9.2";
+		public const string ModVersion = MSBuild_Version;
 
 #if DEBUG
 		public static readonly bool DEBUG = true;

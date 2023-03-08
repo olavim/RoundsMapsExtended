@@ -7,6 +7,6 @@ namespace MapsExt.Editor.Tests
 	{
 		public const string ModId = MapsExtendedEditor.ModId + ".tests";
 		public const string ModName = MapsExtendedEditor.ModName + ".Tests";
-		public const string ModVersion = "0.0.1";
+		public const string ModVersion = MapsExtendedEditor.ModVersion;
 	}
 }

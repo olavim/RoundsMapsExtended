@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="..\..\BuildProps.props" />
 	<Import Project="..\..\RoundsReferences.props" />
 
 	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
 		<IsPublishable>false</IsPublishable>
 	</PropertyGroup>
 

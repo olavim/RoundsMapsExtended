@@ -34,7 +34,7 @@ $releaseDir = "$SolutionPath\release"
 $baseDir = "$releaseDir\thunderstore"
 $tempDir = "$baseDir\temp"
 
-Write-Host "Packaging for ThunderStore"
+Write-Host "Packaging $name-$Version for ThunderStore"
 
 New-Item -Type Directory -Path $tempDir -Force | Out-Null
 New-Item -Type Directory -Path "$tempDir\plugins" -Force | Out-Null
@@ -59,7 +59,7 @@ Remove-Item -Path $tempDir -Recurse
 $baseDir = "$releaseDir\plugin"
 $tempDir = "$baseDir\temp"
 
-Write-Host "Packaging for GitHub"
+Write-Host "Packaging $name-$Version for GitHub"
 
 New-Item -Type Directory -Path $tempDir -Force | Out-Null
 New-Item -Type Directory -Path "$tempDir\BepInEx\plugins\$name" -Force | Out-Null
