@@ -28,7 +28,7 @@ In the above example, you should change `"<version>"` with the latest version of
 
 ## Development
 
-Before building the project, copy and rename `Config.props.dist` to `Config.props` and change the `RoundsFolder` property inside it to match your ROUNDS installation path.
+Before building the project, copy and rename `Config.props.dist` to `Config.props` and change the properties inside it to match your configuration.
 
 ### Project structure
 
@@ -36,7 +36,7 @@ The mod has been split into two separate BepInEx plugins. The **MapsExtended** p
 
 Folders:
 - **MapsExtended**: The core plugin C# project
-- **Editor**: The editor plugin C# project
+- **MapsExtended.Editor**: The editor plugin C# project
 
 ## Custom map objects
 

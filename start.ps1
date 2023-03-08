@@ -1,4 +1,5 @@
 [xml]$config = Get-Content "Config.props"
-$dir = $config.Project.PropertyGroup.RoundsFolder
+$roundsDir = $config.Project.PropertyGroup.RoundsDir
+$bepinexDir = $config.Project.PropertyGroup.BepInExDir
 
-& "$dir\Rounds.exe" -- --doorstop-enable true --doorstop-target "$PSScriptRoot\.bepinex\core\BepInEx.Preloader.dll"
+& "$roundsDir\Rounds.exe" -- --doorstop-enable true --doorstop-target "$bepinexDir\core\BepInEx.Preloader.dll"

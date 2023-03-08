@@ -1,10 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="EnsureConfigPropsImport" BeforeTargets="PrepareForBuild">
-	  <PropertyGroup>
-		  <ErrorText>This project needs a Config.props file with the path to your ROUNDS installation. {0} is missing. A Config.props.dist file is provided for your convenience, which you can copy, rename, and edit.</ErrorText>
-	  </PropertyGroup>
-	  <Error Condition="!Exists('$(SolutionDir)Config.props')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)Config.props'))" />
-  </Target>
-  <Import Project="$(SolutionDir)Config.props" Condition="Exists('$(SolutionDir)Config.props')"/>
+<Project>
+	<Import Project="$(SolutionDir)Config.props" Condition="Exists('$(SolutionDir)Config.props')" />
+
+	<PropertyGroup>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<RootNamespace>MapsExt</RootNamespace>
+		<Authors>olavim</Authors>
+		<TargetFramework>net472</TargetFramework>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DefineConstants>TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<Target Name="EnsureConfigPropsImport" BeforeTargets="PrepareForBuild">
+		<PropertyGroup>
+			<ErrorTextConfig>This project needs a Config.props file. {0} is missing. A Config.props.dist file is provided for your convenience, which you can copy, rename, and edit.</ErrorTextConfig>
+			<ErrorTextRoundsDir>The configured ROUNDS directory does not exist. Please configure `RoundsDir` to a valid directory in Config.props.</ErrorTextRoundsDir>
+			<ErrorTextBepInExDir>The configured BepInEx directory does not exist. Please configure `BepInExDir` to a valid directory in Config.props.</ErrorTextBepInExDir>
+		</PropertyGroup>
+		<Error Condition="!Exists('$(SolutionDir)Config.props')" Text="$([System.String]::Format('$(ErrorTextConfig)', '$(SolutionDir)Config.props'))" />
+		<Error Condition="!Exists('$(RoundsDir)')" Text="$([System.String]::Format('$(ErrorTextRoundsDir)'))" />
+		<Error Condition="!Exists('$(BepInExDir)')" Text="$([System.String]::Format('$(ErrorTextBepInExDir)'))" />
+	</Target>
+
+	<Target Name="ReadPackageVersionFromOutputAssembly" DependsOnTargets="Build" Outputs="$(PackageVersion)">
+		<GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+			<Output TaskParameter="Assemblies" ItemName="PackAssembly" />
+		</GetAssemblyIdentity>
+		<PropertyGroup>
+			<PackageVersion>%(PackAssembly.Version)</PackageVersion>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="CopyDLLsToBepInExProfile" AfterTargets="AfterBuild">
+		<ItemGroup>
+			<_Files Include="$(TargetDir)*.*" />
+		</ItemGroup>
+		<RemoveDir Directories="$(BepInExDir)\plugins\$(MSBuildProjectName)" />
+		<Copy SourceFiles="@(_Files)" DestinationFolder="$(BepInExDir)\plugins\$(MSBuildProjectName)" />
+	</Target>
+
+	<Target Name="PublishPackages" Condition="'$(OS)' == 'Windows_NT' and '$(IsPublishable)' == 'true'" AfterTargets="Publish">
+		<CallTarget Targets="ReadPackageVersionFromOutputAssembly">
+			<Output TaskParameter="TargetOutputs" PropertyName="PackageVersion" />
+		</CallTarget>
+		<Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)tools\publish.ps1&quot; -Version &quot;$(PackageVersion.Remove($(PackageVersion.LastIndexOf('.')), 2))&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -SolutionPath &quot;$(SolutionDir.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot;" />
+	</Target>
+
+	<Target Name="BuildMdb" Condition="'$(OS)' == 'Windows_NT'" AfterTargets="Build">
+		<Exec Command="$(SolutionDir)tools\pdb2mdb.exe $(TargetPath)" />
+	</Target>
 </Project>

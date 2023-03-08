@@ -1,28 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\..\BuildProps.props" />
-	<Import Project="..\..\MapsExtended.props" />
 	<Import Project="..\..\RoundsReferences.props" />
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\..\AssetsEmbedded\uielements" />
-		<EmbeddedResource Include="..\..\AssetsEmbedded\mapeditor" />
+		<EmbeddedResource Include="..\..\assets\uielements" />
+		<EmbeddedResource Include="..\..\assets\mapeditor" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NetTopologySuite" Version="2.4.0">
-			<IncludeAssets>compile;runtime</IncludeAssets>
-			<PrivateAssets>none</PrivateAssets>
-		</PackageReference>
+		<PackageReference Include="NetTopologySuite" Version="2.4.0" IncludeAssets="compile;runtime" />
 		<ProjectReference Include="..\..\MapsExtended\MapsExtended.csproj" Private="false" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="0Harmony">
-			<HintPath>$(RoundsFolder)\BepInEx\core\0Harmony.dll</HintPath>
+			<HintPath>$(BepInExDir)\core\0Harmony.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="BepInEx">
-			<HintPath>$(RoundsFolder)\BepInEx\core\BepInEx.dll</HintPath>
+			<HintPath>$(BepInExDir)\core\BepInEx.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 	</ItemGroup>

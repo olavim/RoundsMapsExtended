@@ -7,471 +7,471 @@
 
 	<ItemGroup>
 		<Reference Include="AmplifyColor">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\AmplifyColor.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\AmplifyColor.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Assembly-CSharp-firstpass">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Assembly-CSharp">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Assembly-CSharp.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Assembly-CSharp.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="BitpackersASMDEF">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\BitpackersASMDEF.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\BitpackersASMDEF.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="ByteConverter">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\ByteConverter.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\ByteConverter.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="EmoCompressUtilsASMDEF">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\EmoCompressUtilsASMDEF.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\EmoCompressUtilsASMDEF.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="FloatCrusher">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\FloatCrusher.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\FloatCrusher.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="HalfFloatASMDEF">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\HalfFloatASMDEF.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\HalfFloatASMDEF.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="HalFloat">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\HalFloat.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\HalFloat.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="InControl">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\InControl.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\InControl.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Mono.Security">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Mono.Security.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Mono.Security.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="mscorlib">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\mscorlib.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\mscorlib.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="netstandard">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\netstandard.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\netstandard.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Photon3Unity3D">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Photon3Unity3D.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Photon3Unity3D.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="PhotonChat">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonChat.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\PhotonChat.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="PhotonRealtime">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonRealtime.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\PhotonRealtime.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="PhotonUnityNetworking.Demos">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonUnityNetworking.Demos.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\PhotonUnityNetworking.Demos.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="PhotonUnityNetworking">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonUnityNetworking.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\PhotonUnityNetworking.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="PhotonUnityNetworking.Utilities">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonUnityNetworking.Utilities.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\PhotonUnityNetworking.Utilities.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="PhotonWebSocket">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\PhotonWebSocket.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\PhotonWebSocket.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="QuatCompress">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\QuatCompress.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\QuatCompress.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Sirenix.OdinInspector.Attributes">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.OdinInspector.Attributes.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Sirenix.OdinInspector.Attributes.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Sirenix.OdinInspector.CompatibilityLayer">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.OdinInspector.CompatibilityLayer.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Sirenix.OdinInspector.CompatibilityLayer.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Sirenix.Serialization.Config">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Sirenix.Serialization">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Serialization.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Sirenix.Serialization.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Sirenix.Utilities">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Sirenix.Utilities.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Sirenix.Utilities.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="SonigonAudioEngine.Runtime">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\SonigonAudioEngine.Runtime.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\SonigonAudioEngine.Runtime.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.ComponentModel.Composition">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.ComponentModel.Composition.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.ComponentModel.Composition.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Configuration">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Configuration.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Configuration.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Core">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Core.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Core.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Data">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Data.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Data.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Diagnostics.StackTrace">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Diagnostics.StackTrace.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Diagnostics.StackTrace.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Drawing">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Drawing.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Drawing.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.EnterpriseServices">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.EnterpriseServices.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.EnterpriseServices.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Globalization.Extensions">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Globalization.Extensions.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Globalization.Extensions.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.IO.Compression">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.IO.Compression.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.IO.Compression.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.IO.Compression.FileSystem">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.IO.Compression.FileSystem.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.IO.Compression.FileSystem.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Net.Http">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Net.Http.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Net.Http.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Numerics">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Numerics.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Numerics.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Runtime.Serialization">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Runtime.Serialization.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Runtime.Serialization.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Runtime.Serialization.Xml">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Runtime.Serialization.Xml.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Runtime.Serialization.Xml.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.ServiceModel.Internals">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.ServiceModel.Internals.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.ServiceModel.Internals.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Transactions">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Transactions.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Transactions.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Xml.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Xml.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Xml.Linq.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Xml.Linq.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="System.Xml.XPath.XDocument">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\System.Xml.XPath.XDocument.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\System.Xml.XPath.XDocument.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.Analytics.DataPrivacy">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.Analytics.DataPrivacy.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Unity.Analytics.DataPrivacy.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.Analytics.StandardEvents">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.Analytics.StandardEvents.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Unity.Analytics.StandardEvents.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.Postprocessing.Runtime">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.Postprocessing.Runtime.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Unity.Postprocessing.Runtime.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.TextMeshPro">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\Unity.TextMeshPro.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AccessibilityModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AccessibilityModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.AccessibilityModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AIModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AIModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.AIModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AnimationModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ARModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ARModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ARModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AssetBundleModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AudioModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.BaselibModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.BaselibModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.BaselibModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ClothModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ClothModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ClothModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ClusterInputModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ClusterInputModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ClusterInputModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ClusterRendererModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ClusterRendererModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ClusterRendererModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CrashReportingModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.CrashReportingModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.CrashReportingModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.DirectorModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.DirectorModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.DirectorModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.FileSystemHttpModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.FileSystemHttpModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.FileSystemHttpModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.GameCenterModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.GameCenterModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.GameCenterModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.GridModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.GridModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.GridModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.HotReloadModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.HotReloadModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.HotReloadModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ImageConversionModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.IMGUIModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.InputModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.InputModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.JSONSerializeModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.LocalizationModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.LocalizationModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.LocalizationModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.Networking">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Networking.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.Networking.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ParticleSystemModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.PerformanceReportingModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.PerformanceReportingModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.PerformanceReportingModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.Physics2DModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.PhysicsModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ProfilerModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ProfilerModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ProfilerModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.Purchasing">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Purchasing.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.Purchasing.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ScreenCaptureModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.ScreenCaptureModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.ScreenCaptureModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.SharedInternalsModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.SharedInternalsModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.SharedInternalsModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.SpatialTracking">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.SpatialTracking.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.SpatialTracking.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.SpriteMaskModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.SpriteMaskModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.SpriteMaskModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.SpriteShapeModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.SpriteShapeModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.SpriteShapeModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.StreamingModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.StreamingModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.StreamingModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.StyleSheetsModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.StyleSheetsModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.StyleSheetsModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.SubstanceModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.SubstanceModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.SubstanceModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TerrainModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TerrainPhysicsModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TextCoreModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TextRenderingModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TilemapModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TilemapModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TilemapModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.Timeline">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.Timeline.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.Timeline.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TimelineModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TimelineModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TimelineModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TLSModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.TLSModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.TLSModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UI">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UI.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UI.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UIElementsModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UIModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UIModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UmbraModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UmbraModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UmbraModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UNETModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UNETModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UNETModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityAnalyticsModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityAnalyticsModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityConnectModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityConnectModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityConnectModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityTestProtocolModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityTestProtocolModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityTestProtocolModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityWebRequestAssetBundleModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityWebRequestAudioModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityWebRequestModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityWebRequestTextureModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UnityWebRequestWWWModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.VehiclesModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.VehiclesModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.VehiclesModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.VFXModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.VideoModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.VRModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.VRModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.VRModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.WindModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.WindModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.WindModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.XRModule">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\UnityEngine.XRModule.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\UnityEngine.XRModule.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="websocket-sharp">
-			<HintPath>$(RoundsFolder)\Rounds_Data\Managed\websocket-sharp.dll</HintPath>
+			<HintPath>$(RoundsDir)\Rounds_Data\Managed\websocket-sharp.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
