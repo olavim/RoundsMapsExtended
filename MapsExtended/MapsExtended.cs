@@ -22,7 +22,7 @@ namespace MapsExt
 {
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, ModName, ModVersion)]
-	public class MapsExtended : BaseUnityPlugin
+	public sealed class MapsExtended : BaseUnityPlugin
 	{
 		public const string ModId = "io.olavim.rounds.mapsextended";
 		public const string ModName = "MapsExtended";
@@ -88,11 +88,6 @@ namespace MapsExt
 			UnityEngine.Debug.developerConsoleVisible = false;
 		}
 #endif
-
-		private void OnDisable()
-		{
-			UnityEngine.Debug.Log(UnityEngine.StackTraceUtility.ExtractStackTrace());
-		}
 
 		public void RegisterMapObjectProperties()
 		{
@@ -384,7 +379,7 @@ namespace MapsExt
 		public static bool Prefix(Collision2D collision)
 		{
 			var dmgInstance = collision.transform.GetComponent<DamageableMapObjectInstance>();
-			return dmgInstance == null || dmgInstance.damageableByEnvironment;
+			return dmgInstance?.damageableByEnvironment != false;
 		}
 
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

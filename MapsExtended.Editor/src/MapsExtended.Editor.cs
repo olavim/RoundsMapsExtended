@@ -22,7 +22,7 @@ namespace MapsExt.Editor
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInDependency(MapsExtended.ModId, MapsExtended.ModVersion)]
 	[BepInPlugin(ModId, ModName, ModVersion)]
-	public class MapsExtendedEditor : BaseUnityPlugin
+	public sealed class MapsExtendedEditor : BaseUnityPlugin
 	{
 		public const string ModId = "io.olavim.rounds.mapsextended.editor";
 		public const string ModName = "MapsExtended.Editor";
@@ -159,9 +159,7 @@ namespace MapsExt.Editor
 		private void RegisterMapObjectSerializers(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObjectProperty>() != null);
-
-			foreach (var propertyType in typesWithAttribute)
+			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<EditorMapObjectProperty>() != null))
 			{
 				try
 				{
@@ -188,9 +186,7 @@ namespace MapsExt.Editor
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			var typesWithAttribute = types.Where(t => t.GetCustomAttribute<EditorMapObject>() != null);
-
-			foreach (var type in typesWithAttribute)
+			foreach (var type in types.Where(t => t.GetCustomAttribute<EditorMapObject>() != null))
 			{
 				try
 				{
@@ -242,9 +238,7 @@ namespace MapsExt.Editor
 		{
 			MapsExtended.LoadMap(container, mapFilePath, this.mapObjectManager, () =>
 			{
-				var mapObjects = container.GetComponentsInChildren<MapObjectInstance>();
-
-				foreach (var mapObject in mapObjects)
+				foreach (var mapObject in container.GetComponentsInChildren<MapObjectInstance>())
 				{
 					this.SetupMapObject(container, mapObject.gameObject);
 				}

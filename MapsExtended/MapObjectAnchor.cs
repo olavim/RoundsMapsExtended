@@ -1,22 +1,22 @@
 ﻿using MapsExt.MapObjects;
-using System.Linq;
+using System;
 using UnityEngine;
 
 namespace MapsExt
 {
 	public class MapObjectAnchor : MonoBehaviour
 	{
-		public GameObject target { get; private set; }
-		public bool IsAttached => this.target != this.gameObject;
+		public GameObject Target { get; private set; }
+		public bool IsAttached => this.Target != this.gameObject;
 
 		protected Vector3 targetLocalPosition;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
-			this.target = this.gameObject;
+			this.Target = this.gameObject;
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.IsAttached)
 			{
@@ -31,12 +31,12 @@ namespace MapsExt
 
 		public Vector3 GetAnchoredPosition()
 		{
-			if (this.target == null)
+			if (this.Target == null)
 			{
 				return this.transform.position;
 			}
 
-			return this.target.transform.TransformPoint(this.targetLocalPosition);
+			return this.Target.transform.TransformPoint(this.targetLocalPosition);
 		}
 
 		public void UpdateAttachment()
@@ -45,23 +45,23 @@ namespace MapsExt
 			var colliders = Physics2D.OverlapPointAll(pos);
 
 			var collider =
-				colliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObjectInstance>() != null && c.gameObject == this.target) ??
-				colliders.FirstOrDefault(c => c.gameObject.GetComponent<MapObjectInstance>() != null);
+				Array.Find(colliders, c => c.gameObject.GetComponent<MapObjectInstance>() != null && c.gameObject == this.Target) ??
+				Array.Find(colliders, c => c.gameObject.GetComponent<MapObjectInstance>() != null);
 
 			if (collider == null)
 			{
 				this.Detach();
 			}
-			else if (collider.gameObject != this.target)
+			else if (collider.gameObject != this.Target)
 			{
-				this.target = collider.gameObject;
-				this.targetLocalPosition = this.target.transform.InverseTransformPoint(pos);
+				this.Target = collider.gameObject;
+				this.targetLocalPosition = this.Target.transform.InverseTransformPoint(pos);
 			}
 		}
 
 		public void Detach()
 		{
-			this.target = this.gameObject;
+			this.Target = this.gameObject;
 			this.targetLocalPosition = Vector3.zero;
 		}
 	}

@@ -72,7 +72,7 @@ namespace MapsExt.Editor.UI
 			this.serializationData = SerializationUtility.SerializeValue(this.items, DataFormat.Binary, out this.serializationDataRefs);
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			this.content = GameObject.Instantiate(this.contentTemplate, this.transform);
 
@@ -99,7 +99,7 @@ namespace MapsExt.Editor.UI
 			this.RedrawContent();
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.state == MenuState.DISABLED)
 			{

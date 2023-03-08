@@ -28,10 +28,10 @@ namespace MapsExt.Editor.MapObjects
 
 		public void Deserialize(RopeData data, GameObject target)
 		{
-			var anchor1 = target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
+			target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
 
-			var anchor2 = target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
+			target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
 
 			var startCollider = target.transform.GetChild(0).gameObject.GetOrAddComponent<BoxCollider2D>();
@@ -68,7 +68,7 @@ namespace MapsExt.Editor.MapObjects
 	{
 		private List<MapObjectAnchor> anchors;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.anchors = this.gameObject.GetComponentsInChildren<MapObjectAnchor>().ToList();
 		}

@@ -35,7 +35,7 @@ namespace MapsExt
 
 		private string rpcKey;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			var rb = this.gameObject.GetOrAddComponent<Rigidbody2D>();
 			rb.gravityScale = 0;
@@ -44,7 +44,7 @@ namespace MapsExt
 			rb.useFullKinematicContacts = true;
 		}
 
-		private void OnEnable()
+		protected virtual void OnEnable()
 		{
 			this.ExecuteAfterFrames(1, () =>
 			{
@@ -61,12 +61,12 @@ namespace MapsExt
 			});
 		}
 
-		private void OnDisable()
+		protected virtual void OnDisable()
 		{
 			this.Stop();
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			var map = this.GetComponentInParent<Map>();
 			this.mapEntered = map.hasEntered;
@@ -88,7 +88,7 @@ namespace MapsExt
 			}
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (!this.IsPlaying || !this.mapEntered || PlayerManager.instance.GetExtraData().movingPlayers)
 			{

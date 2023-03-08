@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
@@ -7,14 +6,16 @@ namespace MapsExt.Editor.ActionHandlers
 	[GroupMapObjectActionHandler(typeof(RotationHandler), typeof(PositionHandler))]
 	public class GroupRotationHandler : RotationHandler, IGroupMapObjectActionHandler
 	{
-		public IEnumerable<GameObject> GameObjects { private get; set; }
+		private IEnumerable<GameObject> gameObjects;
 
 		private readonly Dictionary<GameObject, Vector3> localPositions = new Dictionary<GameObject, Vector3>();
 		private readonly Dictionary<GameObject, float> localAngles = new Dictionary<GameObject, float>();
 
-		private void Start()
+		protected override void Awake()
 		{
-			foreach (var obj in this.GameObjects)
+			base.Awake();
+
+			foreach (var obj in this.gameObjects)
 			{
 				var posHandler = obj.GetComponent<PositionHandler>();
 				var rotHandler = obj.GetComponent<RotationHandler>();
@@ -26,7 +27,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void SetRotation(Quaternion rotation)
 		{
-			foreach (var obj in this.GameObjects)
+			foreach (var obj in this.gameObjects)
 			{
 				var posHandler = obj.GetComponent<PositionHandler>();
 				var rotHandler = obj.GetComponent<RotationHandler>();
@@ -35,6 +36,11 @@ namespace MapsExt.Editor.ActionHandlers
 				rotHandler.SetRotation(Quaternion.Euler(0, 0, localAngles[obj] + rotation.eulerAngles.z));
 			}
 			this.transform.rotation = rotation;
+		}
+
+		public void Initialize(IEnumerable<GameObject> gameObjects)
+		{
+			this.gameObjects = gameObjects;
 		}
 	}
 }

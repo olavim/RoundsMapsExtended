@@ -61,7 +61,7 @@ namespace MapsExt.Editor.ActionHandlers
 			return this.transform.position;
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.isDragging)
 			{

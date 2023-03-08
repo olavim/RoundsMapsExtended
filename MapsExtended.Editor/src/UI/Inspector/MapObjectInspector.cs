@@ -49,9 +49,14 @@ namespace MapsExt.Editor.UI
 
 		public Action onUpdate;
 
-		private void Update()
+		protected virtual void Update()
 		{
-			var instance = this.editor.activeObject?.GetComponent<MapObjectInstance>();
+			MapObjectInstance instance = null;
+
+			if (this.editor.activeObject != null)
+			{
+				instance = this.editor.activeObject.GetComponent<MapObjectInstance>();
+			}
 
 			if (instance != this.target)
 			{

@@ -26,28 +26,32 @@ namespace MapsExt.Editor.UI
 		private float maxSliderValue;
 		private float valueOnSliderMouseDown;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.slider.onValueChanged.AddListener(this.UpdateValueSlider);
 			this.input.onValueChanged.AddListener(this.UpdateValueTextInput);
 			this.maxSliderValue = this.slider.maxValue;
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			var eventTrigger = this.slider.gameObject.GetComponent<EventTrigger>() ?? this.slider.gameObject.AddComponent<EventTrigger>();
 
-			var downEntry = new EventTrigger.Entry();
-			downEntry.eventID = EventTriggerType.PointerDown;
-			downEntry.callback.AddListener(data =>
+			var downEntry = new EventTrigger.Entry
+			{
+				eventID = EventTriggerType.PointerDown
+			};
+			downEntry.callback.AddListener(_ =>
 			{
 				this.valueOnSliderMouseDown = this.Value;
 				this.onChanged?.Invoke(this.Value, ChangeType.ChangeStart);
 			});
 
-			var upEntry = new EventTrigger.Entry();
-			upEntry.eventID = EventTriggerType.PointerUp;
-			upEntry.callback.AddListener(data =>
+			var upEntry = new EventTrigger.Entry
+			{
+				eventID = EventTriggerType.PointerUp
+			};
+			upEntry.callback.AddListener(_ =>
 			{
 				if (this.Value != this.valueOnSliderMouseDown)
 				{
@@ -91,7 +95,7 @@ namespace MapsExt.Editor.UI
 				return;
 			}
 
-			if (valueStr == "")
+			if (valueStr?.Length == 0)
 			{
 				this.inputValue = 1f;
 			}

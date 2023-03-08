@@ -28,7 +28,7 @@ namespace MapsExt.Editor
 		private GameObject curtain;
 		private GameObject particles;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.SetupLayerCurtain();
 
@@ -55,7 +55,7 @@ namespace MapsExt.Editor
 			image.rectTransform.sizeDelta = new Vector2(Screen.width, Screen.height);
 		}
 
-		private void OnEnable()
+		protected virtual void OnEnable()
 		{
 			if (this.animation == null)
 			{
@@ -69,7 +69,7 @@ namespace MapsExt.Editor
 			this.SetKeyframe(this.prevKeyframe);
 		}
 
-		private void OnDisable()
+		protected virtual void OnDisable()
 		{
 			if (this.animation == null)
 			{
@@ -95,7 +95,7 @@ namespace MapsExt.Editor
 			this.SetKeyframe(-1);
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (!this.editor || this.editor.isSimulating || !this.animation)
 			{

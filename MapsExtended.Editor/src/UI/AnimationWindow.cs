@@ -11,7 +11,7 @@ namespace MapsExt.Editor.UI
 		public MapEditor editor;
 		public MapObjectInspector inspector;
 
-		private void Start()
+		protected new virtual void Start()
 		{
 			this.closeButton.onClick.AddListener(this.Close);
 			this.deleteButton.onClick.AddListener(this.DeleteAnimationKeyframe);

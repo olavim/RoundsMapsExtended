@@ -18,11 +18,13 @@ namespace MapsExt.Editor.UI
 
 		private GeometryFactory geometryFactory;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.Renderer = this.gameObject.GetOrAddComponent<MeshRenderer>();
-			this.Renderer.material = new Material(Shader.Find("Sprites/Default"));
-			this.Renderer.material.color = new Color(1f, 1f, 1f, 0.1f);
+			this.Renderer.material = new Material(Shader.Find("Sprites/Default"))
+			{
+				color = new Color(1f, 1f, 1f, 0.1f)
+			};
 
 			this.gameObject.GetOrAddComponent<MeshFilter>();
 			this.geometryFactory = new GeometryFactory(PrecisionModel.FloatingSingle.Value);
@@ -43,7 +45,7 @@ namespace MapsExt.Editor.UI
 			float width = this.lineWidth;
 			while (newMesh == null && width >= 0.05f)
 			{
-				var circles = points.Select(p => this.CreateCircle(p, width)).ToList();
+				var circles = points.ConvertAll(p => this.CreateCircle(p, width));
 				var hull = this.CreateConcaveHull(circles);
 				var triangulator = new Triangulator(hull);
 				newMesh = triangulator.GetMesh();

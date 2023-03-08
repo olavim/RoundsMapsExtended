@@ -8,12 +8,12 @@ namespace MapsExt.Editor.UI
 		public float padding = 0.2f;
 		public int position;
 
-		private void Start()
+		protected virtual void Start()
 		{
 			this.UpdatePosition();
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			this.UpdatePosition();
 		}

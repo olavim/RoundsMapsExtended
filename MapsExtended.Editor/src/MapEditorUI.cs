@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects;
 using System;
 using System.Linq;
 
@@ -62,7 +59,7 @@ namespace MapsExt.Editor
 		private bool[] windowWasOpen;
 		private Vector2 resolution;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.resolution = new Vector2(Screen.width, Screen.height);
 
@@ -219,14 +216,14 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			this.windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
 			this.windowWasOpen = new bool[this.windows.Length];
 			this.selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.editor.isSimulating)
 			{

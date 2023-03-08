@@ -14,7 +14,7 @@ namespace MapsExt.Editor
 		private Vector3 mouseDownPosition;
 		private bool isSelecting;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.editor = this.gameObject.GetComponent<MapEditor>();
 			this.mouseDownSince = 0;
@@ -36,7 +36,7 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.editor.isSimulating)
 			{

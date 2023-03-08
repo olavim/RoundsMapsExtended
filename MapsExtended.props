@@ -13,6 +13,12 @@
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DefineConstants>TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
 	<Target Name="ReadPackageVersionFromOutputAssembly" DependsOnTargets="Build" Outputs="$(PackageVersion)">
 		<GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
 			<Output TaskParameter="Assemblies" ItemName="PackAssembly" />
@@ -20,5 +26,16 @@
 		<PropertyGroup>
 			<PackageVersion>%(PackAssembly.Version)</PackageVersion>
 		</PropertyGroup>
+	</Target>
+
+	<Target Name="PublishPackages" Condition="'$(OS)' == 'Windows_NT' and '$(IsPublishable)' == 'true'" AfterTargets="Publish">
+		<CallTarget Targets="ReadPackageVersionFromOutputAssembly">
+			<Output TaskParameter="TargetOutputs" PropertyName="PackageVersion" />
+		</CallTarget>
+		<Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)tools\publish.ps1&quot; -Version &quot;$(PackageVersion.Remove($(PackageVersion.LastIndexOf('.')), 2))&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -SolutionPath &quot;$(SolutionDir.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot;" />
+	</Target>
+
+	<Target Name="BuildMdb" Condition="'$(OS)' == 'Windows_NT'" AfterTargets="Build">
+		<Exec Command="$(SolutionDir)tools\pdb2mdb.exe $(TargetPath)" />
 	</Target>
 </Project>

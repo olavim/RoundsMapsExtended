@@ -10,7 +10,7 @@ namespace MapsExt.Editor.Tests
 		public IInputSource inputSource;
 		public int numFramesActive = 0;
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.inputSource?.GetMouseButtonDown(0) ?? false)
 			{

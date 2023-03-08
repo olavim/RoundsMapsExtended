@@ -8,18 +8,18 @@ namespace MapsExt.Editor.UI
 		public float padding;
 		public Vector2 constantSize = Vector2.zero;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.referenceGameObject = null;
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			var rt = this.gameObject.GetComponent<RectTransform>();
 			rt.sizeDelta = Vector2.zero;
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (!this.referenceGameObject)
 			{

@@ -7,14 +7,19 @@ namespace MapsExt.Editor.ActionHandlers
 	[GroupMapObjectActionHandler(typeof(SelectionHandler))]
 	public class GroupSelectionHandler : SelectionHandler, IGroupMapObjectActionHandler
 	{
-		public IEnumerable<GameObject> GameObjects { private get; set; }
+		private IEnumerable<GameObject> gameObjects;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.gameObject.AddComponent<BoxCollider2D>();
+		}
 
-			var bounds = this.GameObjects.First().GetComponent<SelectionHandler>().GetBounds();
-			foreach (var obj in this.GameObjects)
+		public void Initialize(IEnumerable<GameObject> gameObjects)
+		{
+			this.gameObjects = gameObjects;
+
+			var bounds = this.gameObjects.First().GetComponent<SelectionHandler>().GetBounds();
+			foreach (var obj in this.gameObjects)
 			{
 				bounds.Encapsulate(obj.GetComponent<SelectionHandler>().GetBounds());
 			}

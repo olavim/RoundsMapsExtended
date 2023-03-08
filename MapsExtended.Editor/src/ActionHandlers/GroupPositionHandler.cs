@@ -6,13 +6,13 @@ namespace MapsExt.Editor.ActionHandlers
 	[GroupMapObjectActionHandler(typeof(PositionHandler))]
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
-		public IEnumerable<GameObject> GameObjects { private get; set; }
+		private IEnumerable<GameObject> gameObjects;
 
 		private readonly Dictionary<GameObject, Vector3> localPositions = new Dictionary<GameObject, Vector3>();
 
-		private void Start()
+		protected virtual void Awake()
 		{
-			foreach (var obj in this.GameObjects)
+			foreach (var obj in this.gameObjects)
 			{
 				this.localPositions[obj] = (Vector2) (obj.GetComponent<PositionHandler>().GetPosition() - this.transform.position);
 			}
@@ -25,11 +25,16 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void SetPosition(Vector3 position)
 		{
-			foreach (var obj in this.GameObjects)
+			foreach (var obj in this.gameObjects)
 			{
 				obj.GetComponent<PositionHandler>().SetPosition(position + this.localPositions[obj]);
 			}
 			this.transform.position = position;
+		}
+
+		public void Initialize(IEnumerable<GameObject> gameObjects)
+		{
+			this.gameObjects = gameObjects;
 		}
 	}
 }

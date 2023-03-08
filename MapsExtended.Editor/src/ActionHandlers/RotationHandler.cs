@@ -10,7 +10,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private bool isRotating;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.content = new GameObject("Rotate Interaction Content");
 			this.content.transform.SetParent(this.transform);
@@ -23,7 +23,7 @@ namespace MapsExt.Editor.ActionHandlers
 			canvas.worldCamera = MainCam.instance.cam;
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.isRotating)
 			{

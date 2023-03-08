@@ -17,12 +17,12 @@ namespace MapsExt.Visualizers
 			this.enabled = enabled;
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			this.rope = this.gameObject.GetComponent<EditorRopeInstance>();
 		}
 
-		private void OnEnable()
+		protected virtual void OnEnable()
 		{
 			this.renderer = this.gameObject.GetComponent<LineRenderer>();
 			this.renderer.material = new Material(Shader.Find("Sprites/Default"));
@@ -59,7 +59,7 @@ namespace MapsExt.Visualizers
 			endModifier.Radius = 5;
 		}
 
-		private void OnDisable()
+		protected virtual void OnDisable()
 		{
 			this.renderer = null;
 			this.startGraphic = null;

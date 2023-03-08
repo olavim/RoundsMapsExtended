@@ -18,7 +18,7 @@ namespace MapsExt.Visualizers
 			this.enabled = enabled;
 		}
 
-		private void OnEnable()
+		protected virtual void OnEnable()
 		{
 			var collider = this.gameObject.AddComponent<BoxCollider2D>();
 			collider.size = new Vector3(3, 3);
@@ -65,7 +65,7 @@ namespace MapsExt.Visualizers
 			this.positionIndicator.rectTransform.sizeDelta = UIUtils.WorldToScreenRect(new Rect(0, 0, 0.5f, 0.5f)).size;
 		}
 
-		private void OnDisable()
+		protected virtual void OnDisable()
 		{
 			GameObject.Destroy(this.gameObject.GetComponent<BoxCollider2D>());
 			GameObject.Destroy(this.transform.Find("Canvas").gameObject);

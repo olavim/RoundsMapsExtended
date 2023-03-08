@@ -2,12 +2,12 @@
 	<Import Project="..\..\BuildProps.props" />
 	<Import Project="..\..\MapsExtended.props" />
 	<Import Project="..\..\RoundsReferences.props" />
-	<Import Project="..\..\BepInExPlugin.props" />
 
 	<ItemGroup>
 		<EmbeddedResource Include="..\..\AssetsEmbedded\uielements" />
 		<EmbeddedResource Include="..\..\AssetsEmbedded\mapeditor" />
 	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="NetTopologySuite" Version="2.4.0">
 			<IncludeAssets>compile;runtime</IncludeAssets>

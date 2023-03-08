@@ -12,7 +12,7 @@ namespace MapsExt.Editor.ActionHandlers
 		private Vector3 prevMouse;
 		private Vector3Int prevCell;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.content = new GameObject("Resize Interaction Content");
 			this.content.transform.SetParent(this.transform);
@@ -25,7 +25,7 @@ namespace MapsExt.Editor.ActionHandlers
 			canvas.worldCamera = MainCam.instance.cam;
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.isResizing)
 			{
@@ -181,7 +181,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			var events = go.AddComponent<PointerDownHandler>();
 
-			events.pointerDown += hoveredObj =>
+			events.pointerDown += _ =>
 			{
 				if (!this.isResizing)
 				{
@@ -189,7 +189,7 @@ namespace MapsExt.Editor.ActionHandlers
 				}
 			};
 
-			events.pointerUp += hoveredObj =>
+			events.pointerUp += _ =>
 			{
 				if (this.isResizing)
 				{

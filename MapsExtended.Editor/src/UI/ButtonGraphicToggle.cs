@@ -11,18 +11,18 @@ namespace MapsExt.Editor.UI
 
 		private Graphic currentGraphic;
 
-		private void OnEnable()
+		protected virtual void OnEnable()
 		{
 			this.currentGraphic = this.button.targetGraphic;
 			this.button.onClick.AddListener(this.ToggleGraphic);
 		}
 
-		private void OnDisable()
+		protected virtual void OnDisable()
 		{
 			this.button.onClick.RemoveListener(this.ToggleGraphic);
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			var color = this.currentGraphic.color;
 			color.a = this.button.interactable ? 1 : 0.5f;

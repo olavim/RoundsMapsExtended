@@ -4,7 +4,7 @@ namespace MapsExt.UI
 {
 	public class MapBorder : MonoBehaviour
 	{
-		private void Start()
+		protected virtual void Start()
 		{
 			const float x = 35.56f + 0.05f;
 			const float y = 20f + 0.05f;

@@ -14,7 +14,7 @@ namespace MapsExt
 	public class MapObjectManager : MonoBehaviour
 	{
 		private static AssetBundle mapObjectBundle;
-		private static Dictionary<string, TargetSyncedStore<int>> syncStores = new Dictionary<string, TargetSyncedStore<int>>();
+		private static readonly Dictionary<string, TargetSyncedStore<int>> syncStores = new Dictionary<string, TargetSyncedStore<int>>();
 
 		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
 		{
@@ -27,7 +27,7 @@ namespace MapsExt
 
 		private string NetworkID { get; set; }
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			if (MapObjectManager.mapObjectBundle == null)
 			{

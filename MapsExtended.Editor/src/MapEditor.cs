@@ -42,7 +42,7 @@ namespace MapsExt.Editor
 		private GameObject tempSpawn;
 		private GameObject dummyGroup;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.activeObject = null;
 			this.selectedObjects = new RangeObservableCollection<GameObject>();
@@ -56,20 +56,19 @@ namespace MapsExt.Editor
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
 
-			var groupActionHandlerTypes = typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupMapObjectActionHandler>() != null);
-			foreach (var type in groupActionHandlerTypes)
+			foreach (var type in typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupMapObjectActionHandler>() != null))
 			{
 				this.groupActionHandlers[type] = type.GetCustomAttribute<GroupMapObjectActionHandler>().requiredHandlerTypes;
 			}
 		}
 
-		private void Start()
+		protected virtual void Start()
 		{
 			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT);
 			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.LAYER_MAPOBJECT_UI);
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			if (this.isCreatingSelection)
 			{
@@ -270,8 +269,7 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			GameObject[] mapObjects = this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray();
-			foreach (var instance in mapObjects)
+			foreach (var instance in this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct())
 			{
 				if (instance == this.animationHandler.animation?.gameObject)
 				{
@@ -546,6 +544,7 @@ namespace MapsExt.Editor
 			{
 				this.dummyGroup = new GameObject("Group");
 				this.dummyGroup.transform.SetParent(this.content.transform);
+				this.dummyGroup.SetActive(false);
 
 				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
 
@@ -556,15 +555,14 @@ namespace MapsExt.Editor
 				foreach (var type in this.groupActionHandlers.Keys)
 				{
 					var requiredTypes = this.groupActionHandlers[type];
-					this.dummyGroup.SetActive(false);
 					if (list.All(obj => requiredTypes.All(t => obj.GetComponent(t) != null)))
 					{
 						var handler = (IGroupMapObjectActionHandler) this.dummyGroup.AddComponent(type);
-						handler.GameObjects = list;
+						handler.Initialize(list);
 					}
-					this.dummyGroup.SetActive(true);
 				}
 
+				this.dummyGroup.SetActive(true);
 				this.activeObject = this.dummyGroup;
 			}
 			else

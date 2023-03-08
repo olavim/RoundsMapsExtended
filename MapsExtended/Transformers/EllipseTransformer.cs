@@ -7,7 +7,7 @@ namespace MapsExt.Transformers
 	// Replaces a game object's CircleCollider2D with a PolygonCollider2D
 	public class EllipseTransformer : MonoBehaviour
 	{
-		private void Start()
+		protected virtual void Start()
 		{
 			var circleCollider = this.gameObject.GetComponent<CircleCollider2D>();
 

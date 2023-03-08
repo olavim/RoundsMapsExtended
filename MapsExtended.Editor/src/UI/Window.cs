@@ -9,7 +9,7 @@ namespace MapsExt.Editor.UI
 		public Button closeButton;
 		public GameObject content;
 
-		private void Start()
+		protected virtual void Start()
 		{
 			this.closeButton.onClick.AddListener(() => this.gameObject.SetActive(false));
 		}

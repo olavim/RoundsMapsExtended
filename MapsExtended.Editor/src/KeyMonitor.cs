@@ -12,7 +12,7 @@ namespace MapsExt.Editor
 		private Dictionary<KeyCode, float> heldKeys;
 		private Dictionary<KeyCode, Action> listeners;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			this.heldKeys = new Dictionary<KeyCode, float>();
 			this.listeners = new Dictionary<KeyCode, Action>();
@@ -43,7 +43,7 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void Update()
+		protected virtual void Update()
 		{
 			foreach (var key in this.listeners.Keys)
 			{
