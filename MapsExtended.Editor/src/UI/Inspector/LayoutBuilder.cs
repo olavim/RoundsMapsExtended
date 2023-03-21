@@ -63,13 +63,13 @@ namespace MapsExt.Editor.UI
 
 		public InspectorPropertyBuilder<T> ValueSetter(Action<T> setValue)
 		{
-			(this.element as InspectorLayoutProperty<T>).setValue = setValue;
+			(this.element as InspectorLayoutProperty<T>).SetValue = setValue;
 			return this;
 		}
 
 		public InspectorPropertyBuilder<T> OnChange(Action<T> onChanged)
 		{
-			(this.element as InspectorLayoutProperty<T>).onChanged = onChanged;
+			(this.element as InspectorLayoutProperty<T>).OnChanged = onChanged;
 			return this;
 		}
 

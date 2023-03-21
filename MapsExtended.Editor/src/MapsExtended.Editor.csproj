@@ -12,7 +12,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="NetTopologySuite" Version="2.4.0" IncludeAssets="compile;runtime" />
-		<ProjectReference Include="..\..\MapsExtended\MapsExtended.csproj" Private="false" />
+		<ProjectReference Include="..\..\MapsExtended\MapsExtended.csproj" Private="false" IncludeAssets="compile" />
 	</ItemGroup>
 
 	<ItemGroup>

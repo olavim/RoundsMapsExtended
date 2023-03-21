@@ -136,7 +136,7 @@ namespace MapsExt.Editor
 		{
 			if (this.particles)
 			{
-				GameObject.Destroy(this.particles);
+				GameObjectUtils.DestroyImmediateSafe(this.particles);
 			}
 
 			this.particles = GameObject.Instantiate(MapsExtendedEditor.instance.frontParticles, Vector3.zero, Quaternion.identity, this.transform);
@@ -216,7 +216,7 @@ namespace MapsExt.Editor
 		{
 			if (this.keyframeMapObject)
 			{
-				GameObject.Destroy(this.keyframeMapObject);
+				GameObjectUtils.DestroyImmediateSafe(this.keyframeMapObject);
 				this.keyframeMapObject = null;
 			}
 

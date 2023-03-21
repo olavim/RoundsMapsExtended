@@ -10,6 +10,7 @@ namespace MapsExt.Editor.ActionHandlers
 		private bool isResizing;
 		private int resizeDirection;
 		private Vector3 prevMouse;
+		private Vector3 prevScale;
 		private Vector3Int prevCell;
 
 		protected virtual void Awake()
@@ -107,10 +108,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnDeselect()
 		{
-			foreach (Transform child in this.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
 		}
 
 		private void OnResizeStart(int resizeDirection)
@@ -124,13 +122,18 @@ namespace MapsExt.Editor.ActionHandlers
 			this.resizeDirection = resizeDirection;
 			this.prevMouse = mouseWorldPos;
 			this.prevCell = this.Editor.grid.WorldToCell(mouseWorldPos);
+			this.prevScale = this.transform.localScale;
 		}
 
 		private void OnResizeEnd()
 		{
 			this.isResizing = false;
 			this.Editor.UpdateRopeAttachments();
-			this.Editor.TakeSnaphot();
+
+			if (this.prevScale != this.transform.localScale)
+			{
+				this.Editor.TakeSnaphot();
+			}
 		}
 
 		private void ResizeMapObjects()

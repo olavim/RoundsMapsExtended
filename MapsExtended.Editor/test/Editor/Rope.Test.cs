@@ -6,6 +6,7 @@ using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
 using UnityEngine;
 using Surity;
+using System;
 
 namespace MapsExt.Editor.Tests
 {

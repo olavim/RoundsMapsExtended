@@ -20,10 +20,7 @@ namespace MapsExt.Editor.UI
 
 		public void Refresh()
 		{
-			foreach (Transform child in this.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
 
 			var anim = this.editor.animationHandler.animation;
 
@@ -51,7 +48,7 @@ namespace MapsExt.Editor.UI
 			if (keyframe == 0)
 			{
 				keyframeSettings.contentFoldout.label.text = "Base";
-				GameObject.Destroy(keyframeSettings.contentFoldout.content);
+				GameObjectUtils.DestroyImmediateSafe(keyframeSettings.contentFoldout.content);
 			}
 			else
 			{
@@ -155,11 +152,7 @@ namespace MapsExt.Editor.UI
 		{
 			this.gameObject.SetActive(false);
 			this.editor.animationHandler.SetAnimation(null);
-
-			foreach (Transform child in this.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
 		}
 
 		public void SetOpen(bool open)

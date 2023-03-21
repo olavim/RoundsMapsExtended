@@ -41,10 +41,7 @@ namespace MapsExt.MapObjects
 				var distanceJoint = joint as DistanceJoint2D;
 				if (distanceJoint)
 				{
-					rope.ExecuteAfterFrames(1, () =>
-					{
-						distanceJoint.autoConfigureDistance = false;
-					});
+					rope.ExecuteAfterFrames(1, () => distanceJoint.autoConfigureDistance = false);
 				}
 			});
 		}

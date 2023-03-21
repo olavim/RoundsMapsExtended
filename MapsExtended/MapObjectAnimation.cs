@@ -90,7 +90,7 @@ namespace MapsExt
 
 		protected virtual void Update()
 		{
-			if (!this.IsPlaying || !this.mapEntered || PlayerManager.instance.GetExtraData().movingPlayers)
+			if (!this.IsPlaying || !this.mapEntered || PlayerManager.instance.GetExtraData().MovingPlayers)
 			{
 				return;
 			}

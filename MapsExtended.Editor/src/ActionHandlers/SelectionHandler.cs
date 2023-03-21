@@ -41,7 +41,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnDeselect()
 		{
-			GameObject.Destroy(this.content);
+			GameObjectUtils.DestroyImmediateSafe(this.content);
 			this.isSelected = false;
 		}
 

@@ -64,7 +64,6 @@ namespace MapsExt.Visualizers
 			this.renderer = null;
 			this.startGraphic = null;
 			this.endGraphic = null;
-
 			GameObject.Destroy(this.transform.Find("Canvas").gameObject);
 		}
 

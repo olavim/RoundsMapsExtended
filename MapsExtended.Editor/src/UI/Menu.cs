@@ -318,10 +318,7 @@ namespace MapsExt.Editor.UI
 				return;
 			}
 
-			foreach (Transform child in this.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
 
 			foreach (var item in this.items)
 			{

@@ -15,9 +15,9 @@ namespace MapsExt.Editor.UI
 	{
 		public string name;
 		public Func<T> getValue;
-		public Action<T> onChangeStart { get; set; }
-		public Action<T> setValue { get; set; }
-		public Action<T> onChanged { get; set; }
+		public Action<T> OnChangeStart { get; set; }
+		public Action<T> SetValue { get; set; }
+		public Action<T> OnChanged { get; set; }
 
 		public InspectorLayoutProperty() { }
 
@@ -25,9 +25,9 @@ namespace MapsExt.Editor.UI
 		{
 			this.name = name;
 			this.getValue = getValue;
-			this.onChangeStart = onChangeStart;
-			this.setValue = onChanged;
-			this.onChanged = onChangeEnd;
+			this.OnChangeStart = onChangeStart;
+			this.SetValue = onChanged;
+			this.OnChanged = onChangeEnd;
 		}
 	}
 

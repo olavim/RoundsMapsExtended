@@ -22,7 +22,7 @@ namespace MapsExt
 {
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, ModName, ModVersion)]
-	public sealed partial class MapsExtended : BaseUnityPlugin
+	public sealed class MapsExtended : BaseUnityPlugin
 	{
 		public const string ModId = "io.olavim.rounds.mapsextended";
 		public const string ModName = "MapsExtended";
@@ -199,10 +199,7 @@ namespace MapsExt
 
 		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
-			foreach (Transform child in container.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(container);
 
 			int toLoad = mapData.mapObjects.Count;
 

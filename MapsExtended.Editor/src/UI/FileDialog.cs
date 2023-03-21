@@ -40,15 +40,12 @@ namespace MapsExt.Editor.UI
 			{
 				if (fileBrowser.selectedPath != null)
 				{
-					GameObject.Destroy(wrapperGo);
+					GameObjectUtils.DestroyImmediateSafe(wrapperGo);
 					cb(fileBrowser.selectedPath);
 				}
 			});
 
-			fileBrowser.closeButton.onClick.AddListener(() =>
-			{
-				GameObject.Destroy(wrapperGo);
-			});
+			fileBrowser.closeButton.onClick.AddListener(() => GameObjectUtils.DestroyImmediateSafe(wrapperGo));
 		}
 
 		public static void SaveDialog(Action<string> cb)
@@ -72,15 +69,12 @@ namespace MapsExt.Editor.UI
 			{
 				if (saveDialog.textField.text?.Length > 0)
 				{
-					GameObject.Destroy(wrapperGo);
+					GameObjectUtils.DestroyImmediateSafe(wrapperGo);
 					cb(saveDialog.textField.text);
 				}
 			});
 
-			saveDialog.closeButton.onClick.AddListener(() =>
-			{
-				GameObject.Destroy(wrapperGo);
-			});
+			saveDialog.closeButton.onClick.AddListener(() => GameObjectUtils.DestroyImmediateSafe(wrapperGo));
 		}
 	}
 }

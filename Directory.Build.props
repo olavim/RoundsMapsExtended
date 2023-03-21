@@ -11,10 +11,6 @@
 		<BaseIntermediateOutputPath>build\obj</BaseIntermediateOutputPath>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<CompilerVisibleProperty Include="Version" />
-	</ItemGroup>
-
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<DebugType>full</DebugType>
@@ -42,15 +38,12 @@
 		<ItemGroup>
 			<_Files Include="$(TargetDir)*.*" />
 		</ItemGroup>
+		<Exec Command="$(SolutionDir)tools\pdb2mdb.exe $(TargetPath)" Condition="'$(OS)' == 'Windows_NT' and '$(TargetPath)' != ''" />
 		<RemoveDir Directories="$(BepInExDir)\plugins\$(MSBuildProjectName)" />
 		<Copy SourceFiles="@(_Files)" DestinationFolder="$(BepInExDir)\plugins\$(MSBuildProjectName)" />
 	</Target>
 
 	<Target Name="PublishPackages" Condition="'$(OS)' == 'Windows_NT' and '$(IsPublishable)' == 'true'" AfterTargets="Publish">
 		<Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)tools\publish.ps1&quot; -Version &quot;$(Version)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -SolutionPath &quot;$(SolutionDir.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot;" />
-	</Target>
-
-	<Target Name="BuildMdb" Condition="'$(OS)' == 'Windows_NT' and '$(TargetPath)' != ''" AfterTargets="Build">
-		<Exec Command="$(SolutionDir)tools\pdb2mdb.exe $(TargetPath)" />
 	</Target>
 </Project>

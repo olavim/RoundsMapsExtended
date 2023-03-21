@@ -31,18 +31,5 @@ namespace MapsExt.Editor
 		{
 			return Mathf.Round(num / step) * Mathf.Abs(step);
 		}
-
-		public static Bounds GetMapObjectBounds(GameObject go)
-		{
-			var colliders = go.GetComponentsInChildren<Collider2D>();
-			var bounds = new Bounds(go.transform.position, Vector3.zero);
-
-			foreach (var collider in colliders)
-			{
-				bounds.Encapsulate(collider.bounds);
-			}
-
-			return bounds;
-		}
 	}
 }

@@ -15,8 +15,9 @@ namespace MapsExt.Transformers
 			{
 				var polygonCollider = this.gameObject.GetOrAddComponent<PolygonCollider2D>();
 
-				int numVertices = 24;
-				float anglePerVertex = 360f / numVertices;
+				const int numVertices = 24;
+				const float anglePerVertex = 360f / numVertices;
+
 				float radius = circleCollider.radius;
 
 				var identity = new Vector3(0, radius, 0);

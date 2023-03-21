@@ -164,6 +164,8 @@ namespace MapsExt.Editor
 				}
 			}
 
+			var remainingSelected = this.selectedObjects.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().mapObjectId)).ToList();
+
 			// Destroy map objects remaining in the dictionary since they don't exist in the new state
 			foreach (var id in dict.Keys)
 			{
@@ -172,16 +174,11 @@ namespace MapsExt.Editor
 					this.animationHandler.SetAnimation(null);
 				}
 
-				GameObject.DestroyImmediate(dict[id]);
+				GameObjectUtils.DestroyImmediateSafe(dict[id]);
 			}
 
-			this.selectedObjects.Remove(this.selectedObjects.Where(obj => obj == null).ToList());
-
-			if (this.selectedObjects.Count == 0)
-			{
-				this.activeObject = null;
-			}
-
+			this.ClearSelected();
+			this.AddSelected(remainingSelected);
 			this.animationHandler.Refresh();
 		}
 
@@ -226,7 +223,6 @@ namespace MapsExt.Editor
 
 			this.ResetSpawnLabels();
 			this.UpdateRopeAttachments();
-
 			this.TakeSnaphot();
 		}
 
@@ -269,14 +265,14 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			foreach (var instance in this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct())
+			foreach (var instance in this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
 			{
 				if (instance == this.animationHandler.animation?.gameObject)
 				{
 					this.animationHandler.SetAnimation(null);
 				}
 
-				GameObject.Destroy(instance);
+				GameObjectUtils.DestroyImmediateSafe(instance);
 			}
 
 			this.ResetSpawnLabels();
@@ -348,14 +344,11 @@ namespace MapsExt.Editor
 
 			if (this.tempSpawn != null)
 			{
-				GameObject.Destroy(this.tempSpawn);
+				GameObjectUtils.DestroyImmediateSafe(this.tempSpawn);
 				this.tempSpawn = null;
 			}
 
-			foreach (Transform child in this.simulatedContent.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.simulatedContent);
 
 			this.content.SetActive(true);
 			this.simulatedContent.SetActive(false);
@@ -514,19 +507,17 @@ namespace MapsExt.Editor
 
 		public void ClearSelected()
 		{
-			if (this.activeObject == null)
+			if (this.activeObject != null)
 			{
-				return;
-			}
-
-			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
-			{
-				handler.OnDeselect();
+				foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+				{
+					handler.OnDeselect();
+				}
 			}
 
 			if (this.dummyGroup != null)
 			{
-				GameObject.Destroy(this.dummyGroup);
+				GameObjectUtils.DestroyImmediateSafe(this.dummyGroup);
 			}
 
 			this.selectedObjects.Clear();
@@ -567,14 +558,17 @@ namespace MapsExt.Editor
 			}
 			else
 			{
-				this.activeObject = list.First();
+				this.activeObject = list.FirstOrDefault();
 			}
 
 			this.selectedObjects.AddRange(list);
 
-			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+			if (this.activeObject != null)
 			{
-				handler.OnSelect();
+				foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+				{
+					handler.OnSelect();
+				}
 			}
 		}
 

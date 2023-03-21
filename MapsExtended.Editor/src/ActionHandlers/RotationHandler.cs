@@ -9,6 +9,7 @@ namespace MapsExt.Editor.ActionHandlers
 		public GameObject content;
 
 		private bool isRotating;
+		private float prevAngle;
 
 		protected virtual void Awake()
 		{
@@ -57,22 +58,24 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnDeselect()
 		{
-			foreach (Transform child in this.content.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
 		}
 
 		private void OnRotateStart()
 		{
 			this.isRotating = true;
+			this.prevAngle = this.transform.rotation.eulerAngles.z;
 		}
 
 		private void OnRotateEnd()
 		{
 			this.isRotating = false;
 			this.Editor.UpdateRopeAttachments();
-			this.Editor.TakeSnaphot();
+
+			if (this.transform.rotation.eulerAngles.z != this.prevAngle)
+			{
+				this.Editor.TakeSnaphot();
+			}
 		}
 
 		private void RotateMapObjects()

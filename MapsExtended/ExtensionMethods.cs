@@ -11,17 +11,17 @@ namespace MapsExt
 	{
 		private class ExtraRopeData
 		{
-			public Action<AnchoredJoint2D> ropeListener = joint => { };
+			public Action<AnchoredJoint2D> ropeListener = _ => { };
 		}
 
 		public class ExtraPlayerManagerData
 		{
-			public bool movingPlayers => this.movingPlayer != null && this.movingPlayer.Any(p => p);
+			public bool MovingPlayers => this.movingPlayer?.Any(p => p) == true;
 			public bool[] movingPlayer;
 		}
 
-		private static ConditionalWeakTable<MapObjet_Rope, ExtraRopeData> ropeData = new ConditionalWeakTable<MapObjet_Rope, ExtraRopeData>();
-		private static ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData> pmData = new ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData>();
+		private static readonly ConditionalWeakTable<MapObjet_Rope, ExtraRopeData> ropeData = new ConditionalWeakTable<MapObjet_Rope, ExtraRopeData>();
+		private static readonly ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData> pmData = new ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData>();
 
 		public static void Rethrow(this Exception ex)
 		{
@@ -44,19 +44,6 @@ namespace MapsExt
 			return ExtensionMethods.pmData.GetOrCreateValue(instance);
 		}
 
-		public static bool TryRemoveComponent<T>(this GameObject instance) where T : Component
-		{
-			var comp = instance.GetComponent<T>();
-
-			if (comp)
-			{
-				GameObject.Destroy(comp);
-				return true;
-			}
-
-			return false;
-		}
-
 		public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
 		{
 			return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
@@ -68,6 +55,14 @@ namespace MapsExt
 				(float) System.Math.Round(vector.x, decimalPlaces),
 				(float) System.Math.Round(vector.y, decimalPlaces),
 				(float) System.Math.Round(vector.z, decimalPlaces)
+			);
+		}
+
+		public static Vector2 Round(this Vector2 vector, int decimalPlaces)
+		{
+			return new Vector2(
+				(float) System.Math.Round(vector.x, decimalPlaces),
+				(float) System.Math.Round(vector.y, decimalPlaces)
 			);
 		}
 	}

@@ -144,33 +144,25 @@ namespace MapsExt
 
 		public void Deserialize(MapObjectData data, GameObject target)
 		{
-
-			if (this.mapObjects.TryGetValue(data.GetType(), out IMapObject mapObject))
+			try
 			{
-				try
-				{
-					var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
-					mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
-					mapObjectInstance.dataType = data.GetType();
-					target.SetActive(data.active);
+				var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
+				mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
+				mapObjectInstance.dataType = data.GetType();
+				target.SetActive(data.active);
 
-					foreach (var prop in this.dataTypeProperties.GetValueOrDefault(data.GetType(), new List<Type>()))
-					{
-						var instance = AccessTools.CreateInstance(prop);
-						var serializer = prop.GetMethod("Deserialize");
-						serializer.Invoke(instance, new object[] { data, target });
-					}
-				}
-				catch (Exception ex)
+				foreach (var prop in this.dataTypeProperties.GetValueOrDefault(data.GetType(), new List<Type>()))
 				{
-					UnityEngine.Debug.LogError($"Could not deserialize map object instance for type: {data.GetType()}");
-					ex.Rethrow();
-					throw;
+					var instance = AccessTools.CreateInstance(prop);
+					var deserialize = prop.GetMethod("Deserialize");
+					deserialize.Invoke(instance, new object[] { data, target });
 				}
 			}
-			else
+			catch (Exception ex)
 			{
-				throw new ArgumentException($"MapObject not found for type {data.GetType()}");
+				UnityEngine.Debug.LogError($"Could not deserialize map object instance for type: {data.GetType()}");
+				ex.Rethrow();
+				throw;
 			}
 		}
 

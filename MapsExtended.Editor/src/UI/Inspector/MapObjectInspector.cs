@@ -46,8 +46,9 @@ namespace MapsExt.Editor.UI
 
 		public MapObjectInstance target;
 		public MapEditor editor;
-
 		public Action onUpdate;
+
+		private bool isLinked;
 
 		protected virtual void Update()
 		{
@@ -55,10 +56,10 @@ namespace MapsExt.Editor.UI
 
 			if (this.editor.activeObject != null)
 			{
-				instance = this.editor.activeObject.GetComponent<MapObjectInstance>();
+				instance = this.editor.activeObject.GetComponentInParent<MapObjectInstance>();
 			}
 
-			if (instance != this.target)
+			if (instance != this.target || (this.isLinked && this.target == null))
 			{
 				this.Unlink();
 
@@ -73,12 +74,10 @@ namespace MapsExt.Editor.UI
 
 		private void Link(MapObjectInstance target)
 		{
+			this.isLinked = true;
 			this.target = target;
 
-			foreach (Transform child in this.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
 			var dataTypeProperties = MapsExtendedEditor.instance.mapObjectManager.dataTypeProperties;
 			var builder = new InspectorLayoutBuilder();
@@ -109,12 +108,10 @@ namespace MapsExt.Editor.UI
 		{
 			this.onUpdate = null;
 
-			foreach (Transform child in this.transform)
-			{
-				GameObject.Destroy(child.gameObject);
-			}
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
 			this.target = null;
+			this.isLinked = false;
 		}
 
 		private GameObject GetLayoutElementInstance(ILayoutElement elem)
@@ -200,24 +197,24 @@ namespace MapsExt.Editor.UI
 			{
 				if (type == ChangeType.All)
 				{
-					prop.onChangeStart?.Invoke(value);
-					prop.setValue?.Invoke(value);
-					prop.onChanged?.Invoke(value);
+					prop.OnChangeStart?.Invoke(value);
+					prop.SetValue?.Invoke(value);
+					prop.OnChanged?.Invoke(value);
 				}
 
 				if (type == ChangeType.ChangeStart)
 				{
-					prop.onChangeStart?.Invoke(value);
+					prop.OnChangeStart?.Invoke(value);
 				}
 
 				if (type == ChangeType.Change)
 				{
-					prop.setValue?.Invoke(value);
+					prop.SetValue?.Invoke(value);
 				}
 
 				if (type == ChangeType.ChangeEnd)
 				{
-					prop.onChanged?.Invoke(value);
+					prop.OnChanged?.Invoke(value);
 				}
 			};
 		}

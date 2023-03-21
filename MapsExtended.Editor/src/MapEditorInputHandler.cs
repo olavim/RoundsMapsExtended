@@ -134,6 +134,8 @@ namespace MapsExt.Editor
 		{
 			EventSystem.current.SetSelectedGameObject(null);
 
+			this.editor.OnPointerUp();
+
 			var mouseUpTime = Time.time * 1000;
 			var newMousePosition = EditorInput.mousePosition;
 			var mouseDelta = this.mouseDownPosition - newMousePosition;
@@ -148,8 +150,6 @@ namespace MapsExt.Editor
 				this.isSelecting = false;
 				this.editor.OnSelectionEnd();
 			}
-
-			this.editor.OnPointerUp();
 		}
 	}
 }

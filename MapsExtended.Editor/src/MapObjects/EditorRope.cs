@@ -30,21 +30,22 @@ namespace MapsExt.Editor.MapObjects
 		{
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
+			target.transform.GetChild(0).gameObject.GetOrAddComponent<SelectionHandler>();
 
 			target.transform.GetChild(1).gameObject.GetOrAddComponent<MapObjectAnchor>();
 			target.transform.GetChild(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
+			target.transform.GetChild(1).gameObject.GetOrAddComponent<SelectionHandler>();
 
 			var startCollider = target.transform.GetChild(0).gameObject.GetOrAddComponent<BoxCollider2D>();
 			var endCollider = target.transform.GetChild(1).gameObject.GetOrAddComponent<BoxCollider2D>();
 			startCollider.size = Vector2.one * 1;
 			endCollider.size = Vector2.one * 1;
 
-			var instance = target.GetOrAddComponent<EditorRopeInstance>();
+			target.GetOrAddComponent<EditorRopeInstance>();
 			target.GetOrAddComponent<Visualizers.RopeVisualizer>();
 
-			target.transform.GetChild(0).position = data.startPosition;
-			target.transform.GetChild(1).position = data.endPosition;
-			instance.UpdateAttachments();
+			target.transform.GetChild(0).GetComponent<RopeAnchorPositionHandler>().SetPosition(data.startPosition);
+			target.transform.GetChild(1).GetComponent<RopeAnchorPositionHandler>().SetPosition(data.endPosition);
 		}
 
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)

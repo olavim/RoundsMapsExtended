@@ -42,6 +42,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private bool isDragging;
 		private Vector3 prevMouse;
+		private Vector3 prevPosition;
 		private Vector3Int prevCell;
 		private Vector3 offset;
 
@@ -75,6 +76,7 @@ namespace MapsExt.Editor.ActionHandlers
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.prevMouse = mouseWorldPos;
+			this.prevPosition = this.transform.position;
 			this.isDragging = true;
 
 			var referenceRotation = this.transform.rotation;
@@ -110,9 +112,14 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			if (this.isDragging)
 			{
+				bool moved = this.prevPosition != this.transform.position;
 				this.SetPosition(this.transform.position.Round(4));
 				this.isDragging = false;
-				this.Editor.TakeSnaphot();
+
+				if (moved)
+				{
+					this.Editor.TakeSnaphot();
+				}
 			}
 		}
 
