@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.Tests
 {
-	public static class VectorExtensions
+	public static class Vector3Extensions
 	{
 		public static Vector3Assertions Should(this Vector3 instance)
 		{
@@ -18,6 +18,17 @@ namespace MapsExt.Editor.Tests
 		public Vector3Assertions(Vector3 subject) : base(subject) { }
 
 		protected override string Identifier => "Vector3";
+
+		public AndConstraint<Vector3Assertions> Be(Vector3 expected, string because = "", params object[] becauseArgs)
+		{
+			Execute.Assertion
+					.BecauseOf(because, becauseArgs)
+					.ForCondition(this.Subject == expected)
+					.WithDefaultIdentifier(this.Identifier)
+					.FailWith("Expected {context} to be {0}{reason}, but found {1}.", expected, this.Subject);
+
+			return new AndConstraint<Vector3Assertions>(this);
+		}
 
 		public AndConstraint<Vector3Assertions> Be(Vector2 expected, string because = "", params object[] becauseArgs)
 		{

@@ -1,9 +1,8 @@
-﻿using MapsExt.MapObjects.Properties;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class BallData : SpatialMapObjectData, IMapObjectEllipse { }
+	public class BallData : SpatialMapObjectData { }
 
 	[MapObject]
 	public class Ball : IMapObject<BallData>

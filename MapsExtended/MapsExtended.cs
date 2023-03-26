@@ -102,22 +102,22 @@ namespace MapsExt
 		private void OnRegisterMapObjectProperties(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<MapObjectProperty>() != null))
+			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<MapObjectPropertySerializerAttribute>() != null))
 			{
 				try
 				{
-					var propertyTargetType = MapObjectUtils.GetMapObjectPropertyTargetType(propertyType);
+					var propertyType = MapObjectUtils.GetMapObjectPropertySerializerTargetType(propertySerializerType);
 
-					if (propertyTargetType == null)
+					if (propertyType == null)
 					{
-						throw new Exception($"Invalid serializer: {propertyType.Name} does not inherit from {typeof(IMapObjectProperty<>)}");
+						throw new Exception($"Invalid serializer: {propertySerializerType.Name} does not inherit from {typeof(IMapObjectPropertySerializer<>)}");
 					}
 
-					this.mapObjectManager.RegisterProperty(propertyTargetType, propertyType);
+					this.mapObjectManager.RegisterProperty(propertyType, propertySerializerType);
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register map object serializer {propertyType.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register map object serializer {propertySerializerType.Name}: {ex.Message}");
 
 #if DEBUG
 					UnityEngine.Debug.LogError(ex.StackTrace);
@@ -129,7 +129,7 @@ namespace MapsExt
 		private void OnRegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var type in types.Where(t => t.GetCustomAttribute<MapObject>() != null))
+			foreach (var type in types.Where(t => t.GetCustomAttribute<MapObjectAttribute>() != null))
 			{
 				try
 				{
@@ -298,7 +298,7 @@ namespace MapsExt
 					ID = 0,
 					TEAMID = 0,
 					// Choose center of map as default spawn location
-					localStartPos = Vector3.zero
+					localStartPos = Vector2.zero
 				});
 			}
 

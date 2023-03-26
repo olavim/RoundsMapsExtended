@@ -1,8 +1,8 @@
-using MapsExt.MapObjects.Properties;
 using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
 using Photon.Pun;
+using MapsExt.MapObjects.Properties;
 
 namespace MapsExt
 {
@@ -24,7 +24,6 @@ namespace MapsExt
 
 		private readonly float syncThreshold = 1f / 60f;
 
-		public List<IAnimationComponent> components = new List<IAnimationComponent>();
 		public List<AnimationKeyframe> keyframes = new List<AnimationKeyframe>();
 		public bool playOnAwake = true;
 		public bool IsPlaying { get; private set; }
@@ -82,7 +81,7 @@ namespace MapsExt
 		private void OnDestroy()
 		{
 			var childRPC = MapManager.instance?.GetComponent<ChildRPC>();
-			if (childRPC.childRPCsVector2.ContainsKey(this.rpcKey))
+			if (this.rpcKey != null && childRPC.childRPCsVector2.ContainsKey(this.rpcKey))
 			{
 				childRPC.childRPCsVector2.Remove(this.rpcKey);
 			}
@@ -111,11 +110,10 @@ namespace MapsExt
 			}
 		}
 
-		public void Initialize(IMapObjectAnimation anim)
+		public void Initialize(IAnimated anim)
 		{
 			this.keyframes.Clear();
-			this.keyframes.Add(new AnimationKeyframe(anim));
-			this.components = anim.GetAnimationComponents();
+			this.keyframes.Add(new AnimationKeyframe(anim.Animation.Keyframes[0]));
 		}
 
 		public void Play()
@@ -142,12 +140,13 @@ namespace MapsExt
 
 			float curveValue = endFrame.curve.Evaluate(time / endFrame.duration);
 
-			for (int i = 0; i < this.components.Count; i++)
+			for (int i = 0; i < startFrame.componentValues.Count; i++)
 			{
-				var comp = this.components[i];
-				var startValue = startFrame.componentValues[i].Value;
-				var endValue = endFrame.componentValues[i].Value;
-				comp.Lerp(this.gameObject, startValue, endValue, curveValue);
+				var startValue = startFrame.componentValues[i];
+				var endValue = endFrame.componentValues[i];
+				var nextValue = startValue.Lerp(endValue, curveValue);
+				var serializer = MapsExtended.instance.mapObjectManager.GetSerializer(startValue.GetType());
+				serializer.Deserialize(nextValue, this.gameObject);
 			}
 		}
 

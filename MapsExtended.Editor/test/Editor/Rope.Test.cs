@@ -6,7 +6,7 @@ using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
 using UnityEngine;
 using Surity;
-using System;
+using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.Tests
 {
@@ -39,8 +39,8 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.SpawnMapObject<RopeData>();
 			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be(new Vector2(0, 1));
-			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, -1));
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 1));
+			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, -1));
 		}
 
 		[Test]
@@ -51,18 +51,18 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var boxGo = this.editor.activeObject;
 
-			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 0, 0));
-			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
+			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0));
+			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
 
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be(new Vector2(0, 0));
-			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, 5));
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 0));
+			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
 
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 
-			boxGo.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 1, 0));
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be(new Vector2(0, 1));
-			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, 5));
+			boxGo.SetHandlerValue<PositionProperty>(new Vector2(0, 1));
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 1));
+			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
 		}
 
 		[Test]
@@ -73,13 +73,13 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var box2 = this.editor.activeObject;
 
-			box2.GetComponent<PositionHandler>().Move(new Vector3(2, 0));
+			box2.GetComponent<PositionHandler>().Move(new Vector2(2, 0));
 
 			yield return this.utils.SpawnMapObject<RopeData>();
 			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
-			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 0, 0));
-			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
+			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0));
+			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
 
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
@@ -87,10 +87,10 @@ namespace MapsExt.Editor.Tests
 			this.editor.ClearSelected();
 			this.editor.AddSelected(new GameObject[] { box1, box2, rope.GetAnchor(0).gameObject });
 
-			this.editor.activeObject.GetComponent<PositionHandler>().Move(new Vector3(1, 0));
+			this.editor.activeObject.GetComponent<PositionHandler>().Move(new Vector2(1, 0));
 
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be(new Vector2(1, 0));
-			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, 5));
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(1, 0));
+			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
 		}
 
 		[Test]
@@ -101,15 +101,15 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var boxGo = this.editor.activeObject;
 
-			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 0.25f, 0));
-			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
+			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0.25f));
+			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.GetComponent<ActionHandlers.RotationHandler>().SetRotation(Quaternion.Euler(0, 0, 90));
+			boxGo.SetHandlerValue<RotationProperty>(Quaternion.Euler(0, 0, 90));
 
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
-			((Vector2) rope.GetAnchor(1).GetAnchoredPosition()).Should().Be(new Vector2(0, 5));
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
+			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
 		}
 
 		[Test]
@@ -120,22 +120,22 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var boxGo = this.editor.activeObject;
 
-			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(-0.25f, 0, 0));
-			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetPosition(new Vector3(0, 5, 0));
+			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetValue(new Vector2(-0.25f, 0));
+			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetValue(new Vector2(0, 5));
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.GetComponent<SizeHandler>().SetSize(new Vector3(4, 2, 0), AnchorPosition.MiddleRight);
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
+			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(4, 2), AnchorPosition.MiddleRight);
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 
-			boxGo.GetComponent<SizeHandler>().SetSize(new Vector3(2, 2, 0), AnchorPosition.MiddleRight);
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
+			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(2, 2), AnchorPosition.MiddleRight);
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 
-			boxGo.GetComponent<SizeHandler>().SetSize(new Vector3(4, 2, 0), AnchorPosition.MiddleLeft);
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
+			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(4, 2), AnchorPosition.MiddleLeft);
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 
-			boxGo.GetComponent<SizeHandler>().SetSize(new Vector3(2, 2, 0), AnchorPosition.MiddleLeft);
-			((Vector2) rope.GetAnchor(0).GetAnchoredPosition()).Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
+			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(2, 2), AnchorPosition.MiddleLeft);
+			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 		}
 	}
 }

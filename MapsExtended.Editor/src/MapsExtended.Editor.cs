@@ -35,7 +35,7 @@ namespace MapsExt.Editor
 
 		public bool editorActive;
 		public bool editorClosing;
-		public List<Tuple<Type, EditorMapObject>> mapObjectAttributes = new List<Tuple<Type, EditorMapObject>>();
+		public List<Tuple<Type, EditorMapObjectAttribute>> mapObjectAttributes = new List<Tuple<Type, EditorMapObjectAttribute>>();
 
 		internal MapObjectManager mapObjectManager;
 		internal GameObject frontParticles;
@@ -159,15 +159,15 @@ namespace MapsExt.Editor
 		private void RegisterMapObjectSerializers(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<EditorMapObjectProperty>() != null))
+			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<EditorMapObjectPropertySerializerAttribute>() != null))
 			{
 				try
 				{
-					var propertyTargetType = MapObjectUtils.GetMapObjectPropertyTargetType(propertyType);
+					var propertyTargetType = MapObjectUtils.GetMapObjectPropertySerializerTargetType(propertyType);
 
 					if (propertyTargetType == null)
 					{
-						throw new Exception($"Invalid editor serializer: {propertyType.Name} does not inherit from {typeof(IMapObjectProperty<>)}");
+						throw new Exception($"Invalid editor serializer: {propertyType.Name} does not inherit from {typeof(MapObjectPropertySerializer<>)}");
 					}
 
 					this.mapObjectManager.RegisterProperty(propertyTargetType, propertyType);
@@ -186,11 +186,11 @@ namespace MapsExt.Editor
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var type in types.Where(t => t.GetCustomAttribute<EditorMapObject>() != null))
+			foreach (var type in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
 			{
 				try
 				{
-					var attr = type.GetCustomAttribute<EditorMapObject>();
+					var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
 					var dataType = MapObjectUtils.GetMapObjectDataType(type);
 
 					if (dataType == null)
@@ -200,7 +200,7 @@ namespace MapsExt.Editor
 
 					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
 					this.mapObjectManager.RegisterMapObject(dataType, mapObject);
-					this.mapObjectAttributes.Add(new Tuple<Type, EditorMapObject>(dataType, attr));
+					this.mapObjectAttributes.Add(new Tuple<Type, EditorMapObjectAttribute>(dataType, attr));
 				}
 				catch (Exception ex)
 				{

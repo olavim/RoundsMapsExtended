@@ -3,11 +3,16 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class SpawnData : MapObjectData, IMapObjectPosition
+	public class SpawnIDProperty : IMapObjectProperty
 	{
-		public int id = 0;
-		public int teamID = 0;
-		public Vector3 position { get; set; } = Vector3.zero;
+		public int Id { get; set; }
+		public int TeamID { get; set; }
+	}
+
+	public class SpawnData : MapObjectData
+	{
+		public IMapObjectProperty Id { get; set; } = new SpawnIDProperty();
+		public IMapObjectProperty Position { get; set; } = new PositionProperty();
 	}
 
 	[MapObject]
@@ -16,22 +21,21 @@ namespace MapsExt.MapObjects
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 	}
 
-	[MapObjectProperty]
-	public class SpawnProperty : IMapObjectProperty<SpawnData>
+	[MapObjectPropertySerializer]
+	public class SpawnIDPropertySerializer : MapObjectPropertySerializer<SpawnIDProperty>
 	{
-		public virtual void Serialize(GameObject instance, SpawnData target)
+		public override void Serialize(GameObject instance, SpawnIDProperty property)
 		{
 			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
-			target.id = spawnPoint.ID;
-			target.teamID = spawnPoint.TEAMID;
+			property.Id = spawnPoint.ID;
+			property.TeamID = spawnPoint.TEAMID;
 		}
 
-		public virtual void Deserialize(SpawnData data, GameObject target)
+		public override void Deserialize(SpawnIDProperty property, GameObject target)
 		{
 			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
-			spawnPoint.ID = data.id;
-			spawnPoint.TEAMID = data.teamID;
-			spawnPoint.localStartPos = data.position;
+			spawnPoint.ID = property.Id;
+			spawnPoint.TEAMID = property.TeamID;
 		}
 	}
 }

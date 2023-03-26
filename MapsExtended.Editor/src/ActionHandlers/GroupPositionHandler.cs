@@ -1,33 +1,34 @@
+using MapsExt.MapObjects.Properties;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	[GroupMapObjectActionHandler(typeof(PositionHandler))]
+	[GroupActionHandler(typeof(PositionHandler))]
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> gameObjects;
 
-		private readonly Dictionary<GameObject, Vector3> localPositions = new Dictionary<GameObject, Vector3>();
+		private readonly Dictionary<GameObject, Vector2> localPositions = new Dictionary<GameObject, Vector2>();
 
 		protected virtual void Awake()
 		{
 			foreach (var obj in this.gameObjects)
 			{
-				this.localPositions[obj] = (Vector2) (obj.GetComponent<PositionHandler>().GetPosition() - this.transform.position);
+				this.localPositions[obj] = obj.GetHandlerValue<PositionProperty>() - (Vector2) this.transform.position;
 			}
 		}
 
-		public override void Move(Vector3 delta)
+		public override void Move(PositionProperty delta)
 		{
-			this.SetPosition(this.transform.position + delta);
+			this.SetValue((Vector2) this.transform.position + delta);
 		}
 
-		public override void SetPosition(Vector3 position)
+		public override void SetValue(PositionProperty position)
 		{
 			foreach (var obj in this.gameObjects)
 			{
-				obj.GetComponent<PositionHandler>().SetPosition(position + this.localPositions[obj]);
+				obj.SetHandlerValue<PositionProperty>(position + this.localPositions[obj]);
 			}
 			this.transform.position = position;
 		}

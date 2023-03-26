@@ -2,16 +2,16 @@
 
 namespace MapsExt
 {
-	public class StateHistory
+	public class StateHistory<T>
 	{
-		public CustomMap CurrentState => this.states[this.stateIndex];
+		public T CurrentState => this.states[this.stateIndex];
 
-		private List<CustomMap> states;
+		private readonly List<T> states;
 		private int stateIndex;
 
-		public StateHistory(CustomMap initialState)
+		public StateHistory(T initialState)
 		{
-			this.states = new List<CustomMap>() { initialState };
+			this.states = new List<T>() { initialState };
 			this.stateIndex = 0;
 		}
 
@@ -25,7 +25,7 @@ namespace MapsExt
 			return this.stateIndex > 0;
 		}
 
-		public void AddState(CustomMap state)
+		public void AddState(T state)
 		{
 			while (this.stateIndex < this.states.Count - 1)
 			{

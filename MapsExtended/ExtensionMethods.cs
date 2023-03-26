@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using ExceptionDispatchInfo = System.Runtime.ExceptionServices.ExceptionDispatchInfo;
 using System.Collections.Generic;
+using System.Reflection;
+using UnboundLib;
 
 namespace MapsExt
 {
@@ -64,6 +66,14 @@ namespace MapsExt
 				(float) System.Math.Round(vector.x, decimalPlaces),
 				(float) System.Math.Round(vector.y, decimalPlaces)
 			);
+		}
+
+		public static object GetFieldOrPropertyValue(this MemberInfo info, object instance)
+		{
+			return
+				info is FieldInfo field ? field.GetValue(instance) :
+				info is PropertyInfo property ? property.GetValue(instance) :
+				throw new ArgumentException("MemberInfo must be of type FieldInfo or PropertyInfo");
 		}
 	}
 }

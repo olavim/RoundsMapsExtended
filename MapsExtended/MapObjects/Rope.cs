@@ -4,15 +4,15 @@ using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
+	public class RopePositionProperty : IMapObjectProperty
+	{
+		public Vector2 StartPosition { get; set; } = Vector2.up;
+		public Vector2 EndPosition { get; set; } = Vector2.down;
+	}
+
 	public class RopeData : MapObjectData
 	{
-		public Vector3 startPosition = Vector3.up;
-		public Vector3 endPosition = Vector3.down;
-
-		public override string ToString()
-		{
-			return $"Rope[{this.startPosition}, {this.endPosition}]";
-		}
+		public RopePositionProperty Position = new RopePositionProperty();
 	}
 
 	[MapObject]
@@ -21,19 +21,19 @@ namespace MapsExt.MapObjects
 		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 	}
 
-	[MapObjectProperty]
-	public class RopeSerializer : IMapObjectProperty<RopeData>
+	[MapObjectPropertySerializer]
+	public class RopePositionPropertySerializer : MapObjectPropertySerializer<RopePositionProperty>
 	{
-		public void Serialize(GameObject instance, RopeData target)
+		public override void Serialize(GameObject instance, RopePositionProperty property)
 		{
-			target.startPosition = instance.transform.position;
-			target.endPosition = instance.transform.GetChild(0).position;
+			property.StartPosition = instance.transform.position;
+			property.EndPosition = instance.transform.GetChild(0).position;
 		}
 
-		public void Deserialize(RopeData data, GameObject target)
+		public override void Deserialize(RopePositionProperty property, GameObject target)
 		{
-			target.transform.position = data.startPosition;
-			target.transform.GetChild(0).position = data.endPosition;
+			target.transform.position = property.StartPosition;
+			target.transform.GetChild(0).position = property.EndPosition;
 
 			var rope = target.GetComponent<MapObjet_Rope>();
 			rope.OnJointAdded(joint =>

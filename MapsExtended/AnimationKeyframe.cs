@@ -7,7 +7,7 @@ namespace MapsExt
 {
 	public class AnimationKeyframe
 	{
-		public List<IAnimationComponentValue> componentValues;
+		public List<ILinearProperty> componentValues;
 		public float duration;
 		public CurveType curveType;
 
@@ -16,16 +16,16 @@ namespace MapsExt
 
 		public AnimationKeyframe()
 		{
-			this.componentValues = new List<IAnimationComponentValue>();
+			this.componentValues = new List<ILinearProperty>();
 			this.duration = 1;
 			this.curveType = CurveType.Linear;
 
 			this.UpdateCurve();
 		}
 
-		public AnimationKeyframe(IMapObjectAnimation anim)
+		public AnimationKeyframe(IEnumerable<ILinearProperty> values)
 		{
-			this.componentValues = anim.GetAnimationComponents().ConvertAll(c => c.Value.Clone());
+			this.componentValues = values.ToList();
 			this.duration = 1;
 			this.curveType = CurveType.Linear;
 
@@ -34,7 +34,7 @@ namespace MapsExt
 
 		public AnimationKeyframe(AnimationKeyframe frame)
 		{
-			this.componentValues = frame.componentValues.ConvertAll(v => v.Clone());
+			this.componentValues = frame.componentValues.ToList();
 			this.duration = frame.duration;
 			this.curveType = frame.curveType;
 
@@ -46,7 +46,7 @@ namespace MapsExt
 			this.curve = this.GetCurve();
 		}
 
-		public T GetComponentValue<T>() where T : IAnimationComponentValue
+		public T GetComponentValue<T>() where T : IMapObjectProperty
 		{
 			return (T) this.componentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
 		}

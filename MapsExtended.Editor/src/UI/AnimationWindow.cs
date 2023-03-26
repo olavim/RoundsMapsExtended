@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using MapsExt.MapObjects;
 
 namespace MapsExt.Editor.UI
 {
@@ -100,48 +99,30 @@ namespace MapsExt.Editor.UI
 
 		private void AddAnimationKeyframe()
 		{
-			var anim = this.editor.animationHandler.animation;
-			var newFrame = new AnimationKeyframe(anim.keyframes[anim.keyframes.Count - 1]);
-			int frameIndex = anim.keyframes.Count;
-
-			if (anim.keyframes.Count == 0)
-			{
-				anim.playOnAwake = false;
-				anim.Initialize((SpatialMapObjectData) MapsExtendedEditor.instance.mapObjectManager.Serialize(anim.gameObject));
-			}
-
-			anim.keyframes.Insert(frameIndex, newFrame);
-			this.editor.animationHandler.SetKeyframe(frameIndex);
-			this.editor.TakeSnaphot();
-
+			this.editor.animationHandler.AddKeyframe();
 			this.Refresh();
 		}
 
 		private void DeleteAnimationKeyframe()
 		{
-			var anim = this.editor.animationHandler.animation;
-			anim.keyframes.RemoveAt(this.editor.animationHandler.KeyframeIndex);
-
-			if (this.editor.animationHandler.KeyframeIndex >= anim.keyframes.Count)
-			{
-				this.editor.animationHandler.SetKeyframe(anim.keyframes.Count - 1);
-			}
-
-			this.editor.TakeSnaphot();
+			this.editor.animationHandler.DeleteKeyframe(this.editor.animationHandler.KeyframeIndex);
 			this.Refresh();
 		}
 
 		public void Open()
 		{
-			var anim = this.inspector.target.GetComponent<MapObjectAnimation>();
+			if (this.editor.animationHandler.animation == null)
+			{
+				var anim = this.editor.activeObject.GetComponent<MapObjectAnimation>();
 
-			if (anim)
-			{
-				this.editor.animationHandler.SetAnimation(anim);
-			}
-			else
-			{
-				this.editor.animationHandler.AddAnimation(this.inspector.target.gameObject);
+				if (anim)
+				{
+					this.editor.animationHandler.SetAnimation(anim);
+				}
+				else
+				{
+					this.editor.animationHandler.AddAnimation(this.editor.activeObject);
+				}
 			}
 
 			this.Refresh();

@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+﻿using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.ActionHandlers
 {
 	public class RopeAnchorPositionHandler : PositionHandler
 	{
-		public override void Move(Vector3 delta)
+		public override void Move(PositionProperty delta)
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();
 			anchor.Detach();
@@ -12,11 +12,11 @@ namespace MapsExt.Editor.ActionHandlers
 			anchor.UpdateAttachment();
 		}
 
-		public override void SetPosition(Vector3 position)
+		public override void SetValue(PositionProperty property)
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();
 			anchor.Detach();
-			base.SetPosition(position);
+			base.SetValue(property);
 			anchor.UpdateAttachment();
 		}
 	}

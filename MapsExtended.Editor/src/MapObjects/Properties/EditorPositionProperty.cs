@@ -6,12 +6,12 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorMapObjectProperty]
-	public class EditorPositionProperty : PositionProperty, IInspectable
+	[EditorMapObjectPropertySerializer]
+	public class EditorPositionPropertySerializer : PositionPropertySerializer, IInspectable
 	{
-		public override void Deserialize(IMapObjectPosition data, GameObject target)
+		public override void Deserialize(PositionProperty property, GameObject target)
 		{
-			base.Deserialize(data, target);
+			base.Deserialize(property, target);
 			target.GetOrAddComponent<ActionHandlers.PositionHandler>();
 			target.GetOrAddComponent<ActionHandlers.SelectionHandler>();
 		}
@@ -19,7 +19,7 @@ namespace MapsExt.Editor.MapObjects.Properties
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Vector2>("Position")
-				.ValueSetter(value => inspector.target.GetComponent<ActionHandlers.PositionHandler>().SetPosition(value))
+				.ValueSetter(value => inspector.target.GetComponent<ActionHandlers.PositionHandler>().SetValue(value))
 				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
 				.ValueGetter(() => inspector.target.transform.position);
 		}

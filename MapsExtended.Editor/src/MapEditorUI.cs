@@ -266,11 +266,11 @@ namespace MapsExt.Editor
 				this.toolbar.mapObjectMenu.SetState(Menu.MenuState.DISABLED);
 			}
 
-			if (!this.animationWindow.gameObject.activeSelf && this.editor.animationHandler.animation)
+			if (!this.animationWindow.gameObject.activeSelf && this.editor.animationHandler.animation != null)
 			{
 				this.animationWindow.Open();
 			}
-			else if (this.animationWindow.gameObject.activeSelf && !this.editor.animationHandler.animation)
+			else if (this.animationWindow.gameObject.activeSelf && this.editor.animationHandler.animation == null)
 			{
 				this.animationWindow.Close();
 			}

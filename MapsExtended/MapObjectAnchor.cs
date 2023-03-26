@@ -9,7 +9,7 @@ namespace MapsExt
 		public GameObject Target { get; private set; }
 		public bool IsAttached => this.Target != this.gameObject;
 
-		protected Vector3 targetLocalPosition;
+		protected Vector2 targetLocalPosition;
 
 		protected virtual void Awake()
 		{
@@ -29,7 +29,7 @@ namespace MapsExt
 			this.transform.position = this.GetAnchoredPosition();
 		}
 
-		public Vector3 GetAnchoredPosition()
+		public Vector2 GetAnchoredPosition()
 		{
 			if (this.Target == null)
 			{
@@ -62,7 +62,7 @@ namespace MapsExt
 		public void Detach()
 		{
 			this.Target = this.gameObject;
-			this.targetLocalPosition = Vector3.zero;
+			this.targetLocalPosition = Vector2.zero;
 		}
 	}
 }

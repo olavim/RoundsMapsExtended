@@ -11,7 +11,7 @@ namespace MapsExt.Editor
 
 		private MapEditor editor;
 		private float mouseDownSince;
-		private Vector3 mouseDownPosition;
+		private Vector2 mouseDownPosition;
 		private bool isSelecting;
 
 		protected virtual void Awake()
@@ -100,7 +100,6 @@ namespace MapsExt.Editor
 		{
 			if (EventSystem.current.currentSelectedGameObject != null)
 			{
-				UnityEngine.Debug.Log(EventSystem.current.currentSelectedGameObject);
 				return;
 			}
 

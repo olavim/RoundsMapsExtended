@@ -1,17 +1,18 @@
+using MapsExt.MapObjects.Properties;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class SizeHandler : MapObjectActionHandler
+	public class SizeHandler : ActionHandler<ScaleProperty>
 	{
 		public GameObject content;
 
 		private bool isResizing;
 		private int resizeDirection;
-		private Vector3 prevMouse;
-		private Vector3 prevScale;
-		private Vector3Int prevCell;
+		private Vector2 prevMouse;
+		private Vector2 prevScale;
+		private Vector2Int prevCell;
 
 		protected virtual void Awake()
 		{
@@ -42,22 +43,33 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public virtual void Resize(Vector3 delta, int resizeDirection = 0)
+		public virtual void Resize(ScaleProperty delta, int resizeDirection = 0)
 		{
-			this.SetSize(this.transform.localScale + delta, resizeDirection);
+			var newScale = this.GetValue().Value + delta.Value;
+			this.SetValue(newScale, resizeDirection);
 		}
 
-		public virtual void SetSize(Vector3 size, int resizeDirection = 0)
+		public override void SetValue(ScaleProperty size)
 		{
-			var delta = size - this.transform.localScale;
+			this.SetValue(size, 0);
+		}
+
+		public override ScaleProperty GetValue()
+		{
+			return new ScaleProperty(this.transform.localScale);
+		}
+
+		public virtual void SetValue(ScaleProperty size, int resizeDirection)
+		{
+			var delta = size.Value - (Vector2) this.transform.localScale;
 			float gridSize = this.Editor.GridSize;
 			bool snapToGrid = this.Editor.snapToGrid;
 
 			var directionMulti = AnchorPosition.directionMultipliers[resizeDirection];
 			var scaleMulti = AnchorPosition.sizeMultipliers[resizeDirection];
-			var scaleDelta = Vector3.Scale(delta, scaleMulti);
+			var scaleDelta = Vector2.Scale(delta, scaleMulti);
 
-			var currentScale = this.transform.localScale;
+			var currentScale = this.GetValue().Value;
 			var currentRotation = this.transform.rotation;
 
 			if (snapToGrid && scaleDelta.x != 0 && currentScale.x + scaleDelta.x < gridSize)
@@ -87,7 +99,7 @@ namespace MapsExt.Editor.ActionHandlers
 				return;
 			}
 
-			var positionDelta = currentRotation * Vector3.Scale(scaleDelta, directionMulti);
+			var positionDelta = (Vector2) (currentRotation * Vector2.Scale(scaleDelta, directionMulti));
 			this.transform.localScale = newScale;
 
 			var posHandler = this.gameObject.GetComponent<PositionHandler>();
@@ -114,14 +126,14 @@ namespace MapsExt.Editor.ActionHandlers
 		private void OnResizeStart(int resizeDirection)
 		{
 			var mousePos = EditorInput.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.Editor.grid.transform.rotation = this.transform.rotation;
 
 			this.isResizing = true;
 			this.resizeDirection = resizeDirection;
 			this.prevMouse = mouseWorldPos;
-			this.prevCell = this.Editor.grid.WorldToCell(mouseWorldPos);
+			this.prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
 			this.prevScale = this.transform.localScale;
 		}
 
@@ -130,7 +142,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this.isResizing = false;
 			this.Editor.UpdateRopeAttachments();
 
-			if (this.prevScale != this.transform.localScale)
+			if (this.prevScale != this.GetValue().Value)
 			{
 				this.Editor.TakeSnaphot();
 			}
@@ -139,16 +151,16 @@ namespace MapsExt.Editor.ActionHandlers
 		private void ResizeMapObjects()
 		{
 			var mousePos = EditorInput.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = this.Editor.grid.WorldToCell(mouseWorldPos);
+			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this.prevMouse;
-			Vector3 cellDelta = mouseCell - this.prevCell;
+			Vector2 cellDelta = mouseCell - this.prevCell;
 
 			var sizeDelta = this.Editor.snapToGrid
 				? cellDelta * this.Editor.GridSize
-				: Quaternion.Inverse(this.Editor.grid.transform.rotation) * mouseDelta;
+				: (Vector2) (Quaternion.Inverse(this.Editor.grid.transform.rotation) * mouseDelta);
 
-			if (sizeDelta != Vector3.zero)
+			if (sizeDelta != Vector2.zero)
 			{
 				this.Resize(sizeDelta, this.resizeDirection);
 				this.OnChange();

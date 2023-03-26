@@ -7,7 +7,7 @@ namespace MapsExt.Editor
 		public static readonly DefaultInputSource defaultInputSource = new DefaultInputSource();
 
 		public static Vector2 mouseScrollDelta => EditorInput.inputSource.mouseScrollDelta;
-		public static Vector3 mousePosition => EditorInput.inputSource.mousePosition;
+		public static Vector2 mousePosition => EditorInput.inputSource.mousePosition;
 
 		private static IInputSource inputSource = defaultInputSource;
 

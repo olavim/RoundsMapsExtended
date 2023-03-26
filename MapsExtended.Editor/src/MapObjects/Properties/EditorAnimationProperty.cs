@@ -6,12 +6,12 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorMapObjectProperty]
-	public class EditorAnimationProperty : AnimationProperty, IInspectable
+	[EditorMapObjectPropertySerializer]
+	public class EditorAnimationPropertySerializer : AnimationPropertySerializer, IInspectable
 	{
-		public override void Deserialize(IMapObjectAnimation data, GameObject target)
+		public override void Deserialize(AnimationProperty property, GameObject target)
 		{
-			base.Deserialize(data, target);
+			base.Deserialize(property, target);
 
 			var anim = target.GetComponent<MapObjectAnimation>();
 			if (anim)

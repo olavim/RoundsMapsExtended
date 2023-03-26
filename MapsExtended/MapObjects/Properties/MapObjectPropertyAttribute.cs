@@ -3,5 +3,5 @@
 namespace MapsExt.MapObjects.Properties
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-	public class MapObjectProperty : Attribute { }
+	public class MapObjectPropertySerializerAttribute : Attribute { }
 }

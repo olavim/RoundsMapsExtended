@@ -3,24 +3,29 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects.Properties
 {
-	public interface IMapObjectDamageable
+	public class DamageableProperty : ValueProperty<bool>
 	{
-		bool damageableByEnvironment { get; set; }
+		public DamageableProperty() : this(true) { }
+
+		public DamageableProperty(bool value) : base(value) { }
+
+		public static implicit operator bool(DamageableProperty prop) => prop.Value;
+		public static implicit operator DamageableProperty(bool value) => new DamageableProperty(value);
 	}
 
-	[MapObjectProperty]
-	public class DamageableProperty : IMapObjectProperty<IMapObjectDamageable>
+	[MapObjectPropertySerializer]
+	public class DamageablePropertySerializer : MapObjectPropertySerializer<DamageableProperty>
 	{
-		public virtual void Serialize(GameObject instance, IMapObjectDamageable target)
+		public override void Serialize(GameObject instance, DamageableProperty property)
 		{
 			var dmgInstance = instance.GetComponent<DamageableMapObjectInstance>();
-			target.damageableByEnvironment = dmgInstance.damageableByEnvironment;
+			property.Value = dmgInstance.damageableByEnvironment;
 		}
 
-		public virtual void Deserialize(IMapObjectDamageable data, GameObject target)
+		public override void Deserialize(DamageableProperty property, GameObject target)
 		{
 			var instance = target.GetOrAddComponent<DamageableMapObjectInstance>();
-			instance.damageableByEnvironment = data.damageableByEnvironment;
+			instance.damageableByEnvironment = property;
 		}
 	}
 

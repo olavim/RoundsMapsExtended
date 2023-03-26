@@ -1,9 +1,8 @@
-﻿using MapsExt.MapObjects.Properties;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class GroundCircleData : SpatialMapObjectData, IMapObjectEllipse { }
+	public class GroundCircleData : SpatialMapObjectData { }
 
 	[MapObject]
 	public class GroundCircle : IMapObject<GroundCircleData>

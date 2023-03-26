@@ -4,6 +4,8 @@ using System;
 using MapsExt.MapObjects;
 using System.Collections.Generic;
 using HarmonyLib;
+using System.Reflection;
+using Sirenix.Utilities;
 
 namespace MapsExt.Editor.UI
 {
@@ -79,14 +81,14 @@ namespace MapsExt.Editor.UI
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
-			var dataTypeProperties = MapsExtendedEditor.instance.mapObjectManager.dataTypeProperties;
 			var builder = new InspectorLayoutBuilder();
 
-			foreach (var prop in dataTypeProperties.GetValueOrDefault(this.target.dataType, new List<Type>()))
+			foreach (var member in MapsExtendedEditor.instance.mapObjectManager.GetSerializableMembers(this.target.dataType))
 			{
-				if (typeof(IInspectable).IsAssignableFrom(prop))
+				var serializer = MapsExtendedEditor.instance.mapObjectManager.GetSerializer(member.GetReturnType());
+
+				if (serializer is IInspectable inspectable)
 				{
-					var inspectable = (IInspectable) AccessTools.CreateInstance(prop);
 					inspectable.OnInspectorLayout(this, builder);
 				}
 			}

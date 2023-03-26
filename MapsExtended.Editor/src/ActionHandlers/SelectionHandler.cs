@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class SelectionHandler : MapObjectActionHandler
+	public class SelectionHandler : ActionHandler
 	{
 		private bool isSelected;
 

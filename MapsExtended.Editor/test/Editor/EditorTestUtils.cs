@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Specialized;
 using MapsExt.Editor.ActionHandlers;
@@ -41,14 +42,19 @@ namespace MapsExt.Editor.Tests
 			}
 		}
 
-		public IEnumerator MoveSelectedWithMouse(Vector3 delta)
+		public IEnumerator MoveSelectedWithMouse(Vector2 delta)
 		{
 			var go = this.editor.activeObject;
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 
-		public IEnumerator ResizeSelectedWithMouse(Vector3 delta, int anchorPosition)
+		public IEnumerator ResizeSelectedWithMouse(Vector2 delta, int anchorPosition)
 		{
+			if (anchorPosition == 0)
+			{
+				throw new ArgumentException("anchorPosition cannot be 0");
+			}
+
 			var go = this.editor.activeObject;
 			var resizeInteractionContent = go.GetComponent<SizeHandler>().content;
 			var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + anchorPosition).gameObject;

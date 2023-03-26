@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	[GroupMapObjectActionHandler(typeof(SelectionHandler))]
+	[GroupActionHandler(typeof(SelectionHandler))]
 	public class GroupSelectionHandler : SelectionHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> gameObjects;

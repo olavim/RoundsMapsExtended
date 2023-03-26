@@ -29,10 +29,10 @@ namespace MapsExt.Editor
 		public float GridSize
 		{
 			get { return this.grid.cellSize.x; }
-			set { this.grid.cellSize = Vector3.one * value; }
+			set { this.grid.cellSize = Vector2.one * value; }
 		}
 
-		private StateHistory stateHistory;
+		private StateHistory<CustomMap> stateHistory;
 		private bool isCreatingSelection;
 		private Vector3 selectionStartPosition;
 		private Rect selectionRect;
@@ -52,13 +52,13 @@ namespace MapsExt.Editor
 			this.currentMapName = null;
 			this.isSimulating = false;
 
-			this.stateHistory = new StateHistory(this.GetMapData());
+			this.stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
 
-			foreach (var type in typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupMapObjectActionHandler>() != null))
+			foreach (var type in typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupActionHandlerAttribute>() != null))
 			{
-				this.groupActionHandlers[type] = type.GetCustomAttribute<GroupMapObjectActionHandler>().requiredHandlerTypes;
+				this.groupActionHandlers[type] = type.GetCustomAttribute<GroupActionHandlerAttribute>().requiredHandlerTypes;
 			}
 		}
 
@@ -208,7 +208,7 @@ namespace MapsExt.Editor
 				{
 					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
 					{
-						handler.Move(new Vector3(1, -1, 0));
+						handler.Move(new Vector2(1, -1));
 					}
 
 					this.AddSelected(obj);
@@ -233,7 +233,7 @@ namespace MapsExt.Editor
 			MapsExtendedEditor.instance.SpawnObject(this.content, mapObjectDataType, obj =>
 			{
 				var objectsWithHandlers = obj
-					.GetComponentsInChildren<MapObjectActionHandler>()
+					.GetComponentsInChildren<ActionHandler>()
 					.Select(h => h.gameObject)
 					.Distinct();
 
@@ -366,7 +366,7 @@ namespace MapsExt.Editor
 
 			this.ExecuteAfterFrames(1, () =>
 			{
-				this.stateHistory = new StateHistory(this.GetMapData());
+				this.stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 				this.ResetSpawnLabels();
 				this.ClearSelected();
 				this.UpdateRopeAttachments();
@@ -401,7 +401,7 @@ namespace MapsExt.Editor
 			this.selectionRect = Rect.zero;
 		}
 
-		public void OnClickActionHandlers(List<MapObjectActionHandler> handlers)
+		public void OnClickActionHandlers(List<ActionHandler> handlers)
 		{
 			var objects = handlers.Select(h => h.gameObject).Distinct().ToList();
 			objects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
@@ -451,7 +451,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+			foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
 			{
 				handler.OnPointerDown();
 			}
@@ -464,7 +464,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+			foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
 			{
 				handler.OnPointerUp();
 			}
@@ -477,7 +477,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+			foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
 			{
 				handler.OnKeyDown(key);
 			}
@@ -509,7 +509,7 @@ namespace MapsExt.Editor
 		{
 			if (this.activeObject != null)
 			{
-				foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+				foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
 				{
 					handler.OnDeselect();
 				}
@@ -565,7 +565,7 @@ namespace MapsExt.Editor
 
 			if (this.activeObject != null)
 			{
-				foreach (var handler in this.activeObject.GetComponents<MapObjectActionHandler>())
+				foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
 				{
 					handler.OnSelect();
 				}

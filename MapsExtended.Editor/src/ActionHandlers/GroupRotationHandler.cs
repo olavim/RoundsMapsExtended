@@ -1,14 +1,15 @@
+using MapsExt.MapObjects.Properties;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	[GroupMapObjectActionHandler(typeof(RotationHandler), typeof(PositionHandler))]
+	[GroupActionHandler(typeof(RotationHandler), typeof(PositionHandler))]
 	public class GroupRotationHandler : RotationHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> gameObjects;
 
-		private readonly Dictionary<GameObject, Vector3> localPositions = new Dictionary<GameObject, Vector3>();
+		private readonly Dictionary<GameObject, Vector2> localPositions = new Dictionary<GameObject, Vector2>();
 		private readonly Dictionary<GameObject, float> localAngles = new Dictionary<GameObject, float>();
 
 		protected override void Awake()
@@ -20,20 +21,20 @@ namespace MapsExt.Editor.ActionHandlers
 				var posHandler = obj.GetComponent<PositionHandler>();
 				var rotHandler = obj.GetComponent<RotationHandler>();
 
-				this.localPositions[obj] = (Vector2) (posHandler.GetPosition() - this.transform.position);
-				this.localAngles[obj] = rotHandler.GetRotation().eulerAngles.z;
+				this.localPositions[obj] = posHandler.GetValue() - (Vector2) this.transform.position;
+				this.localAngles[obj] = rotHandler.GetValue().Value.eulerAngles.z;
 			}
 		}
 
-		public override void SetRotation(Quaternion rotation)
+		public override void SetValue(RotationProperty rotation)
 		{
 			foreach (var obj in this.gameObjects)
 			{
 				var posHandler = obj.GetComponent<PositionHandler>();
 				var rotHandler = obj.GetComponent<RotationHandler>();
 
-				posHandler.SetPosition((this.transform.position + (rotation * localPositions[obj])).Round(4));
-				rotHandler.SetRotation(Quaternion.Euler(0, 0, localAngles[obj] + rotation.eulerAngles.z));
+				posHandler.SetValue(this.transform.position + (rotation * localPositions[obj]).Round(4));
+				rotHandler.SetValue(Quaternion.Euler(0, 0, localAngles[obj] + rotation.Value.eulerAngles.z));
 			}
 			this.transform.rotation = rotation;
 		}

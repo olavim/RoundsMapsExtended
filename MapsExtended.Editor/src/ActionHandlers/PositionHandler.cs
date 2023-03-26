@@ -1,8 +1,9 @@
+using MapsExt.MapObjects.Properties;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class PositionHandler : MapObjectActionHandler
+	public class PositionHandler : ActionHandler<PositionProperty>
 	{
 		public static Vector2 KeyCodeToNudge(KeyCode key)
 		{
@@ -41,25 +42,25 @@ namespace MapsExt.Editor.ActionHandlers
 		}
 
 		private bool isDragging;
-		private Vector3 prevMouse;
-		private Vector3 prevPosition;
-		private Vector3Int prevCell;
-		private Vector3 offset;
+		private Vector2 prevMouse;
+		private Vector2 prevPosition;
+		private Vector2Int prevCell;
+		private Vector2 offset;
 
-		public virtual void Move(Vector3 delta)
+		public virtual void Move(PositionProperty delta)
 		{
-			this.SetPosition(this.transform.position + delta);
+			this.SetValue((PositionProperty) ((Vector2) this.transform.position + delta));
 		}
 
-		public virtual void SetPosition(Vector3 position)
+		public override void SetValue(PositionProperty position)
 		{
 			this.transform.position = position;
 			this.OnChange();
 		}
 
-		public virtual Vector3 GetPosition()
+		public override PositionProperty GetValue()
 		{
-			return this.transform.position;
+			return new PositionProperty(this.transform.position);
 		}
 
 		protected virtual void Update()
@@ -76,7 +77,7 @@ namespace MapsExt.Editor.ActionHandlers
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.prevMouse = mouseWorldPos;
-			this.prevPosition = this.transform.position;
+			this.prevPosition = this.GetValue();
 			this.isDragging = true;
 
 			var referenceRotation = this.transform.rotation;
@@ -85,15 +86,15 @@ namespace MapsExt.Editor.ActionHandlers
 
 			this.Editor.grid.transform.rotation = referenceRotation;
 
-			var scaleOffset = Vector3.zero;
-			var objectCell = this.Editor.grid.WorldToCell(this.transform.position);
-			var snappedPosition = this.Editor.grid.CellToWorld(objectCell);
+			var scaleOffset = Vector2.zero;
+			var objectCell = this.Editor.grid.WorldToCell(this.GetValue());
+			var snappedPosition = (Vector2) this.Editor.grid.CellToWorld(objectCell);
 
-			if (snappedPosition != this.transform.position)
+			if (snappedPosition != this.GetValue().Value)
 			{
-				var diff = this.transform.position - snappedPosition;
+				var diff = this.GetValue().Value - snappedPosition;
 				var identityDiff = Quaternion.Inverse(referenceRotation) * diff;
-				var identityDelta = new Vector3(this.Editor.GridSize / 2f, this.Editor.GridSize / 2f, 0);
+				var identityDelta = new Vector2(this.Editor.GridSize / 2f, this.Editor.GridSize / 2f);
 
 				const float eps = 0.000005f;
 
@@ -105,15 +106,15 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 
 			this.offset = scaleOffset;
-			this.prevCell = this.Editor.grid.WorldToCell(mouseWorldPos);
+			this.prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
 		}
 
 		public override void OnPointerUp()
 		{
 			if (this.isDragging)
 			{
-				bool moved = this.prevPosition != this.transform.position;
-				this.SetPosition(this.transform.position.Round(4));
+				bool moved = this.prevPosition != this.GetValue().Value;
+				this.SetValue(this.GetValue().Value.Round(4));
 				this.isDragging = false;
 
 				if (moved)
@@ -142,8 +143,8 @@ namespace MapsExt.Editor.ActionHandlers
 		private void DragMapObjects()
 		{
 			var mousePos = EditorInput.mousePosition;
-			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = this.Editor.grid.WorldToCell(mouseWorldPos);
+			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this.prevMouse;
 			var cellDelta = mouseCell - this.prevCell;
 
@@ -151,13 +152,13 @@ namespace MapsExt.Editor.ActionHandlers
 
 			if (this.Editor.snapToGrid)
 			{
-				var objectCell = this.Editor.grid.WorldToCell(this.transform.position);
-				var snappedPosition = this.Editor.grid.CellToWorld(objectCell + cellDelta);
+				var objectCell = (Vector2Int) this.Editor.grid.WorldToCell(this.GetValue());
+				var snappedPosition = (Vector2) this.Editor.grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
 
-				delta = snappedPosition + this.offset - this.transform.position;
+				delta = snappedPosition + this.offset - this.GetValue();
 			}
 
-			if (delta != Vector3.zero)
+			if (delta != Vector2.zero)
 			{
 				this.Move(delta);
 			}

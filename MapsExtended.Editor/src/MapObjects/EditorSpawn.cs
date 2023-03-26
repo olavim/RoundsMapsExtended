@@ -6,16 +6,19 @@ using UnboundLib;
 namespace MapsExt.Editor.MapObjects
 {
 	[EditorMapObject("Spawn")]
-	public class EditorSpawn : Spawn { }
-
-	[EditorMapObjectProperty]
-	public class EditorSpawnProperty : SpawnProperty
+	public class EditorSpawn : Spawn
 	{
-		public override void Deserialize(SpawnData data, GameObject target)
+		public override GameObject Prefab
 		{
-			base.Deserialize(data, target);
-			target.gameObject.GetOrAddComponent<Visualizers.SpawnVisualizer>();
-			target.transform.SetAsLastSibling();
+			get
+			{
+				var prefab = base.Prefab;
+				prefab.GetOrAddComponent<Visualizers.SpawnVisualizer>();
+				return prefab;
+			}
 		}
 	}
+
+	[EditorMapObjectPropertySerializer]
+	public class EditorSpawnIDPropertySerializer : SpawnIDPropertySerializer { }
 }

@@ -6,11 +6,11 @@ namespace MapsExt
 {
 	public static class MapObjectUtils
 	{
-		public static Type GetMapObjectPropertyTargetType(Type mapObjectSerializerType)
+		public static Type GetMapObjectPropertySerializerTargetType(Type mapObjectSerializerType)
 		{
 			foreach (Type interfaceType in mapObjectSerializerType.GetInterfaces())
 			{
-				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectProperty<>))
+				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectPropertySerializer<>))
 				{
 					return interfaceType.GetGenericArguments()[0];
 				}

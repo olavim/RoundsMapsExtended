@@ -35,7 +35,7 @@ namespace MapsExt.Editor.UI
 				return;
 			}
 
-			if (valueStr == "")
+			if (valueStr?.Length == 0)
 			{
 				this.inputValue = new Vector2(0, this.inputValue.y);
 			}

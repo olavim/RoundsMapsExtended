@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class BoxDestructibleData : SpatialMapObjectData, IMapObjectDamageable
+	public class BoxDestructibleData : SpatialMapObjectData
 	{
-		public bool damageableByEnvironment { get; set; } = false;
+		public IMapObjectProperty DamageableByEnvironment { get; set; } = new DamageableProperty();
 	}
 
 	[MapObject]

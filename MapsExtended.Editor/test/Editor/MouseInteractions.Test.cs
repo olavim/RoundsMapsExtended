@@ -7,6 +7,8 @@ using MapsExt.MapObjects;
 using UnityEngine;
 using UnityEngine.UI;
 using Surity;
+using System;
+using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.Tests
 {
@@ -62,7 +64,7 @@ namespace MapsExt.Editor.Tests
 
 			var box = this.editor.activeObject;
 			box.GetComponent<MapObjectInstance>().dataType.Should().Be(typeof(BoxData));
-			((Vector2) box.transform.position).Should().Be(Vector2.zero);
+			box.GetHandlerValue<PositionProperty>().Should().Be((PositionProperty) Vector2.zero);
 		}
 
 		[Test]
@@ -71,9 +73,20 @@ namespace MapsExt.Editor.Tests
 			yield return this.SpawnFromMapObjectWindow("Box");
 
 			var box = this.editor.activeObject;
-			var delta = new Vector2(-5, 0);
+			var delta = new PositionProperty(-5, 0);
 			yield return this.utils.MoveSelectedWithMouse(delta);
-			((Vector2) box.transform.position).Should().Be(delta);
+			box.GetHandlerValue<PositionProperty>().Should().Be(delta);
+		}
+
+		[Test]
+		public IEnumerator Test_MoveBoxSnapToGrid()
+		{
+			yield return this.SpawnFromMapObjectWindow("Box");
+
+			var box = this.editor.activeObject;
+			var delta = new PositionProperty(-5.2f, 0);
+			yield return this.utils.MoveSelectedWithMouse(delta);
+			box.GetHandlerValue<PositionProperty>().Should().Be(new PositionProperty(-5.25f, 0));
 		}
 
 		[Test]
@@ -120,10 +133,10 @@ namespace MapsExt.Editor.Tests
 
 			this.editor.SelectAll();
 
-			var delta = new Vector2(-5, 0);
+			var delta = new PositionProperty(-5, 0);
 			yield return this.utils.MoveSelectedWithMouse(delta);
-			((Vector2) box1.transform.position).Should().Be(delta);
-			((Vector2) box2.transform.position).Should().Be(delta);
+			box1.GetHandlerValue<PositionProperty>().Should().Be(delta);
+			box2.GetHandlerValue<PositionProperty>().Should().Be(delta);
 		}
 
 		[Test]
@@ -132,9 +145,9 @@ namespace MapsExt.Editor.Tests
 			yield return this.SpawnFromMapObjectWindow("Box");
 			var box = this.editor.activeObject;
 
-			((Vector2) box.transform.localScale).Should().Be(new Vector2(2, 2));
+			box.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(2, 2));
 			yield return this.utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
-			((Vector2) box.transform.localScale).Should().Be(new Vector2(3, 3));
+			box.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
 		}
 
 		[Test]
@@ -143,9 +156,9 @@ namespace MapsExt.Editor.Tests
 			yield return this.SpawnFromMapObjectWindow("Box");
 			var box = this.editor.activeObject;
 
-			box.transform.rotation.Should().Be(Quaternion.Euler(0, 0, 0));
+			box.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(0));
 			yield return this.utils.RotateSelectedWithMouse(45);
-			box.transform.rotation.Should().Be(Quaternion.Euler(0, 0, 45));
+			box.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(45));
 		}
 
 		private IEnumerator SpawnFromMapObjectWindow(string objectName)
@@ -175,7 +188,7 @@ namespace MapsExt.Editor.Tests
 
 		private Button GetMapObjectWindowButton(string label)
 		{
-			var boxText = this.editorUI.mapObjectWindow.content.GetComponentsInChildren<Text>().Where(t => t.text == label).FirstOrDefault();
+			var boxText = Array.Find(this.editorUI.mapObjectWindow.content.GetComponentsInChildren<Text>(), t => t.text == label);
 			return boxText.gameObject.GetComponentInParent<Button>();
 		}
 	}

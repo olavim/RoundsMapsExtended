@@ -1,5 +1,4 @@
 ﻿using MapsExt.MapObjects.Properties;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MapsExt.MapObjects
@@ -8,30 +7,16 @@ namespace MapsExt.MapObjects
 	/// Spatial map objects represent map objects that are described with position, scale and rotation.
 	/// Typical spatial map objects are, for example, boxes and other obstacles.
 	/// </summary>
-	public abstract class SpatialMapObjectData : MapObjectData, IMapObjectAnimation, IMapObjectPosition, IMapObjectScale, IMapObjectRotation
+	public abstract class SpatialMapObjectData : MapObjectData, IAnimated
 	{
-		private readonly List<IAnimationComponent> animationComponents;
+		public PositionProperty Position { get; set; } = new PositionProperty();
+		public ScaleProperty Scale { get; set; } = new ScaleProperty();
+		public RotationProperty Rotation { get; set; } = new RotationProperty();
+		public AnimationProperty Animation { get; set; }
 
-		public Vector3 position { get; set; } = Vector3.zero;
-		public Vector3 scale { get; set; } = Vector3.one * 2;
-		public Quaternion rotation { get; set; } = Quaternion.identity;
-		public List<AnimationKeyframe> keyframes { get; set; } = new List<AnimationKeyframe>();
-
-		public SpatialMapObjectData()
+		protected SpatialMapObjectData()
 		{
-			this.animationComponents = new List<IAnimationComponent>()
-			{
-				new PositionComponent(this),
-				new ScaleComponent(this),
-				new RotationComponent(this)
-			};
-		}
-
-		public List<IAnimationComponent> GetAnimationComponents() => this.animationComponents;
-
-		public override string ToString()
-		{
-			return $"{base.ToString()}\nposition: {this.position}\nsize: {this.scale}\nrotation: {this.rotation.eulerAngles.z}\nkeyframes: {this.keyframes.Count}";
+			this.Animation = new AnimationProperty(this.Position, this.Scale, this.Rotation);
 		}
 	}
 

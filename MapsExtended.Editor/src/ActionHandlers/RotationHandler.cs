@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using MapsExt.MapObjects.Properties;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class RotationHandler : MapObjectActionHandler
+	public class RotationHandler : ActionHandler<RotationProperty>
 	{
 		public GameObject content;
 
@@ -40,15 +41,15 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public virtual void SetRotation(Quaternion rotation)
+		public override void SetValue(RotationProperty rotation)
 		{
-			this.transform.rotation = Quaternion.Euler(rotation.eulerAngles.Round(4));
+			this.transform.rotation = rotation;
 			this.OnChange();
 		}
 
-		public virtual Quaternion GetRotation()
+		public override RotationProperty GetValue()
 		{
-			return this.transform.rotation;
+			return new RotationProperty(this.transform.rotation);
 		}
 
 		public override void OnSelect()
@@ -89,7 +90,7 @@ namespace MapsExt.Editor.ActionHandlers
 			angle = EditorUtils.Snap(angle, this.Editor.snapToGrid ? 15f : 2f);
 			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-			this.SetRotation(toRotation);
+			this.SetValue(toRotation);
 		}
 
 		private void AddRotationHandle()
