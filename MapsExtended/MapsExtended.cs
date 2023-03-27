@@ -170,7 +170,7 @@ namespace MapsExt
 
 				if (packName.Contains("-"))
 				{
-					packName = packName.Substring(packName.IndexOf("-") + 1);
+					packName = packName.Substring(packName.LastIndexOf("-") + 1);
 				}
 
 				packName = packName.Trim();
