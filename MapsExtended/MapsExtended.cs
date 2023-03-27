@@ -17,6 +17,7 @@ using System.Collections;
 using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 using UnboundLib.Utils;
+using MapsExt.Compatibility;
 
 namespace MapsExt
 {
@@ -165,20 +166,14 @@ namespace MapsExt
 			var rootPaths = Directory.GetFiles(Path.Combine(BepInEx.Paths.GameRootPath, "maps"), "*.map", SearchOption.AllDirectories);
 
 			this.maps = new List<CustomMap>();
-			this.maps.AddRange(pluginPaths.Select(MapsExtended.LoadMapData));
-			this.maps.AddRange(rootPaths.Select(MapsExtended.LoadMapData));
+			this.maps.AddRange(pluginPaths.Select(p => MapLoader.LoadPath(p)));
+			this.maps.AddRange(rootPaths.Select(p => MapLoader.LoadPath(p)));
 
 			Logger.LogMessage($"Loaded {maps.Count} custom maps");
 
 			var invalidatedLevels = LevelManager.levels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
 			LevelManager.RemoveLevels(invalidatedLevels);
 			LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
-		}
-
-		private static CustomMap LoadMapData(string path)
-		{
-			var bytes = File.ReadAllBytes(path);
-			return SerializationUtility.DeserializeValue<CustomMap>(bytes, DataFormat.JSON);
 		}
 
 		public void OnPhotonMapObjectInstantiate(PhotonMapObject mapObject, Action<GameObject> callback)
@@ -188,7 +183,7 @@ namespace MapsExt
 
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
-			var mapData = MapsExtended.LoadMapData(mapFilePath);
+			var mapData = MapLoader.LoadPath(mapFilePath);
 			MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
 		}
 

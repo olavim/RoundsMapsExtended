@@ -4,7 +4,7 @@ namespace MapsExt.MapObjects.Properties
 {
 	public class RotationProperty : ValueProperty<Quaternion>, ILinearProperty<RotationProperty>
 	{
-		public RotationProperty() { }
+		public RotationProperty() : base(Quaternion.identity) { }
 
 		public RotationProperty(float angle) : base(Quaternion.Euler(0, 0, angle)) { }
 

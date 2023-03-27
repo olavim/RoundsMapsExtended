@@ -1,13 +1,30 @@
 ﻿using MapsExt.MapObjects.Properties;
 using UnityEngine;
 using UnboundLib;
+using System;
 
 namespace MapsExt.MapObjects
 {
-	public class RopePositionProperty : IMapObjectProperty
+	public class RopePositionProperty : IMapObjectProperty, IEquatable<RopePositionProperty>
 	{
-		public Vector2 StartPosition { get; set; } = Vector2.up;
-		public Vector2 EndPosition { get; set; } = Vector2.down;
+		public Vector2 StartPosition { get; set; }
+		public Vector2 EndPosition { get; set; }
+
+		public RopePositionProperty() : this(Vector2.up, Vector2.down) { }
+
+		public RopePositionProperty(Vector2 startPosition, Vector2 endPosition)
+		{
+			this.StartPosition = startPosition;
+			this.EndPosition = endPosition;
+		}
+
+		public bool Equals(RopePositionProperty other) =>
+			this.StartPosition.Equals(other.StartPosition) && this.EndPosition.Equals(other.EndPosition);
+		public override bool Equals(object other) => other is RopePositionProperty prop && this.Equals(prop);
+		public override int GetHashCode() => (this.StartPosition, this.EndPosition).GetHashCode();
+
+		public static bool operator ==(RopePositionProperty a, RopePositionProperty b) => a.Equals(b);
+		public static bool operator !=(RopePositionProperty a, RopePositionProperty b) => !a.Equals(b);
 	}
 
 	public class RopeData : MapObjectData

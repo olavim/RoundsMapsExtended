@@ -1,18 +1,34 @@
 ﻿using MapsExt.MapObjects.Properties;
+using System;
 using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class SpawnIDProperty : IMapObjectProperty
+	public class SpawnIDProperty : IMapObjectProperty, IEquatable<SpawnIDProperty>
 	{
 		public int Id { get; set; }
 		public int TeamID { get; set; }
+
+		public SpawnIDProperty() : this(0, 0) { }
+
+		public SpawnIDProperty(int id, int teamId)
+		{
+			this.Id = id;
+			this.TeamID = teamId;
+		}
+
+		public bool Equals(SpawnIDProperty other) => this.Id == other.Id && this.TeamID == other.TeamID;
+		public override bool Equals(object other) => other is SpawnIDProperty prop && this.Equals(prop);
+		public override int GetHashCode() => (this.Id, this.TeamID).GetHashCode();
+
+		public static bool operator ==(SpawnIDProperty a, SpawnIDProperty b) => a.Equals(b);
+		public static bool operator !=(SpawnIDProperty a, SpawnIDProperty b) => !a.Equals(b);
 	}
 
 	public class SpawnData : MapObjectData
 	{
-		public IMapObjectProperty Id { get; set; } = new SpawnIDProperty();
-		public IMapObjectProperty Position { get; set; } = new PositionProperty();
+		public SpawnIDProperty Id { get; set; } = new SpawnIDProperty();
+		public PositionProperty Position { get; set; } = new PositionProperty();
 	}
 
 	[MapObject]

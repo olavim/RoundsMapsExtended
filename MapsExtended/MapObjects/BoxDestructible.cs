@@ -5,7 +5,7 @@ namespace MapsExt.MapObjects
 {
 	public class BoxDestructibleData : SpatialMapObjectData
 	{
-		public IMapObjectProperty DamageableByEnvironment { get; set; } = new DamageableProperty();
+		public DamageableProperty DamageableByEnvironment { get; set; } = new DamageableProperty();
 	}
 
 	[MapObject]

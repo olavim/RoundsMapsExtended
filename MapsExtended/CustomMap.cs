@@ -9,6 +9,7 @@ namespace MapsExt
 	{
 		public string id;
 		public string name;
+		public string version = MapsExtended.ModVersion;
 		public List<MapObjectData> mapObjects;
 	}
 }
