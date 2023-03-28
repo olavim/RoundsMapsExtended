@@ -1,4 +1,4 @@
 namespace MapsExt.MapObjects.Properties
 {
-	public interface IMapObjectProperty { }
+	public interface IProperty { }
 }

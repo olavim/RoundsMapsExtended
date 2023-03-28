@@ -1,27 +1,30 @@
+using MapsExt.MapObjects;
 using UnityEngine;
+
+#pragma warning disable CS0649
 
 namespace MapsExt.Compatibility.V0.MapObjects
 {
-	public abstract class MapObject : IUpgradable
+#pragma warning disable CS0618
+	internal abstract class MapObject : MapsExt.MapObjects.MapObject, IUpgradable
+#pragma warning restore CS0618
 	{
-		public bool active = true;
-
 		public abstract object Upgrade();
 
-		public T Populate<T>(T data) where T : MapsExt.MapObjects.MapObjectData
+		public T Populate<T>(T data) where T : MapObjectData
 		{
 			data.active = this.active;
 			return data;
 		}
 	}
 
-	public abstract class SpatialMapObject : MapObject
+	internal abstract class SpatialMapObject : MapObject
 	{
 		public Vector3 position;
 		public Vector3 scale;
 		public Quaternion rotation;
 
-		public new T Populate<T>(T data) where T : MapsExt.MapObjects.SpatialMapObjectData
+		public new T Populate<T>(T data) where T : SpatialMapObjectData
 		{
 			base.Populate(data);
 			data.Position = this.position;
@@ -31,55 +34,55 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		}
 	}
 
-	public class Ball : SpatialMapObject
+	internal class Ball : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.BallData());
+		public override object Upgrade() => this.Populate(new BallData());
 	}
 
-	public class Box : SpatialMapObject
+	internal class Box : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.BoxData());
+		public override object Upgrade() => this.Populate(new BoxData());
 	}
 
-	public class BoxBackground : SpatialMapObject
+	internal class BoxBackground : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.BoxBackgroundData());
+		public override object Upgrade() => this.Populate(new BoxBackgroundData());
 	}
 
-	public class BoxDestructible : SpatialMapObject
+	internal class BoxDestructible : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.BoxDestructibleData());
+		public override object Upgrade() => this.Populate(new BoxDestructibleData());
 	}
 
-	public class Ground : SpatialMapObject
+	internal class Ground : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.GroundData());
+		public override object Upgrade() => this.Populate(new GroundData());
 	}
 
-	public class GroundCircle : SpatialMapObject
+	internal class GroundCircle : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.GroundCircleData());
+		public override object Upgrade() => this.Populate(new GroundCircleData());
 	}
 
-	public class Saw : SpatialMapObject
+	internal class Saw : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.SawData());
+		public override object Upgrade() => this.Populate(new SawData());
 	}
 
-	public class SawDynamic : SpatialMapObject
+	internal class SawDynamic : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new MapsExt.MapObjects.SawDynamicData());
+		public override object Upgrade() => this.Populate(new SawDynamicData());
 	}
 
-	public class Rope : MapObject
+	internal class Rope : MapObject
 	{
 		public Vector3 startPosition = Vector3.up;
 		public Vector3 endPosition = Vector3.down;
 
 		public override object Upgrade()
 		{
-			var data = this.Populate(new MapsExt.MapObjects.RopeData());
-			data.Position = new MapsExt.MapObjects.RopePositionProperty
+			var data = this.Populate(new RopeData());
+			data.Position = new RopePositionProperty
 			{
 				StartPosition = this.startPosition,
 				EndPosition = this.endPosition
@@ -88,7 +91,7 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		}
 	}
 
-	public class Spawn : MapObject
+	internal class Spawn : MapObject
 	{
 		public int id;
 		public int teamID;
@@ -96,8 +99,8 @@ namespace MapsExt.Compatibility.V0.MapObjects
 
 		public override object Upgrade()
 		{
-			var data = this.Populate(new MapsExt.MapObjects.SpawnData());
-			data.Id = new MapsExt.MapObjects.SpawnIDProperty
+			var data = this.Populate(new SpawnData());
+			data.Id = new SpawnIDProperty
 			{
 				Id = this.id,
 				TeamID = this.teamID
@@ -107,3 +110,5 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		}
 	}
 }
+
+#pragma warning restore CS0649

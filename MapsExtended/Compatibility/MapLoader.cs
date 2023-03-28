@@ -7,6 +7,15 @@ namespace MapsExt.Compatibility
 {
 	public abstract class MapLoader
 	{
+		class MapLoaderException : Exception
+		{
+			public MapLoaderException() { }
+
+			public MapLoaderException(string message) : base(message) { }
+
+			public MapLoaderException(string message, Exception innerException) : base(message, innerException) { }
+		}
+
 		public static MapLoader ForVersion(string version, DeserializationContext context = null)
 		{
 			if (version.StartsWith("0."))
@@ -27,7 +36,14 @@ namespace MapsExt.Compatibility
 			long pos = stream.Position;
 			string version = ReadVersion(stream, context);
 			stream.Seek(pos, SeekOrigin.Begin);
-			return ForVersion(version, context).Load(stream);
+			var map = ForVersion(version, context).Load(stream);
+
+			if (map == null)
+			{
+				throw new MapLoaderException("Map load failed");
+			}
+
+			return map;
 		}
 
 		public static CustomMap LoadResource(string resourceName, DeserializationContext context = null)
@@ -40,10 +56,9 @@ namespace MapsExt.Compatibility
 					return Load(stream, context);
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				UnityEngine.Debug.Log($"Failed to load resource {resourceName}");
-				throw;
+				throw new MapLoaderException($"Map load failed for resource: {resourceName}", ex);
 			}
 		}
 
@@ -57,10 +72,9 @@ namespace MapsExt.Compatibility
 					return Load(stream, context);
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				UnityEngine.Debug.Log($"Failed to load map {path}");
-				throw;
+				throw new MapLoaderException($"Map load failed for path: {path}", ex);
 			}
 		}
 

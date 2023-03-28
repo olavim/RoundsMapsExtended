@@ -2,7 +2,7 @@ using System;
 
 namespace MapsExt.MapObjects.Properties
 {
-	public abstract class ValueProperty<T> : IMapObjectProperty, IEquatable<ValueProperty<T>> where T : IEquatable<T>
+	public abstract class ValueProperty<T> : IProperty, IEquatable<ValueProperty<T>> where T : IEquatable<T>
 	{
 		public T Value { get; set; }
 

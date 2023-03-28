@@ -1,4 +1,4 @@
-﻿using MapsExt.MapObjects;
+using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
@@ -10,14 +10,8 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorMapObject("Rope")]
-	public class EditorRope : IMapObject<RopeData>
-	{
-		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
-	}
-
-	[EditorMapObjectPropertySerializer]
-	public class EditorRopePositionPropertySerializer : MapObjectPropertySerializer<RopePositionProperty>, IInspectable
+	[EditorPropertySerializer]
+	public class EditorRopePositionPropertySerializer : PropertySerializer<RopePositionProperty>, IInspectable
 	{
 		public override void Serialize(GameObject instance, RopePositionProperty property)
 		{
@@ -52,11 +46,11 @@ namespace MapsExt.Editor.MapObjects
 		{
 			builder.Property<Vector2>("Anchor Position 1")
 				.ValueSetter(value => this.GetAnchorHandler(inspector.target, 0).SetValue(value))
-				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).transform.position);
+				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).GetAnchoredPosition());
 
 			builder.Property<Vector2>("Anchor Position 2")
 				.ValueSetter(value => this.GetAnchorHandler(inspector.target, 1).SetValue(value))
-				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).transform.position);
+				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).GetAnchoredPosition());
 		}
 
 		private RopeAnchorPositionHandler GetAnchorHandler(MapObjectInstance target, int anchor)

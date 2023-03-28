@@ -1,5 +1,4 @@
 ﻿using MapsExt.MapObjects.Properties;
-using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
@@ -19,6 +18,4 @@ namespace MapsExt.MapObjects
 			this.Animation = new AnimationProperty(this.Position, this.Scale, this.Rotation);
 		}
 	}
-
-	public class SpatialMapObjectInstance : MonoBehaviour { }
 }

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.Tests
 {
-	[TestClass]
+	[TestClass(only: true)]
 	public class OldVersionSerializationTests
 	{
 		private static readonly DeserializationContext deserializationContext = new DeserializationContext

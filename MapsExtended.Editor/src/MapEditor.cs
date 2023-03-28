@@ -307,7 +307,7 @@ namespace MapsExt.Editor
 
 		private void DoStartSimulation()
 		{
-			MapsExtended.LoadMap(this.simulatedContent, this.GetMapData(), MapsExtended.instance.mapObjectManager, () =>
+			MapsExtended.LoadMap(this.simulatedContent, this.GetMapData(), () =>
 			{
 				this.content.SetActive(false);
 				this.simulatedContent.SetActive(true);

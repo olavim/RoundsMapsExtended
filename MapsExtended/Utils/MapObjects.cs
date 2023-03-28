@@ -10,7 +10,7 @@ namespace MapsExt
 		{
 			foreach (Type interfaceType in mapObjectSerializerType.GetInterfaces())
 			{
-				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IMapObjectPropertySerializer<>))
+				if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IPropertySerializer<>))
 				{
 					return interfaceType.GetGenericArguments()[0];
 				}

@@ -1,6 +1,4 @@
-﻿using MapsExt.Editor.UI;
-
-namespace MapsExt.MapObjects
+﻿namespace MapsExt.Editor.UI
 {
 	public interface IInspectable
 	{

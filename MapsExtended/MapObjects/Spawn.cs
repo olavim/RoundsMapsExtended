@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class SpawnIDProperty : IMapObjectProperty, IEquatable<SpawnIDProperty>
+	public class SpawnIDProperty : IProperty, IEquatable<SpawnIDProperty>
 	{
 		public int Id { get; set; }
 		public int TeamID { get; set; }
@@ -35,10 +35,12 @@ namespace MapsExt.MapObjects
 	public class Spawn : IMapObject<SpawnData>
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
+
+		public virtual void OnInstantiate(GameObject instance) { }
 	}
 
-	[MapObjectPropertySerializer]
-	public class SpawnIDPropertySerializer : MapObjectPropertySerializer<SpawnIDProperty>
+	[PropertySerializer]
+	public class SpawnIDPropertySerializer : PropertySerializer<SpawnIDProperty>
 	{
 		public override void Serialize(GameObject instance, SpawnIDProperty property)
 		{

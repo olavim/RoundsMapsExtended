@@ -1,10 +1,9 @@
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorMapObjectPropertySerializer]
+	[EditorPropertySerializer]
 	public class EditorDamageablePropertySerializer : DamageablePropertySerializer, IInspectable
 	{
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)

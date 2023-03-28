@@ -10,7 +10,7 @@ namespace MapsExt.MapObjects.Properties
 		AnimationProperty Animation { get; set; }
 	}
 
-	public class AnimationProperty : IMapObjectProperty
+	public class AnimationProperty : IProperty
 	{
 		public List<AnimationKeyframe> Keyframes { get; set; }
 
@@ -25,8 +25,8 @@ namespace MapsExt.MapObjects.Properties
 		}
 	}
 
-	[MapObjectPropertySerializer]
-	public class AnimationPropertySerializer : MapObjectPropertySerializer<AnimationProperty>
+	[PropertySerializer]
+	public class AnimationPropertySerializer : PropertySerializer<AnimationProperty>
 	{
 		public override void Serialize(GameObject instance, AnimationProperty property)
 		{

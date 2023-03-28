@@ -8,8 +8,8 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		Action OnChange { get; set; }
 
-		IMapObjectProperty GetValue();
-		void SetValue(IMapObjectProperty value);
+		IProperty GetValue();
+		void SetValue(IProperty value);
 		void OnSelect();
 		void OnDeselect();
 		void OnPointerDown();

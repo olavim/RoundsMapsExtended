@@ -7,6 +7,8 @@ namespace MapsExt.MapObjects
 	[MapObject]
 	public class BoxBackground : IMapObject<BoxBackgroundData>
 	{
-		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Box Background");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Box Background");
+
+		public virtual void OnInstantiate(GameObject instance) { }
 	}
 }

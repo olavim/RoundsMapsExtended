@@ -11,7 +11,7 @@ namespace MapsExt.MapObjects.Properties
 		public PositionProperty(float x, float y) : base(new Vector2(x, y)) { }
 
 		public PositionProperty Lerp(PositionProperty end, float t) => Vector2.Lerp(this, end, t);
-		public IMapObjectProperty Lerp(IMapObjectProperty end, float t) => this.Lerp((PositionProperty) end, t);
+		public IProperty Lerp(IProperty end, float t) => this.Lerp((PositionProperty) end, t);
 
 		public static implicit operator Vector2(PositionProperty prop) => prop.Value;
 		public static implicit operator Vector3(PositionProperty prop) => prop.Value;
@@ -19,8 +19,8 @@ namespace MapsExt.MapObjects.Properties
 		public static implicit operator PositionProperty(Vector3 value) => new PositionProperty(value);
 	}
 
-	[MapObjectPropertySerializer]
-	public class PositionPropertySerializer : MapObjectPropertySerializer<PositionProperty>
+	[PropertySerializer]
+	public class PositionPropertySerializer : PropertySerializer<PositionProperty>
 	{
 		public override void Deserialize(PositionProperty property, GameObject target)
 		{

@@ -22,7 +22,7 @@ namespace MapsExt.Editor
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInDependency(MapsExtended.ModId, MapsExtended.ModVersion)]
 	[BepInPlugin(ModId, ModName, ModVersion)]
-	public sealed class MapsExtendedEditor : BaseUnityPlugin
+	public sealed partial class MapsExtendedEditor : BaseUnityPlugin
 	{
 		public const string ModId = "io.olavim.rounds.mapsextended.editor";
 		public const string ModName = "MapsExtended.Editor";
@@ -33,11 +33,11 @@ namespace MapsExt.Editor
 
 		public static MapsExtendedEditor instance;
 
-		public bool editorActive;
-		public bool editorClosing;
-		public List<Tuple<Type, EditorMapObjectAttribute>> mapObjectAttributes = new List<Tuple<Type, EditorMapObjectAttribute>>();
-
+		internal bool editorActive;
+		internal bool editorClosing;
+		internal List<(Type, EditorMapObjectAttribute)> mapObjectAttributes = new List<(Type, EditorMapObjectAttribute)>();
 		internal MapObjectManager mapObjectManager;
+		internal PropertyManager propertyManager = new PropertyManager();
 		internal GameObject frontParticles;
 		internal GameObject mainPostProcessing;
 
@@ -159,7 +159,7 @@ namespace MapsExt.Editor
 		private void RegisterMapObjectSerializers(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<EditorMapObjectPropertySerializerAttribute>() != null))
+			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<EditorPropertySerializerAttribute>() != null))
 			{
 				try
 				{
@@ -167,10 +167,10 @@ namespace MapsExt.Editor
 
 					if (propertyTargetType == null)
 					{
-						throw new Exception($"Invalid editor serializer: {propertyType.Name} does not inherit from {typeof(MapObjectPropertySerializer<>)}");
+						throw new Exception($"Invalid editor serializer: {propertyType.Name} does not inherit from {typeof(PropertySerializer<>)}");
 					}
 
-					this.mapObjectManager.RegisterProperty(propertyTargetType, propertyType);
+					this.propertyManager.RegisterProperty(propertyTargetType, propertyType);
 				}
 				catch (Exception ex)
 				{
@@ -185,32 +185,34 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
+			var serializer = new PropertyCompositeSerializer(this.propertyManager);
 			var types = assembly.GetTypes();
+
 			foreach (var type in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
 			{
 				try
 				{
 					var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
-					var dataType = MapObjectUtils.GetMapObjectDataType(type);
 
-					if (dataType == null)
-					{
-						throw new Exception($"Invalid editor blueprint: {type.Name} does not inherit from {typeof(IMapObject<>)}");
-					}
+					var dataType =
+						MapObjectUtils.GetMapObjectDataType(type)
+						?? throw new Exception($"Invalid EditorMapObject: {type.Name} does not inherit from {typeof(IMapObject<>)}");
 
 					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterMapObject(dataType, mapObject);
-					this.mapObjectAttributes.Add(new Tuple<Type, EditorMapObjectAttribute>(dataType, attr));
+					this.mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
+					this.mapObjectAttributes.Add((dataType, attr));
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register editor map object {type.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register EditorMapObject {type.Name}: {ex.Message}");
 
 #if DEBUG
 					UnityEngine.Debug.LogError(ex.StackTrace);
 #endif
 				}
 			}
+
+			this.RegisterV0MapObjects(assembly);
 		}
 
 		private void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)
@@ -249,8 +251,15 @@ namespace MapsExt.Editor
 
 		public void SpawnObject(GameObject container, Type dataType, Action<GameObject> cb)
 		{
-			var mapObject = (MapObjectData) AccessTools.CreateInstance(dataType);
-			this.SpawnObject(container, mapObject, cb);
+			try
+			{
+				var mapObject = (MapObjectData) AccessTools.CreateInstance(dataType);
+				this.SpawnObject(container, mapObject, cb);
+			}
+			catch (Exception ex)
+			{
+				throw new Exception($"Could not spawn map object {dataType.Name}", ex);
+			}
 		}
 
 		public void SpawnObject(GameObject container, MapObjectData data, Action<GameObject> cb = null)

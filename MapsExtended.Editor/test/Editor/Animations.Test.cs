@@ -100,7 +100,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.activeObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
 		}
 
-		private void GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IMapObjectProperty
+		private void GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IProperty
 		{
 			for (int i = 1; i < keyframeCount; i++)
 			{
@@ -233,7 +233,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.animationHandler.AddAnimation(this.editor.activeObject);
 		}
 
-		private T GetKeyframeValue<T>(int keyframeIndex) where T : IMapObjectProperty
+		private T GetKeyframeValue<T>(int keyframeIndex) where T : IProperty
 		{
 			return this.animation.keyframes[keyframeIndex].GetComponentValue<T>();
 		}

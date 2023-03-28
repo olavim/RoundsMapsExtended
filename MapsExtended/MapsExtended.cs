@@ -23,7 +23,7 @@ namespace MapsExt
 {
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, ModName, ModVersion)]
-	public sealed class MapsExtended : BaseUnityPlugin
+	public sealed partial class MapsExtended : BaseUnityPlugin
 	{
 		public const string ModId = "io.olavim.rounds.mapsextended";
 		public const string ModName = "MapsExtended";
@@ -37,15 +37,19 @@ namespace MapsExt
 
 		public static MapsExtended instance;
 
-		public MapObjectManager mapObjectManager;
-		public List<CustomMap> maps;
-		public bool forceCustomMaps;
-		public CustomMap loadedMap;
-		public string loadedMapSceneName;
 		public Action<Assembly> RegisterMapObjectPropertiesAction;
 		public Action<Assembly> RegisterMapObjectsAction;
 
+		internal CustomMap loadedMap;
+		internal string loadedMapSceneName;
+		internal List<CustomMap> maps;
+		internal MapObjectManager mapObjectManager;
+		internal PropertyManager propertyManager = new PropertyManager();
 		internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
+
+#pragma warning disable CS0649
+		internal bool forceCustomMaps;
+#pragma warning restore CS0649
 
 		private void Awake()
 		{
@@ -103,7 +107,7 @@ namespace MapsExt
 		private void OnRegisterMapObjectProperties(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<MapObjectPropertySerializerAttribute>() != null))
+			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<PropertySerializerAttribute>() != null))
 			{
 				try
 				{
@@ -111,10 +115,10 @@ namespace MapsExt
 
 					if (propertyType == null)
 					{
-						throw new Exception($"Invalid serializer: {propertySerializerType.Name} does not inherit from {typeof(IMapObjectPropertySerializer<>)}");
+						throw new Exception($"Invalid serializer: {propertySerializerType.Name} does not inherit from {typeof(IPropertySerializer<>)}");
 					}
 
-					this.mapObjectManager.RegisterProperty(propertyType, propertySerializerType);
+					this.propertyManager.RegisterProperty(propertyType, propertySerializerType);
 				}
 				catch (Exception ex)
 				{
@@ -129,7 +133,9 @@ namespace MapsExt
 
 		private void OnRegisterMapObjects(Assembly assembly)
 		{
+			var serializer = new PropertyCompositeSerializer(this.propertyManager);
 			var types = assembly.GetTypes();
+
 			foreach (var type in types.Where(t => t.GetCustomAttribute<MapObjectAttribute>() != null))
 			{
 				try
@@ -142,7 +148,7 @@ namespace MapsExt
 					}
 
 					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterMapObject(dataType, mapObject);
+					this.mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
 				}
 				catch (Exception ex)
 				{
@@ -153,6 +159,8 @@ namespace MapsExt
 #endif
 				}
 			}
+
+			this.RegisterV0MapObjects(assembly);
 		}
 
 		public void DrawDebugGUI(GameObject menu)
@@ -179,6 +187,16 @@ namespace MapsExt
 		public void OnPhotonMapObjectInstantiate(PhotonMapObject mapObject, Action<GameObject> callback)
 		{
 			this.photonInstantiationListeners.Add(mapObject, callback);
+		}
+
+		public static void LoadMap(GameObject container, string mapFilePath, Action onLoad = null)
+		{
+			MapsExtended.LoadMap(container, mapFilePath, MapsExtended.instance.mapObjectManager, onLoad);
+		}
+
+		public static void LoadMap(GameObject container, CustomMap mapData, Action onLoad = null)
+		{
+			MapsExtended.LoadMap(container, mapData, MapsExtended.instance.mapObjectManager, onLoad);
 		}
 
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)

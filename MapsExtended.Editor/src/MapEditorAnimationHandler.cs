@@ -87,7 +87,7 @@ namespace MapsExt.Editor
 			for (int i = 0; i < firstFrame.componentValues.Count; i++)
 			{
 				var value = firstFrame.componentValues[i];
-				var serializer = MapsExtendedEditor.instance.mapObjectManager.GetSerializer(value.GetType());
+				var serializer = MapsExtendedEditor.instance.propertyManager.GetSerializer(value.GetType());
 				serializer.Deserialize(value, baseObject);
 			}
 
@@ -328,7 +328,7 @@ namespace MapsExt.Editor
 				for (int i = 0; i < this.animation.keyframes[0].componentValues.Count; i++)
 				{
 					var value = frame.componentValues[i];
-					var serializer = MapsExtendedEditor.instance.mapObjectManager.GetSerializer(value.GetType());
+					var serializer = MapsExtendedEditor.instance.propertyManager.GetSerializer(value.GetType());
 					serializer.Deserialize(value, instance);
 				}
 
@@ -348,7 +348,7 @@ namespace MapsExt.Editor
 				var baseFrameValue = this.animation.keyframes[0].componentValues[i];
 				var currentFrameValue = this.Keyframe.componentValues[i];
 
-				var serializer = MapsExtendedEditor.instance.mapObjectManager.GetSerializer(baseFrameValue.GetType());
+				var serializer = MapsExtendedEditor.instance.propertyManager.GetSerializer(baseFrameValue.GetType());
 				serializer.Deserialize(baseFrameValue, this.animation.gameObject);
 				serializer.Deserialize(currentFrameValue, this.keyframeMapObject);
 			}

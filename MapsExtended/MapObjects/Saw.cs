@@ -7,6 +7,8 @@ namespace MapsExt.MapObjects
 	[MapObject]
 	public class Saw : IMapObject<SawData>
 	{
-		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Saw");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Saw");
+
+		public virtual void OnInstantiate(GameObject instance) { }
 	}
 }

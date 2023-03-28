@@ -46,7 +46,7 @@ namespace MapsExt
 			this.curve = this.GetCurve();
 		}
 
-		public T GetComponentValue<T>() where T : IMapObjectProperty
+		public T GetComponentValue<T>() where T : IProperty
 		{
 			return (T) this.componentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
 		}

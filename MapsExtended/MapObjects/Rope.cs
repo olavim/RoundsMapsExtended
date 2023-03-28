@@ -5,7 +5,7 @@ using System;
 
 namespace MapsExt.MapObjects
 {
-	public class RopePositionProperty : IMapObjectProperty, IEquatable<RopePositionProperty>
+	public class RopePositionProperty : IProperty, IEquatable<RopePositionProperty>
 	{
 		public Vector2 StartPosition { get; set; }
 		public Vector2 EndPosition { get; set; }
@@ -35,11 +35,13 @@ namespace MapsExt.MapObjects
 	[MapObject]
 	public class Rope : IMapObject<RopeData>
 	{
-		public GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
+
+		public virtual void OnInstantiate(GameObject instance) { }
 	}
 
-	[MapObjectPropertySerializer]
-	public class RopePositionPropertySerializer : MapObjectPropertySerializer<RopePositionProperty>
+	[PropertySerializer]
+	public class RopePositionPropertySerializer : PropertySerializer<RopePositionProperty>
 	{
 		public override void Serialize(GameObject instance, RopePositionProperty property)
 		{

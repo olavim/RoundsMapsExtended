@@ -1,22 +1,47 @@
-using MapsExt.Compatibility.V0.MapObjects;
 using System.Collections.Generic;
+
+#pragma warning disable CS0649
 
 namespace MapsExt.Compatibility.V0
 {
-	public class CustomMap : IUpgradable
+	internal class CustomMap : IUpgradable
 	{
+
 		public string id;
 		public string name;
-		public List<MapObject> mapObjects;
+
+#pragma warning disable CS0618
+		public List<MapsExt.MapObjects.MapObject> mapObjects;
+#pragma warning restore CS0618
 
 		public object Upgrade()
 		{
+			var list = new List<MapsExt.MapObjects.MapObjectData>();
+
+			foreach (var mapObject in this.mapObjects)
+			{
+				if (mapObject is IUpgradable upgradeable)
+				{
+					list.Add((MapsExt.MapObjects.MapObjectData) upgradeable.Upgrade());
+				}
+				else if (mapObject is MapsExt.MapObjects.MapObjectData data)
+				{
+					list.Add(data);
+				}
+				else
+				{
+					UnityEngine.Debug.LogWarning($"Could not load map object {mapObject}");
+				}
+			}
+
 			return new MapsExt.CustomMap
 			{
 				id = this.id,
 				name = this.name,
-				mapObjects = this.mapObjects.ConvertAll(mapObject => (MapsExt.MapObjects.MapObjectData) mapObject.Upgrade())
+				mapObjects = list
 			};
 		}
 	}
 }
+
+#pragma warning restore CS0649

@@ -11,7 +11,7 @@ namespace MapsExt.MapObjects.Properties
 		public ScaleProperty(float x, float y) : base(new Vector2(x, y)) { }
 
 		public ScaleProperty Lerp(ScaleProperty end, float t) => Vector2.Lerp(this, end, t);
-		public IMapObjectProperty Lerp(IMapObjectProperty end, float t) => this.Lerp((ScaleProperty) end, t);
+		public IProperty Lerp(IProperty end, float t) => this.Lerp((ScaleProperty) end, t);
 
 		public static implicit operator Vector2(ScaleProperty prop) => prop.Value;
 		public static implicit operator Vector3(ScaleProperty prop) => prop.Value;
@@ -22,8 +22,8 @@ namespace MapsExt.MapObjects.Properties
 		public static ScaleProperty operator +(ScaleProperty a, ScaleProperty b) => a.Value + b.Value;
 	}
 
-	[MapObjectPropertySerializer]
-	public class ScalePropertySerializer : MapObjectPropertySerializer<ScaleProperty>
+	[PropertySerializer]
+	public class ScalePropertySerializer : PropertySerializer<ScaleProperty>
 	{
 		public override void Serialize(GameObject instance, ScaleProperty property)
 		{

@@ -3,10 +3,15 @@ using System;
 
 namespace MapsExt.Compatibility.V0.MapObjects
 {
-	public class V0MapObjectBinder : TwoWaySerializationBinder
+	internal class V0MapObjectBinder : TwoWaySerializationBinder
 	{
 		private static string GetV0TypeName(string typeName)
 		{
+			if (typeName.Contains("MapsExt.MapObjects.MapObject"))
+			{
+				return typeName;
+			}
+
 			return typeName.Replace("MapsExt.", "MapsExt.Compatibility.V0.");
 		}
 

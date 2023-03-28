@@ -2,9 +2,6 @@
 using UnityEngine;
 using System;
 using MapsExt.MapObjects;
-using System.Collections.Generic;
-using HarmonyLib;
-using System.Reflection;
 using Sirenix.Utilities;
 
 namespace MapsExt.Editor.UI
@@ -83,9 +80,9 @@ namespace MapsExt.Editor.UI
 
 			var builder = new InspectorLayoutBuilder();
 
-			foreach (var member in MapsExtendedEditor.instance.mapObjectManager.GetSerializableMembers(this.target.dataType))
+			foreach (var member in MapsExtendedEditor.instance.propertyManager.GetSerializableMembers(this.target.dataType))
 			{
-				var serializer = MapsExtendedEditor.instance.mapObjectManager.GetSerializer(member.GetReturnType());
+				var serializer = MapsExtendedEditor.instance.propertyManager.GetSerializer(member.GetReturnType());
 
 				if (serializer is IInspectable inspectable)
 				{

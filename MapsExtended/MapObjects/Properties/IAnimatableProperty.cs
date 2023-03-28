@@ -2,12 +2,12 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects.Properties
 {
-	public interface ILinearProperty : IMapObjectProperty
+	public interface ILinearProperty : IProperty
 	{
-		IMapObjectProperty Lerp(IMapObjectProperty end, float t);
+		IProperty Lerp(IProperty end, float t);
 	}
 
-	public interface ILinearProperty<T> : ILinearProperty where T : IMapObjectProperty
+	public interface ILinearProperty<T> : ILinearProperty where T : IProperty
 	{
 		T Lerp(T end, float t);
 	}

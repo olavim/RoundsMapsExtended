@@ -7,11 +7,6 @@ using UnboundLib.Networking;
 using Jotunn.Utils;
 using MapsExt.MapObjects;
 using Photon.Pun;
-using HarmonyLib;
-using System.Reflection;
-using System.Linq;
-using MapsExt.MapObjects.Properties;
-using Sirenix.Utilities;
 
 namespace MapsExt
 {
@@ -25,9 +20,8 @@ namespace MapsExt
 			return MapObjectManager.mapObjectBundle.LoadAsset<TObj>(name);
 		}
 
+		private readonly Dictionary<Type, IMapObjectSerializer> dataSerializers = new Dictionary<Type, IMapObjectSerializer>();
 		private readonly Dictionary<Type, IMapObject> mapObjects = new Dictionary<Type, IMapObject>();
-		private readonly Dictionary<Type, IMapObjectPropertySerializer> mapObjectPropertySerializers = new Dictionary<Type, IMapObjectPropertySerializer>();
-		private readonly Dictionary<Type, List<MemberInfo>> serializableMembers = new Dictionary<Type, List<MemberInfo>>();
 
 		private string NetworkID { get; set; }
 
@@ -50,14 +44,13 @@ namespace MapsExt
 			MapObjectManager.syncStores.Add(id, new TargetSyncedStore<int>());
 		}
 
-		public void RegisterProperty(Type propertyType, Type propertySerializerType)
+		public void RegisterMapObject(Type dataType, IMapObject mapObject, IMapObjectSerializer serializer)
 		{
-			var serializer = (IMapObjectPropertySerializer) AccessTools.CreateInstance(propertySerializerType);
-			this.mapObjectPropertySerializers.Add(propertyType, serializer);
-		}
+			if (mapObject.Prefab == null)
+			{
+				throw new Exception($"Cannot register map object {dataType.Name}: Prefab cannot be null");
+			}
 
-		public void RegisterMapObject(Type dataType, IMapObject mapObject)
-		{
 			this.mapObjects.Add(dataType, mapObject);
 
 			if (mapObject.Prefab.GetComponent<PhotonMapObject>())
@@ -68,19 +61,7 @@ namespace MapsExt
 				PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), mapObject.Prefab);
 			}
 
-			var list = new List<MemberInfo>();
-
-			var props = dataType
-				.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-				.Where(p => p.GetReturnType() != null && this.mapObjectPropertySerializers.ContainsKey(p.GetReturnType()));
-			var fields = dataType
-				.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-				.Where(p => p.GetReturnType() != null && this.mapObjectPropertySerializers.ContainsKey(p.GetReturnType()));
-
-			list.AddRange(props);
-			list.AddRange(fields);
-
-			this.serializableMembers.Add(dataType, list);
+			this.dataSerializers.Add(dataType, serializer);
 		}
 
 		private string GetInstanceName(Type type)
@@ -100,21 +81,11 @@ namespace MapsExt
 			return this.Serialize(mapObjectInstance);
 		}
 
-		public IMapObjectPropertySerializer GetSerializer(Type type)
-		{
-			return this.mapObjectPropertySerializers[type];
-		}
-
-		public List<MemberInfo> GetSerializableMembers(Type type)
-		{
-			return this.serializableMembers.GetValueOrDefault(type, new List<MemberInfo>());
-		}
-
 		public MapObjectData Serialize(MapObjectInstance mapObjectInstance)
 		{
 			if (mapObjectInstance == null)
 			{
-				throw new ArgumentException($"Cannot serialize MapObjectInstance: null");
+				throw new ArgumentException($"Cannot serialize null MapObjectInstance");
 			}
 
 			if (mapObjectInstance.dataType == null)
@@ -122,79 +93,47 @@ namespace MapsExt
 				throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}): missing dataType");
 			}
 
-			if (this.mapObjects.TryGetValue(mapObjectInstance.dataType, out IMapObject mapObject))
+			var serializer = this.dataSerializers.GetValueOrDefault(mapObjectInstance.dataType, null);
+
+			if (serializer == null)
 			{
-				try
-				{
-					var data = (MapObjectData) AccessTools.CreateInstance(mapObjectInstance.dataType);
-
-					data.mapObjectId = mapObjectInstance.mapObjectId;
-					data.active = mapObjectInstance.gameObject.activeSelf;
-
-					foreach (var memberInfo in this.GetSerializableMembers(mapObjectInstance.dataType))
-					{
-						var serializer = this.GetSerializer(memberInfo.GetReturnType());
-						var prop = (IMapObjectProperty) memberInfo.GetFieldOrPropertyValue(data);
-						serializer.Serialize(mapObjectInstance.gameObject, prop);
-					}
-
-					return data;
-				}
-				catch (Exception)
-				{
-					UnityEngine.Debug.LogError($"Could not serialize map object instance with blueprint: {mapObject.GetType()}");
-					throw;
-				}
+				throw new ArgumentException($"Map object type not registered: {mapObjectInstance.dataType}");
 			}
-			else
-			{
-				throw new ArgumentException($"Blueprint not found for type {mapObjectInstance.dataType}");
-			}
+
+			return serializer.Serialize(mapObjectInstance);
 		}
 
 		public void Deserialize(MapObjectData data, GameObject target)
 		{
-			try
-			{
-				var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
-				mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
-				mapObjectInstance.dataType = data.GetType();
-				target.SetActive(data.active);
+			var serializer = this.dataSerializers.GetValueOrDefault(data.GetType(), null);
 
-				foreach (var memberInfo in this.GetSerializableMembers(mapObjectInstance.dataType))
-				{
-					var serializer = this.GetSerializer(memberInfo.GetReturnType());
-					var prop = (IMapObjectProperty) memberInfo.GetFieldOrPropertyValue(data);
-					serializer.Deserialize(prop, mapObjectInstance.gameObject);
-				}
-			}
-			catch (Exception)
+			if (serializer == null)
 			{
-				UnityEngine.Debug.LogError($"Could not deserialize map object instance for type: {data.GetType()}");
-				throw;
+				throw new ArgumentException($"Map object type not registered: {data.GetType()}");
 			}
+
+			serializer.Deserialize(data, target);
 		}
 
 		public void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null)
 		{
-			var bp = this.mapObjects[data.GetType()];
+			var mapObject = this.mapObjects[data.GetType()];
+			var prefab = mapObject.Prefab;
 
 			var syncStore = MapObjectManager.syncStores[this.NetworkID];
 			int instantiationID = syncStore.Allocate(parent);
 
-			bool isMapObjectNetworked = bp.Prefab.GetComponent<PhotonMapObject>() != null;
+			bool isMapObjectNetworked = prefab.GetComponent<PhotonMapObject>() != null;
 			bool isMapSpawned = MapManager.instance.currentMap?.Map.wasSpawned == true;
 
 			GameObject instance;
 
 			if (!isMapSpawned || !isMapObjectNetworked)
 			{
-				UnityEngine.Debug.Log($"Map not spawned or map object not networked");
-				instance = GameObject.Instantiate(bp.Prefab, Vector3.zero, Quaternion.identity, parent);
+				instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
 
 				if (isMapObjectNetworked)
 				{
-					UnityEngine.Debug.Log($"Map object is networked");
 					/* PhotonMapObjects (networked map objects like movable boxes) are first instantiated client-side, which is what we
 					 * see during the map transition animation. After the transition is done, the client-side instance is removed and a
 					 * networked (photon instantiated) version is spawned in its place. This means we need to do weird shit to get the
@@ -209,13 +148,12 @@ namespace MapsExt
 					 */
 					if (PhotonNetwork.IsMasterClient)
 					{
-						UnityEngine.Debug.Log($"Master client");
 						MapsExtended.instance.OnPhotonMapObjectInstantiate(instance.GetComponent<PhotonMapObject>(), networkInstance =>
 						{
-							UnityEngine.Debug.Log($"Network instance: {networkInstance.name}");
 							this.Deserialize(data, networkInstance);
 
-							UnityEngine.Debug.Log($"Calling onInstantiate");
+							mapObject.OnInstantiate(instance);
+
 							onInstantiate?.Invoke(networkInstance);
 
 							int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
@@ -226,7 +164,6 @@ namespace MapsExt
 					}
 					else
 					{
-						UnityEngine.Debug.Log($"Not master client");
 						// Call onInstantiate once the master client has communicated the photon instantiated map object
 						this.StartCoroutine(this.SyncInstantiation(parent, instantiationID, data, onInstantiate));
 					}
@@ -247,6 +184,8 @@ namespace MapsExt
 			instance.name = this.GetInstanceName(data.GetType());
 
 			this.Deserialize(data, instance);
+
+			mapObject.OnInstantiate(instance);
 
 			// The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
 			onInstantiate?.Invoke(instance);

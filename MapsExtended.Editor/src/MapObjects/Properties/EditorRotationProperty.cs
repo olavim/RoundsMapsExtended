@@ -1,12 +1,12 @@
+using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorMapObjectPropertySerializer]
+	[EditorPropertySerializer]
 	public class EditorRotationPropertySerializer : RotationPropertySerializer, IInspectable
 	{
 		public override void Deserialize(RotationProperty property, GameObject target)
@@ -18,9 +18,9 @@ namespace MapsExt.Editor.MapObjects.Properties
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
 		{
 			builder.Property<Quaternion>("Rotation")
-				.ValueSetter(value => inspector.target.GetComponent<ActionHandlers.RotationHandler>().SetValue(value))
+				.ValueSetter(value => inspector.target.SetHandlerValue<RotationProperty>(value))
 				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
-				.ValueGetter(() => inspector.target.transform.rotation);
+				.ValueGetter(() => inspector.target.GetHandlerValue<RotationProperty>());
 		}
 	}
 }

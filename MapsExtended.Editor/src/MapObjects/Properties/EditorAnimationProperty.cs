@@ -1,12 +1,11 @@
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorMapObjectPropertySerializer]
+	[EditorPropertySerializer]
 	public class EditorAnimationPropertySerializer : AnimationPropertySerializer, IInspectable
 	{
 		public override void Deserialize(AnimationProperty property, GameObject target)
