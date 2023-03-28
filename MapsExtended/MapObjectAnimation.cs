@@ -113,7 +113,7 @@ namespace MapsExt
 		public void Initialize(IAnimated anim)
 		{
 			this.keyframes.Clear();
-			this.keyframes.Add(new AnimationKeyframe(anim.Animation.Keyframes[0]));
+			this.keyframes.Add(new AnimationKeyframe(anim.Animation.keyframes[0]));
 		}
 
 		public void Play()

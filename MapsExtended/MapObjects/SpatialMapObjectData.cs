@@ -8,14 +8,16 @@ namespace MapsExt.MapObjects
 	/// </summary>
 	public abstract class SpatialMapObjectData : MapObjectData, IAnimated
 	{
-		public PositionProperty Position { get; set; } = new PositionProperty();
-		public ScaleProperty Scale { get; set; } = new ScaleProperty();
-		public RotationProperty Rotation { get; set; } = new RotationProperty();
-		public AnimationProperty Animation { get; set; }
+		public PositionProperty position = new PositionProperty();
+		public ScaleProperty scale = new ScaleProperty();
+		public RotationProperty rotation = new RotationProperty();
+		public AnimationProperty animation;
+
+		public AnimationProperty Animation => this.animation;
 
 		protected SpatialMapObjectData()
 		{
-			this.Animation = new AnimationProperty(this.Position, this.Scale, this.Rotation);
+			this.animation = new AnimationProperty(this.position, this.scale, this.rotation);
 		}
 	}
 }

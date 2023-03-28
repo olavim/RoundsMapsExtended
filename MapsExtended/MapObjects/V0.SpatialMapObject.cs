@@ -1,3 +1,4 @@
+using MapsExt.MapObjects.Properties;
 using System;
 using UnityEngine;
 

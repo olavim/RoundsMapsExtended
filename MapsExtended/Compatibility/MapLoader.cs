@@ -101,11 +101,11 @@ namespace MapsExt.Compatibility
 					{
 						depth--;
 					}
-				}
 
-				if (key == "version" && depth == 0)
-				{
-					return value;
+					if (key == "version" && depth == 0)
+					{
+						return value.Trim('"');
+					}
 				}
 			}
 

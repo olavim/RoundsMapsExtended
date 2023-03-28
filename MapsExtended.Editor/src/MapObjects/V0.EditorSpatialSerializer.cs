@@ -1,6 +1,8 @@
 using UnityEngine;
 using MapsExt.MapObjects;
 using System;
+using UnboundLib;
+using MapsExt.Editor.ActionHandlers;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -11,7 +13,10 @@ namespace MapsExt.Editor.MapObjects
 
 		public static void Deserialize(SpatialMapObject data, GameObject target)
 		{
-			// target.GetOrAddComponent<SpatialActionHandler>();
+			target.GetOrAddComponent<SelectionHandler>();
+			target.GetOrAddComponent<PositionHandler>();
+			target.GetOrAddComponent<SizeHandler>();
+			target.GetOrAddComponent<ActionHandlers.RotationHandler>();
 		}
 
 		public static SerializerAction<T> BuildSerializer<T>(SerializerAction<T> action) where T : SpatialMapObject

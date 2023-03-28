@@ -1,4 +1,5 @@
 using MapsExt.MapObjects;
+using MapsExt.MapObjects.Properties;
 using UnityEngine;
 
 #pragma warning disable CS0649
@@ -27,9 +28,9 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public new T Populate<T>(T data) where T : SpatialMapObjectData
 		{
 			base.Populate(data);
-			data.Position = this.position;
-			data.Scale = this.scale;
-			data.Rotation = this.rotation;
+			data.position = this.position;
+			data.scale = this.scale;
+			data.rotation = this.rotation;
 			return data;
 		}
 	}
@@ -82,10 +83,10 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public override object Upgrade()
 		{
 			var data = this.Populate(new RopeData());
-			data.Position = new RopePositionProperty
+			data.position = new RopePositionProperty
 			{
-				StartPosition = this.startPosition,
-				EndPosition = this.endPosition
+				startPosition = this.startPosition,
+				endPosition = this.endPosition
 			};
 			return data;
 		}
@@ -100,12 +101,12 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public override object Upgrade()
 		{
 			var data = this.Populate(new SpawnData());
-			data.Id = new SpawnIDProperty
+			data.id = new SpawnIDProperty
 			{
-				Id = this.id,
-				TeamID = this.teamID
+				id = this.id,
+				teamId = this.teamID
 			};
-			data.Position = this.position;
+			data.position = this.position;
 			return data;
 		}
 	}

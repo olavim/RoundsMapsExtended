@@ -45,7 +45,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public virtual void Resize(ScaleProperty delta, int resizeDirection = 0)
 		{
-			var newScale = this.GetValue().Value + delta.Value;
+			var newScale = this.GetValue().value + delta.value;
 			this.SetValue(newScale, resizeDirection);
 		}
 
@@ -61,7 +61,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public virtual void SetValue(ScaleProperty size, int resizeDirection)
 		{
-			var delta = size.Value - (Vector2) this.transform.localScale;
+			var delta = size.value - (Vector2) this.transform.localScale;
 			float gridSize = this.Editor.GridSize;
 			bool snapToGrid = this.Editor.snapToGrid;
 
@@ -69,7 +69,7 @@ namespace MapsExt.Editor.ActionHandlers
 			var scaleMulti = AnchorPosition.sizeMultipliers[resizeDirection];
 			var scaleDelta = Vector2.Scale(delta, scaleMulti);
 
-			var currentScale = this.GetValue().Value;
+			var currentScale = this.GetValue().value;
 			var currentRotation = this.transform.rotation;
 
 			if (snapToGrid && scaleDelta.x != 0 && currentScale.x + scaleDelta.x < gridSize)
@@ -142,7 +142,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this.isResizing = false;
 			this.Editor.UpdateRopeAttachments();
 
-			if (this.prevScale != this.GetValue().Value)
+			if (this.prevScale != this.GetValue().value)
 			{
 				this.Editor.TakeSnaphot();
 			}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 #pragma warning disable CS0649
@@ -16,6 +17,11 @@ namespace MapsExt.Compatibility.V0
 
 		public object Upgrade()
 		{
+			if (this.mapObjects == null)
+			{
+				throw new Exception($"Could not load map: {this.name ?? "<unnamed>"} ({this.id})");
+			}
+
 			var list = new List<MapsExt.MapObjects.MapObjectData>();
 
 			foreach (var mapObject in this.mapObjects)
@@ -30,7 +36,7 @@ namespace MapsExt.Compatibility.V0
 				}
 				else
 				{
-					UnityEngine.Debug.LogWarning($"Could not load map object {mapObject}");
+					UnityEngine.Debug.LogError($"Could not load map object {mapObject}");
 				}
 			}
 

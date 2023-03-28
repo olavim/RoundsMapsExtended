@@ -9,7 +9,7 @@ namespace MapsExt.MapObjects.Properties
 
 		public DamageableProperty(bool value) : base(value) { }
 
-		public static implicit operator bool(DamageableProperty prop) => prop.Value;
+		public static implicit operator bool(DamageableProperty prop) => prop.value;
 		public static implicit operator DamageableProperty(bool value) => new DamageableProperty(value);
 	}
 
@@ -19,7 +19,7 @@ namespace MapsExt.MapObjects.Properties
 		public override void Serialize(GameObject instance, DamageableProperty property)
 		{
 			var dmgInstance = instance.GetComponent<DamageableMapObjectInstance>();
-			property.Value = dmgInstance.damageableByEnvironment;
+			property.value = dmgInstance.damageableByEnvironment;
 		}
 
 		public override void Deserialize(DamageableProperty property, GameObject target)

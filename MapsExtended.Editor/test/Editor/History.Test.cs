@@ -114,7 +114,7 @@ namespace MapsExt.Editor.Tests
 			var rot1 = go.GetHandlerValue<RotationProperty>();
 			var rot2 = new RotationProperty(45);
 
-			yield return this.utils.RotateSelectedWithMouse(rot2.Value.eulerAngles.z - rot1.Value.eulerAngles.z);
+			yield return this.utils.RotateSelectedWithMouse(rot2.value.eulerAngles.z - rot1.value.eulerAngles.z);
 			go.GetHandlerValue<RotationProperty>().Should().Be(rot2);
 
 			this.editor.OnUndo();

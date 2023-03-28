@@ -1,34 +1,12 @@
 ﻿using MapsExt.MapObjects.Properties;
-using System;
 using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class SpawnIDProperty : IProperty, IEquatable<SpawnIDProperty>
-	{
-		public int Id { get; set; }
-		public int TeamID { get; set; }
-
-		public SpawnIDProperty() : this(0, 0) { }
-
-		public SpawnIDProperty(int id, int teamId)
-		{
-			this.Id = id;
-			this.TeamID = teamId;
-		}
-
-		public bool Equals(SpawnIDProperty other) => this.Id == other.Id && this.TeamID == other.TeamID;
-		public override bool Equals(object other) => other is SpawnIDProperty prop && this.Equals(prop);
-		public override int GetHashCode() => (this.Id, this.TeamID).GetHashCode();
-
-		public static bool operator ==(SpawnIDProperty a, SpawnIDProperty b) => a.Equals(b);
-		public static bool operator !=(SpawnIDProperty a, SpawnIDProperty b) => !a.Equals(b);
-	}
-
 	public class SpawnData : MapObjectData
 	{
-		public SpawnIDProperty Id { get; set; } = new SpawnIDProperty();
-		public PositionProperty Position { get; set; } = new PositionProperty();
+		public SpawnIDProperty id = new SpawnIDProperty();
+		public PositionProperty position = new PositionProperty();
 	}
 
 	[MapObject]
@@ -45,15 +23,15 @@ namespace MapsExt.MapObjects
 		public override void Serialize(GameObject instance, SpawnIDProperty property)
 		{
 			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
-			property.Id = spawnPoint.ID;
-			property.TeamID = spawnPoint.TEAMID;
+			property.id = spawnPoint.ID;
+			property.teamId = spawnPoint.TEAMID;
 		}
 
 		public override void Deserialize(SpawnIDProperty property, GameObject target)
 		{
 			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
-			spawnPoint.ID = property.Id;
-			spawnPoint.TEAMID = property.TeamID;
+			spawnPoint.ID = property.id;
+			spawnPoint.TEAMID = property.teamId;
 		}
 	}
 }

@@ -195,7 +195,7 @@ namespace MapsExt.Editor
 				this.animation.Initialize(mapObject);
 			}
 
-			this.animation.keyframes[0].componentValues = mapObject.Animation.Keyframes[0].componentValues.ToList();
+			this.animation.keyframes[0].componentValues = mapObject.Animation.keyframes[0].componentValues.ToList();
 
 			this.SetKeyframe(0);
 			this.onAnimationChanged?.Invoke();
@@ -272,7 +272,7 @@ namespace MapsExt.Editor
 						handler.OnChange += () =>
 						{
 							var frameData = (IAnimated) MapsExtendedEditor.instance.mapObjectManager.Serialize(instance);
-							this.animation.keyframes[frameIndex].componentValues = frameData.Animation.Keyframes[0].componentValues.ToList();
+							this.animation.keyframes[frameIndex].componentValues = frameData.Animation.keyframes[0].componentValues.ToList();
 							this.Refresh();
 						};
 					}
@@ -316,7 +316,7 @@ namespace MapsExt.Editor
 			var frameData = MapsExtendedEditor.instance.mapObjectManager.Serialize(this.animation.gameObject);
 			frameData.mapObjectId = $"{frameData.mapObjectId}:keyframeMapObject";
 			frameData.active = true;
-			((IAnimated) frameData).Animation.Keyframes.Clear();
+			((IAnimated) frameData).Animation.keyframes.Clear();
 
 			MapsExtendedEditor.instance.SpawnObject(this.gameObject, frameData, instance =>
 			{

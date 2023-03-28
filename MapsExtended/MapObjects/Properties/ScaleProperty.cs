@@ -13,13 +13,13 @@ namespace MapsExt.MapObjects.Properties
 		public ScaleProperty Lerp(ScaleProperty end, float t) => Vector2.Lerp(this, end, t);
 		public IProperty Lerp(IProperty end, float t) => this.Lerp((ScaleProperty) end, t);
 
-		public static implicit operator Vector2(ScaleProperty prop) => prop.Value;
-		public static implicit operator Vector3(ScaleProperty prop) => prop.Value;
+		public static implicit operator Vector2(ScaleProperty prop) => prop.value;
+		public static implicit operator Vector3(ScaleProperty prop) => prop.value;
 		public static implicit operator ScaleProperty(Vector2 value) => new ScaleProperty(value);
 		public static implicit operator ScaleProperty(Vector3 value) => new ScaleProperty(value);
 
-		public static ScaleProperty operator -(ScaleProperty a, ScaleProperty b) => a.Value - b.Value;
-		public static ScaleProperty operator +(ScaleProperty a, ScaleProperty b) => a.Value + b.Value;
+		public static ScaleProperty operator -(ScaleProperty a, ScaleProperty b) => a.value - b.value;
+		public static ScaleProperty operator +(ScaleProperty a, ScaleProperty b) => a.value + b.value;
 	}
 
 	[PropertySerializer]
@@ -27,7 +27,7 @@ namespace MapsExt.MapObjects.Properties
 	{
 		public override void Serialize(GameObject instance, ScaleProperty property)
 		{
-			property.Value = instance.transform.localScale;
+			property.value = instance.transform.localScale;
 		}
 
 		public override void Deserialize(ScaleProperty property, GameObject target)

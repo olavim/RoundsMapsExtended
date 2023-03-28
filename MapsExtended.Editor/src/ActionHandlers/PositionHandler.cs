@@ -90,9 +90,9 @@ namespace MapsExt.Editor.ActionHandlers
 			var objectCell = this.Editor.grid.WorldToCell(this.GetValue());
 			var snappedPosition = (Vector2) this.Editor.grid.CellToWorld(objectCell);
 
-			if (snappedPosition != this.GetValue().Value)
+			if (snappedPosition != this.GetValue().value)
 			{
-				var diff = this.GetValue().Value - snappedPosition;
+				var diff = this.GetValue().value - snappedPosition;
 				var identityDiff = Quaternion.Inverse(referenceRotation) * diff;
 				var identityDelta = new Vector2(this.Editor.GridSize / 2f, this.Editor.GridSize / 2f);
 
@@ -113,8 +113,8 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			if (this.isDragging)
 			{
-				bool moved = this.prevPosition != this.GetValue().Value;
-				this.SetValue(this.GetValue().Value.Round(4));
+				bool moved = this.prevPosition != this.GetValue().value;
+				this.SetValue(this.GetValue().value.Round(4));
 				this.isDragging = false;
 
 				if (moved)
