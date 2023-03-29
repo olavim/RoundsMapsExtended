@@ -1,4 +1,5 @@
 ﻿using MapsExt.MapObjects.Properties;
+using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
@@ -6,18 +7,28 @@ namespace MapsExt.MapObjects
 	/// Spatial map objects represent map objects that are described with position, scale and rotation.
 	/// Typical spatial map objects are, for example, boxes and other obstacles.
 	/// </summary>
-	public abstract class SpatialMapObjectData : MapObjectData, IAnimated
+	public abstract class SpatialMapObjectData : MapObjectData
 	{
-		public PositionProperty position = new PositionProperty();
-		public ScaleProperty scale = new ScaleProperty();
-		public RotationProperty rotation = new RotationProperty();
-		public AnimationProperty animation;
+		private PositionProperty _position;
+		private ScaleProperty _scale;
+		private RotationProperty _rotation;
+		private AnimationKeyframe[] _keyframes;
 
-		public AnimationProperty Animation => this.animation;
+		public PositionProperty Position { get => this._position; set => this._position = value; }
+		public ScaleProperty Scale { get => this._scale; set => this._scale = value; }
+		public RotationProperty Rotation { get => this._rotation; set => this._rotation = value; }
+		public AnimationProperty Animation
+		{
+			get => new AnimationProperty(this._keyframes);
+			set => this._keyframes = value.Keyframes;
+		}
 
 		protected SpatialMapObjectData()
 		{
-			this.animation = new AnimationProperty(this.position, this.scale, this.rotation);
+			this.Position = new PositionProperty();
+			this.Scale = new ScaleProperty();
+			this.Rotation = new RotationProperty();
+			this.Animation = new AnimationProperty();
 		}
 	}
 }

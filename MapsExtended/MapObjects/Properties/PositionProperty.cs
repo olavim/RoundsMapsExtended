@@ -4,6 +4,15 @@ namespace MapsExt.MapObjects.Properties
 {
 	public class PositionProperty : ValueProperty<Vector2>, ILinearProperty<PositionProperty>
 	{
+		private float _x;
+		private float _y;
+
+		public override Vector2 Value
+		{
+			get => new Vector2(this._x, this._y);
+			set { this._x = value.x; this._y = value.y; }
+		}
+
 		public PositionProperty() { }
 
 		public PositionProperty(Vector2 value) : base(value) { }
@@ -13,8 +22,8 @@ namespace MapsExt.MapObjects.Properties
 		public PositionProperty Lerp(PositionProperty end, float t) => Vector2.Lerp(this, end, t);
 		public IProperty Lerp(IProperty end, float t) => this.Lerp((PositionProperty) end, t);
 
-		public static implicit operator Vector2(PositionProperty prop) => prop.value;
-		public static implicit operator Vector3(PositionProperty prop) => prop.value;
+		public static implicit operator Vector2(PositionProperty prop) => prop.Value;
+		public static implicit operator Vector3(PositionProperty prop) => prop.Value;
 		public static implicit operator PositionProperty(Vector2 value) => new PositionProperty(value);
 		public static implicit operator PositionProperty(Vector3 value) => new PositionProperty(value);
 	}
@@ -27,9 +36,9 @@ namespace MapsExt.MapObjects.Properties
 			target.transform.position = property;
 		}
 
-		public override void Serialize(GameObject instance, PositionProperty property)
+		public override PositionProperty Serialize(GameObject instance)
 		{
-			property.value = instance.transform.position;
+			return instance.transform.position;
 		}
 	}
 }

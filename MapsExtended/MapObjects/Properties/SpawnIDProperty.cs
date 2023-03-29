@@ -1,25 +1,50 @@
 using System;
+using UnityEngine;
 
 namespace MapsExt.MapObjects.Properties
 {
 	public class SpawnIDProperty : IProperty, IEquatable<SpawnIDProperty>
 	{
-		public int id;
-		public int teamId;
+		private int _id;
+		private int _teamId;
+
+		public int Id { get => this._id; set => this._id = value; }
+		public int TeamId { get => this._teamId; set => this._teamId = value; }
 
 		public SpawnIDProperty() : this(0, 0) { }
 
 		public SpawnIDProperty(int id, int teamId)
 		{
-			this.id = id;
-			this.teamId = teamId;
+			this.Id = id;
+			this.TeamId = teamId;
 		}
 
-		public bool Equals(SpawnIDProperty other) => this.id == other.id && this.teamId == other.teamId;
+		public bool Equals(SpawnIDProperty other) => this.Id == other.Id && this.TeamId == other.TeamId;
 		public override bool Equals(object other) => other is SpawnIDProperty prop && this.Equals(prop);
-		public override int GetHashCode() => (this.id, this.teamId).GetHashCode();
+		public override int GetHashCode() => (this.Id, this.TeamId).GetHashCode();
 
 		public static bool operator ==(SpawnIDProperty a, SpawnIDProperty b) => a.Equals(b);
 		public static bool operator !=(SpawnIDProperty a, SpawnIDProperty b) => !a.Equals(b);
+	}
+
+	[PropertySerializer]
+	public class SpawnIDPropertySerializer : PropertySerializer<SpawnIDProperty>
+	{
+		public override SpawnIDProperty Serialize(GameObject instance)
+		{
+			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
+			return new SpawnIDProperty
+			{
+				Id = spawnPoint.ID,
+				TeamId = spawnPoint.TEAMID
+			};
+		}
+
+		public override void Deserialize(SpawnIDProperty property, GameObject target)
+		{
+			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
+			spawnPoint.ID = property.Id;
+			spawnPoint.TEAMID = property.TeamId;
+		}
 	}
 }

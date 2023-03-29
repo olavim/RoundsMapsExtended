@@ -150,7 +150,7 @@ namespace MapsExt.Editor.Tests
 			PositionProperty KeyframeProperty(int keyframe)
 			{
 				var delta = new Vector2(1, 1) * (keyframe + 1);
-				return new PositionProperty(prop1.value + delta);
+				return new PositionProperty(prop1.Value + delta);
 			}
 
 			for (int i = 1; i <= 4; i++)
@@ -179,7 +179,7 @@ namespace MapsExt.Editor.Tests
 			ScaleProperty KeyframeProperty(int keyframe)
 			{
 				var delta = new Vector2(1, 1) * (keyframe + 1);
-				return new ScaleProperty(prop1.value + delta);
+				return new ScaleProperty(prop1.Value + delta);
 			}
 
 			for (int i = 1; i <= 4; i++)

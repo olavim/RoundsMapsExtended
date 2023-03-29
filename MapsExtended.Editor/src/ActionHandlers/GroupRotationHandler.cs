@@ -22,7 +22,7 @@ namespace MapsExt.Editor.ActionHandlers
 				var rotHandler = obj.GetComponent<RotationHandler>();
 
 				this.localPositions[obj] = posHandler.GetValue() - (Vector2) this.transform.position;
-				this.localAngles[obj] = rotHandler.GetValue().value.eulerAngles.z;
+				this.localAngles[obj] = rotHandler.GetValue().Value.eulerAngles.z;
 			}
 		}
 
@@ -34,7 +34,7 @@ namespace MapsExt.Editor.ActionHandlers
 				var rotHandler = obj.GetComponent<RotationHandler>();
 
 				posHandler.SetValue(this.transform.position + (rotation * localPositions[obj]).Round(4));
-				rotHandler.SetValue(Quaternion.Euler(0, 0, localAngles[obj] + rotation.value.eulerAngles.z));
+				rotHandler.SetValue(Quaternion.Euler(0, 0, localAngles[obj] + rotation.Value.eulerAngles.z));
 			}
 			this.transform.rotation = rotation;
 		}

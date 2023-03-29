@@ -5,55 +5,70 @@ using System.Linq;
 
 namespace MapsExt
 {
+	public enum CurveType
+	{
+		Linear,
+		EaseIn,
+		EaseOut,
+		EaseInOut
+	}
+
 	public class AnimationKeyframe
 	{
-		public List<ILinearProperty> componentValues;
-		public float duration;
-		public CurveType curveType;
+		private List<ILinearProperty> _componentValues;
+		private float _duration;
+		private CurveType _curveType;
 
 		[NonSerialized]
-		public BezierAnimationCurve curve;
+		private BezierAnimationCurve _curve;
+
+		public List<ILinearProperty> ComponentValues { get => this._componentValues; set => this._componentValues = value; }
+		public float Duration { get => this._duration; set => this._duration = value; }
+		public CurveType CurveType { get => this._curveType; set => this._curveType = value; }
+		public BezierAnimationCurve Curve { get => this._curve; set => this._curve = value; }
 
 		public AnimationKeyframe()
 		{
-			this.componentValues = new List<ILinearProperty>();
-			this.duration = 1;
-			this.curveType = CurveType.Linear;
+			this.ComponentValues = new List<ILinearProperty>();
+			this.Duration = 1;
+			this.CurveType = CurveType.Linear;
 
 			this.UpdateCurve();
 		}
 
+		public AnimationKeyframe(params ILinearProperty[] values) : this((IEnumerable<ILinearProperty>) values) { }
+
 		public AnimationKeyframe(IEnumerable<ILinearProperty> values)
 		{
-			this.componentValues = values.ToList();
-			this.duration = 1;
-			this.curveType = CurveType.Linear;
+			this.ComponentValues = values.ToList();
+			this.Duration = 1;
+			this.CurveType = CurveType.Linear;
 
 			this.UpdateCurve();
 		}
 
 		public AnimationKeyframe(AnimationKeyframe frame)
 		{
-			this.componentValues = frame.componentValues.ToList();
-			this.duration = frame.duration;
-			this.curveType = frame.curveType;
+			this.ComponentValues = frame.ComponentValues.ToList();
+			this.Duration = frame.Duration;
+			this.CurveType = frame.CurveType;
 
 			this.UpdateCurve();
 		}
 
 		public void UpdateCurve()
 		{
-			this.curve = this.GetCurve();
+			this.Curve = this.GetCurve();
 		}
 
 		public T GetComponentValue<T>() where T : IProperty
 		{
-			return (T) this.componentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
+			return (T) this.ComponentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
 		}
 
 		private BezierAnimationCurve GetCurve()
 		{
-			switch (this.curveType)
+			switch (this.CurveType)
 			{
 				case CurveType.Linear:
 					return new BezierAnimationCurve(0, 0, 1, 1);
@@ -66,14 +81,6 @@ namespace MapsExt
 				default:
 					return null;
 			}
-		}
-
-		public enum CurveType
-		{
-			Linear,
-			EaseIn,
-			EaseOut,
-			EaseInOut
 		}
 	}
 }

@@ -5,48 +5,63 @@ using UnityEngine;
 
 namespace MapsExt.MapObjects.Properties
 {
-	public interface IAnimated
-	{
-		AnimationProperty Animation { get; }
-	}
-
 	public class AnimationProperty : IProperty
 	{
-		public List<AnimationKeyframe> keyframes;
+		private readonly AnimationKeyframe[] _keyframes;
+
+		public AnimationKeyframe[] Keyframes => this._keyframes;
+
+		public AnimationProperty()
+		{
+			this._keyframes = new AnimationKeyframe[] { };
+		}
 
 		public AnimationProperty(params ILinearProperty[] properties)
 		{
-			this.keyframes = new List<AnimationKeyframe>() { new AnimationKeyframe(properties) };
+			this._keyframes = new[] { new AnimationKeyframe(properties) };
 		}
 
 		public AnimationProperty(IEnumerable<ILinearProperty> properties)
 		{
-			this.keyframes = new List<AnimationKeyframe>() { new AnimationKeyframe(properties) };
+			this._keyframes = new[] { new AnimationKeyframe(properties) };
+		}
+
+		public AnimationProperty(IEnumerable<AnimationKeyframe> keyframes)
+		{
+			this._keyframes = keyframes.ToArray();
 		}
 	}
 
 	[PropertySerializer]
 	public class AnimationPropertySerializer : PropertySerializer<AnimationProperty>
 	{
-		public override void Serialize(GameObject instance, AnimationProperty property)
+		public override AnimationProperty Serialize(GameObject instance)
 		{
+			var animInstance = instance.GetComponent<MapObjectAnimationInstance>();
+			var keyframes = animInstance.keyframes.Take(1).ToList();
+
 			var anim = instance.GetComponent<MapObjectAnimation>();
 
 			if (anim != null)
 			{
 				foreach (var frame in anim.keyframes.Skip(1))
 				{
-					property.keyframes.Add(new AnimationKeyframe(frame));
+					keyframes.Add(new AnimationKeyframe(frame));
 				}
 			}
+
+			return new AnimationProperty(keyframes);
 		}
 
 		public override void Deserialize(AnimationProperty property, GameObject target)
 		{
-			if (property.keyframes.Count > 1)
+			var instance = target.GetOrAddComponent<MapObjectAnimationInstance>();
+			instance.keyframes = property.Keyframes.Take(1).ToArray();
+
+			if (property.Keyframes.Length > 1)
 			{
-				var dataFrames = property.keyframes.ToList();
-				dataFrames.Insert(0, new AnimationKeyframe(property.keyframes[0]));
+				var dataFrames = property.Keyframes.ToList();
+				dataFrames.Insert(0, new AnimationKeyframe(property.Keyframes[0]));
 
 				var anim = target.GetOrAddComponent<MapObjectAnimation>();
 
@@ -69,8 +84,13 @@ namespace MapsExt.MapObjects.Properties
 			else
 			{
 				target.GetComponent<MapObjectAnimation>()?.keyframes.Clear();
-				target.GetComponent<MapObjectAnimation>()?.keyframes.Insert(0, new AnimationKeyframe(property.keyframes[0]));
+				target.GetComponent<MapObjectAnimation>()?.keyframes.Insert(0, new AnimationKeyframe(property.Keyframes[0]));
 			}
+		}
+
+		class MapObjectAnimationInstance : MonoBehaviour
+		{
+			public AnimationKeyframe[] keyframes;
 		}
 	}
 }

@@ -32,9 +32,15 @@ namespace MapsExt.Editor.Tests
 			var ballData = new BallData
 			{
 				active = true,
-				position = new PositionProperty(1, 1),
-				scale = new ScaleProperty(4, 2),
-				rotation = new RotationProperty(20)
+				Position = new PositionProperty(1, 1),
+				Scale = new ScaleProperty(4, 2),
+				Rotation = new RotationProperty(20),
+				Animation = new AnimationProperty(
+					new AnimationKeyframe[] {
+						new AnimationKeyframe(new PositionProperty(1, 1), new ScaleProperty(4, 2), new RotationProperty(20)),
+						new AnimationKeyframe(new PositionProperty(2, 2), new ScaleProperty(2, 2), new RotationProperty(40))
+					}
+				)
 			};
 
 			var map = new CustomMap
@@ -60,9 +66,15 @@ namespace MapsExt.Editor.Tests
 				var deserializedBallData = (BallData) deserializedMap.mapObjects[0];
 				deserializedBallData.Should().BeOfType<BallData>();
 				deserializedBallData.active.Should().Be(ballData.active);
-				deserializedBallData.position.Should().Be(ballData.position);
-				deserializedBallData.scale.Should().Be(ballData.scale);
-				deserializedBallData.rotation.Should().Be(ballData.rotation);
+				deserializedBallData.Position.Should().Be(ballData.Position);
+				deserializedBallData.Scale.Should().Be(ballData.Scale);
+				deserializedBallData.Rotation.Should().Be(ballData.Rotation);
+				deserializedBallData.Animation.Keyframes[0].ComponentValues[0].Should().Be(ballData.Animation.Keyframes[0].ComponentValues[0]);
+				deserializedBallData.Animation.Keyframes[0].ComponentValues[1].Should().Be(ballData.Animation.Keyframes[0].ComponentValues[1]);
+				deserializedBallData.Animation.Keyframes[0].ComponentValues[2].Should().Be(ballData.Animation.Keyframes[0].ComponentValues[2]);
+				deserializedBallData.Animation.Keyframes[1].ComponentValues[0].Should().Be(ballData.Animation.Keyframes[1].ComponentValues[0]);
+				deserializedBallData.Animation.Keyframes[1].ComponentValues[1].Should().Be(ballData.Animation.Keyframes[1].ComponentValues[1]);
+				deserializedBallData.Animation.Keyframes[1].ComponentValues[2].Should().Be(ballData.Animation.Keyframes[1].ComponentValues[2]);
 			}
 		}
 	}

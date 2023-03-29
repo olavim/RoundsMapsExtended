@@ -13,11 +13,14 @@ namespace MapsExt.Editor.MapObjects
 	[EditorPropertySerializer]
 	public class EditorRopePositionPropertySerializer : PropertySerializer<RopePositionProperty>, IInspectable
 	{
-		public override void Serialize(GameObject instance, RopePositionProperty property)
+		public override RopePositionProperty Serialize(GameObject instance)
 		{
 			var ropeInstance = instance.GetComponent<EditorRopeInstance>();
-			property.startPosition = ropeInstance.GetAnchor(0).transform.position;
-			property.endPosition = ropeInstance.GetAnchor(1).transform.position;
+			return new RopePositionProperty()
+			{
+				StartPosition = ropeInstance.GetAnchor(0).GetAnchoredPosition(),
+				EndPosition = ropeInstance.GetAnchor(1).GetAnchoredPosition()
+			};
 		}
 
 		public override void Deserialize(RopePositionProperty property, GameObject target)
@@ -38,8 +41,8 @@ namespace MapsExt.Editor.MapObjects
 			target.GetOrAddComponent<EditorRopeInstance>();
 			target.GetOrAddComponent<Visualizers.RopeVisualizer>();
 
-			target.transform.GetChild(0).GetComponent<RopeAnchorPositionHandler>().SetValue(property.startPosition);
-			target.transform.GetChild(1).GetComponent<RopeAnchorPositionHandler>().SetValue(property.endPosition);
+			target.transform.GetChild(0).GetComponent<RopeAnchorPositionHandler>().SetValue(property.StartPosition);
+			target.transform.GetChild(1).GetComponent<RopeAnchorPositionHandler>().SetValue(property.EndPosition);
 		}
 
 		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)

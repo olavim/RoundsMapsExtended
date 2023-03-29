@@ -1,12 +1,23 @@
 ﻿using MapsExt.MapObjects.Properties;
 using UnityEngine;
-using UnboundLib;
 
 namespace MapsExt.MapObjects
 {
 	public class RopeData : MapObjectData
 	{
-		public RopePositionProperty position = new RopePositionProperty();
+		private Vector2 _pos1;
+		private Vector2 _pos2;
+
+		public RopePositionProperty Position
+		{
+			get => new RopePositionProperty(this._pos1, this._pos2);
+			set { this._pos1 = value.StartPosition; this._pos2 = value.EndPosition; }
+		}
+
+		public RopeData()
+		{
+			this.Position = new RopePositionProperty();
+		}
 	}
 
 	[MapObject]
@@ -15,31 +26,5 @@ namespace MapsExt.MapObjects
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
 		public virtual void OnInstantiate(GameObject instance) { }
-	}
-
-	[PropertySerializer]
-	public class RopePositionPropertySerializer : PropertySerializer<RopePositionProperty>
-	{
-		public override void Serialize(GameObject instance, RopePositionProperty property)
-		{
-			property.startPosition = instance.transform.position;
-			property.endPosition = instance.transform.GetChild(0).position;
-		}
-
-		public override void Deserialize(RopePositionProperty property, GameObject target)
-		{
-			target.transform.position = property.startPosition;
-			target.transform.GetChild(0).position = property.endPosition;
-
-			var rope = target.GetComponent<MapObjet_Rope>();
-			rope.OnJointAdded(joint =>
-			{
-				var distanceJoint = joint as DistanceJoint2D;
-				if (distanceJoint)
-				{
-					rope.ExecuteAfterFrames(1, () => distanceJoint.autoConfigureDistance = false);
-				}
-			});
-		}
 	}
 }

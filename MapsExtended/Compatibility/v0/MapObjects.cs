@@ -28,9 +28,9 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public new T Populate<T>(T data) where T : SpatialMapObjectData
 		{
 			base.Populate(data);
-			data.position = this.position;
-			data.scale = this.scale;
-			data.rotation = this.rotation;
+			data.Position = this.position;
+			data.Scale = this.scale;
+			data.Rotation = this.rotation;
 			return data;
 		}
 	}
@@ -83,10 +83,10 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public override object Upgrade()
 		{
 			var data = this.Populate(new RopeData());
-			data.position = new RopePositionProperty
+			data.Position = new RopePositionProperty
 			{
-				startPosition = this.startPosition,
-				endPosition = this.endPosition
+				StartPosition = this.startPosition,
+				EndPosition = this.endPosition
 			};
 			return data;
 		}
@@ -101,12 +101,12 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public override object Upgrade()
 		{
 			var data = this.Populate(new SpawnData());
-			data.id = new SpawnIDProperty
+			data.Id = new SpawnIDProperty
 			{
-				id = this.id,
-				teamId = this.teamID
+				Id = this.id,
+				TeamId = this.teamID
 			};
-			data.position = this.position;
+			data.Position = this.position;
 			return data;
 		}
 	}

@@ -1,5 +1,5 @@
-using MapsExt.MapObjects;
 using MapsExt.Editor.MapObjects.Properties;
+using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.MapObjects
 {

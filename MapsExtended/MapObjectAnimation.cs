@@ -98,9 +98,9 @@ namespace MapsExt
 			this.elapsedTime += TimeHandler.deltaTime;
 
 			// The first frame is considered as having a zero duration
-			if (this.currentFrameIndex == 0 || this.elapsedTime > this.keyframes[this.currentFrameIndex].duration)
+			if (this.currentFrameIndex == 0 || this.elapsedTime > this.keyframes[this.currentFrameIndex].Duration)
 			{
-				this.elapsedTime -= this.currentFrameIndex == 0 ? 0 : this.keyframes[this.currentFrameIndex].duration;
+				this.elapsedTime -= this.currentFrameIndex == 0 ? 0 : this.keyframes[this.currentFrameIndex].Duration;
 				this.currentFrameIndex = (this.currentFrameIndex + 1) % this.keyframes.Count;
 
 				if (PhotonNetwork.IsMasterClient)
@@ -110,10 +110,10 @@ namespace MapsExt
 			}
 		}
 
-		public void Initialize(IAnimated anim)
+		public void Initialize(AnimationKeyframe keyFrame)
 		{
 			this.keyframes.Clear();
-			this.keyframes.Add(new AnimationKeyframe(anim.Animation.keyframes[0]));
+			this.keyframes.Add(keyFrame);
 		}
 
 		public void Play()
@@ -138,12 +138,12 @@ namespace MapsExt
 			var startFrame = frameIndex > 0 ? this.keyframes[frameIndex - 1] : this.keyframes[0];
 			var endFrame = this.keyframes[frameIndex];
 
-			float curveValue = endFrame.curve.Evaluate(time / endFrame.duration);
+			float curveValue = endFrame.Curve.Evaluate(time / endFrame.Duration);
 
-			for (int i = 0; i < startFrame.componentValues.Count; i++)
+			for (int i = 0; i < startFrame.ComponentValues.Count; i++)
 			{
-				var startValue = startFrame.componentValues[i];
-				var endValue = endFrame.componentValues[i];
+				var startValue = startFrame.ComponentValues[i];
+				var endValue = endFrame.ComponentValues[i];
 				var nextValue = startValue.Lerp(endValue, curveValue);
 				var serializer = MapsExtended.instance.propertyManager.GetSerializer(startValue.GetType());
 				serializer.Deserialize(nextValue, this.gameObject);

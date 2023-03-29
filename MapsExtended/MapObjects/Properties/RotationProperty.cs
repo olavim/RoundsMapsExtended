@@ -4,6 +4,15 @@ namespace MapsExt.MapObjects.Properties
 {
 	public class RotationProperty : ValueProperty<Quaternion>, ILinearProperty<RotationProperty>
 	{
+		private float _z;
+		private float _w;
+
+		public override Quaternion Value
+		{
+			get => new Quaternion(0, 0, this._z, this._w);
+			set { this._z = value.z; this._w = value.w; }
+		}
+
 		public RotationProperty() : base(Quaternion.identity) { }
 
 		public RotationProperty(float angle) : base(Quaternion.Euler(0, 0, angle)) { }
@@ -13,23 +22,23 @@ namespace MapsExt.MapObjects.Properties
 		public RotationProperty Lerp(RotationProperty end, float t) => Quaternion.Lerp(this, end, t);
 		public IProperty Lerp(IProperty end, float t) => this.Lerp((RotationProperty) end, t);
 
-		public override bool Equals(ValueProperty<Quaternion> other) => base.Equals(other) || this.value == other.value;
+		public override bool Equals(ValueProperty<Quaternion> other) => base.Equals(other) || this.Value == other.Value;
 
-		public static implicit operator Quaternion(RotationProperty prop) => prop.value;
+		public static implicit operator Quaternion(RotationProperty prop) => prop.Value;
 		public static implicit operator RotationProperty(Quaternion value) => new RotationProperty(value);
 		public static implicit operator RotationProperty(float angle) => new RotationProperty(angle);
 
-		public static RotationProperty operator *(RotationProperty a, RotationProperty b) => a.value * b.value;
-		public static Vector3 operator *(RotationProperty a, Vector2 b) => a.value * b;
-		public static Vector3 operator *(RotationProperty a, Vector3 b) => a.value * b;
+		public static RotationProperty operator *(RotationProperty a, RotationProperty b) => a.Value * b.Value;
+		public static Vector3 operator *(RotationProperty a, Vector2 b) => a.Value * b;
+		public static Vector3 operator *(RotationProperty a, Vector3 b) => a.Value * b;
 	}
 
 	[PropertySerializer]
 	public class RotationPropertySerializer : PropertySerializer<RotationProperty>
 	{
-		public override void Serialize(GameObject instance, RotationProperty property)
+		public override RotationProperty Serialize(GameObject instance)
 		{
-			property.value = instance.transform.rotation;
+			return instance.transform.rotation;
 		}
 
 		public override void Deserialize(RotationProperty property, GameObject target)

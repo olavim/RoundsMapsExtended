@@ -56,8 +56,8 @@ namespace MapsExt.Editor.UI
 
 			keyframeSettings.onDurationChanged += (value, type) =>
 			{
-				float durationDelta = value - anim.keyframes[keyframe].duration;
-				anim.keyframes[keyframe].duration = value;
+				float durationDelta = value - anim.keyframes[keyframe].Duration;
+				anim.keyframes[keyframe].Duration = value;
 				anim.keyframes[keyframe].UpdateCurve();
 
 				if (type == ChangeType.ChangeEnd)
@@ -69,12 +69,12 @@ namespace MapsExt.Editor.UI
 			keyframeSettings.onEasingChanged += value =>
 			{
 				var curveType =
-					value == "In" ? AnimationKeyframe.CurveType.EaseIn :
-					value == "Out" ? AnimationKeyframe.CurveType.EaseOut :
-					value == "In and Out" ? AnimationKeyframe.CurveType.EaseInOut :
-					AnimationKeyframe.CurveType.Linear;
+					value == "In" ? CurveType.EaseIn :
+					value == "Out" ? CurveType.EaseOut :
+					value == "In and Out" ? CurveType.EaseInOut :
+					CurveType.Linear;
 
-				anim.keyframes[keyframe].curveType = curveType;
+				anim.keyframes[keyframe].CurveType = curveType;
 				anim.keyframes[keyframe].UpdateCurve();
 
 				this.editor.TakeSnaphot();
@@ -91,8 +91,8 @@ namespace MapsExt.Editor.UI
 				this.deleteButton.interactable = keyframe > 0;
 			};
 
-			keyframeSettings.durationInput.Value = anim.keyframes[keyframe].duration;
-			keyframeSettings.easingDropdown.value = (int) anim.keyframes[keyframe].curveType;
+			keyframeSettings.durationInput.Value = anim.keyframes[keyframe].Duration;
+			keyframeSettings.easingDropdown.value = (int) anim.keyframes[keyframe].CurveType;
 
 			return keyframeSettings;
 		}

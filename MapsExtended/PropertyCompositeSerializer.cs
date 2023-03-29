@@ -58,8 +58,9 @@ namespace MapsExt
 
 				foreach (var (memberInfo, serializer) in this.memberSerializerCache[mapObjectInstance.dataType])
 				{
-					var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
-					serializer.Serialize(mapObjectInstance.gameObject, prop);
+					// var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
+					var prop = serializer.Serialize(mapObjectInstance.gameObject);
+					memberInfo.SetMemberValue(data, prop);
 				}
 
 				return data;
@@ -78,6 +79,15 @@ namespace MapsExt
 			}
 
 			var serializableMembers = this.propertyManager.GetSerializableMembers(type);
+
+			foreach (var memberInfo in serializableMembers)
+			{
+				if (memberInfo is PropertyInfo propertyInfo && !propertyInfo.CanWrite)
+				{
+					throw new MapObjectSerializationException($"Property {propertyInfo.Name} on {type.Name} is not writable");
+				}
+			}
+
 			var serializers = serializableMembers.Select(p => (p, this.propertyManager.GetSerializer(p.GetReturnType())));
 			this.memberSerializerCache[type] = serializers.ToList();
 		}

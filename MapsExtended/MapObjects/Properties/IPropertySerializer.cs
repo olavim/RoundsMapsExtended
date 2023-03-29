@@ -4,13 +4,13 @@ namespace MapsExt.MapObjects.Properties
 {
 	public interface IPropertySerializer
 	{
-		void Serialize(GameObject instance, IProperty property);
+		IProperty Serialize(GameObject instance);
 		void Deserialize(IProperty property, GameObject target);
 	}
 
 	public interface IPropertySerializer<T> : IPropertySerializer where T : IProperty
 	{
-		void Serialize(GameObject instance, T property);
+		new T Serialize(GameObject instance);
 		void Deserialize(T property, GameObject target);
 	}
 }
