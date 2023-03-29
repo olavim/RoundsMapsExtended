@@ -15,7 +15,8 @@ namespace MapsExt.Editor.UI
 		public TextMeshProUGUI title;
 
 		public string selectedPath;
-		private string basePath;
+
+		private string _basePath;
 
 		public void SetOptions(params string[] opts)
 		{
@@ -24,14 +25,14 @@ namespace MapsExt.Editor.UI
 
 		public void SetPath(string path)
 		{
-			this.basePath = path;
+			this._basePath = path;
 			this.title.text = path;
 			this.UpdateFiles();
 		}
 
 		public void UpdateFiles()
 		{
-			var paths = Directory.GetFiles(this.basePath, "*.map", SearchOption.AllDirectories);
+			var paths = Directory.GetFiles(this._basePath, "*.map", SearchOption.AllDirectories);
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.fileContainer);
 
@@ -57,7 +58,7 @@ namespace MapsExt.Editor.UI
 				text.fontStyle = FontStyles.Bold;
 				text.color = new Color32(200, 200, 200, 255);
 				text.alignment = TextAlignmentOptions.MidlineLeft;
-				text.text = path.Replace(this.basePath + Path.DirectorySeparatorChar, "");
+				text.text = path.Replace(this._basePath + Path.DirectorySeparatorChar, "");
 				text.rectTransform.anchorMin = new Vector2(0, 0);
 				text.rectTransform.anchorMax = new Vector2(1, 1);
 				text.rectTransform.pivot = new Vector2(0, 0.5f);

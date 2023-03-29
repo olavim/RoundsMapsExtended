@@ -9,11 +9,11 @@ namespace MapsExt.Editor.UI
 		public Graphic graphic2;
 		public Button button;
 
-		private Graphic currentGraphic;
+		private Graphic _currentGraphic;
 
 		protected virtual void OnEnable()
 		{
-			this.currentGraphic = this.button.targetGraphic;
+			this._currentGraphic = this.button.targetGraphic;
 			this.button.onClick.AddListener(this.ToggleGraphic);
 		}
 
@@ -24,19 +24,19 @@ namespace MapsExt.Editor.UI
 
 		protected virtual void Update()
 		{
-			var color = this.currentGraphic.color;
+			var color = this._currentGraphic.color;
 			color.a = this.button.interactable ? 1 : 0.5f;
-			this.currentGraphic.color = color;
+			this._currentGraphic.color = color;
 		}
 
 		private void ToggleGraphic()
 		{
-			this.currentGraphic.gameObject.SetActive(false);
+			this._currentGraphic.gameObject.SetActive(false);
 
-			this.button.targetGraphic = this.currentGraphic == this.graphic1 ? this.graphic2 : this.graphic1;
-			this.currentGraphic = this.button.targetGraphic;
+			this.button.targetGraphic = this._currentGraphic == this.graphic1 ? this.graphic2 : this.graphic1;
+			this._currentGraphic = this.button.targetGraphic;
 
-			this.currentGraphic.gameObject.SetActive(true);
+			this._currentGraphic.gameObject.SetActive(true);
 		}
 	}
 }

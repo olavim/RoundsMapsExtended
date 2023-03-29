@@ -6,30 +6,30 @@ namespace MapsExt.Editor.ActionHandlers
 {
 	public class SizeHandler : ActionHandler<ScaleProperty>
 	{
-		public GameObject content;
+		private bool _isResizing;
+		private int _resizeDirection;
+		private Vector2 _prevMouse;
+		private Vector2 _prevScale;
+		private Vector2Int _prevCell;
 
-		private bool isResizing;
-		private int resizeDirection;
-		private Vector2 prevMouse;
-		private Vector2 prevScale;
-		private Vector2Int prevCell;
+		public GameObject Content { get; private set; }
 
 		protected virtual void Awake()
 		{
-			this.content = new GameObject("Resize Interaction Content");
-			this.content.transform.SetParent(this.transform);
-			this.content.transform.localScale = Vector3.one;
-			this.content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
+			this.Content = new GameObject("Resize Interaction Content");
+			this.Content.transform.SetParent(this.transform);
+			this.Content.transform.localScale = Vector3.one;
+			this.Content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
 
-			this.content.AddComponent<GraphicRaycaster>();
-			var canvas = this.content.GetComponent<Canvas>();
+			this.Content.AddComponent<GraphicRaycaster>();
+			var canvas = this.Content.GetComponent<Canvas>();
 			canvas.renderMode = RenderMode.WorldSpace;
 			canvas.worldCamera = MainCam.instance.cam;
 		}
 
 		protected virtual void Update()
 		{
-			if (this.isResizing)
+			if (this._isResizing)
 			{
 				this.ResizeMapObjects();
 			}
@@ -37,7 +37,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnPointerUp()
 		{
-			if (this.isResizing)
+			if (this._isResizing)
 			{
 				this.OnResizeEnd();
 			}
@@ -63,7 +63,7 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			var delta = size.Value - (Vector2) this.transform.localScale;
 			float gridSize = this.Editor.GridSize;
-			bool snapToGrid = this.Editor.snapToGrid;
+			bool snapToGrid = this.Editor.SnapToGrid;
 
 			var directionMulti = AnchorPosition.directionMultipliers[resizeDirection];
 			var scaleMulti = AnchorPosition.sizeMultipliers[resizeDirection];
@@ -120,29 +120,29 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnDeselect()
 		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 
 		private void OnResizeStart(int resizeDirection)
 		{
-			var mousePos = EditorInput.mousePosition;
+			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
 			this.Editor.grid.transform.rotation = this.transform.rotation;
 
-			this.isResizing = true;
-			this.resizeDirection = resizeDirection;
-			this.prevMouse = mouseWorldPos;
-			this.prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
-			this.prevScale = this.transform.localScale;
+			this._isResizing = true;
+			this._resizeDirection = resizeDirection;
+			this._prevMouse = mouseWorldPos;
+			this._prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
+			this._prevScale = this.transform.localScale;
 		}
 
 		private void OnResizeEnd()
 		{
-			this.isResizing = false;
+			this._isResizing = false;
 			this.Editor.UpdateRopeAttachments();
 
-			if (this.prevScale != this.GetValue().Value)
+			if (this._prevScale != this.GetValue().Value)
 			{
 				this.Editor.TakeSnaphot();
 			}
@@ -150,23 +150,23 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private void ResizeMapObjects()
 		{
-			var mousePos = EditorInput.mousePosition;
+			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var mouseCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
-			var mouseDelta = mouseWorldPos - this.prevMouse;
-			Vector2 cellDelta = mouseCell - this.prevCell;
+			var mouseDelta = mouseWorldPos - this._prevMouse;
+			Vector2 cellDelta = mouseCell - this._prevCell;
 
-			var sizeDelta = this.Editor.snapToGrid
+			var sizeDelta = this.Editor.SnapToGrid
 				? cellDelta * this.Editor.GridSize
 				: (Vector2) (Quaternion.Inverse(this.Editor.grid.transform.rotation) * mouseDelta);
 
 			if (sizeDelta != Vector2.zero)
 			{
-				this.Resize(sizeDelta, this.resizeDirection);
+				this.Resize(sizeDelta, this._resizeDirection);
 				this.OnChange();
 
-				this.prevMouse += mouseDelta;
-				this.prevCell = mouseCell;
+				this._prevMouse += mouseDelta;
+				this._prevCell = mouseCell;
 			}
 		}
 
@@ -198,7 +198,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			events.pointerDown += _ =>
 			{
-				if (!this.isResizing)
+				if (!this._isResizing)
 				{
 					this.OnResizeStart(direction);
 				}
@@ -206,13 +206,13 @@ namespace MapsExt.Editor.ActionHandlers
 
 			events.pointerUp += _ =>
 			{
-				if (this.isResizing)
+				if (this._isResizing)
 				{
 					this.OnResizeEnd();
 				}
 			};
 
-			go.transform.SetParent(this.content.transform);
+			go.transform.SetParent(this.Content.transform);
 			go.transform.localScale = Vector3.one;
 		}
 	}

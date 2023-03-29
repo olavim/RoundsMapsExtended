@@ -6,7 +6,7 @@ namespace MapsExt.Editor.UI
 {
 	public class Toolbar : MonoBehaviour
 	{
-		private static readonly float gridStep = 0.25f;
+		private const float GridStep = 0.25f;
 
 		public Menu fileMenu;
 		public Menu editMenu;
@@ -18,53 +18,50 @@ namespace MapsExt.Editor.UI
 
 		public Action<bool> onToggleSimulation;
 
-		private Menu activeMenu;
-		private bool simulationEnabled;
+		private Menu _activeMenu;
+		private bool _simulationEnabled;
 
 		protected virtual void Start()
 		{
-			this.SetGridSize(gridStep);
-			this.simulationEnabled = false;
+			this.SetGridSize(GridStep);
+			this._simulationEnabled = false;
 
 			var menus = new Menu[] { this.fileMenu, this.editMenu, this.mapObjectMenu, this.windowMenu };
 
 			foreach (var menu in menus)
 			{
-				menu.onOpen += () => this.activeMenu = menu;
-				menu.onClose += () => this.activeMenu = this.activeMenu == menu ? null : this.activeMenu;
+				menu.onOpen += () => this._activeMenu = menu;
+				menu.onClose += () => this._activeMenu = this._activeMenu == menu ? null : this._activeMenu;
 				menu.onHighlight += () =>
 				{
-					if (this.activeMenu != null)
+					if (this._activeMenu != null)
 					{
-						if (this.activeMenu.state == Menu.MenuState.ACTIVE)
+						if (this._activeMenu.state == Menu.MenuState.ACTIVE)
 						{
-							this.activeMenu.SetState(Menu.MenuState.INACTIVE);
+							this._activeMenu.SetState(Menu.MenuState.INACTIVE);
 							menu.SetState(Menu.MenuState.ACTIVE);
 						}
 						else
 						{
-							this.activeMenu = null;
+							this._activeMenu = null;
 						}
 					}
 				};
 			}
 
-			this.gridSizeSlider.onValueChanged.AddListener(val =>
-			{
-				this.SetGridSize(val);
-			});
+			this.gridSizeSlider.onValueChanged.AddListener(val => this.SetGridSize(val));
 
 			this.simulateButton.onClick.AddListener(() =>
 			{
-				this.simulationEnabled = !this.simulationEnabled;
-				this.onToggleSimulation?.Invoke(this.simulationEnabled);
+				this._simulationEnabled = !this._simulationEnabled;
+				this.onToggleSimulation?.Invoke(this._simulationEnabled);
 			});
 		}
 
 		private void SetGridSize(float val)
 		{
-			this.gridSizeSlider.value = Mathf.Round(val / gridStep) * gridStep;
-			this.gridSizeSlider.value = Math.Max(gridStep, this.gridSizeSlider.value);
+			this.gridSizeSlider.value = Mathf.Round(val / GridStep) * GridStep;
+			this.gridSizeSlider.value = Math.Max(GridStep, this.gridSizeSlider.value);
 			this.gridSizeValueLabel.text = this.gridSizeSlider.value.ToString("F2");
 		}
 	}

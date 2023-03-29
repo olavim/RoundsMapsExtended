@@ -53,9 +53,9 @@ namespace MapsExt.Editor.UI
 		{
 			MapObjectInstance instance = null;
 
-			if (this.editor.activeObject != null)
+			if (this.editor.ActiveObject != null)
 			{
-				instance = this.editor.activeObject.GetComponentInParent<MapObjectInstance>();
+				instance = this.editor.ActiveObject.GetComponentInParent<MapObjectInstance>();
 			}
 
 			if (instance != this.target || (this.isLinked && this.target == null))

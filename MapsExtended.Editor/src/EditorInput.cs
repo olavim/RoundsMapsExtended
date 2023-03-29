@@ -4,12 +4,12 @@ namespace MapsExt.Editor
 {
 	public static class EditorInput
 	{
-		public static readonly DefaultInputSource defaultInputSource = new DefaultInputSource();
+		public static DefaultInputSource DefaultInputSource { get; } = new DefaultInputSource();
 
-		public static Vector2 mouseScrollDelta => EditorInput.inputSource.mouseScrollDelta;
-		public static Vector2 mousePosition => EditorInput.inputSource.mousePosition;
+		public static Vector2 MouseScrollDelta => EditorInput.inputSource.MouseScrollDelta;
+		public static Vector2 MousePosition => EditorInput.inputSource.MousePosition;
 
-		private static IInputSource inputSource = defaultInputSource;
+		private static IInputSource inputSource = DefaultInputSource;
 
 		public static bool GetMouseButton(int button)
 		{

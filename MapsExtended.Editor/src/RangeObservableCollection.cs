@@ -9,11 +9,11 @@ namespace MapsExt.Editor
 {
 	public class RangeObservableCollection<T> : ObservableCollection<T>
 	{
-		private bool suppressNotification = false;
+		private bool _suppressNotification;
 
 		protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
 		{
-			if (!suppressNotification)
+			if (!_suppressNotification)
 			{
 				base.OnCollectionChanged(e);
 			}
@@ -26,7 +26,7 @@ namespace MapsExt.Editor
 				throw new ArgumentNullException("list");
 			}
 
-			this.suppressNotification = true;
+			this._suppressNotification = true;
 			IList oldItems = this.ToArray();
 
 			foreach (T item in list)
@@ -34,7 +34,7 @@ namespace MapsExt.Editor
 				this.Add(item);
 			}
 
-			this.suppressNotification = false;
+			this._suppressNotification = false;
 
 			this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, (IList) this.ToArray(), oldItems));
 		}
@@ -46,7 +46,7 @@ namespace MapsExt.Editor
 				throw new ArgumentNullException("list");
 			}
 
-			this.suppressNotification = true;
+			this._suppressNotification = true;
 			IList oldItems = this.ToArray();
 
 			foreach (T item in list)
@@ -54,7 +54,7 @@ namespace MapsExt.Editor
 				this.Remove(item);
 			}
 
-			this.suppressNotification = false;
+			this._suppressNotification = false;
 
 			this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, (IList) this.ToArray(), oldItems));
 		}

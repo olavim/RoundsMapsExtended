@@ -4,10 +4,9 @@ using System;
 using UnboundLib;
 using UnityEngine;
 
-#pragma warning disable CS0618
-
 namespace MapsExt
 {
+	[Obsolete("Deprecated")]
 	public class MapObjectSpecSerializer : IMapObjectSerializer
 	{
 		static class BaseMapObjectSerializer
@@ -25,13 +24,13 @@ namespace MapsExt
 			}
 		}
 
-		private readonly SerializerAction<MapObject> serializer;
-		private readonly DeserializerAction<MapObject> deserializer;
+		private readonly SerializerAction<MapObject> _serializer;
+		private readonly DeserializerAction<MapObject> _deserializer;
 
 		public MapObjectSpecSerializer(SerializerAction<MapObject> serializer, DeserializerAction<MapObject> deserializer)
 		{
-			this.serializer = serializer ?? throw new ArgumentException("Serializer cannot be null");
-			this.deserializer = deserializer ?? throw new ArgumentException("Deserializer cannot be null");
+			this._serializer = serializer ?? throw new ArgumentException("Serializer cannot be null");
+			this._deserializer = deserializer ?? throw new ArgumentException("Deserializer cannot be null");
 		}
 
 		public void Deserialize(MapObjectData data, GameObject target)
@@ -39,7 +38,7 @@ namespace MapsExt
 			try
 			{
 				BaseMapObjectSerializer.Deserialize(data, target);
-				this.deserializer((MapObject) data, target);
+				this._deserializer((MapObject) data, target);
 			}
 			catch (Exception ex)
 			{
@@ -53,7 +52,7 @@ namespace MapsExt
 			{
 				var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
 				BaseMapObjectSerializer.Serialize(mapObjectInstance.gameObject, data);
-				this.serializer(mapObjectInstance.gameObject, data);
+				this._serializer(mapObjectInstance.gameObject, data);
 				return data;
 			}
 			catch (Exception ex)
@@ -63,5 +62,3 @@ namespace MapsExt
 		}
 	}
 }
-
-#pragma warning restore CS0618

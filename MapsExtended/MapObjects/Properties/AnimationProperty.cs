@@ -44,7 +44,7 @@ namespace MapsExt.MapObjects.Properties
 
 			if (anim != null)
 			{
-				foreach (var frame in anim.keyframes.Skip(1))
+				foreach (var frame in anim.Keyframes.Skip(1))
 				{
 					keyframes.Add(new AnimationKeyframe(frame));
 				}
@@ -69,22 +69,22 @@ namespace MapsExt.MapObjects.Properties
 				{
 					dataFrames[i].UpdateCurve();
 
-					if (i < anim.keyframes.Count)
+					if (i < anim.Keyframes.Count)
 					{
-						anim.keyframes[i] = dataFrames[i];
+						anim.Keyframes[i] = dataFrames[i];
 					}
 					else
 					{
-						anim.keyframes.Add(dataFrames[i]);
+						anim.Keyframes.Add(dataFrames[i]);
 					}
 				}
 
-				anim.keyframes = anim.keyframes.Take(dataFrames.Count).ToList();
+				anim.Keyframes = anim.Keyframes.Take(dataFrames.Count).ToList();
 			}
 			else
 			{
-				target.GetComponent<MapObjectAnimation>()?.keyframes.Clear();
-				target.GetComponent<MapObjectAnimation>()?.keyframes.Insert(0, new AnimationKeyframe(property.Keyframes[0]));
+				target.GetComponent<MapObjectAnimation>()?.Keyframes.Clear();
+				target.GetComponent<MapObjectAnimation>()?.Keyframes.Insert(0, new AnimationKeyframe(property.Keyframes[0]));
 			}
 		}
 

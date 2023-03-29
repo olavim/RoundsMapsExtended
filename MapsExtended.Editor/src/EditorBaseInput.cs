@@ -5,8 +5,8 @@ namespace MapsExt.Editor
 {
 	public class EditorBaseInput : BaseInput
 	{
-		public override Vector2 mousePosition => EditorInput.mousePosition;
-		public override Vector2 mouseScrollDelta => EditorInput.mouseScrollDelta;
+		public override Vector2 mousePosition => EditorInput.MousePosition;
+		public override Vector2 mouseScrollDelta => EditorInput.MouseScrollDelta;
 
 		public override bool GetMouseButton(int button) => EditorInput.GetMouseButton(button);
 		public override bool GetMouseButtonDown(int button) => EditorInput.GetMouseButtonDown(button);

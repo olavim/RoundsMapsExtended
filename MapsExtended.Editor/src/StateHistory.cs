@@ -4,46 +4,46 @@ namespace MapsExt
 {
 	public class StateHistory<T>
 	{
-		public T CurrentState => this.states[this.stateIndex];
+		public T CurrentState => this._states[this._stateIndex];
 
-		private readonly List<T> states;
-		private int stateIndex;
+		private readonly List<T> _states;
+		private int _stateIndex;
 
 		public StateHistory(T initialState)
 		{
-			this.states = new List<T>() { initialState };
-			this.stateIndex = 0;
+			this._states = new List<T>() { initialState };
+			this._stateIndex = 0;
 		}
 
 		public bool CanRedo()
 		{
-			return this.stateIndex < this.states.Count - 1;
+			return this._stateIndex < this._states.Count - 1;
 		}
 
 		public bool CanUndo()
 		{
-			return this.stateIndex > 0;
+			return this._stateIndex > 0;
 		}
 
 		public void AddState(T state)
 		{
-			while (this.stateIndex < this.states.Count - 1)
+			while (this._stateIndex < this._states.Count - 1)
 			{
-				this.states.RemoveAt(this.stateIndex + 1);
+				this._states.RemoveAt(this._stateIndex + 1);
 			}
 
-			this.states.Add(state);
-			this.stateIndex++;
+			this._states.Add(state);
+			this._stateIndex++;
 		}
 
 		public void Redo()
 		{
-			this.stateIndex++;
+			this._stateIndex++;
 		}
 
 		public void Undo()
 		{
-			this.stateIndex--;
+			this._stateIndex--;
 		}
 	}
 }

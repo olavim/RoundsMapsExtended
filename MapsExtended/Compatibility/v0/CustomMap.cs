@@ -40,12 +40,7 @@ namespace MapsExt.Compatibility.V0
 				}
 			}
 
-			return new MapsExt.CustomMap
-			{
-				id = this.id,
-				name = this.name,
-				mapObjects = list
-			};
+			return new MapsExt.CustomMap(this.id, this.name, MapsExtended.ModVersion, list.ToArray());
 		}
 	}
 }

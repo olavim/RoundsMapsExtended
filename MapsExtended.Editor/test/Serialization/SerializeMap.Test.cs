@@ -43,13 +43,7 @@ namespace MapsExt.Editor.Tests
 				)
 			};
 
-			var map = new CustomMap
-			{
-				id = "test",
-				name = "Test",
-				version = "1.0.0",
-				mapObjects = new List<MapObjectData> { ballData }
-			};
+			var map = new CustomMap("test", "Test", "1.0.0", new[] { ballData });
 
 			var bytes = SerializationUtility.SerializeValue(map, DataFormat.JSON, serializationContext);
 			using (var stream = new MemoryStream(bytes))
@@ -57,13 +51,13 @@ namespace MapsExt.Editor.Tests
 				var deserializedMap = SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, deserializationContext);
 
 				deserializedMap.Should().NotBeNull();
-				deserializedMap.id.Should().Be(map.id);
-				deserializedMap.name.Should().Be(map.name);
-				deserializedMap.mapObjects.Should().NotBeNull();
-				deserializedMap.mapObjects.Count.Should().Be(1);
-				deserializedMap.mapObjects.Should().AllBeAssignableTo(typeof(MapObjectData));
+				deserializedMap.Id.Should().Be(map.Id);
+				deserializedMap.Name.Should().Be(map.Name);
+				deserializedMap.MapObjects.Should().NotBeNull();
+				deserializedMap.MapObjects.Length.Should().Be(1);
+				deserializedMap.MapObjects.Should().AllBeAssignableTo(typeof(MapObjectData));
 
-				var deserializedBallData = (BallData) deserializedMap.mapObjects[0];
+				var deserializedBallData = (BallData) deserializedMap.MapObjects[0];
 				deserializedBallData.Should().BeOfType<BallData>();
 				deserializedBallData.active.Should().Be(ballData.active);
 				deserializedBallData.Position.Should().Be(ballData.Position);

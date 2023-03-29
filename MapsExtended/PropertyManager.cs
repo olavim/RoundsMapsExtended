@@ -12,17 +12,17 @@ namespace MapsExt
 {
 	public class PropertyManager
 	{
-		private readonly Dictionary<Type, IPropertySerializer> serializers = new Dictionary<Type, IPropertySerializer>();
+		private readonly Dictionary<Type, IPropertySerializer> _serializers = new Dictionary<Type, IPropertySerializer>();
 
 		public void RegisterProperty(Type propertyType, Type propertySerializerType)
 		{
 			var serializer = (IPropertySerializer) AccessTools.CreateInstance(propertySerializerType);
-			this.serializers.Add(propertyType, serializer);
+			this._serializers.Add(propertyType, serializer);
 		}
 
 		public IPropertySerializer GetSerializer(Type type)
 		{
-			return this.serializers[type];
+			return this._serializers[type];
 		}
 
 		public T GetProperty<T>(object obj) where T : IProperty
@@ -46,10 +46,10 @@ namespace MapsExt
 
 			var props = type
 				.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-				.Where(p => p.GetReturnType() != null && this.serializers.ContainsKey(p.GetReturnType()));
+				.Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType()));
 			var fields = type
 				.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-				.Where(p => p.GetReturnType() != null && this.serializers.ContainsKey(p.GetReturnType()));
+				.Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType()));
 
 			list.AddRange(props);
 			list.AddRange(fields);

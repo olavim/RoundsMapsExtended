@@ -33,7 +33,7 @@ namespace MapsExt.Editor.Tests
 		{
 			GameObject.Destroy(this.inputSource);
 			this.inputSource = null;
-			EditorInput.SetInputSource(EditorInput.defaultInputSource);
+			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
 		}
 
 		[AfterAll]
@@ -70,17 +70,17 @@ namespace MapsExt.Editor.Tests
 			this.editor.content.transform.GetChild(0).gameObject.Should().BeSameAs(this.animationMapObject);
 			this.animationMapObject.Should().BeSameAs(this.animation.gameObject);
 			this.animationMapObject.GetComponent<MapObjectAnimation>().Should().BeSameAs(this.animation);
-			this.editor.activeObject.Should().NotBeSameAs(this.animationMapObject);
-			this.editor.activeObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
+			this.editor.ActiveObject.Should().NotBeSameAs(this.animationMapObject);
+			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
 		}
 
 		[Test]
 		public void Test_AddKeyframe()
 		{
 			this.animationHandler.AddKeyframe();
-			this.animation.keyframes.Count.Should().Be(2);
+			this.animation.Keyframes.Count.Should().Be(2);
 			this.animationMapObject.Should().NotBeSameAs(this.animationHandler.keyframeMapObject);
-			this.editor.activeObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
+			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
 		}
 
 		[Test]
@@ -88,16 +88,16 @@ namespace MapsExt.Editor.Tests
 		{
 			this.animationHandler.AddKeyframe();
 			this.animationHandler.DeleteKeyframe(1);
-			this.animation.keyframes.Count.Should().Be(1);
+			this.animation.Keyframes.Count.Should().Be(1);
 		}
 
 		[Test]
 		public void Test_ToggleAnimation()
 		{
 			this.animationHandler.ToggleAnimation(this.animationMapObject);
-			this.editor.activeObject.Should().BeNull();
+			this.editor.ActiveObject.Should().BeNull();
 			this.animationHandler.ToggleAnimation(this.animationMapObject);
-			this.editor.activeObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
+			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
 		}
 
 		private void GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IProperty
@@ -166,7 +166,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.MoveSelectedWithMouse(delta);
 
 			var exceptedPosition = new PositionProperty(1, 1);
-			this.editor.activeObject.GetHandlerValue<PositionProperty>().Should().Be(exceptedPosition);
+			this.editor.ActiveObject.GetHandlerValue<PositionProperty>().Should().Be(exceptedPosition);
 			this.GetKeyframeValue<PositionProperty>(0).Should().Be(exceptedPosition);
 		}
 
@@ -195,7 +195,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.ResizeSelectedWithMouse(delta, AnchorPosition.MiddleRight);
 
 			var expectedScale = new ScaleProperty(3, 2);
-			this.editor.activeObject.GetHandlerValue<ScaleProperty>().Should().Be(expectedScale);
+			this.editor.ActiveObject.GetHandlerValue<ScaleProperty>().Should().Be(expectedScale);
 			this.GetKeyframeValue<ScaleProperty>(0).Should().Be(expectedScale);
 		}
 
@@ -223,19 +223,19 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.RotateSelectedWithMouse(45);
 
 			var expectedRotation = new RotationProperty(45);
-			this.editor.activeObject.GetHandlerValue<RotationProperty>().Should().Be(expectedRotation);
+			this.editor.ActiveObject.GetHandlerValue<RotationProperty>().Should().Be(expectedRotation);
 			this.GetKeyframeValue<RotationProperty>(0).Should().Be(expectedRotation);
 		}
 
 		private IEnumerator SpawnWithAnimation<T>() where T : MapObjectData
 		{
 			yield return this.utils.SpawnMapObject<T>();
-			this.editor.animationHandler.AddAnimation(this.editor.activeObject);
+			this.editor.animationHandler.AddAnimation(this.editor.ActiveObject);
 		}
 
 		private T GetKeyframeValue<T>(int keyframeIndex) where T : IProperty
 		{
-			return this.animation.keyframes[keyframeIndex].GetComponentValue<T>();
+			return this.animation.Keyframes[keyframeIndex].GetComponentValue<T>();
 		}
 	}
 }

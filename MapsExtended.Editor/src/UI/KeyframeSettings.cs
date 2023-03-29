@@ -18,7 +18,7 @@ namespace MapsExt.Editor.UI
 		public float Duration { get; private set; }
 		public string Easing { get; private set; }
 
-		private bool isSelected = false;
+		private bool _isSelected;
 
 		protected virtual void Start()
 		{
@@ -40,7 +40,7 @@ namespace MapsExt.Editor.UI
 			{
 				colorMultiplier = this.colors.colorMultiplier,
 				fadeDuration = this.colors.fadeDuration,
-				normalColor = this.isSelected ? this.colors.pressedColor : this.colors.normalColor,
+				normalColor = this._isSelected ? this.colors.pressedColor : this.colors.normalColor,
 				highlightedColor = this.colors.highlightedColor,
 				pressedColor = this.colors.pressedColor,
 				disabledColor = this.colors.disabledColor
@@ -71,7 +71,7 @@ namespace MapsExt.Editor.UI
 
 		public void SetSelected(bool selected)
 		{
-			this.isSelected = selected;
+			this._isSelected = selected;
 
 			if (!selected)
 			{

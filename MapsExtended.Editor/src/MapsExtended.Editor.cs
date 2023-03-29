@@ -323,7 +323,7 @@ namespace MapsExt.Editor
 		{
 			foreach (var anim in go.GetComponentsInChildren<MapObjectAnimation>())
 			{
-				anim.playOnAwake = false;
+				anim.PlayOnAwake = false;
 				anim.Stop();
 			}
 		}

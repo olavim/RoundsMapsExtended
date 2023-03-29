@@ -6,50 +6,50 @@ namespace MapsExt.Editor
 {
 	public class KeyMonitor : MonoBehaviour
 	{
-		private readonly float heldThreshold = 0.5f;
-		private readonly float heldInterval = 0.05f;
+		private const float HeldThreshold = 0.5f;
+		private const float HeldInterval = 0.05f;
 
-		private Dictionary<KeyCode, float> heldKeys;
-		private Dictionary<KeyCode, Action> listeners;
+		private Dictionary<KeyCode, float> _heldKeys;
+		private Dictionary<KeyCode, Action> _listeners;
 
 		protected virtual void Awake()
 		{
-			this.heldKeys = new Dictionary<KeyCode, float>();
-			this.listeners = new Dictionary<KeyCode, Action>();
+			this._heldKeys = new Dictionary<KeyCode, float>();
+			this._listeners = new Dictionary<KeyCode, Action>();
 		}
 
 		public void AddListener(KeyCode code, Action action)
 		{
-			if (!this.listeners.ContainsKey(code))
+			if (!this._listeners.ContainsKey(code))
 			{
-				this.listeners.Add(code, () => { });
-				this.heldKeys.Add(code, 0);
+				this._listeners.Add(code, () => { });
+				this._heldKeys.Add(code, 0);
 			}
 
-			this.listeners[code] += action;
+			this._listeners[code] += action;
 		}
 
 		public void RemoveListener(KeyCode code, Action action)
 		{
-			if (this.listeners.ContainsKey(code))
+			if (this._listeners.ContainsKey(code))
 			{
-				this.listeners[code] -= action;
+				this._listeners[code] -= action;
 
-				if (this.listeners[code].GetInvocationList().Length == 0)
+				if (this._listeners[code].GetInvocationList().Length == 0)
 				{
-					this.listeners.Remove(code);
-					this.heldKeys.Remove(code);
+					this._listeners.Remove(code);
+					this._heldKeys.Remove(code);
 				}
 			}
 		}
 
 		protected virtual void Update()
 		{
-			foreach (var key in this.listeners.Keys)
+			foreach (var key in this._listeners.Keys)
 			{
 				if (this.GetHeldKey(key))
 				{
-					this.listeners[key]();
+					this._listeners[key]();
 				}
 			}
 		}
@@ -58,19 +58,19 @@ namespace MapsExt.Editor
 		{
 			if (!EditorInput.GetKey(code))
 			{
-				this.heldKeys[code] = 0;
+				this._heldKeys[code] = 0;
 				return false;
 			}
 
-			float timeHeld = this.heldKeys[code];
-			this.heldKeys[code] += Time.deltaTime;
+			float timeHeld = this._heldKeys[code];
+			this._heldKeys[code] += Time.deltaTime;
 
 			bool firstPress = timeHeld == 0;
-			bool longPress = timeHeld > this.heldThreshold + this.heldInterval;
+			bool longPress = timeHeld > HeldThreshold + HeldInterval;
 
 			if (longPress)
 			{
-				this.heldKeys[code] = this.heldThreshold;
+				this._heldKeys[code] = HeldThreshold;
 			}
 
 			return firstPress || longPress;

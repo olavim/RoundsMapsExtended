@@ -40,8 +40,8 @@ namespace MapsExt.Editor.Tests
 
 	public class SimulatedInputSource : MonoBehaviour, IInputSource
 	{
-		public Vector2 mouseScrollDelta { get; private set; }
-		public Vector3 mousePosition { get; private set; }
+		public Vector2 MouseScrollDelta { get; private set; }
+		public Vector3 MousePosition { get; private set; }
 
 		private Dictionary<KeyCode, bool> keyDict = new Dictionary<KeyCode, bool>();
 		private Dictionary<int, bool> mouseButtonDict = new Dictionary<int, bool>();
@@ -121,12 +121,12 @@ namespace MapsExt.Editor.Tests
 
 		public void SetMousePosition(Vector3 position)
 		{
-			this.mousePosition = position;
+			this.MousePosition = position;
 		}
 
 		public void SetMouseScrollDelta(Vector2 delta)
 		{
-			this.mouseScrollDelta = delta;
+			this.MouseScrollDelta = delta;
 		}
 	}
 }

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
 using Photon.Pun;
-using MapsExt.MapObjects.Properties;
 
 namespace MapsExt
 {
@@ -22,17 +21,16 @@ namespace MapsExt
 			}
 		}
 
-		private readonly float syncThreshold = 1f / 60f;
+		private const float SyncThreshold = 1f / 60f;
 
-		public List<AnimationKeyframe> keyframes = new List<AnimationKeyframe>();
-		public bool playOnAwake = true;
+		private float _elapsedTime;
+		private int _currentFrameIndex;
+		private bool _mapEntered;
+		private string _rpcKey;
+
+		public List<AnimationKeyframe> Keyframes { get; set; } = new List<AnimationKeyframe>();
+		public bool PlayOnAwake { get; set; } = true;
 		public bool IsPlaying { get; private set; }
-
-		private float elapsedTime;
-		private int currentFrameIndex;
-		private bool mapEntered;
-
-		private string rpcKey;
 
 		protected virtual void Awake()
 		{
@@ -53,7 +51,7 @@ namespace MapsExt
 					return;
 				}
 
-				if (this.playOnAwake)
+				if (this.PlayOnAwake)
 				{
 					this.Play();
 				}
@@ -68,59 +66,59 @@ namespace MapsExt
 		protected virtual void Start()
 		{
 			var map = this.GetComponentInParent<Map>();
-			this.mapEntered = map.hasEntered;
-			map.mapIsReadyAction += () => this.mapEntered = true;
-			map.mapMovingOutAction += () => this.mapEntered = false;
+			this._mapEntered = map.hasEntered;
+			map.mapIsReadyAction += () => this._mapEntered = true;
+			map.mapMovingOutAction += () => this._mapEntered = false;
 
-			this.rpcKey = $"MapObject {map.GetFieldValue("levelID")} {this.transform.GetSiblingIndex()}";
+			this._rpcKey = $"MapObject {map.GetFieldValue("levelID")} {this.transform.GetSiblingIndex()}";
 			var childRPC = MapManager.instance.GetComponent<ChildRPC>();
 
-			childRPC.childRPCsVector2[this.rpcKey] = this.RPCA_SyncAnimation;
+			childRPC.childRPCsVector2[this._rpcKey] = this.RPCA_SyncAnimation;
 		}
 
 		private void OnDestroy()
 		{
 			var childRPC = MapManager.instance?.GetComponent<ChildRPC>();
-			if (this.rpcKey != null && childRPC.childRPCsVector2.ContainsKey(this.rpcKey))
+			if (this._rpcKey != null && childRPC.childRPCsVector2.ContainsKey(this._rpcKey))
 			{
-				childRPC.childRPCsVector2.Remove(this.rpcKey);
+				childRPC.childRPCsVector2.Remove(this._rpcKey);
 			}
 		}
 
 		protected virtual void Update()
 		{
-			if (!this.IsPlaying || !this.mapEntered || PlayerManager.instance.GetExtraData().MovingPlayers)
+			if (!this.IsPlaying || !this._mapEntered || PlayerManager.instance.GetExtraData().MovingPlayers)
 			{
 				return;
 			}
 
-			this.ApplyKeyframe(this.currentFrameIndex, this.elapsedTime);
-			this.elapsedTime += TimeHandler.deltaTime;
+			this.ApplyKeyframe(this._currentFrameIndex, this._elapsedTime);
+			this._elapsedTime += TimeHandler.deltaTime;
 
 			// The first frame is considered as having a zero duration
-			if (this.currentFrameIndex == 0 || this.elapsedTime > this.keyframes[this.currentFrameIndex].Duration)
+			if (this._currentFrameIndex == 0 || this._elapsedTime > this.Keyframes[this._currentFrameIndex].Duration)
 			{
-				this.elapsedTime -= this.currentFrameIndex == 0 ? 0 : this.keyframes[this.currentFrameIndex].Duration;
-				this.currentFrameIndex = (this.currentFrameIndex + 1) % this.keyframes.Count;
+				this._elapsedTime -= this._currentFrameIndex == 0 ? 0 : this.Keyframes[this._currentFrameIndex].Duration;
+				this._currentFrameIndex = (this._currentFrameIndex + 1) % this.Keyframes.Count;
 
 				if (PhotonNetwork.IsMasterClient)
 				{
-					MapManager.instance.GetComponent<ChildRPC>().CallFunction(this.rpcKey, new Vector2(this.currentFrameIndex, this.elapsedTime));
+					MapManager.instance.GetComponent<ChildRPC>().CallFunction(this._rpcKey, new Vector2(this._currentFrameIndex, this._elapsedTime));
 				}
 			}
 		}
 
 		public void Initialize(AnimationKeyframe keyFrame)
 		{
-			this.keyframes.Clear();
-			this.keyframes.Add(keyFrame);
+			this.Keyframes.Clear();
+			this.Keyframes.Add(keyFrame);
 		}
 
 		public void Play()
 		{
 			this.IsPlaying = true;
-			this.elapsedTime = 0;
-			this.currentFrameIndex = 0;
+			this._elapsedTime = 0;
+			this._currentFrameIndex = 0;
 		}
 
 		public void Stop()
@@ -130,13 +128,13 @@ namespace MapsExt
 
 		private void ApplyKeyframe(int frameIndex, float time = 0)
 		{
-			if (frameIndex > this.keyframes.Count - 1)
+			if (frameIndex > this.Keyframes.Count - 1)
 			{
 				return;
 			}
 
-			var startFrame = frameIndex > 0 ? this.keyframes[frameIndex - 1] : this.keyframes[0];
-			var endFrame = this.keyframes[frameIndex];
+			var startFrame = frameIndex > 0 ? this.Keyframes[frameIndex - 1] : this.Keyframes[0];
+			var endFrame = this.Keyframes[frameIndex];
 
 			float curveValue = endFrame.Curve.Evaluate(time / endFrame.Duration);
 
@@ -145,7 +143,7 @@ namespace MapsExt
 				var startValue = startFrame.ComponentValues[i];
 				var endValue = endFrame.ComponentValues[i];
 				var nextValue = startValue.Lerp(endValue, curveValue);
-				var serializer = MapsExtended.instance.propertyManager.GetSerializer(startValue.GetType());
+				var serializer = MapsExtended.instance._propertyManager.GetSerializer(startValue.GetType());
 				serializer.Deserialize(nextValue, this.gameObject);
 			}
 		}
@@ -156,12 +154,12 @@ namespace MapsExt
 			float newElapsedTime = frameAndTime[1];
 
 			if (
-				this.currentFrameIndex != newFrame ||
-				Mathf.Abs(this.elapsedTime - newElapsedTime) > this.syncThreshold
+				this._currentFrameIndex != newFrame ||
+				Mathf.Abs(this._elapsedTime - newElapsedTime) > SyncThreshold
 			)
 			{
-				this.currentFrameIndex = newFrame;
-				this.elapsedTime = newElapsedTime;
+				this._currentFrameIndex = newFrame;
+				this._elapsedTime = newElapsedTime;
 			}
 		}
 	}

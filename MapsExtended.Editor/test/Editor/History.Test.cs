@@ -31,7 +31,7 @@ namespace MapsExt.Editor.Tests
 		{
 			GameObject.Destroy(this.inputSource);
 			this.inputSource = null;
-			EditorInput.SetInputSource(EditorInput.defaultInputSource);
+			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
 		}
 
 		[AfterAll]
@@ -55,15 +55,15 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_Spawn()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.activeObject;
+			var go = this.editor.ActiveObject;
 			var id = go.GetComponent<MapObjectInstance>().mapObjectId;
 
 			this.editor.OnUndo();
 			this.editor.content.transform.childCount.Should().Be(0);
-			this.editor.activeObject.Should().BeNull();
+			this.editor.ActiveObject.Should().BeNull();
 			this.editor.OnRedo();
 			this.editor.content.transform.childCount.Should().Be(1);
-			this.editor.activeObject.Should().BeNull();
+			this.editor.ActiveObject.Should().BeNull();
 
 			var instance = this.editor.content.transform.GetChild(0).GetComponent<MapObjectInstance>();
 			instance.mapObjectId.Should().Be(id);
@@ -73,7 +73,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_MoveWithMouse()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.activeObject;
+			var go = this.editor.ActiveObject;
 
 			var pos1 = go.GetHandlerValue<PositionProperty>();
 			var pos2 = new PositionProperty(1, 0);
@@ -91,7 +91,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_ResizeWithMouse()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.activeObject;
+			var go = this.editor.ActiveObject;
 
 			var size1 = go.GetHandlerValue<ScaleProperty>();
 			var size2 = new ScaleProperty(4, 2);
@@ -109,7 +109,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RotateWithMouse()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.activeObject;
+			var go = this.editor.ActiveObject;
 
 			var rot1 = go.GetHandlerValue<RotationProperty>();
 			var rot2 = new RotationProperty(45);
@@ -127,7 +127,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_MoveWithNudge()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.activeObject;
+			var go = this.editor.ActiveObject;
 
 			var pos1 = go.GetHandlerValue<PositionProperty>();
 			var pos2 = new PositionProperty(0.25f, 0);
@@ -145,9 +145,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RopeAttachment()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.activeObject;
+			var boxGo = this.editor.ActiveObject;
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
 			var list = new List<Vector2>();
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
@@ -174,7 +174,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.OnDeleteSelectedMapObjects();
 			yield return null;
 
-			this.editor.activeObject.Should().BeNull();
+			this.editor.ActiveObject.Should().BeNull();
 			this.editor.content.transform.childCount.Should().Be(1);
 
 			var iter = ListIterator.From(list);
@@ -213,7 +213,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.OnRedo(); // Redo rotate
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
 			this.editor.OnRedo(); // Redo Delete
-			this.editor.activeObject.Should().BeNull();
+			this.editor.ActiveObject.Should().BeNull();
 			this.editor.content.transform.childCount.Should().Be(1);
 		}
 	}

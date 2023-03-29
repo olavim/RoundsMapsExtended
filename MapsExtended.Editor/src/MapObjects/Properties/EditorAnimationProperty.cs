@@ -15,7 +15,7 @@ namespace MapsExt.Editor.MapObjects.Properties
 			var anim = target.GetComponent<MapObjectAnimation>();
 			if (anim)
 			{
-				anim.playOnAwake = false;
+				anim.PlayOnAwake = false;
 			}
 		}
 

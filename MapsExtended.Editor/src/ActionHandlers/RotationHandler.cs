@@ -7,27 +7,27 @@ namespace MapsExt.Editor.ActionHandlers
 {
 	public class RotationHandler : ActionHandler<RotationProperty>
 	{
-		public GameObject content;
+		public GameObject Content { get; private set; }
 
-		private bool isRotating;
-		private float prevAngle;
+		private bool _isRotating;
+		private float _prevAngle;
 
 		protected virtual void Awake()
 		{
-			this.content = new GameObject("Rotate Interaction Content");
-			this.content.transform.SetParent(this.transform);
-			this.content.transform.localScale = Vector3.one;
-			this.content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
+			this.Content = new GameObject("Rotate Interaction Content");
+			this.Content.transform.SetParent(this.transform);
+			this.Content.transform.localScale = Vector3.one;
+			this.Content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
 
-			this.content.AddComponent<GraphicRaycaster>();
-			var canvas = this.content.GetComponent<Canvas>();
+			this.Content.AddComponent<GraphicRaycaster>();
+			var canvas = this.Content.GetComponent<Canvas>();
 			canvas.renderMode = RenderMode.WorldSpace;
 			canvas.worldCamera = MainCam.instance.cam;
 		}
 
 		protected virtual void Update()
 		{
-			if (this.isRotating)
+			if (this._isRotating)
 			{
 				this.RotateMapObjects();
 			}
@@ -35,7 +35,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnPointerUp()
 		{
-			if (this.isRotating)
+			if (this._isRotating)
 			{
 				this.OnRotateEnd();
 			}
@@ -59,21 +59,21 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnDeselect()
 		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 
 		private void OnRotateStart()
 		{
-			this.isRotating = true;
-			this.prevAngle = this.transform.rotation.eulerAngles.z;
+			this._isRotating = true;
+			this._prevAngle = this.transform.rotation.eulerAngles.z;
 		}
 
 		private void OnRotateEnd()
 		{
-			this.isRotating = false;
+			this._isRotating = false;
 			this.Editor.UpdateRopeAttachments();
 
-			if (this.transform.rotation.eulerAngles.z != this.prevAngle)
+			if (this.transform.rotation.eulerAngles.z != this._prevAngle)
 			{
 				this.Editor.TakeSnaphot();
 			}
@@ -81,13 +81,13 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private void RotateMapObjects()
 		{
-			var mousePos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(EditorInput.mousePosition.x, EditorInput.mousePosition.y));
+			var mousePos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(EditorInput.MousePosition.x, EditorInput.MousePosition.y));
 			var objectPos = this.transform.position;
 			mousePos.x -= objectPos.x;
 			mousePos.y -= objectPos.y;
 
 			float angle = (Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg) - 90;
-			angle = EditorUtils.Snap(angle, this.Editor.snapToGrid ? 15f : 2f);
+			angle = EditorUtils.Snap(angle, this.Editor.SnapToGrid ? 15f : 2f);
 			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
 			this.SetValue(toRotation);
@@ -126,7 +126,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			events.pointerDown += _ =>
 			{
-				if (!this.isRotating)
+				if (!this._isRotating)
 				{
 					this.OnRotateStart();
 				}
@@ -134,13 +134,13 @@ namespace MapsExt.Editor.ActionHandlers
 
 			events.pointerUp += _ =>
 			{
-				if (this.isRotating)
+				if (this._isRotating)
 				{
 					this.OnRotateEnd();
 				}
 			};
 
-			go.transform.SetParent(this.content.transform);
+			go.transform.SetParent(this.Content.transform);
 			go.transform.localScale = Vector3.one;
 		}
 	}

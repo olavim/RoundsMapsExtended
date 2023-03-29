@@ -13,13 +13,13 @@ namespace MapsExt
 {
 	public class PropertyCompositeSerializer : IMapObjectSerializer
 	{
-		private readonly PropertyManager propertyManager;
-		private readonly Dictionary<Type, List<(MemberInfo, IPropertySerializer)>> memberSerializerCache
+		private readonly PropertyManager _propertyManager;
+		private readonly Dictionary<Type, List<(MemberInfo, IPropertySerializer)>> _memberSerializerCache
 			= new Dictionary<Type, List<(MemberInfo, IPropertySerializer)>>();
 
 		public PropertyCompositeSerializer(PropertyManager propertyManager)
 		{
-			this.propertyManager = propertyManager;
+			this._propertyManager = propertyManager;
 		}
 
 		public void Deserialize(MapObjectData data, GameObject target)
@@ -33,7 +33,7 @@ namespace MapsExt
 
 				this.CacheMemberSerializers(mapObjectInstance.dataType);
 
-				foreach (var (memberInfo, serializer) in this.memberSerializerCache[mapObjectInstance.dataType])
+				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.dataType])
 				{
 					var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
 					serializer.Deserialize(prop, mapObjectInstance.gameObject);
@@ -56,7 +56,7 @@ namespace MapsExt
 
 				this.CacheMemberSerializers(mapObjectInstance.dataType);
 
-				foreach (var (memberInfo, serializer) in this.memberSerializerCache[mapObjectInstance.dataType])
+				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.dataType])
 				{
 					// var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
 					var prop = serializer.Serialize(mapObjectInstance.gameObject);
@@ -73,12 +73,12 @@ namespace MapsExt
 
 		private void CacheMemberSerializers(Type type)
 		{
-			if (this.memberSerializerCache.ContainsKey(type))
+			if (this._memberSerializerCache.ContainsKey(type))
 			{
 				return;
 			}
 
-			var serializableMembers = this.propertyManager.GetSerializableMembers(type);
+			var serializableMembers = this._propertyManager.GetSerializableMembers(type);
 
 			foreach (var memberInfo in serializableMembers)
 			{
@@ -88,8 +88,8 @@ namespace MapsExt
 				}
 			}
 
-			var serializers = serializableMembers.Select(p => (p, this.propertyManager.GetSerializer(p.GetReturnType())));
-			this.memberSerializerCache[type] = serializers.ToList();
+			var serializers = serializableMembers.Select(p => (p, this._propertyManager.GetSerializer(p.GetReturnType())));
+			this._memberSerializerCache[type] = serializers.ToList();
 		}
 	}
 }

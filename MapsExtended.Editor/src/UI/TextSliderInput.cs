@@ -12,25 +12,25 @@ namespace MapsExt.Editor.UI
 
 		public Action<float, ChangeType> onChanged;
 
-		private float inputValue;
+		private float _inputValue;
 
 		public float Value
 		{
-			get => this.inputValue;
+			get => this._inputValue;
 			set
 			{
 				this.input.text = value.ToString();
 			}
 		}
 
-		private float maxSliderValue;
-		private float valueOnSliderMouseDown;
+		private float _maxSliderValue;
+		private float _valueOnSliderMouseDown;
 
 		protected virtual void Awake()
 		{
 			this.slider.onValueChanged.AddListener(this.UpdateValueSlider);
 			this.input.onValueChanged.AddListener(this.UpdateValueTextInput);
-			this.maxSliderValue = this.slider.maxValue;
+			this._maxSliderValue = this.slider.maxValue;
 		}
 
 		protected virtual void Start()
@@ -43,7 +43,7 @@ namespace MapsExt.Editor.UI
 			};
 			downEntry.callback.AddListener(_ =>
 			{
-				this.valueOnSliderMouseDown = this.Value;
+				this._valueOnSliderMouseDown = this.Value;
 				this.onChanged?.Invoke(this.Value, ChangeType.ChangeStart);
 			});
 
@@ -53,7 +53,7 @@ namespace MapsExt.Editor.UI
 			};
 			upEntry.callback.AddListener(_ =>
 			{
-				if (this.Value != this.valueOnSliderMouseDown)
+				if (this.Value != this._valueOnSliderMouseDown)
 				{
 					this.onChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 				}
@@ -65,12 +65,12 @@ namespace MapsExt.Editor.UI
 
 		private void UpdateValueSlider(float origValue)
 		{
-			float value = Mathf.Min(this.maxSliderValue, origValue);
+			float value = Mathf.Min(this._maxSliderValue, origValue);
 			value = (float) Math.Round(value * 10f) / 10f;
 
-			if (this.slider.maxValue > this.maxSliderValue)
+			if (this.slider.maxValue > this._maxSliderValue)
 			{
-				this.slider.maxValue = this.maxSliderValue;
+				this.slider.maxValue = this._maxSliderValue;
 			}
 
 			if (value != origValue)
@@ -83,7 +83,7 @@ namespace MapsExt.Editor.UI
 			this.input.text = value.ToString("0.0");
 			this.input.onValueChanged.AddListener(this.UpdateValueTextInput);
 
-			this.inputValue = value;
+			this._inputValue = value;
 
 			this.onChanged?.Invoke(this.Value, ChangeType.Change);
 		}
@@ -97,16 +97,16 @@ namespace MapsExt.Editor.UI
 
 			if (valueStr?.Length == 0)
 			{
-				this.inputValue = 1f;
+				this._inputValue = 1f;
 			}
 			else if (float.TryParse(valueStr, out float value))
 			{
 				this.slider.onValueChanged.RemoveListener(this.UpdateValueSlider);
-				this.slider.maxValue = (value > this.maxSliderValue) ? value : this.maxSliderValue;
+				this.slider.maxValue = (value > this._maxSliderValue) ? value : this._maxSliderValue;
 				this.slider.value = value;
 				this.slider.onValueChanged.AddListener(this.UpdateValueSlider);
 
-				this.inputValue = value;
+				this._inputValue = value;
 			}
 
 			this.onChanged?.Invoke(this.Value, ChangeType.ChangeStart);

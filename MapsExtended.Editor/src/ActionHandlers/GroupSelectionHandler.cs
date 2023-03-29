@@ -7,7 +7,7 @@ namespace MapsExt.Editor.ActionHandlers
 	[GroupActionHandler(typeof(SelectionHandler))]
 	public class GroupSelectionHandler : SelectionHandler, IGroupMapObjectActionHandler
 	{
-		private IEnumerable<GameObject> gameObjects;
+		private IEnumerable<GameObject> _gameObjects;
 
 		protected virtual void Awake()
 		{
@@ -16,10 +16,10 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public void Initialize(IEnumerable<GameObject> gameObjects)
 		{
-			this.gameObjects = gameObjects;
+			this._gameObjects = gameObjects;
 
-			var bounds = this.gameObjects.First().GetComponent<SelectionHandler>().GetBounds();
-			foreach (var obj in this.gameObjects)
+			var bounds = this._gameObjects.First().GetComponent<SelectionHandler>().GetBounds();
+			foreach (var obj in this._gameObjects)
 			{
 				bounds.Encapsulate(obj.GetComponent<SelectionHandler>().GetBounds());
 			}

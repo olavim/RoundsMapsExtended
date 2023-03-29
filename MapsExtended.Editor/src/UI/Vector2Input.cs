@@ -10,11 +10,11 @@ namespace MapsExt.Editor.UI
 		public InputField yInput;
 		public Action<Vector2> onChanged;
 
-		private Vector2 inputValue;
+		private Vector2 _inputValue;
 
 		public Vector2 Value
 		{
-			get => this.inputValue;
+			get => this._inputValue;
 			set
 			{
 				this.SetWithoutEvent(value);
@@ -37,11 +37,11 @@ namespace MapsExt.Editor.UI
 
 			if (valueStr?.Length == 0)
 			{
-				this.inputValue = new Vector2(0, this.inputValue.y);
+				this._inputValue = new Vector2(0, this._inputValue.y);
 			}
 			else if (float.TryParse(valueStr, out float newX))
 			{
-				this.inputValue = new Vector2(newX, this.inputValue.y);
+				this._inputValue = new Vector2(newX, this._inputValue.y);
 			}
 
 			this.onChanged?.Invoke(this.Value);
@@ -56,11 +56,11 @@ namespace MapsExt.Editor.UI
 
 			if (valueStr == "")
 			{
-				this.inputValue = new Vector2(this.inputValue.x, 0);
+				this._inputValue = new Vector2(this._inputValue.x, 0);
 			}
 			else if (float.TryParse(valueStr, out float newY))
 			{
-				this.inputValue = new Vector2(this.inputValue.x, newY);
+				this._inputValue = new Vector2(this._inputValue.x, newY);
 			}
 
 			this.onChanged?.Invoke(this.Value);
@@ -72,7 +72,7 @@ namespace MapsExt.Editor.UI
 			this.yInput.onValueChanged.RemoveListener(this.UpdateYValue);
 			this.xInput.text = value.x.ToString();
 			this.yInput.text = value.y.ToString();
-			this.inputValue = value;
+			this._inputValue = value;
 			this.xInput.onValueChanged.AddListener(this.UpdateXValue);
 			this.yInput.onValueChanged.AddListener(this.UpdateYValue);
 		}

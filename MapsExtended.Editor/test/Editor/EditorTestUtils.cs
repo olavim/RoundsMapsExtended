@@ -26,14 +26,14 @@ namespace MapsExt.Editor.Tests
 
 			void OnChange(object sender, NotifyCollectionChangedEventArgs e)
 			{
-				if (this.editor.selectedObjects.Count > 0)
+				if (this.editor.SelectedObjects.Count > 0)
 				{
-					this.editor.selectedObjects.CollectionChanged -= OnChange;
+					this.editor.SelectedObjects.CollectionChanged -= OnChange;
 					spawned = true;
 				}
 			}
 
-			this.editor.selectedObjects.CollectionChanged += OnChange;
+			this.editor.SelectedObjects.CollectionChanged += OnChange;
 			this.editor.CreateMapObject(typeof(T));
 
 			while (!spawned)
@@ -44,7 +44,7 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator MoveSelectedWithMouse(Vector2 delta)
 		{
-			var go = this.editor.activeObject;
+			var go = this.editor.ActiveObject;
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 
@@ -55,16 +55,16 @@ namespace MapsExt.Editor.Tests
 				throw new ArgumentException("anchorPosition cannot be 0");
 			}
 
-			var go = this.editor.activeObject;
-			var resizeInteractionContent = go.GetComponent<SizeHandler>().content;
+			var go = this.editor.ActiveObject;
+			var resizeInteractionContent = go.GetComponent<SizeHandler>().Content;
 			var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + anchorPosition).gameObject;
 			yield return this.DragMouse(resizeHandle.transform.position, delta);
 		}
 
 		public IEnumerator RotateSelectedWithMouse(float degrees)
 		{
-			var go = this.editor.activeObject;
-			var resizeInteractionContent = go.GetComponent<MapsExt.Editor.ActionHandlers.RotationHandler>().content;
+			var go = this.editor.ActiveObject;
+			var resizeInteractionContent = go.GetComponent<MapsExt.Editor.ActionHandlers.RotationHandler>().Content;
 			var handle = resizeInteractionContent.transform.Find("Rotation Handle").gameObject;
 
 			var from = handle.transform.position;

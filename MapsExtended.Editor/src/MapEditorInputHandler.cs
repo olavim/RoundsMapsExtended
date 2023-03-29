@@ -38,7 +38,7 @@ namespace MapsExt.Editor
 
 		protected virtual void Update()
 		{
-			if (this.editor.isSimulating)
+			if (this.editor.IsSimulating)
 			{
 				return;
 			}
@@ -68,12 +68,12 @@ namespace MapsExt.Editor
 				this.HandleDelete();
 			}
 
-			if (EditorInput.mouseScrollDelta.y > 0 || EditorInput.GetKeyDown(KeyCode.Plus) || EditorInput.GetKeyDown(KeyCode.KeypadPlus))
+			if (EditorInput.MouseScrollDelta.y > 0 || EditorInput.GetKeyDown(KeyCode.Plus) || EditorInput.GetKeyDown(KeyCode.KeypadPlus))
 			{
 				this.HandleZoom(1);
 			}
 
-			if (EditorInput.mouseScrollDelta.y < 0 || EditorInput.GetKeyDown(KeyCode.Minus) || EditorInput.GetKeyDown(KeyCode.KeypadMinus))
+			if (EditorInput.MouseScrollDelta.y < 0 || EditorInput.GetKeyDown(KeyCode.Minus) || EditorInput.GetKeyDown(KeyCode.KeypadMinus))
 			{
 				this.HandleZoom(-1);
 			}
@@ -114,7 +114,7 @@ namespace MapsExt.Editor
 			}
 
 			this.mouseDownSince = Time.time * 1000;
-			this.mouseDownPosition = EditorInput.mousePosition;
+			this.mouseDownPosition = EditorInput.MousePosition;
 
 			var list = EditorUtils.GetActionHandlersAt(this.mouseDownPosition).Select(h => h.gameObject).Distinct();
 
@@ -136,7 +136,7 @@ namespace MapsExt.Editor
 			this.editor.OnPointerUp();
 
 			var mouseUpTime = Time.time * 1000;
-			var newMousePosition = EditorInput.mousePosition;
+			var newMousePosition = EditorInput.MousePosition;
 			var mouseDelta = this.mouseDownPosition - newMousePosition;
 
 			if (mouseDelta.magnitude <= this.clickPositionEpsilon && mouseUpTime - this.mouseDownSince <= this.clickTimeMsEpsilon)

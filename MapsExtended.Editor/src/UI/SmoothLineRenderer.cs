@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnboundLib;
 using System.Collections.Generic;
-using System.Linq;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Algorithm;
 using NetTopologySuite.Operation.Union;
@@ -12,11 +11,12 @@ namespace MapsExt.Editor.UI
 {
 	public class SmoothLineRenderer : MonoBehaviour
 	{
-		public int cornerVertexCount = 8;
-		public float lineWidth = 0.1f;
+		private const int CornerVertexCount = 8;
+		private const float LineWidth = 0.1f;
+
 		public MeshRenderer Renderer { get; private set; }
 
-		private GeometryFactory geometryFactory;
+		private GeometryFactory _geometryFactory;
 
 		protected virtual void Awake()
 		{
@@ -27,7 +27,7 @@ namespace MapsExt.Editor.UI
 			};
 
 			this.gameObject.GetOrAddComponent<MeshFilter>();
-			this.geometryFactory = new GeometryFactory(PrecisionModel.FloatingSingle.Value);
+			this._geometryFactory = new GeometryFactory(PrecisionModel.FloatingSingle.Value);
 		}
 
 		public void SetPositions(List<Vector3> points)
@@ -42,7 +42,7 @@ namespace MapsExt.Editor.UI
 
 			Mesh newMesh = null;
 
-			float width = this.lineWidth;
+			float width = LineWidth;
 			while (newMesh == null && width >= 0.05f)
 			{
 				var circles = points.ConvertAll(p => this.CreateCircle(p, width));
@@ -59,9 +59,9 @@ namespace MapsExt.Editor.UI
 		{
 			var coords = new List<Coordinate>();
 			var widthVertex = new Vector3(0, width / 2f, 0);
-			float anglePerVertex = 360f / this.cornerVertexCount;
+			float anglePerVertex = 360f / CornerVertexCount;
 
-			for (int j = 0; j < this.cornerVertexCount; j++)
+			for (int j = 0; j < CornerVertexCount; j++)
 			{
 				var rotation = Quaternion.Euler(0, 0, j * anglePerVertex);
 				var p = pos + (rotation * widthVertex);
@@ -71,7 +71,7 @@ namespace MapsExt.Editor.UI
 			coords.Add(coords[0]);
 
 			var shell = new LinearRing(coords.ToArray());
-			return new Polygon(shell, this.geometryFactory);
+			return new Polygon(shell, this._geometryFactory);
 		}
 
 		private Polygon CreateConcaveHull(List<Polygon> shapes)

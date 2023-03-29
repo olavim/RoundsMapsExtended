@@ -33,7 +33,7 @@ namespace MapsExt.Editor.Tests
 		{
 			GameObject.Destroy(this.inputSource);
 			this.inputSource = null;
-			EditorInput.SetInputSource(EditorInput.defaultInputSource);
+			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
 		}
 
 		[AfterAll]
@@ -62,7 +62,7 @@ namespace MapsExt.Editor.Tests
 
 			this.editor.content.transform.childCount.Should().Be(1);
 
-			var box = this.editor.activeObject;
+			var box = this.editor.ActiveObject;
 			box.GetComponent<MapObjectInstance>().dataType.Should().Be(typeof(BoxData));
 			box.GetHandlerValue<PositionProperty>().Should().Be((PositionProperty) Vector2.zero);
 		}
@@ -72,7 +72,7 @@ namespace MapsExt.Editor.Tests
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
 
-			var box = this.editor.activeObject;
+			var box = this.editor.ActiveObject;
 			var delta = new PositionProperty(-5, 0);
 			yield return this.utils.MoveSelectedWithMouse(delta);
 			box.GetHandlerValue<PositionProperty>().Should().Be(delta);
@@ -83,7 +83,7 @@ namespace MapsExt.Editor.Tests
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
 
-			var box = this.editor.activeObject;
+			var box = this.editor.ActiveObject;
 			var delta = new PositionProperty(-5.2f, 0);
 			yield return this.utils.MoveSelectedWithMouse(delta);
 			box.GetHandlerValue<PositionProperty>().Should().Be(new PositionProperty(-5.25f, 0));
@@ -93,17 +93,17 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_SelectUnderlyingBox()
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box1 = this.editor.activeObject;
+			var box1 = this.editor.ActiveObject;
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box2 = this.editor.activeObject;
+			var box2 = this.editor.ActiveObject;
 
 			this.inputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(box1.transform.position));
 			this.inputSource.SetMouseButtonDown(0);
 			this.inputSource.SetMouseButtonUp(0);
 			yield return null;
 
-			this.editor.activeObject.Should().BeSameAs(box1);
-			this.editor.activeObject.Should().NotBeSameAs(box2);
+			this.editor.ActiveObject.Should().BeSameAs(box1);
+			this.editor.ActiveObject.Should().NotBeSameAs(box2);
 		}
 
 		[Test]
@@ -119,17 +119,17 @@ namespace MapsExt.Editor.Tests
 			this.inputSource.SetMouseButtonUp(0);
 			yield return null;
 
-			this.editor.selectedObjects.Count.Should().Be(2);
-			this.editor.activeObject.GetComponent<IGroupMapObjectActionHandler>().Should().NotBeNull();
+			this.editor.SelectedObjects.Count.Should().Be(2);
+			this.editor.ActiveObject.GetComponent<IGroupMapObjectActionHandler>().Should().NotBeNull();
 		}
 
 		[Test]
 		public IEnumerator Test_MoveGroup()
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box1 = this.editor.activeObject;
+			var box1 = this.editor.ActiveObject;
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box2 = this.editor.activeObject;
+			var box2 = this.editor.ActiveObject;
 
 			this.editor.SelectAll();
 
@@ -143,7 +143,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_ResizeBox()
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box = this.editor.activeObject;
+			var box = this.editor.ActiveObject;
 
 			box.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(2, 2));
 			yield return this.utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
@@ -154,7 +154,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RotateBox()
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box = this.editor.activeObject;
+			var box = this.editor.ActiveObject;
 
 			box.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(0));
 			yield return this.utils.RotateSelectedWithMouse(45);
@@ -167,14 +167,14 @@ namespace MapsExt.Editor.Tests
 
 			void OnEditorSelectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 			{
-				if (this.editor.activeObject != null)
+				if (this.editor.ActiveObject != null)
 				{
-					this.editor.selectedObjects.CollectionChanged -= OnEditorSelectionChanged;
+					this.editor.SelectedObjects.CollectionChanged -= OnEditorSelectionChanged;
 					collectionChanged = true;
 				}
 			}
 
-			this.editor.selectedObjects.CollectionChanged += OnEditorSelectionChanged;
+			this.editor.SelectedObjects.CollectionChanged += OnEditorSelectionChanged;
 
 			var btn = this.GetMapObjectWindowButton(objectName);
 			btn.Should().NotBeNull();

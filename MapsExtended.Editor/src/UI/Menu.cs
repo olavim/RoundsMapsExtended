@@ -48,8 +48,8 @@ namespace MapsExt.Editor.UI
 		public Action onClose;
 		public Action onHighlight;
 
-		private Dictionary<string, MenuItem> itemsByKey = new Dictionary<string, MenuItem>();
-		private GameObject content;
+		private readonly Dictionary<string, MenuItem> _itemsByKey = new Dictionary<string, MenuItem>();
+		private GameObject _content;
 
 		// AssetBundles REALLY don't want to serialize custom classes
 		[SerializeField, HideInInspector]
@@ -63,7 +63,7 @@ namespace MapsExt.Editor.UI
 
 			foreach (var item in this.items)
 			{
-				this.itemsByKey.Add(item.label, item);
+				this._itemsByKey.Add(item.label, item);
 			}
 		}
 
@@ -74,11 +74,11 @@ namespace MapsExt.Editor.UI
 
 		protected virtual void Start()
 		{
-			this.content = GameObject.Instantiate(this.contentTemplate, this.transform);
+			this._content = GameObject.Instantiate(this.contentTemplate, this.transform);
 
 			this.SetState(MenuState.INACTIVE);
 
-			var rectTransform = this.content.GetComponent<RectTransform>();
+			var rectTransform = this._content.GetComponent<RectTransform>();
 
 			if (this.position == MenuPosition.DOWN)
 			{
@@ -197,25 +197,25 @@ namespace MapsExt.Editor.UI
 			if (state == MenuState.INACTIVE)
 			{
 				newGraphicColor = this.normal;
-				this.content.SetActive(false);
+				this._content.SetActive(false);
 			}
 
 			if (state == MenuState.HIGHLIGHTED)
 			{
 				newGraphicColor = this.highlighted;
-				this.content.SetActive(false);
+				this._content.SetActive(false);
 			}
 
 			if (state == MenuState.ACTIVE)
 			{
 				newGraphicColor = this.active;
-				this.content.SetActive(true);
+				this._content.SetActive(true);
 			}
 
 			if (state == MenuState.DISABLED)
 			{
 				newLabelColor.a = 0.3f;
-				this.content.SetActive(false);
+				this._content.SetActive(false);
 			}
 
 			if (this.graphic != null)
@@ -248,7 +248,7 @@ namespace MapsExt.Editor.UI
 		{
 			var rectTransforms = this.gameObject.GetComponentsInChildren<RectTransform>().ToList();
 			rectTransforms.Add(this.gameObject.GetComponent<RectTransform>());
-			return rectTransforms.Any(rt => RectTransformUtility.RectangleContainsScreenPoint(rt, EditorInput.mousePosition));
+			return rectTransforms.Any(rt => RectTransformUtility.RectangleContainsScreenPoint(rt, EditorInput.MousePosition));
 		}
 
 		public void AddItem(MenuItemBuilder builder)
@@ -266,7 +266,7 @@ namespace MapsExt.Editor.UI
 
 		public void SetItemEnabled(string key, bool enabled)
 		{
-			if (this.itemsByKey.TryGetValue(key, out MenuItem item))
+			if (this._itemsByKey.TryGetValue(key, out MenuItem item))
 			{
 				if (item.disabled == enabled)
 				{
@@ -299,7 +299,7 @@ namespace MapsExt.Editor.UI
 		private void RegisterItem(MenuItem item, string key = "")
 		{
 			key += item.label;
-			this.itemsByKey.Add(key, item);
+			this._itemsByKey.Add(key, item);
 
 			if (item.items != null)
 			{
@@ -313,12 +313,12 @@ namespace MapsExt.Editor.UI
 
 		public void RedrawContent()
 		{
-			if (this.content == null)
+			if (this._content == null)
 			{
 				return;
 			}
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
+			GameObjectUtils.DestroyChildrenImmediateSafe(this._content);
 
 			foreach (var item in this.items)
 			{
@@ -346,7 +346,7 @@ namespace MapsExt.Editor.UI
 				this.itemHotkeyLabel.color = item.disabled ? new Color(hcol.r, hcol.g, hcol.b, 0.5f) : new Color(hcol.r, hcol.g, hcol.b, 1);
 				this.itemButton.interactable = !item.disabled;
 
-				var instance = GameObject.Instantiate(this.itemButton.gameObject, this.content.transform);
+				var instance = GameObject.Instantiate(this.itemButton.gameObject, this._content.transform);
 				instance.SetActive(true);
 
 				if (item.disabled)

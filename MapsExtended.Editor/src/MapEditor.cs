@@ -16,49 +16,44 @@ namespace MapsExt.Editor
 {
 	public class MapEditor : MonoBehaviour
 	{
-		public GameObject activeObject;
-		public RangeObservableCollection<GameObject> selectedObjects;
-		public string currentMapName;
-		public bool isSimulating;
-		public bool snapToGrid;
+		// These are set in Unity editor
 		public GameObject content;
 		public GameObject simulatedContent;
 		public MapEditorAnimationHandler animationHandler;
 		public Grid grid;
 
+		public GameObject ActiveObject { get; set; }
+		public RangeObservableCollection<GameObject> SelectedObjects { get; } = new RangeObservableCollection<GameObject>();
+		public bool SnapToGrid { get; set; } = true;
+		public string CurrentMapName { get; private set; }
+		public bool IsSimulating { get; private set; }
+
 		public float GridSize
 		{
-			get { return this.grid.cellSize.x; }
-			set { this.grid.cellSize = Vector2.one * value; }
+			get => this.grid.cellSize.x;
+			set => this.grid.cellSize = Vector2.one * value;
 		}
 
-		private StateHistory<CustomMap> stateHistory;
-		private bool isCreatingSelection;
-		private Vector3 selectionStartPosition;
-		private Rect selectionRect;
-		private List<MapObjectData> clipboardMapObjects;
-		private Dictionary<Type, Type[]> groupActionHandlers;
+		private readonly Dictionary<Type, Type[]> _groupActionHandlers = new Dictionary<Type, Type[]>();
 
-		private GameObject tempSpawn;
-		private GameObject dummyGroup;
+		private StateHistory<CustomMap> _stateHistory;
+		private bool _isCreatingSelection;
+		private Vector3 _selectionStartPosition;
+		private Rect _selectionRect;
+		private List<MapObjectData> _clipboardMapObjects;
+
+		private GameObject _tempSpawn;
+		private GameObject _dummyGroup;
 
 		protected virtual void Awake()
 		{
-			this.activeObject = null;
-			this.selectedObjects = new RangeObservableCollection<GameObject>();
-			this.groupActionHandlers = new Dictionary<Type, Type[]>();
-			this.snapToGrid = true;
-			this.isCreatingSelection = false;
-			this.currentMapName = null;
-			this.isSimulating = false;
-
-			this.stateHistory = new StateHistory<CustomMap>(this.GetMapData());
+			this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
 
 			foreach (var type in typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupActionHandlerAttribute>() != null))
 			{
-				this.groupActionHandlers[type] = type.GetCustomAttribute<GroupActionHandlerAttribute>().requiredHandlerTypes;
+				this._groupActionHandlers[type] = type.GetCustomAttribute<GroupActionHandlerAttribute>().requiredHandlerTypes;
 			}
 		}
 
@@ -70,7 +65,7 @@ namespace MapsExt.Editor
 
 		protected virtual void Update()
 		{
-			if (this.isCreatingSelection)
+			if (this._isCreatingSelection)
 			{
 				this.UpdateSelection();
 			}
@@ -86,17 +81,12 @@ namespace MapsExt.Editor
 
 			File.WriteAllBytes(path, bytes);
 
-			this.currentMapName = filename;
+			this.CurrentMapName = filename;
 		}
 
 		private CustomMap GetMapData(string name = null)
 		{
-			var mapData = new CustomMap
-			{
-				id = Guid.NewGuid().ToString(),
-				name = name,
-				mapObjects = new List<MapObjectData>()
-			};
+			var mapObjects = new List<MapObjectData>();
 
 			foreach (var mapObject in this.content.GetComponentsInChildren<MapObjectInstance>(true))
 			{
@@ -107,22 +97,22 @@ namespace MapsExt.Editor
 					data.active = true;
 				}
 
-				mapData.mapObjects.Add(data);
+				mapObjects.Add(data);
 			}
 
-			return mapData;
+			return new CustomMap(Guid.NewGuid().ToString(), name, MapsExtended.ModVersion, mapObjects.ToArray());
 		}
 
 		public void OnCopy()
 		{
-			this.clipboardMapObjects = new List<MapObjectData>();
-			var mapObjectInstances = this.selectedObjects
+			this._clipboardMapObjects = new List<MapObjectData>();
+			var mapObjectInstances = this.SelectedObjects
 				.Select(obj => obj.GetComponent<MapObjectInstance>() ?? obj.GetComponentInParent<MapObjectInstance>())
 				.Distinct();
 
 			foreach (var instance in mapObjectInstances)
 			{
-				this.clipboardMapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(instance));
+				this._clipboardMapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(instance));
 			}
 		}
 
@@ -133,14 +123,14 @@ namespace MapsExt.Editor
 
 		public void OnUndo()
 		{
-			this.stateHistory.Undo();
-			this.LoadState(this.stateHistory.CurrentState);
+			this._stateHistory.Undo();
+			this.LoadState(this._stateHistory.CurrentState);
 		}
 
 		public void OnRedo()
 		{
-			this.stateHistory.Redo();
-			this.LoadState(this.stateHistory.CurrentState);
+			this._stateHistory.Redo();
+			this.LoadState(this._stateHistory.CurrentState);
 		}
 
 		// A more graceful version of LoadMap which makes an effort to maintain selections and such
@@ -148,7 +138,7 @@ namespace MapsExt.Editor
 		{
 			var dict = this.content.GetComponentsInChildren<MapObjectInstance>(true).ToDictionary(item => item.mapObjectId, item => item.gameObject);
 
-			foreach (var mapObject in state.mapObjects)
+			foreach (var mapObject in state.MapObjects)
 			{
 				if (dict.ContainsKey(mapObject.mapObjectId))
 				{
@@ -164,7 +154,7 @@ namespace MapsExt.Editor
 				}
 			}
 
-			var remainingSelected = this.selectedObjects.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().mapObjectId)).ToList();
+			var remainingSelected = this.SelectedObjects.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().mapObjectId)).ToList();
 
 			// Destroy map objects remaining in the dictionary since they don't exist in the new state
 			foreach (var id in dict.Keys)
@@ -184,25 +174,25 @@ namespace MapsExt.Editor
 
 		public bool CanUndo()
 		{
-			return this.stateHistory.CanUndo();
+			return this._stateHistory.CanUndo();
 		}
 
 		public bool CanRedo()
 		{
-			return this.stateHistory.CanRedo();
+			return this._stateHistory.CanRedo();
 		}
 
 		private IEnumerator OnPasteCoroutine()
 		{
-			if (this.clipboardMapObjects == null || this.clipboardMapObjects.Count == 0)
+			if (this._clipboardMapObjects == null || this._clipboardMapObjects.Count == 0)
 			{
 				yield break;
 			}
 
-			int waiting = this.clipboardMapObjects.Count;
+			int waiting = this._clipboardMapObjects.Count;
 			this.ClearSelected();
 
-			foreach (var mapObject in this.clipboardMapObjects)
+			foreach (var mapObject in this._clipboardMapObjects)
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.content, mapObject, obj =>
 				{
@@ -260,12 +250,12 @@ namespace MapsExt.Editor
 
 		public void OnToggleSnapToGrid(bool enabled)
 		{
-			this.snapToGrid = enabled;
+			this.SnapToGrid = enabled;
 		}
 
 		public void OnDeleteSelectedMapObjects()
 		{
-			foreach (var instance in this.selectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
+			foreach (var instance in this.SelectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
 			{
 				if (instance == this.animationHandler.animation?.gameObject)
 				{
@@ -287,15 +277,15 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 			this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
 			this.animationHandler.enabled = false;
-			this.isSimulating = true;
-			this.isCreatingSelection = false;
+			this.IsSimulating = true;
+			this._isCreatingSelection = false;
 
 			if (this.content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
 				MapsExtendedEditor.instance.SpawnObject(this.content, new SpawnData(), instance =>
 				{
 					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
-					this.tempSpawn = instance;
+					this._tempSpawn = instance;
 					this.ExecuteAfterFrames(1, this.DoStartSimulation);
 				});
 			}
@@ -337,15 +327,15 @@ namespace MapsExt.Editor
 			var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
 			gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = true;
 
-			this.isSimulating = false;
+			this.IsSimulating = false;
 			GameModeManager.SetGameMode(null);
 			PlayerManager.instance.RemovePlayers();
 			CardBarHandler.instance.ResetCardBards();
 
-			if (this.tempSpawn != null)
+			if (this._tempSpawn != null)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this.tempSpawn);
-				this.tempSpawn = null;
+				GameObjectUtils.DestroyImmediateSafe(this._tempSpawn);
+				this._tempSpawn = null;
 			}
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.simulatedContent);
@@ -362,11 +352,11 @@ namespace MapsExt.Editor
 			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
 			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");
 
-			this.currentMapName = mapFilePath.StartsWith(personalFolder) ? mapName : null;
+			this.CurrentMapName = mapFilePath.StartsWith(personalFolder) ? mapName : null;
 
 			this.ExecuteAfterFrames(1, () =>
 			{
-				this.stateHistory = new StateHistory<CustomMap>(this.GetMapData());
+				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 				this.ResetSpawnLabels();
 				this.ClearSelected();
 				this.UpdateRopeAttachments();
@@ -375,15 +365,15 @@ namespace MapsExt.Editor
 
 		public void OnSelectionStart()
 		{
-			this.selectionStartPosition = EditorInput.mousePosition;
-			this.isCreatingSelection = true;
+			this._selectionStartPosition = EditorInput.MousePosition;
+			this._isCreatingSelection = true;
 		}
 
 		public void OnSelectionEnd()
 		{
-			if (this.selectionRect.width > 2 && this.selectionRect.height > 2)
+			if (this._selectionRect.width > 2 && this._selectionRect.height > 2)
 			{
-				var list = EditorUtils.GetContainedActionHandlers(UIUtils.GUIToWorldRect(this.selectionRect));
+				var list = EditorUtils.GetContainedActionHandlers(UIUtils.GUIToWorldRect(this._selectionRect));
 				this.ClearSelected();
 
 				// When editing animation, don't allow selecting other map objects
@@ -397,8 +387,8 @@ namespace MapsExt.Editor
 				}
 			}
 
-			this.isCreatingSelection = false;
-			this.selectionRect = Rect.zero;
+			this._isCreatingSelection = false;
+			this._selectionRect = Rect.zero;
 		}
 
 		public void OnClickActionHandlers(List<ActionHandler> handlers)
@@ -416,7 +406,7 @@ namespace MapsExt.Editor
 			{
 				selectedObject = objects[0];
 
-				if (this.selectedObjects.Count == 1)
+				if (this.SelectedObjects.Count == 1)
 				{
 					int currentIndex = objects.FindIndex(this.IsSelected);
 					if (currentIndex != -1)
@@ -426,7 +416,7 @@ namespace MapsExt.Editor
 				}
 			}
 
-			int previouslySelectedCount = this.selectedObjects.Count;
+			int previouslySelectedCount = this.SelectedObjects.Count;
 			bool clickedMapObjectIsSelected = this.IsSelected(selectedObject);
 			this.ClearSelected();
 
@@ -446,12 +436,12 @@ namespace MapsExt.Editor
 
 		public void OnPointerDown()
 		{
-			if (this.activeObject == null)
+			if (this.ActiveObject == null)
 			{
 				return;
 			}
 
-			foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
+			foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 			{
 				handler.OnPointerDown();
 			}
@@ -459,12 +449,12 @@ namespace MapsExt.Editor
 
 		public void OnPointerUp()
 		{
-			if (this.activeObject == null)
+			if (this.ActiveObject == null)
 			{
 				return;
 			}
 
-			foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
+			foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 			{
 				handler.OnPointerUp();
 			}
@@ -472,12 +462,12 @@ namespace MapsExt.Editor
 
 		public void OnKeyDown(KeyCode key)
 		{
-			if (this.activeObject == null)
+			if (this.ActiveObject == null)
 			{
 				return;
 			}
 
-			foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
+			foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 			{
 				handler.OnKeyDown(key);
 			}
@@ -485,43 +475,43 @@ namespace MapsExt.Editor
 
 		public bool IsSelected(GameObject obj)
 		{
-			return this.selectedObjects.Contains(obj);
+			return this.SelectedObjects.Contains(obj);
 		}
 
 		public Rect GetSelection()
 		{
-			return this.selectionRect;
+			return this._selectionRect;
 		}
 
 		private void UpdateSelection()
 		{
-			var mousePos = EditorInput.mousePosition;
+			var mousePos = EditorInput.MousePosition;
 
-			float width = Mathf.Abs(this.selectionStartPosition.x - mousePos.x);
-			float height = Mathf.Abs(this.selectionStartPosition.y - mousePos.y);
-			float x = Mathf.Min(this.selectionStartPosition.x, mousePos.x);
-			float y = Screen.height - Mathf.Min(this.selectionStartPosition.y, mousePos.y) - height;
+			float width = Mathf.Abs(this._selectionStartPosition.x - mousePos.x);
+			float height = Mathf.Abs(this._selectionStartPosition.y - mousePos.y);
+			float x = Mathf.Min(this._selectionStartPosition.x, mousePos.x);
+			float y = Screen.height - Mathf.Min(this._selectionStartPosition.y, mousePos.y) - height;
 
-			this.selectionRect = new Rect(x, y, width, height);
+			this._selectionRect = new Rect(x, y, width, height);
 		}
 
 		public void ClearSelected()
 		{
-			if (this.activeObject != null)
+			if (this.ActiveObject != null)
 			{
-				foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
+				foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 				{
 					handler.OnDeselect();
 				}
 			}
 
-			if (this.dummyGroup != null)
+			if (this._dummyGroup != null)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this.dummyGroup);
+				GameObjectUtils.DestroyImmediateSafe(this._dummyGroup);
 			}
 
-			this.selectedObjects.Clear();
-			this.activeObject = null;
+			this.SelectedObjects.Clear();
+			this.ActiveObject = null;
 		}
 
 		public void AddSelected(GameObject obj)
@@ -533,9 +523,9 @@ namespace MapsExt.Editor
 		{
 			if (list.Count() >= 2)
 			{
-				this.dummyGroup = new GameObject("Group");
-				this.dummyGroup.transform.SetParent(this.content.transform);
-				this.dummyGroup.SetActive(false);
+				this._dummyGroup = new GameObject("Group");
+				this._dummyGroup.transform.SetParent(this.content.transform);
+				this._dummyGroup.SetActive(false);
 
 				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
 
@@ -543,29 +533,29 @@ namespace MapsExt.Editor
 				 * A group action handler is valid if all selected map objects have
 				 * all action handlers that are required by the group action handler.
 				 */
-				foreach (var type in this.groupActionHandlers.Keys)
+				foreach (var type in this._groupActionHandlers.Keys)
 				{
-					var requiredTypes = this.groupActionHandlers[type];
+					var requiredTypes = this._groupActionHandlers[type];
 					if (list.All(obj => requiredTypes.All(t => obj.GetComponent(t) != null)))
 					{
-						var handler = (IGroupMapObjectActionHandler) this.dummyGroup.AddComponent(type);
+						var handler = (IGroupMapObjectActionHandler) this._dummyGroup.AddComponent(type);
 						handler.Initialize(list);
 					}
 				}
 
-				this.dummyGroup.SetActive(true);
-				this.activeObject = this.dummyGroup;
+				this._dummyGroup.SetActive(true);
+				this.ActiveObject = this._dummyGroup;
 			}
 			else
 			{
-				this.activeObject = list.FirstOrDefault();
+				this.ActiveObject = list.FirstOrDefault();
 			}
 
-			this.selectedObjects.AddRange(list);
+			this.SelectedObjects.AddRange(list);
 
-			if (this.activeObject != null)
+			if (this.ActiveObject != null)
 			{
-				foreach (var handler in this.activeObject.GetComponents<ActionHandler>())
+				foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 				{
 					handler.OnSelect();
 				}
@@ -606,7 +596,7 @@ namespace MapsExt.Editor
 
 		public void TakeSnaphot()
 		{
-			this.stateHistory.AddState(this.GetMapData());
+			this._stateHistory.AddState(this.GetMapData());
 		}
 	}
 }

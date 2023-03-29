@@ -11,7 +11,7 @@ namespace MapsExt.Editor
 		bool GetKeyUp(KeyCode key);
 		bool GetKey(KeyCode key);
 
-		Vector2 mouseScrollDelta { get; }
-		Vector3 mousePosition { get; }
+		Vector2 MouseScrollDelta { get; }
+		Vector3 MousePosition { get; }
 	}
 }

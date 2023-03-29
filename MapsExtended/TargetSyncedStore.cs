@@ -1,33 +1,30 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapsExt
 {
 	public class TargetSyncedStore<T> where T : IEquatable<T>
 	{
-		private object currentTarget = null;
-		private Dictionary<int, T> values = new Dictionary<int, T>();
-		private Dictionary<int, bool> valueSet = new Dictionary<int, bool>();
+		private object _currentTarget;
+		private readonly Dictionary<int, T> _values = new Dictionary<int, T>();
+		private readonly Dictionary<int, bool> _valueSet = new Dictionary<int, bool>();
 
 		public int Allocate(object target)
 		{
-			if (target != this.currentTarget)
+			if (target != this._currentTarget)
 			{
-				this.values.Clear();
-				this.valueSet.Clear();
-				this.currentTarget = target;
+				this._values.Clear();
+				this._valueSet.Clear();
+				this._currentTarget = target;
 			}
 
-			int id = this.values.Count;
+			int id = this._values.Count;
 
-			if (!this.values.ContainsKey(id))
+			if (!this._values.ContainsKey(id))
 			{
-				this.values.Add(id, default);
-				this.valueSet.Add(id, false);
+				this._values.Add(id, default);
+				this._valueSet.Add(id, false);
 			}
 
 			return id;
@@ -35,17 +32,17 @@ namespace MapsExt
 
 		public bool TargetEquals(object target)
 		{
-			return target == this.currentTarget;
+			return target == this._currentTarget;
 		}
 
 		public bool IsValueSet(int id)
 		{
-			return this.values.ContainsKey(id) && this.valueSet[id];
+			return this._values.ContainsKey(id) && this._valueSet[id];
 		}
 
 		public IEnumerator WaitForValue(object target, int id)
 		{
-			while (target == this.currentTarget && !this.IsValueSet(id))
+			while (target == this._currentTarget && !this.IsValueSet(id))
 			{
 				yield return null;
 			}
@@ -53,20 +50,20 @@ namespace MapsExt
 
 		public T Get(int id)
 		{
-			return this.values[id];
+			return this._values[id];
 		}
 
 		public void Set(int id, T value)
 		{
-			if (!this.values.ContainsKey(id))
+			if (!this._values.ContainsKey(id))
 			{
-				this.values.Add(id, value);
-				this.valueSet.Add(id, true);
+				this._values.Add(id, value);
+				this._valueSet.Add(id, true);
 			}
 			else
 			{
-				this.values[id] = value;
-				this.valueSet[id] = true;
+				this._values[id] = value;
+				this._valueSet[id] = true;
 			}
 		}
 	}

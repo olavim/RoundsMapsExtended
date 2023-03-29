@@ -13,16 +13,16 @@ namespace MapsExt.Geometry
 	 */
 	public class Triangulator
 	{
-		private PolygonWrapper polygon;
+		private readonly PolygonWrapper _polygon;
 
 		public Triangulator(Polygon polygon)
 		{
-			this.polygon = new PolygonWrapper(polygon);
+			this._polygon = new PolygonWrapper(polygon);
 		}
 
 		public Mesh GetMesh()
 		{
-			if (!this.polygon.IsValid())
+			if (!this._polygon.IsValid())
 			{
 				return null;
 			}
@@ -44,8 +44,8 @@ namespace MapsExt.Geometry
 					// A convex vertex may be an ear
 					if (node.Value.isConvex && this.IsEar(verticesToClip, node))
 					{
-						triangles[triangleIndex * 3 + 2] = prev.Value.index;
-						triangles[triangleIndex * 3 + 1] = node.Value.index;
+						triangles[(triangleIndex * 3) + 2] = prev.Value.index;
+						triangles[(triangleIndex * 3) + 1] = node.Value.index;
 						triangles[triangleIndex * 3] = next.Value.index;
 						triangleIndex++;
 
@@ -66,20 +66,20 @@ namespace MapsExt.Geometry
 				}
 			}
 
-			var mesh = new Mesh();
-			mesh.vertices = this.polygon.vertices.Select(c => new Vector3((float) c.X, (float) c.Y, 0)).ToArray();
-			mesh.triangles = triangles;
-
-			return mesh;
+			return new Mesh
+			{
+				vertices = this._polygon.vertices.Select(c => new Vector3((float) c.X, (float) c.Y, 0)).ToArray(),
+				triangles = triangles
+			};
 		}
 
 		private LinkedList<Vertex> BuildVertexList()
 		{
 			var vertices = new LinkedList<Vertex>();
 
-			for (int i = 0; i < this.polygon.Exterior.vertices.Length; i++)
+			for (int i = 0; i < this._polygon.Exterior.vertices.Length; i++)
 			{
-				var vertex = new Vertex(i, this.polygon.Exterior.vertices[i]);
+				var vertex = new Vertex(i, this._polygon.Exterior.vertices[i]);
 				vertices.AddLast(vertex);
 			}
 
@@ -88,9 +88,9 @@ namespace MapsExt.Geometry
 				this.UpdateVertex(vertices, node);
 			}
 
-			for (int i = 0; i < this.polygon.Interiors.Length; i++)
+			for (int i = 0; i < this._polygon.Interiors.Length; i++)
 			{
-				var interior = this.polygon.Interiors[i];
+				var interior = this._polygon.Interiors[i];
 
 				// Find the rightmost vertex of this interior and a vertex on the exterior that is visible from it
 				var rightmostPoint = interior.vertices.Aggregate((a, b) => a.X > b.X ? a : b);
@@ -112,7 +112,7 @@ namespace MapsExt.Geometry
 				var visibleVertexCopy = new Vertex(visibleVertex.index, visibleVertex.position);
 				var lastNewVertexNode = vertices.AddAfter(currentVertexNode, visibleVertexCopy);
 
-				for (var node = visibleVertexNode; node != (lastNewVertexNode.Next ?? vertices.First); node = (node.Next ?? vertices.First))
+				for (var node = visibleVertexNode; node != (lastNewVertexNode.Next ?? vertices.First); node = node.Next ?? vertices.First)
 				{
 					var next = node.Next ?? vertices.First;
 					this.UpdateVertex(vertices, node);
@@ -272,8 +272,7 @@ namespace MapsExt.Geometry
 				// Sort interiors by their max x-coordinates, descending order
 				sortedInteriors.Sort((a, b) => b.Coordinates.Max(c => c.X).CompareTo(a.Coordinates.Max(c => c.X)));
 
-				var hullList = new List<PolygonHull>();
-				hullList.Add(new PolygonHull(exterior, 0));
+				var hullList = new List<PolygonHull> { new PolygonHull(exterior, 0) };
 				foreach (var interior in sortedInteriors)
 				{
 					var prevHull = hullList[hullList.Count - 1];

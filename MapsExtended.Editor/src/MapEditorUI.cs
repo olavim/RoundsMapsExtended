@@ -48,20 +48,22 @@ namespace MapsExt.Editor
 
 	public class MapEditorUI : MonoBehaviour
 	{
+		// These are set in Unity editor
 		public MapEditor editor;
 		public Toolbar toolbar;
 		public Window mapObjectWindow;
 		public Window inspectorWindow;
 		public AnimationWindow animationWindow;
 		public MapObjectInspector inspector;
-		private Texture2D selectionTexture;
-		private Window[] windows;
-		private bool[] windowWasOpen;
-		private Vector2 resolution;
+
+		private Texture2D _selectionTexture;
+		private Window[] _windows;
+		private bool[] _windowWasOpen;
+		private Vector2 _resolution;
 
 		protected virtual void Awake()
 		{
-			this.resolution = new Vector2(Screen.width, Screen.height);
+			this._resolution = new Vector2(Screen.width, Screen.height);
 
 			this.toolbar.fileMenu.AddItem(new MenuItemBuilder().Label("Open...").Action(this.OnClickOpen).KeyBinding(NamedKeyCode.O, NamedKeyCode.Ctrl));
 			this.toolbar.fileMenu.AddItem(new MenuItemBuilder().Label("Save").Action(this.OnClickSave).KeyBinding(NamedKeyCode.S, NamedKeyCode.Ctrl));
@@ -119,18 +121,18 @@ namespace MapsExt.Editor
 				if (simulated)
 				{
 					this.editor.OnStartSimulation();
-					for (int i = 0; i < this.windows.Length; i++)
+					for (int i = 0; i < this._windows.Length; i++)
 					{
-						this.windowWasOpen[i] = this.windows[i].gameObject.activeSelf;
-						this.windows[i].gameObject.SetActive(false);
+						this._windowWasOpen[i] = this._windows[i].gameObject.activeSelf;
+						this._windows[i].gameObject.SetActive(false);
 					}
 				}
 				else
 				{
 					this.editor.OnStopSimulation();
-					for (int i = 0; i < this.windows.Length; i++)
+					for (int i = 0; i < this._windows.Length; i++)
 					{
-						this.windows[i].gameObject.SetActive(this.windowWasOpen[i]);
+						this._windows[i].gameObject.SetActive(this._windowWasOpen[i]);
 					}
 				}
 
@@ -218,25 +220,25 @@ namespace MapsExt.Editor
 
 		protected virtual void Start()
 		{
-			this.windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
-			this.windowWasOpen = new bool[this.windows.Length];
-			this.selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
+			this._windows = new Window[] { this.mapObjectWindow, this.inspectorWindow, this.animationWindow };
+			this._windowWasOpen = new bool[this._windows.Length];
+			this._selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
 		}
 
 		protected virtual void Update()
 		{
-			if (this.editor.isSimulating)
+			if (this.editor.IsSimulating)
 			{
 				return;
 			}
 
 			var newResolution = this.GetComponent<RectTransform>().sizeDelta;
 
-			if (newResolution != this.resolution)
+			if (newResolution != this._resolution)
 			{
 				float extraOffset = 35;
 
-				foreach (var window in this.windows)
+				foreach (var window in this._windows)
 				{
 					var size = window.GetComponent<RectTransform>().sizeDelta;
 
@@ -248,7 +250,7 @@ namespace MapsExt.Editor
 					extraOffset += size.y + 5;
 				}
 
-				this.resolution = newResolution;
+				this._resolution = newResolution;
 			}
 
 			this.toolbar.editMenu.SetItemEnabled("Undo", this.editor.CanUndo());
@@ -300,9 +302,9 @@ namespace MapsExt.Editor
 
 		public void OnClickSave()
 		{
-			if (this.editor.currentMapName?.Length > 0)
+			if (this.editor.CurrentMapName?.Length > 0)
 			{
-				this.editor.SaveMap(this.editor.currentMapName);
+				this.editor.SaveMap(this.editor.CurrentMapName);
 			}
 			else
 			{
@@ -349,10 +351,10 @@ namespace MapsExt.Editor
 
 		public void OnGUI()
 		{
-			if (!this.editor.isSimulating)
+			if (!this.editor.IsSimulating)
 			{
 				var selectionStyle = new GUIStyle(GUI.skin.box);
-				selectionStyle.normal.background = this.selectionTexture;
+				selectionStyle.normal.background = this._selectionTexture;
 				var selectionRect = this.editor.GetSelection();
 
 				if (selectionRect.width > 11 && selectionRect.height > 11)

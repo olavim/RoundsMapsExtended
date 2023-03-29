@@ -41,11 +41,11 @@ namespace MapsExt.Editor.ActionHandlers
 			return delta;
 		}
 
-		private bool isDragging;
-		private Vector2 prevMouse;
-		private Vector2 prevPosition;
-		private Vector2Int prevCell;
-		private Vector2 offset;
+		private bool _isDragging;
+		private Vector2 _prevMouse;
+		private Vector2 _prevPosition;
+		private Vector2Int _prevCell;
+		private Vector2 _offset;
 
 		public virtual void Move(PositionProperty delta)
 		{
@@ -65,7 +65,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		protected virtual void Update()
 		{
-			if (this.isDragging)
+			if (this._isDragging)
 			{
 				this.DragMapObjects();
 			}
@@ -73,12 +73,12 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnPointerDown()
 		{
-			var mousePos = EditorInput.mousePosition;
+			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
-			this.prevMouse = mouseWorldPos;
-			this.prevPosition = this.GetValue();
-			this.isDragging = true;
+			this._prevMouse = mouseWorldPos;
+			this._prevPosition = this.GetValue();
+			this._isDragging = true;
 
 			var referenceRotation = this.transform.rotation;
 			var referenceAngles = referenceRotation.eulerAngles;
@@ -105,17 +105,17 @@ namespace MapsExt.Editor.ActionHandlers
 				}
 			}
 
-			this.offset = scaleOffset;
-			this.prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
+			this._offset = scaleOffset;
+			this._prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
 		}
 
 		public override void OnPointerUp()
 		{
-			if (this.isDragging)
+			if (this._isDragging)
 			{
-				bool moved = this.prevPosition != this.GetValue().Value;
+				bool moved = this._prevPosition != this.GetValue().Value;
 				this.SetValue(this.GetValue().Value.Round(4));
-				this.isDragging = false;
+				this._isDragging = false;
 
 				if (moved)
 				{
@@ -142,20 +142,20 @@ namespace MapsExt.Editor.ActionHandlers
 
 		private void DragMapObjects()
 		{
-			var mousePos = EditorInput.mousePosition;
+			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var mouseCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
-			var mouseDelta = mouseWorldPos - this.prevMouse;
-			var cellDelta = mouseCell - this.prevCell;
+			var mouseDelta = mouseWorldPos - this._prevMouse;
+			var cellDelta = mouseCell - this._prevCell;
 
 			var delta = mouseDelta;
 
-			if (this.Editor.snapToGrid)
+			if (this.Editor.SnapToGrid)
 			{
 				var objectCell = (Vector2Int) this.Editor.grid.WorldToCell(this.GetValue());
 				var snappedPosition = (Vector2) this.Editor.grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
 
-				delta = snappedPosition + this.offset - this.GetValue();
+				delta = snappedPosition + this._offset - this.GetValue();
 			}
 
 			if (delta != Vector2.zero)
@@ -163,8 +163,8 @@ namespace MapsExt.Editor.ActionHandlers
 				this.Move(delta);
 			}
 
-			this.prevMouse += mouseDelta;
-			this.prevCell = mouseCell;
+			this._prevMouse += mouseDelta;
+			this._prevCell = mouseCell;
 		}
 	}
 }

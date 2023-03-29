@@ -4,8 +4,8 @@ namespace MapsExt.Editor
 {
 	public class DefaultInputSource : IInputSource
 	{
-		public Vector2 mouseScrollDelta => Input.mouseScrollDelta;
-		public Vector3 mousePosition => Input.mousePosition;
+		public Vector2 MouseScrollDelta => Input.mouseScrollDelta;
+		public Vector3 MousePosition => Input.mousePosition;
 
 		public bool GetMouseButtonDown(int button) => Input.GetMouseButtonDown(button);
 		public bool GetMouseButtonUp(int button) => Input.GetMouseButtonUp(button);

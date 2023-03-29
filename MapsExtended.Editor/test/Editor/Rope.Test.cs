@@ -37,7 +37,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RopeSpawnsInTheMiddle()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 1));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, -1));
@@ -47,9 +47,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_MoveObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.activeObject;
+			var boxGo = this.editor.ActiveObject;
 
 			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0));
 			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
@@ -69,14 +69,14 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_MoveGroup()
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var box1 = this.editor.activeObject;
+			var box1 = this.editor.ActiveObject;
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var box2 = this.editor.activeObject;
+			var box2 = this.editor.ActiveObject;
 
 			box2.GetComponent<PositionHandler>().Move(new Vector2(2, 0));
 
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
 			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0));
 			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
@@ -87,7 +87,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.ClearSelected();
 			this.editor.AddSelected(new GameObject[] { box1, box2, rope.GetAnchor(0).gameObject });
 
-			this.editor.activeObject.GetComponent<PositionHandler>().Move(new Vector2(1, 0));
+			this.editor.ActiveObject.GetComponent<PositionHandler>().Move(new Vector2(1, 0));
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(1, 0));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
@@ -97,9 +97,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_RotateObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.activeObject;
+			var boxGo = this.editor.ActiveObject;
 
 			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0.25f));
 			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
@@ -116,9 +116,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_ResizeObject()
 		{
 			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.selectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.activeObject;
+			var boxGo = this.editor.ActiveObject;
 
 			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetValue(new Vector2(-0.25f, 0));
 			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetValue(new Vector2(0, 5));

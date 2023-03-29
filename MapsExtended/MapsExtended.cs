@@ -40,15 +40,15 @@ namespace MapsExt
 		public Action<Assembly> RegisterMapObjectPropertiesAction;
 		public Action<Assembly> RegisterMapObjectsAction;
 
-		internal CustomMap loadedMap;
-		internal string loadedMapSceneName;
-		internal List<CustomMap> maps;
-		internal MapObjectManager mapObjectManager;
-		internal PropertyManager propertyManager = new PropertyManager();
-		internal Dictionary<PhotonMapObject, Action<GameObject>> photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
+		internal CustomMap _loadedMap;
+		internal string _loadedMapSceneName;
+		internal List<CustomMap> _maps;
+		internal MapObjectManager _mapObjectManager;
+		internal PropertyManager _propertyManager = new PropertyManager();
+		internal Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
 
 #pragma warning disable CS0649
-		internal bool forceCustomMaps;
+		internal bool _forceCustomMaps;
 #pragma warning restore CS0649
 
 		private void Awake()
@@ -60,8 +60,8 @@ namespace MapsExt
 
 			var mapObjectManagerGo = new GameObject("Root Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
-			this.mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
-			this.mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
+			this._mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
 			SceneManager.sceneLoaded += (_, mode) =>
 			{
@@ -118,7 +118,7 @@ namespace MapsExt
 						throw new Exception($"Invalid serializer: {propertySerializerType.Name} does not inherit from {typeof(IPropertySerializer<>)}");
 					}
 
-					this.propertyManager.RegisterProperty(propertyType, propertySerializerType);
+					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
 				}
 				catch (Exception ex)
 				{
@@ -133,7 +133,7 @@ namespace MapsExt
 
 		private void OnRegisterMapObjects(Assembly assembly)
 		{
-			var serializer = new PropertyCompositeSerializer(this.propertyManager);
+			var serializer = new PropertyCompositeSerializer(this._propertyManager);
 			var types = assembly.GetTypes();
 
 			foreach (var type in types.Where(t => t.GetCustomAttribute<MapObjectAttribute>() != null))
@@ -148,7 +148,7 @@ namespace MapsExt
 					}
 
 					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
+					this._mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
 				}
 				catch (Exception ex)
 				{
@@ -163,40 +163,40 @@ namespace MapsExt
 			this.RegisterV0MapObjects(assembly);
 		}
 
-		public void DrawDebugGUI(GameObject menu)
+		private void DrawDebugGUI(GameObject menu)
 		{
-			MenuHandler.CreateToggle(this.forceCustomMaps, "Force Custom Maps", menu, null, 30, false, Color.red);
+			MenuHandler.CreateToggle(this._forceCustomMaps, "Force Custom Maps", menu, null, 30, false, Color.red);
 		}
 
-		public void UpdateMapFiles()
+		private void UpdateMapFiles()
 		{
 			var pluginPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
 			var rootPaths = Directory.GetFiles(Path.Combine(BepInEx.Paths.GameRootPath, "maps"), "*.map", SearchOption.AllDirectories);
 
-			this.maps = new List<CustomMap>();
-			this.maps.AddRange(pluginPaths.Select(p => MapLoader.LoadPath(p)));
-			this.maps.AddRange(rootPaths.Select(p => MapLoader.LoadPath(p)));
+			this._maps = new List<CustomMap>();
+			this._maps.AddRange(pluginPaths.Select(p => MapLoader.LoadPath(p)));
+			this._maps.AddRange(rootPaths.Select(p => MapLoader.LoadPath(p)));
 
-			Logger.LogMessage($"Loaded {maps.Count} custom maps");
+			Logger.LogMessage($"Loaded {_maps.Count} custom maps");
 
 			var invalidatedLevels = LevelManager.levels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
 			LevelManager.RemoveLevels(invalidatedLevels);
-			LevelManager.RegisterMaps(this.maps.Select(m => "MapsExtended:" + m.id));
+			LevelManager.RegisterMaps(this._maps.Select(m => "MapsExtended:" + m.Id));
 		}
 
-		public void OnPhotonMapObjectInstantiate(PhotonMapObject mapObject, Action<GameObject> callback)
+		internal void OnPhotonMapObjectInstantiate(PhotonMapObject mapObject, Action<GameObject> callback)
 		{
-			this.photonInstantiationListeners.Add(mapObject, callback);
+			this._photonInstantiationListeners.Add(mapObject, callback);
 		}
 
 		public static void LoadMap(GameObject container, string mapFilePath, Action onLoad = null)
 		{
-			MapsExtended.LoadMap(container, mapFilePath, MapsExtended.instance.mapObjectManager, onLoad);
+			MapsExtended.LoadMap(container, mapFilePath, MapsExtended.instance._mapObjectManager, onLoad);
 		}
 
 		public static void LoadMap(GameObject container, CustomMap mapData, Action onLoad = null)
 		{
-			MapsExtended.LoadMap(container, mapData, MapsExtended.instance.mapObjectManager, onLoad);
+			MapsExtended.LoadMap(container, mapData, MapsExtended.instance._mapObjectManager, onLoad);
 		}
 
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
@@ -214,9 +214,9 @@ namespace MapsExt
 		{
 			GameObjectUtils.DestroyChildrenImmediateSafe(container);
 
-			int toLoad = mapData.mapObjects.Count;
+			int toLoad = mapData.MapObjects.Length;
 
-			foreach (var mapObject in mapData.mapObjects)
+			foreach (var mapObject in mapData.MapObjects)
 			{
 				mapObjectManager.Instantiate(mapObject, container.transform, _ => toLoad--);
 			}
@@ -242,7 +242,7 @@ namespace MapsExt
 
 			SceneManager.sceneLoaded -= MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
 			Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).FirstOrDefault(m => m != null);
-			MapsExtended.LoadMap(map.gameObject, MapsExtended.instance.loadedMap, MapsExtended.instance.mapObjectManager);
+			MapsExtended.LoadMap(map.gameObject, MapsExtended.instance._loadedMap, MapsExtended.instance._mapObjectManager);
 		}
 
 		public static void Prefix(ref string sceneName)
@@ -251,8 +251,8 @@ namespace MapsExt
 			{
 				string id = sceneName.Split(':')[1];
 
-				MapsExtended.instance.loadedMap = MapsExtended.instance.maps.First(m => m.id == id);
-				MapsExtended.instance.loadedMapSceneName = sceneName;
+				MapsExtended.instance._loadedMap = MapsExtended.instance._maps.First(m => m.Id == id);
+				MapsExtended.instance._loadedMapSceneName = sceneName;
 
 				sceneName = "NewMap";
 				SceneManager.sceneLoaded += MapManagerPatch_LoadLevel.OnLevelFinishedLoading;
@@ -267,7 +267,7 @@ namespace MapsExt
 		{
 			if (scene.name == "NewMap")
 			{
-				__result = __instance.levels.ToList().IndexOf(MapsExtended.instance.loadedMapSceneName);
+				__result = __instance.levels.ToList().IndexOf(MapsExtended.instance._loadedMapSceneName);
 				return false;
 			}
 
@@ -280,15 +280,15 @@ namespace MapsExt
 	{
 		public static bool Prefix(ref string __result)
 		{
-			if (!MapsExtended.instance.forceCustomMaps)
+			if (!MapsExtended.instance._forceCustomMaps)
 			{
 				return true;
 			}
 
-			var customMaps = MapsExtended.instance.maps;
+			var customMaps = MapsExtended.instance._maps;
 
 			int index = UnityEngine.Random.Range(0, customMaps.Count);
-			__result = customMaps[index].id;
+			__result = customMaps[index].Id;
 			return false;
 		}
 	}
@@ -460,11 +460,11 @@ namespace MapsExt
 	{
 		public static void OnPhotonInstantiate(GameObject instance, PhotonMapObject mapObject)
 		{
-			MapsExtended.instance.photonInstantiationListeners.TryGetValue(mapObject, out Action<GameObject> listener);
+			MapsExtended.instance._photonInstantiationListeners.TryGetValue(mapObject, out Action<GameObject> listener);
 			if (listener != null)
 			{
 				listener(instance);
-				MapsExtended.instance.photonInstantiationListeners.Remove(mapObject);
+				MapsExtended.instance._photonInstantiationListeners.Remove(mapObject);
 			}
 		}
 

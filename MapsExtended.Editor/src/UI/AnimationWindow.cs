@@ -28,7 +28,7 @@ namespace MapsExt.Editor.UI
 				return;
 			}
 
-			for (int i = 0; i < anim.keyframes.Count; i++)
+			for (int i = 0; i < anim.Keyframes.Count; i++)
 			{
 				var settings = this.AddAnimationKeyframeSettings(i);
 				settings.SetSelected(i == this.editor.animationHandler.KeyframeIndex);
@@ -56,9 +56,9 @@ namespace MapsExt.Editor.UI
 
 			keyframeSettings.onDurationChanged += (value, type) =>
 			{
-				float durationDelta = value - anim.keyframes[keyframe].Duration;
-				anim.keyframes[keyframe].Duration = value;
-				anim.keyframes[keyframe].UpdateCurve();
+				float durationDelta = value - anim.Keyframes[keyframe].Duration;
+				anim.Keyframes[keyframe].Duration = value;
+				anim.Keyframes[keyframe].UpdateCurve();
 
 				if (type == ChangeType.ChangeEnd)
 				{
@@ -74,8 +74,8 @@ namespace MapsExt.Editor.UI
 					value == "In and Out" ? CurveType.EaseInOut :
 					CurveType.Linear;
 
-				anim.keyframes[keyframe].CurveType = curveType;
-				anim.keyframes[keyframe].UpdateCurve();
+				anim.Keyframes[keyframe].CurveType = curveType;
+				anim.Keyframes[keyframe].UpdateCurve();
 
 				this.editor.TakeSnaphot();
 			};
@@ -91,8 +91,8 @@ namespace MapsExt.Editor.UI
 				this.deleteButton.interactable = keyframe > 0;
 			};
 
-			keyframeSettings.durationInput.Value = anim.keyframes[keyframe].Duration;
-			keyframeSettings.easingDropdown.value = (int) anim.keyframes[keyframe].CurveType;
+			keyframeSettings.durationInput.Value = anim.Keyframes[keyframe].Duration;
+			keyframeSettings.easingDropdown.value = (int) anim.Keyframes[keyframe].CurveType;
 
 			return keyframeSettings;
 		}
@@ -113,7 +113,7 @@ namespace MapsExt.Editor.UI
 		{
 			if (this.editor.animationHandler.animation == null)
 			{
-				var anim = this.editor.activeObject.GetComponent<MapObjectAnimation>();
+				var anim = this.editor.ActiveObject.GetComponent<MapObjectAnimation>();
 
 				if (anim)
 				{
@@ -121,7 +121,7 @@ namespace MapsExt.Editor.UI
 				}
 				else
 				{
-					this.editor.animationHandler.AddAnimation(this.editor.activeObject);
+					this.editor.animationHandler.AddAnimation(this.editor.ActiveObject);
 				}
 			}
 

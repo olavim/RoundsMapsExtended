@@ -37,7 +37,7 @@ namespace MapsExt
 
 					var serializer = new MapObjectSpecSerializer(serializerAction, deserializerAction);
 
-					this.mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
+					this._mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
 				}
 				catch (Exception ex)
 				{
