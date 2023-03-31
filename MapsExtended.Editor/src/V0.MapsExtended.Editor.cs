@@ -4,7 +4,6 @@ using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using MapsExt.MapObjects;
-using MapsExt.Editor.MapObjects;
 
 #pragma warning disable CS0618
 
@@ -43,10 +42,9 @@ namespace MapsExt.Editor
 						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
 
 					var serializer = new MapObjectSpecSerializer(serializerAction, deserializerAction);
-					this.mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
+					this._mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
 
-					var mapObjectAttr = new EditorMapObjectAttribute(attr.label, attr.category);
-					this.mapObjectAttributes.Add((attr.dataType, mapObjectAttr));
+					this._mapObjectAttributes.Add((attr.dataType, attr.label, attr.category));
 				}
 				catch (Exception ex)
 				{

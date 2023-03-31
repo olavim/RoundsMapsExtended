@@ -30,22 +30,22 @@ namespace MapsExt.Editor.UI
 			fileBrowser.SetOptions("Personal Maps", "Plugin Maps");
 			fileBrowser.SetPath(inactivePath);
 
-			fileBrowser.pathSelect.onValueChanged.AddListener(val =>
+			fileBrowser.PathSelect.onValueChanged.AddListener(val =>
 			{
 				string newPath = val == 0 ? inactivePath : activePath;
 				fileBrowser.SetPath(newPath);
 			});
 
-			fileBrowser.openButton.onClick.AddListener(() =>
+			fileBrowser.OpenButton.onClick.AddListener(() =>
 			{
-				if (fileBrowser.selectedPath != null)
+				if (fileBrowser.SelectedPath != null)
 				{
 					GameObjectUtils.DestroyImmediateSafe(wrapperGo);
-					cb(fileBrowser.selectedPath);
+					cb(fileBrowser.SelectedPath);
 				}
 			});
 
-			fileBrowser.closeButton.onClick.AddListener(() => GameObjectUtils.DestroyImmediateSafe(wrapperGo));
+			fileBrowser.CloseButton.onClick.AddListener(() => GameObjectUtils.DestroyImmediateSafe(wrapperGo));
 		}
 
 		public static void SaveDialog(Action<string> cb)
@@ -63,18 +63,18 @@ namespace MapsExt.Editor.UI
 			var saveDialogGo = GameObject.Instantiate(Assets.SaveDialogPrefab, wrapperGo.transform);
 			var saveDialog = saveDialogGo.GetComponent<SaveDialog>();
 
-			saveDialog.title.text = "Save As...";
+			saveDialog.Title.text = "Save As...";
 
-			saveDialog.saveButton.onClick.AddListener(() =>
+			saveDialog.SaveButton.onClick.AddListener(() =>
 			{
-				if (saveDialog.textField.text?.Length > 0)
+				if (saveDialog.TextField.text?.Length > 0)
 				{
 					GameObjectUtils.DestroyImmediateSafe(wrapperGo);
-					cb(saveDialog.textField.text);
+					cb(saveDialog.TextField.text);
 				}
 			});
 
-			saveDialog.closeButton.onClick.AddListener(() => GameObjectUtils.DestroyImmediateSafe(wrapperGo));
+			saveDialog.CloseButton.onClick.AddListener(() => GameObjectUtils.DestroyImmediateSafe(wrapperGo));
 		}
 	}
 }

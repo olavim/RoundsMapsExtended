@@ -32,22 +32,17 @@ namespace MapsExt.MapObjects.Properties
 		}
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(AnimationProperty))]
 	public class AnimationPropertySerializer : PropertySerializer<AnimationProperty>
 	{
 		public override AnimationProperty Serialize(GameObject instance)
 		{
-			var animInstance = instance.GetComponent<MapObjectAnimationInstance>();
-			var keyframes = animInstance.keyframes.Take(1).ToList();
-
+			var keyframes = new List<AnimationKeyframe>();
 			var anim = instance.GetComponent<MapObjectAnimation>();
 
 			if (anim != null)
 			{
-				foreach (var frame in anim.Keyframes.Skip(1))
-				{
-					keyframes.Add(new AnimationKeyframe(frame));
-				}
+				keyframes.AddRange(anim.Keyframes);
 			}
 
 			return new AnimationProperty(keyframes);
@@ -55,42 +50,22 @@ namespace MapsExt.MapObjects.Properties
 
 		public override void Deserialize(AnimationProperty property, GameObject target)
 		{
-			var instance = target.GetOrAddComponent<MapObjectAnimationInstance>();
-			instance.keyframes = property.Keyframes.Take(1).ToArray();
-
 			if (property.Keyframes.Length > 1)
 			{
-				var dataFrames = property.Keyframes.ToList();
-				dataFrames.Insert(0, new AnimationKeyframe(property.Keyframes[0]));
-
+				var keyframes = property.Keyframes.ToList();
 				var anim = target.GetOrAddComponent<MapObjectAnimation>();
 
-				for (int i = 0; i < dataFrames.Count; i++)
+				for (int i = 0; i < keyframes.Count; i++)
 				{
-					dataFrames[i].UpdateCurve();
-
-					if (i < anim.Keyframes.Count)
-					{
-						anim.Keyframes[i] = dataFrames[i];
-					}
-					else
-					{
-						anim.Keyframes.Add(dataFrames[i]);
-					}
+					keyframes[i].UpdateCurve();
 				}
 
-				anim.Keyframes = anim.Keyframes.Take(dataFrames.Count).ToList();
+				anim.Keyframes = keyframes;
 			}
-			else
+			else if (target.GetComponent<MapObjectAnimation>())
 			{
-				target.GetComponent<MapObjectAnimation>()?.Keyframes.Clear();
-				target.GetComponent<MapObjectAnimation>()?.Keyframes.Insert(0, new AnimationKeyframe(property.Keyframes[0]));
+				GameObject.Destroy(target.GetComponent<MapObjectAnimation>());
 			}
-		}
-
-		class MapObjectAnimationInstance : MonoBehaviour
-		{
-			public AnimationKeyframe[] keyframes;
 		}
 	}
 }

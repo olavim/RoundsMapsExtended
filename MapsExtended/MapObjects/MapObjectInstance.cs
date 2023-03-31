@@ -45,7 +45,7 @@ namespace MapsExt.MapObjects
 				{
 					var rotation = Quaternion.Euler(0, 0, i * anglePerVertex);
 					var point = rotation * identity;
-					vertices.Add(new Vector2(point.x, point.y));
+					vertices.Add(new(point.x, point.y));
 				}
 
 				sf.SetPath(0, vertices.ToArray());

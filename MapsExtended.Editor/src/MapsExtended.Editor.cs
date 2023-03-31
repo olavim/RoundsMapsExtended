@@ -16,6 +16,8 @@ using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.MapObjects.Properties;
 using System.Collections;
 using UnityEngine.EventSystems;
+using MapsExt.Editor.UI;
+using UnityEngine.UI;
 
 namespace MapsExt.Editor
 {
@@ -28,18 +30,19 @@ namespace MapsExt.Editor
 		public const string ModName = "MapsExtended.Editor";
 		public const string ModVersion = MapsExtended.ModVersion;
 
-		public const int LAYER_ANIMATION_MAPOBJECT = 30;
-		public const int LAYER_MAPOBJECT_UI = 31;
+		internal const int LAYER_ANIMATION_MAPOBJECT = 30;
+		internal const int LAYER_MAPOBJECT_UI = 31;
 
 		public static MapsExtendedEditor instance;
 
-		internal bool editorActive;
-		internal bool editorClosing;
-		internal List<(Type, EditorMapObjectAttribute)> mapObjectAttributes = new List<(Type, EditorMapObjectAttribute)>();
-		internal MapObjectManager mapObjectManager;
-		internal PropertyManager propertyManager = new PropertyManager();
-		internal GameObject frontParticles;
-		internal GameObject mainPostProcessing;
+		internal bool _editorActive;
+		internal bool _editorClosing;
+		internal List<(Type, string, string)> _mapObjectAttributes = new();
+		internal MapObjectManager _mapObjectManager;
+		internal PropertyManager _propertyManager = new();
+		internal Dictionary<Type, Type> _propertyInspectorElements = new();
+		internal GameObject _frontParticles;
+		internal GameObject _mainPostProcessing;
 
 		private void Awake()
 		{
@@ -52,17 +55,17 @@ namespace MapsExt.Editor
 
 			var mapObjectManagerGo = new GameObject("Editor Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
-			this.mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
-			this.mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
+			this._mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
 			SceneManager.sceneLoaded += (_, mode) =>
 			{
 				if (mode == LoadSceneMode.Single)
 				{
-					this.editorActive = false;
-					this.editorClosing = false;
-					this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
-					this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
+					this._editorActive = false;
+					this._editorClosing = false;
+					this._frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
+					this._mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
 
 					MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
 				}
@@ -70,7 +73,7 @@ namespace MapsExt.Editor
 
 			Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
 
-			MapsExtended.instance.RegisterMapObjectPropertiesAction += this.RegisterMapObjectSerializers;
+			MapsExtended.instance.RegisterMapObjectPropertiesAction += this.RegisterPropertySerializers;
 			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
@@ -79,10 +82,15 @@ namespace MapsExt.Editor
 			MapsExtended.instance.RegisterMapObjectProperties();
 			MapsExtended.instance.RegisterMapObjects();
 
+			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				this.RegisterPropertyInspectors(asm);
+			}
+
 			Unbound.RegisterMenu("Map Editor", this.OpenEditor, (_) => { }, null, false);
 
-			this.frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
-			this.mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
+			this._frontParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
+			this._mainPostProcessing = GameObject.Find("/Game/Visual/Post/Post_Main");
 
 			var cameraGo = new GameObject("PostProcessCamera");
 			cameraGo.transform.SetParent(this.transform);
@@ -121,7 +129,7 @@ namespace MapsExt.Editor
 			MapManager.instance.RPCA_LoadLevel("MapEditor");
 			SceneManager.sceneLoaded += this.OnEditorLevelLoad;
 
-			while (!this.editorActive)
+			while (!this._editorActive)
 			{
 				yield return null;
 			}
@@ -129,17 +137,17 @@ namespace MapsExt.Editor
 
 		public IEnumerator CloseEditorCoroutine()
 		{
-			while (this.editorClosing)
+			while (this._editorClosing)
 			{
 				yield return null;
 			}
 
-			if (!this.editorActive)
+			if (!this._editorActive)
 			{
 				yield break;
 			}
 
-			this.editorClosing = true;
+			this._editorClosing = true;
 			var op = SceneManager.UnloadSceneAsync("MapEditor");
 			MapManager.instance.currentMap = null;
 
@@ -148,33 +156,34 @@ namespace MapsExt.Editor
 				yield return null;
 			}
 
-			this.editorActive = false;
-			this.editorClosing = false;
+			this._editorActive = false;
+			this._editorClosing = false;
 
 			MapManager.instance.isTestingMap = false;
 			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(true);
 			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOnline();
 		}
 
-		private void RegisterMapObjectSerializers(Assembly assembly)
+		private void RegisterPropertySerializers(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
-			foreach (var propertyType in types.Where(t => t.GetCustomAttribute<EditorPropertySerializerAttribute>() != null))
+			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<EditorPropertySerializerAttribute>() != null))
 			{
 				try
 				{
-					var propertyTargetType = MapObjectUtils.GetMapObjectPropertySerializerTargetType(propertyType);
+					var attr = propertySerializerType.GetCustomAttribute<EditorPropertySerializerAttribute>();
+					var propertyType = attr.PropertyType;
 
-					if (propertyTargetType == null)
+					if (!typeof(IPropertySerializer).IsAssignableFrom(propertySerializerType))
 					{
-						throw new Exception($"Invalid editor serializer: {propertyType.Name} does not inherit from {typeof(PropertySerializer<>)}");
+						throw new Exception($"{propertyType.Name} is not assignable to {typeof(PropertySerializer<>)}");
 					}
 
-					this.propertyManager.RegisterProperty(propertyTargetType, propertyType);
+					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register map object serializer {propertyType.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register map object serializer {propertySerializerType.Name}: {ex.Message}");
 
 #if DEBUG
 					UnityEngine.Debug.LogError(ex.StackTrace);
@@ -185,26 +194,74 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
-			var serializer = new PropertyCompositeSerializer(this.propertyManager);
+			var serializer = new PropertyCompositeSerializer(this._propertyManager);
 			var types = assembly.GetTypes();
 
-			foreach (var type in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
+			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
 			{
 				try
 				{
-					var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
+					var attr = mapObjectType.GetCustomAttribute<EditorMapObjectAttribute>();
+					var dataType = attr.DataType;
 
-					var dataType =
-						MapObjectUtils.GetMapObjectDataType(type)
-						?? throw new Exception($"Invalid EditorMapObject: {type.Name} does not inherit from {typeof(IMapObject<>)}");
+					if (!typeof(MapObjectData).IsAssignableFrom(dataType))
+					{
+						throw new Exception($"Data type {mapObjectType.Name} is not assignable to {typeof(MapObjectData)}");
+					}
 
-					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
-					this.mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
-					this.mapObjectAttributes.Add((dataType, attr));
+					if (!typeof(IMapObject).IsAssignableFrom(mapObjectType))
+					{
+						throw new Exception($"{mapObjectType.Name} is not assignable to {typeof(IMapObject)}");
+					}
+
+					var mapObject = (IMapObject) AccessTools.CreateInstance(mapObjectType);
+					this._mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
+					this._mapObjectAttributes.Add((dataType, attr.Label, attr.Category ?? ""));
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register EditorMapObject {type.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register EditorMapObject {mapObjectType.Name}: {ex.Message}");
+
+#if DEBUG
+					UnityEngine.Debug.LogError(ex.StackTrace);
+#endif
+				}
+			}
+
+			this.RegisterV0MapObjects(assembly);
+		}
+
+		private void RegisterPropertyInspectors(Assembly assembly)
+		{
+			var types = assembly.GetTypes();
+
+			foreach (var elementType in types.Where(t => t.GetCustomAttribute<PropertyInspectorAttribute>() != null))
+			{
+				try
+				{
+					var attr = elementType.GetCustomAttribute<PropertyInspectorAttribute>();
+					var propertyType = attr.PropertyType;
+
+					if (!typeof(IProperty).IsAssignableFrom(propertyType))
+					{
+						throw new Exception($"Property type {propertyType.Name} is not assignable to {typeof(IProperty)}");
+					}
+
+					if (!typeof(IInspectorElement).IsAssignableFrom(elementType))
+					{
+						throw new Exception($"{elementType.Name} is not assignable to {typeof(IInspectorElement)}");
+					}
+
+					if (this._propertyInspectorElements.ContainsKey(propertyType))
+					{
+						throw new Exception($"Inspector for {propertyType.Name} is already registered");
+					}
+
+					this._propertyInspectorElements[propertyType] = elementType;
+				}
+				catch (Exception ex)
+				{
+					UnityEngine.Debug.LogError($"Could not register PropertyInspector {elementType.Name}: {ex.Message}");
 
 #if DEBUG
 					UnityEngine.Debug.LogError(ex.StackTrace);
@@ -219,14 +276,13 @@ namespace MapsExt.Editor
 		{
 			SceneManager.sceneLoaded -= this.OnEditorLevelLoad;
 
-			this.editorActive = true;
+			this._editorActive = true;
 			var map = MapManager.instance.currentMap.Map;
 			map.SetFieldValue("hasCalledReady", true);
 
 			var go = map.gameObject;
 			go.transform.position = Vector3.zero;
-			var baseInput = go.AddComponent<EditorBaseInput>();
-			EventSystem.current.currentInputModule.inputOverride = baseInput;
+			EventSystem.current.currentInputModule.inputOverride = go.AddComponent<EditorBaseInput>();
 
 			MapManager.instance.isTestingMap = true;
 			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(false);
@@ -238,7 +294,7 @@ namespace MapsExt.Editor
 
 		public void LoadMap(GameObject container, string mapFilePath)
 		{
-			MapsExtended.LoadMap(container, mapFilePath, this.mapObjectManager, () =>
+			MapsExtended.LoadMap(container, mapFilePath, this._mapObjectManager, () =>
 			{
 				foreach (var mapObject in container.GetComponentsInChildren<MapObjectInstance>())
 				{
@@ -264,7 +320,7 @@ namespace MapsExt.Editor
 
 		public void SpawnObject(GameObject container, MapObjectData data, Action<GameObject> cb = null)
 		{
-			this.mapObjectManager.Instantiate(data, container.transform, instance =>
+			this._mapObjectManager.Instantiate(data, container.transform, instance =>
 			{
 				this.SetupMapObject(container, instance);
 
@@ -354,7 +410,7 @@ namespace MapsExt.Editor
 	{
 		public static bool Prefix()
 		{
-			return !MapsExtendedEditor.instance.editorActive;
+			return !MapsExtendedEditor.instance._editorActive;
 		}
 	}
 }

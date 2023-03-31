@@ -7,6 +7,4 @@ namespace MapsExt.MapObjects
 		GameObject Prefab { get; }
 		void OnInstantiate(GameObject instance);
 	}
-
-	public interface IMapObject<T> : IMapObject where T : MapObjectData { }
 }

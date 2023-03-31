@@ -29,8 +29,8 @@ namespace MapsExt.Editor.ActionHandlers
 			canvas.worldCamera = MainCam.instance.cam;
 
 			var scaler = this.Content.AddComponent<UIScaler>();
-			scaler.referenceGameObject = this.gameObject;
-			scaler.padding = 0.6f;
+			scaler.ReferenceGameObject = this.gameObject;
+			scaler.Padding = 0.6f;
 
 			var image = this.Content.AddComponent<Image>();
 			image.color = new Color32(255, 255, 255, 5);
@@ -41,8 +41,11 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnDeselect()
 		{
-			GameObjectUtils.DestroyImmediateSafe(this.Content);
-			this._isSelected = false;
+			if (this._isSelected)
+			{
+				GameObjectUtils.DestroyImmediateSafe(this.Content);
+				this._isSelected = false;
+			}
 		}
 
 		public override void OnPointerDown()

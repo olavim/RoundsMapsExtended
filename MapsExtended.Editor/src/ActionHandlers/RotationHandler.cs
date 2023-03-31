@@ -101,13 +101,13 @@ namespace MapsExt.Editor.ActionHandlers
 			image.FalloffDistance = 0.005f;
 
 			var aligner = go.AddComponent<UI.UIAligner>();
-			aligner.referenceGameObject = this.gameObject;
-			aligner.position = AnchorPosition.TopMiddle;
-			aligner.padding = 1.6f;
+			aligner.ReferenceGameObject = this.gameObject;
+			aligner.Position = AnchorPosition.TopMiddle;
+			aligner.Padding = 1.6f;
 
 			var scaler = go.AddComponent<UI.UIScaler>();
-			scaler.referenceGameObject = this.gameObject;
-			scaler.constantSize = new Vector2(0.5f, 0.5f);
+			scaler.ReferenceGameObject = this.gameObject;
+			scaler.ConstantSize = new Vector2(0.5f, 0.5f);
 
 			var modifier = go.AddComponent<UniformModifier>();
 			modifier.Radius = 0.5f;
@@ -124,7 +124,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			var events = go.AddComponent<PointerDownHandler>();
 
-			events.pointerDown += _ =>
+			events.PointerDown += _ =>
 			{
 				if (!this._isRotating)
 				{
@@ -132,7 +132,7 @@ namespace MapsExt.Editor.ActionHandlers
 				}
 			};
 
-			events.pointerUp += _ =>
+			events.PointerUp += _ =>
 			{
 				if (this._isRotating)
 				{

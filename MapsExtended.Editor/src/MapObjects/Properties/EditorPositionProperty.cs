@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorPropertySerializer]
-	public class EditorPositionPropertySerializer : PositionPropertySerializer, IInspectable
+	[EditorPropertySerializer(typeof(PositionProperty))]
+	public class EditorPositionPropertySerializer : PositionPropertySerializer
 	{
 		public override void Deserialize(PositionProperty property, GameObject target)
 		{
@@ -15,13 +15,17 @@ namespace MapsExt.Editor.MapObjects.Properties
 			target.GetOrAddComponent<PositionHandler>();
 			target.GetOrAddComponent<SelectionHandler>();
 		}
+	}
 
-		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
+	[PropertyInspector(typeof(PositionProperty))]
+	public class PositionElement : Vector2Element
+	{
+		protected override Vector2 Value
 		{
-			builder.Property<Vector2>("Position")
-				.ValueSetter(value => inspector.target.SetHandlerValue<PositionProperty>(value))
-				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
-				.ValueGetter(() => inspector.target.GetHandlerValue<PositionProperty>());
+			get => this.Context.InspectorTarget.GetHandlerValue<PositionProperty>();
+			set => this.Context.InspectorTarget.SetHandlerValue<PositionProperty>(value);
 		}
+
+		public PositionElement() : base("Position") { }
 	}
 }

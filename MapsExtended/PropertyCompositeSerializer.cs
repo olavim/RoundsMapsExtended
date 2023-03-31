@@ -14,8 +14,7 @@ namespace MapsExt
 	public class PropertyCompositeSerializer : IMapObjectSerializer
 	{
 		private readonly PropertyManager _propertyManager;
-		private readonly Dictionary<Type, List<(MemberInfo, IPropertySerializer)>> _memberSerializerCache
-			= new Dictionary<Type, List<(MemberInfo, IPropertySerializer)>>();
+		private readonly Dictionary<Type, List<(MemberInfo, IPropertySerializer)>> _memberSerializerCache = new();
 
 		public PropertyCompositeSerializer(PropertyManager propertyManager)
 		{

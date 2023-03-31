@@ -15,8 +15,8 @@ namespace MapsExt.MapObjects
 		}
 	}
 
-	[MapObject]
-	public class BoxDestructible : IMapObject<BoxDestructibleData>
+	[MapObject(typeof(BoxDestructibleData))]
+	public class BoxDestructible : IMapObject
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Box Destructible");
 

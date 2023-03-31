@@ -11,7 +11,7 @@ namespace MapsExt.MapObjects
 
 		public SpawnIDProperty Id
 		{
-			get => new SpawnIDProperty(this._id, this._teamId);
+			get => new(this._id, this._teamId);
 			set
 			{
 				this._id = value.Id;
@@ -22,13 +22,13 @@ namespace MapsExt.MapObjects
 
 		public SpawnData()
 		{
-			this.Id = new SpawnIDProperty();
-			this.Position = new PositionProperty();
+			this.Id = new();
+			this.Position = new();
 		}
 	}
 
-	[MapObject]
-	public class Spawn : IMapObject<SpawnData>
+	[MapObject(typeof(SpawnData))]
+	public class Spawn : IMapObject
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 

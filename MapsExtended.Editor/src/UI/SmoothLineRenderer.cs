@@ -14,20 +14,15 @@ namespace MapsExt.Editor.UI
 		private const int CornerVertexCount = 8;
 		private const float LineWidth = 0.1f;
 
-		public MeshRenderer Renderer { get; private set; }
+		private readonly GeometryFactory _geometryFactory = new(PrecisionModel.FloatingSingle.Value);
 
-		private GeometryFactory _geometryFactory;
+		public MeshRenderer Renderer { get; private set; }
 
 		protected virtual void Awake()
 		{
 			this.Renderer = this.gameObject.GetOrAddComponent<MeshRenderer>();
-			this.Renderer.material = new Material(Shader.Find("Sprites/Default"))
-			{
-				color = new Color(1f, 1f, 1f, 0.1f)
-			};
-
+			this.Renderer.material = new(Shader.Find("Sprites/Default")) { color = new(1f, 1f, 1f, 0.1f) };
 			this.gameObject.GetOrAddComponent<MeshFilter>();
-			this._geometryFactory = new GeometryFactory(PrecisionModel.FloatingSingle.Value);
 		}
 
 		public void SetPositions(List<Vector3> points)
@@ -57,9 +52,10 @@ namespace MapsExt.Editor.UI
 
 		private Polygon CreateCircle(Vector3 pos, float width)
 		{
+			const float anglePerVertex = 360f / CornerVertexCount;
+
 			var coords = new List<Coordinate>();
 			var widthVertex = new Vector3(0, width / 2f, 0);
-			float anglePerVertex = 360f / CornerVertexCount;
 
 			for (int j = 0; j < CornerVertexCount; j++)
 			{

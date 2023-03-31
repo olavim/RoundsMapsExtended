@@ -5,15 +5,14 @@ namespace MapsExt.Editor.MapObjects
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class EditorMapObjectAttribute : Attribute
 	{
-		public string label;
-		public string category;
+		public Type DataType { get; }
+		public string Label { get; }
+		public string Category { get; init; }
 
-		public EditorMapObjectAttribute(string label) : this(label, null) { }
-
-		public EditorMapObjectAttribute(string label, string category)
+		public EditorMapObjectAttribute(Type dataType, string label)
 		{
-			this.label = label;
-			this.category = category;
+			this.DataType = dataType;
+			this.Label = label;
 		}
 	}
 }

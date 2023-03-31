@@ -2,11 +2,11 @@
 
 namespace MapsExt.Editor.UI
 {
-	class UIAligner : MonoBehaviour
+	public class UIAligner : MonoBehaviour
 	{
-		public GameObject referenceGameObject;
-		public float padding = 0.2f;
-		public int position;
+		public GameObject ReferenceGameObject { get; set; }
+		public float Padding { get; set; } = 0.2f;
+		public int Position { get; set; }
 
 		protected virtual void Start()
 		{
@@ -20,19 +20,19 @@ namespace MapsExt.Editor.UI
 
 		public void UpdatePosition()
 		{
-			if (!this.referenceGameObject)
+			if (!this.ReferenceGameObject)
 			{
 				return;
 			}
 
-			var refPos = this.referenceGameObject.transform.position;
-			var refScale = this.referenceGameObject.transform.localScale;
-			var refRotation = this.referenceGameObject.transform.rotation;
+			var refPos = this.ReferenceGameObject.transform.position;
+			var refScale = this.ReferenceGameObject.transform.localScale;
+			var refRotation = this.ReferenceGameObject.transform.rotation;
 
 			float ratio = MainCam.instance.cam.orthographicSize / 20f;
-			var dirMulti = AnchorPosition.directionMultipliers[this.position];
+			var dirMulti = AnchorPosition.directionMultipliers[this.Position];
 			var borderPos = refScale * dirMulti * 0.5f;
-			var paddingPos = new Vector3(this.padding, this.padding, 0) * dirMulti * ratio;
+			var paddingPos = new Vector3(this.Padding, this.Padding, 0) * dirMulti * ratio;
 
 			this.transform.position = refPos + (refRotation * (borderPos + paddingPos));
 			this.transform.rotation = refRotation;

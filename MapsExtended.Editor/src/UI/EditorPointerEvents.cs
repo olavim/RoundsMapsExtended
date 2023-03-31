@@ -4,19 +4,19 @@ using UnityEngine.EventSystems;
 
 namespace MapsExt
 {
-	class PointerDownHandler : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+	public class PointerDownHandler : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 	{
-		public Action<GameObject> pointerDown;
-		public Action<GameObject> pointerUp;
+		public Action<GameObject> PointerDown { get; set; }
+		public Action<GameObject> PointerUp { get; set; }
 
 		public void OnPointerDown(PointerEventData eventData)
 		{
-			this.pointerDown?.Invoke(this.gameObject);
+			this.PointerDown?.Invoke(this.gameObject);
 		}
 
 		public void OnPointerUp(PointerEventData eventData)
 		{
-			this.pointerUp?.Invoke(this.gameObject);
+			this.PointerUp?.Invoke(this.gameObject);
 		}
 	}
 }

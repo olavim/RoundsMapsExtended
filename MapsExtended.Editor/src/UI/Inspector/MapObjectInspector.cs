@@ -3,62 +3,37 @@ using UnityEngine;
 using System;
 using MapsExt.MapObjects;
 using Sirenix.Utilities;
+using System.Collections.Generic;
 
 namespace MapsExt.Editor.UI
 {
 	public class MapObjectInspector : MonoBehaviour
 	{
-		public class InspectorPropertyEntry : Attribute
+		[SerializeField] private MapEditor _editor;
+
+		public MapEditor Editor { get => this._editor; set => this._editor = value; }
+
+		private bool _isLinked;
+		private MapObjectInstance _target;
+
+		private Action OnUpdate { get; set; }
+
+		private InspectorContext Context => new()
 		{
-			public string name;
-			public Type commandType;
-			public int handlerIndex;
-
-			public InspectorPropertyEntry(string name, Type commandType, int handlerIndex)
-			{
-				this.name = name;
-				this.commandType = commandType;
-				this.handlerIndex = handlerIndex;
-			}
-		}
-
-		[AttributeUsage(AttributeTargets.Property, Inherited = true)]
-		public class Vector2Property : InspectorPropertyEntry
-		{
-			public Vector2Property(string name, Type commandType, int handlerIndex = 0) : base(name, commandType, handlerIndex) { }
-		}
-
-		[AttributeUsage(AttributeTargets.Property, Inherited = true)]
-		public class QuaternionProperty : InspectorPropertyEntry
-		{
-			public QuaternionProperty(string name, Type commandType, int handlerIndex = 0) : base(name, commandType, handlerIndex) { }
-		}
-
-		[AttributeUsage(AttributeTargets.Property, Inherited = true)]
-		public class BooleanProperty : InspectorPropertyEntry
-		{
-			public BooleanProperty(string name, Type commandType, int handlerIndex = 0) : base(name, commandType, handlerIndex) { }
-		}
-
-		[AttributeUsage(AttributeTargets.Method, Inherited = true)]
-		public class ButtonBuilder : Attribute { }
-
-		public MapObjectInstance target;
-		public MapEditor editor;
-		public Action onUpdate;
-
-		private bool isLinked;
+			InspectorTarget = this._target?.gameObject,
+			Editor = this.Editor
+		};
 
 		protected virtual void Update()
 		{
 			MapObjectInstance instance = null;
 
-			if (this.editor.ActiveObject != null)
+			if (this.Editor.ActiveObject != null)
 			{
-				instance = this.editor.ActiveObject.GetComponentInParent<MapObjectInstance>();
+				instance = this.Editor.ActiveObject.GetComponentInParent<MapObjectInstance>();
 			}
 
-			if (instance != this.target || (this.isLinked && this.target == null))
+			if (instance != this._target || (this._isLinked && this._target == null))
 			{
 				this.Unlink();
 
@@ -68,172 +43,82 @@ namespace MapsExt.Editor.UI
 				}
 			}
 
-			this.onUpdate?.Invoke();
+			if (this._target != null)
+			{
+				this.OnUpdate?.Invoke();
+			}
 		}
 
 		private void Link(MapObjectInstance target)
 		{
-			this.isLinked = true;
-			this.target = target;
+			this._isLinked = true;
+			this._target = target;
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
-			var builder = new InspectorLayoutBuilder();
+			var elements = new List<IInspectorElement>();
 
-			foreach (var member in MapsExtendedEditor.instance.propertyManager.GetSerializableMembers(this.target.dataType))
+			foreach (var member in MapsExtendedEditor.instance._propertyManager.GetSerializableMembers(this._target.dataType))
 			{
-				var serializer = MapsExtendedEditor.instance.propertyManager.GetSerializer(member.GetReturnType());
+				var propertyType = member.GetReturnType();
+				var elementType = MapsExtendedEditor.instance._propertyInspectorElements.GetValueOrDefault(propertyType, null);
 
-				if (serializer is IInspectable inspectable)
+				if (elementType != null)
 				{
-					inspectable.OnInspectorLayout(this, builder);
+					var element = (IInspectorElement) Activator.CreateInstance(elementType);
+					elements.Add(element);
 				}
 			}
 
-			foreach (var elem in builder.layout.elements)
+			foreach (var elem in elements)
 			{
-				var instance = this.GetLayoutElementInstance(elem);
+				var instance = elem.Instantiate(this.Context);
 
 				if (!instance)
 				{
 					throw new NotSupportedException($"Unknown inspector element: {elem.GetType()}");
 				}
 
+				this.OnUpdate += elem.OnUpdate;
 				instance.transform.SetParent(this.transform);
 			}
 		}
 
 		private void Unlink()
 		{
-			this.onUpdate = null;
+			this.OnUpdate = null;
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
-			this.target = null;
-			this.isLinked = false;
-		}
-
-		private GameObject GetLayoutElementInstance(ILayoutElement elem)
-		{
-			if (elem is InspectorLayoutProperty<Vector2> propertyVector2)
-			{
-				var instance = GameObject.Instantiate(Assets.InspectorVector2Prefab);
-				var c = instance.GetComponent<InspectorVector2>();
-				c.label.text = propertyVector2.name;
-				c.input.SetWithoutEvent(propertyVector2.getValue());
-
-				var onChanged = this.GetPropertyChangeEvent(propertyVector2);
-				c.input.onChanged += (value) => onChanged(value, ChangeType.All);
-
-				this.onUpdate += () => c.input.SetWithoutEvent(propertyVector2.getValue());
-				return instance;
-			}
-
-			if (elem is InspectorLayoutProperty<Quaternion> propertyQuaternion)
-			{
-				var instance = GameObject.Instantiate(Assets.InspectorQuaternionPrefab);
-				var c = instance.GetComponent<InspectorQuaternion>();
-				c.label.text = propertyQuaternion.name;
-				c.input.SetWithoutEvent(propertyQuaternion.getValue().eulerAngles.z);
-
-				var onChanged = this.GetPropertyChangeEvent(propertyQuaternion);
-				c.input.onChanged += (value, type) => onChanged(Quaternion.Euler(0, 0, value), type);
-
-				this.onUpdate += () => c.input.SetWithoutEvent(propertyQuaternion.getValue().eulerAngles.z);
-				return instance;
-			}
-
-			if (elem is InspectorLayoutProperty<bool> propertyBool)
-			{
-				var instance = GameObject.Instantiate(Assets.InspectorBooleanPrefab);
-				var prop = instance.GetComponent<InspectorBoolean>();
-				prop.label.text = propertyBool.name;
-				prop.input.isOn = propertyBool.getValue();
-
-				var onChanged = this.GetPropertyChangeEvent(propertyBool);
-				void OnValueChanged(bool value) => onChanged(value, ChangeType.All);
-
-				prop.input.onValueChanged.AddListener(OnValueChanged);
-
-				this.onUpdate += () =>
-				{
-					prop.input.onValueChanged.RemoveListener(OnValueChanged);
-					prop.input.isOn = propertyBool.getValue();
-					prop.input.onValueChanged.AddListener(OnValueChanged);
-				};
-
-				return instance;
-			}
-
-			if (elem is InspectorLayoutButton buttonElem)
-			{
-				var instance = GameObject.Instantiate(Assets.InspectorButtonPrefab);
-				var button = instance.GetComponentInChildren<Button>();
-
-				button.onClick.AddListener(() => buttonElem.onClick());
-				this.onUpdate += () =>
-				{
-					if (button)
-					{
-						buttonElem.onUpdate(button);
-					}
-				};
-
-				return instance;
-			}
-
-			if (elem is InspectorDivider divider)
-			{
-				return GameObject.Instantiate(Assets.InspectorDividerPrefab);
-			}
-
-			return null;
-		}
-
-		private Action<T, ChangeType> GetPropertyChangeEvent<T>(InspectorLayoutProperty<T> prop)
-		{
-			return (value, type) =>
-			{
-				if (type == ChangeType.All)
-				{
-					prop.OnChangeStart?.Invoke(value);
-					prop.SetValue?.Invoke(value);
-					prop.OnChanged?.Invoke(value);
-				}
-
-				if (type == ChangeType.ChangeStart)
-				{
-					prop.OnChangeStart?.Invoke(value);
-				}
-
-				if (type == ChangeType.Change)
-				{
-					prop.SetValue?.Invoke(value);
-				}
-
-				if (type == ChangeType.ChangeEnd)
-				{
-					prop.OnChanged?.Invoke(value);
-				}
-			};
+			this._target = null;
+			this._isLinked = false;
 		}
 	}
 
 	public class InspectorVector2 : MonoBehaviour
 	{
-		public Text label;
-		public Vector2Input input;
+		[SerializeField] private Text _label;
+		[SerializeField] private Vector2Input _input;
+
+		public Text Label { get => this._label; set => this._label = value; }
+		public Vector2Input Input { get => this._input; set => this._input = value; }
 	}
 
 	public class InspectorQuaternion : MonoBehaviour
 	{
-		public Text label;
-		public TextSliderInput input;
+		[SerializeField] private Text _label;
+		[SerializeField] private TextSliderInput _input;
+
+		public Text Label { get => this._label; set => this._label = value; }
+		public TextSliderInput Input { get => this._input; set => this._input = value; }
 	}
 
 	public class InspectorBoolean : MonoBehaviour
 	{
-		public Text label;
-		public Toggle input;
+		[SerializeField] private Text _label;
+		[SerializeField] private Toggle _input;
+
+		public Text Label { get => this._label; set => this._label = value; }
+		public Toggle Input { get => this._input; set => this._input = value; }
 	}
 }

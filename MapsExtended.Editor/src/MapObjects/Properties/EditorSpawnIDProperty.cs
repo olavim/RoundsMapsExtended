@@ -3,6 +3,6 @@ using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorPropertySerializer]
+	[EditorPropertySerializer(typeof(SpawnIDProperty))]
 	public class EditorSpawnIDPropertySerializer : SpawnIDPropertySerializer { }
 }

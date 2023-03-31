@@ -60,7 +60,7 @@ namespace MapsExt.Editor.Tests
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
 
-			this.editor.content.transform.childCount.Should().Be(1);
+			this.editor.Content.transform.childCount.Should().Be(1);
 
 			var box = this.editor.ActiveObject;
 			box.GetComponent<MapObjectInstance>().dataType.Should().Be(typeof(BoxData));
@@ -188,7 +188,7 @@ namespace MapsExt.Editor.Tests
 
 		private Button GetMapObjectWindowButton(string label)
 		{
-			var boxText = Array.Find(this.editorUI.mapObjectWindow.content.GetComponentsInChildren<Text>(), t => t.text == label);
+			var boxText = Array.Find(this.editorUI.MapObjectWindow.Content.GetComponentsInChildren<Text>(), t => t.text == label);
 			return boxText.gameObject.GetComponentInParent<Button>();
 		}
 	}

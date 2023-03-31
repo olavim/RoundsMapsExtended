@@ -59,13 +59,13 @@ namespace MapsExt.Editor.Tests
 			var id = go.GetComponent<MapObjectInstance>().mapObjectId;
 
 			this.editor.OnUndo();
-			this.editor.content.transform.childCount.Should().Be(0);
+			this.editor.Content.transform.childCount.Should().Be(0);
 			this.editor.ActiveObject.Should().BeNull();
 			this.editor.OnRedo();
-			this.editor.content.transform.childCount.Should().Be(1);
+			this.editor.Content.transform.childCount.Should().Be(1);
 			this.editor.ActiveObject.Should().BeNull();
 
-			var instance = this.editor.content.transform.GetChild(0).GetComponent<MapObjectInstance>();
+			var instance = this.editor.Content.transform.GetChild(0).GetComponent<MapObjectInstance>();
 			instance.mapObjectId.Should().Be(id);
 		}
 
@@ -175,12 +175,12 @@ namespace MapsExt.Editor.Tests
 			yield return null;
 
 			this.editor.ActiveObject.Should().BeNull();
-			this.editor.content.transform.childCount.Should().Be(1);
+			this.editor.Content.transform.childCount.Should().Be(1);
 
 			var iter = ListIterator.From(list);
 
 			this.editor.OnUndo(); // Undo delete
-			this.editor.content.transform.childCount.Should().Be(2);
+			this.editor.Content.transform.childCount.Should().Be(2);
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().BeApproximately(iter.MoveLast().Current);
 			this.editor.OnUndo(); // Undo rotate
@@ -194,12 +194,12 @@ namespace MapsExt.Editor.Tests
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
 			this.editor.OnUndo(); // Undo spawn rope
 			this.editor.OnUndo(); // Undo spawn box
-			this.editor.content.transform.childCount.Should().Be(0);
+			this.editor.Content.transform.childCount.Should().Be(0);
 
 			this.editor.OnRedo(); // Redo spawn box
 			this.editor.OnRedo(); // Redo spawn rope
-			this.editor.content.transform.childCount.Should().Be(2);
-			rope = this.editor.content.transform.GetChild(1).GetComponentInParent<EditorRopeInstance>();
+			this.editor.Content.transform.childCount.Should().Be(2);
+			rope = this.editor.Content.transform.GetChild(1).GetComponentInParent<EditorRopeInstance>();
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.Current);
 
 			this.editor.OnRedo(); // Redo set anchor 1 position
@@ -214,7 +214,7 @@ namespace MapsExt.Editor.Tests
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
 			this.editor.OnRedo(); // Redo Delete
 			this.editor.ActiveObject.Should().BeNull();
-			this.editor.content.transform.childCount.Should().Be(1);
+			this.editor.Content.transform.childCount.Should().Be(1);
 		}
 	}
 }

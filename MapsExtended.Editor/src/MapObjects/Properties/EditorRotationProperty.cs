@@ -6,21 +6,25 @@ using UnityEngine;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorPropertySerializer]
-	public class EditorRotationPropertySerializer : RotationPropertySerializer, IInspectable
+	[EditorPropertySerializer(typeof(RotationProperty))]
+	public class EditorRotationPropertySerializer : RotationPropertySerializer
 	{
 		public override void Deserialize(RotationProperty property, GameObject target)
 		{
 			base.Deserialize(property, target);
 			target.GetOrAddComponent<ActionHandlers.RotationHandler>();
 		}
+	}
 
-		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
+	[PropertyInspector(typeof(RotationProperty))]
+	public class RotationElement : QuaternionElement
+	{
+		protected override Quaternion Value
 		{
-			builder.Property<Quaternion>("Rotation")
-				.ValueSetter(value => inspector.target.SetHandlerValue<RotationProperty>(value))
-				.OnChange(_ => inspector.editor.UpdateRopeAttachments())
-				.ValueGetter(() => inspector.target.GetHandlerValue<RotationProperty>());
+			get => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
+			set => this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(value);
 		}
+
+		public RotationElement() : base("Rotation") { }
 	}
 }

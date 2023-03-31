@@ -4,8 +4,8 @@ namespace MapsExt.MapObjects
 {
 	public class SawData : SpatialMapObjectData { }
 
-	[MapObject]
-	public class Saw : IMapObject<SawData>
+	[MapObject(typeof(SawData))]
+	public class Saw : IMapObject
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Saw");
 

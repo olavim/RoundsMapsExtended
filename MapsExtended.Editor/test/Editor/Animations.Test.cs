@@ -44,7 +44,7 @@ namespace MapsExt.Editor.Tests
 			var rootGo = GameObject.Find("/Map");
 			this.editor = rootGo.GetComponentInChildren<MapEditor>();
 			this.utils = new EditorTestUtils(this.editor, this.inputSource);
-			this.animationHandler = this.editor.animationHandler;
+			this.animationHandler = this.editor.AnimationHandler;
 		}
 
 		[AfterEach]
@@ -60,18 +60,18 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator AddAnimation()
 		{
 			yield return this.SpawnWithAnimation<BoxData>();
-			this.animation = this.editor.animationHandler.animation;
+			this.animation = this.editor.AnimationHandler.Animation;
 			this.animationMapObject = this.animation.gameObject;
 		}
 
 		[Test]
 		public void Test_AddAnimation()
 		{
-			this.editor.content.transform.GetChild(0).gameObject.Should().BeSameAs(this.animationMapObject);
+			this.editor.Content.transform.GetChild(0).gameObject.Should().BeSameAs(this.animationMapObject);
 			this.animationMapObject.Should().BeSameAs(this.animation.gameObject);
 			this.animationMapObject.GetComponent<MapObjectAnimation>().Should().BeSameAs(this.animation);
 			this.editor.ActiveObject.Should().NotBeSameAs(this.animationMapObject);
-			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
+			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.KeyframeMapObject);
 		}
 
 		[Test]
@@ -79,8 +79,8 @@ namespace MapsExt.Editor.Tests
 		{
 			this.animationHandler.AddKeyframe();
 			this.animation.Keyframes.Count.Should().Be(2);
-			this.animationMapObject.Should().NotBeSameAs(this.animationHandler.keyframeMapObject);
-			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
+			this.animationMapObject.Should().NotBeSameAs(this.animationHandler.KeyframeMapObject);
+			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.KeyframeMapObject);
 		}
 
 		[Test]
@@ -97,7 +97,7 @@ namespace MapsExt.Editor.Tests
 			this.animationHandler.ToggleAnimation(this.animationMapObject);
 			this.editor.ActiveObject.Should().BeNull();
 			this.animationHandler.ToggleAnimation(this.animationMapObject);
-			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.keyframeMapObject);
+			this.editor.ActiveObject.Should().BeSameAs(this.animationHandler.KeyframeMapObject);
 		}
 
 		private void GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IProperty
@@ -114,8 +114,8 @@ namespace MapsExt.Editor.Tests
 				this.animationHandler.SetKeyframe(i);
 				var nextProp = KeyframeProperty(i);
 				this.GetKeyframeValue<T>(i).Should().Be(prop1);
-				this.animationHandler.keyframeMapObject.SetHandlerValue(nextProp);
-				this.animationHandler.keyframeMapObject.GetHandlerValue<T>().Should().Be(nextProp);
+				this.animationHandler.KeyframeMapObject.SetHandlerValue(nextProp);
+				this.animationHandler.KeyframeMapObject.GetHandlerValue<T>().Should().Be(nextProp);
 				this.GetKeyframeValue<T>(i).Should().Be(nextProp);
 			}
 
@@ -138,7 +138,7 @@ namespace MapsExt.Editor.Tests
 			{
 				this.animationHandler.DeleteKeyframe(1);
 			}
-			this.animationHandler.keyframeMapObject.SetHandlerValue(prop1);
+			this.animationHandler.KeyframeMapObject.SetHandlerValue(prop1);
 		}
 
 		[Test]
@@ -230,7 +230,7 @@ namespace MapsExt.Editor.Tests
 		private IEnumerator SpawnWithAnimation<T>() where T : MapObjectData
 		{
 			yield return this.utils.SpawnMapObject<T>();
-			this.editor.animationHandler.AddAnimation(this.editor.ActiveObject);
+			this.editor.AnimationHandler.AddAnimation(this.editor.ActiveObject);
 		}
 
 		private T GetKeyframeValue<T>(int keyframeIndex) where T : IProperty

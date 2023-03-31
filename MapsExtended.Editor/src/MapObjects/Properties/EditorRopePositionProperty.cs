@@ -1,4 +1,3 @@
-using MapsExt.MapObjects;
 using MapsExt.MapObjects.Properties;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
@@ -7,11 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnboundLib;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MapsExt.Editor.MapObjects
 {
-	[EditorPropertySerializer]
-	public class EditorRopePositionPropertySerializer : PropertySerializer<RopePositionProperty>, IInspectable
+	[EditorPropertySerializer(typeof(RopePositionProperty))]
+	public class EditorRopePositionPropertySerializer : PropertySerializer<RopePositionProperty>
 	{
 		public override RopePositionProperty Serialize(GameObject instance)
 		{
@@ -44,21 +44,49 @@ namespace MapsExt.Editor.MapObjects
 			target.transform.GetChild(0).GetComponent<RopeAnchorPositionHandler>().SetValue(property.StartPosition);
 			target.transform.GetChild(1).GetComponent<RopeAnchorPositionHandler>().SetValue(property.EndPosition);
 		}
+	}
 
-		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
+	[PropertyInspector(typeof(RopePositionProperty))]
+	public class RopePositionElement : InspectorElement
+	{
+		private Vector2Input _input1;
+		private Vector2Input _input2;
+
+		protected override GameObject GetInstance()
 		{
-			builder.Property<Vector2>("Anchor Position 1")
-				.ValueSetter(value => this.GetAnchorHandler(inspector.target, 0).SetValue(value))
-				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(0).GetAnchoredPosition());
+			var instance = new GameObject("RopePositionGroup");
+			var layoutGroup = instance.AddComponent<VerticalLayoutGroup>();
+			layoutGroup.childControlWidth = true;
+			layoutGroup.childControlHeight = true;
+			layoutGroup.childForceExpandWidth = true;
 
-			builder.Property<Vector2>("Anchor Position 2")
-				.ValueSetter(value => this.GetAnchorHandler(inspector.target, 1).SetValue(value))
-				.ValueGetter(() => inspector.target.GetComponent<EditorRopeInstance>().GetAnchor(1).GetAnchoredPosition());
+			var pos1Instance = GameObject.Instantiate(Assets.InspectorVector2Prefab, instance.transform);
+			var input1 = pos1Instance.GetComponent<InspectorVector2>();
+			input1.Label.text = "Anchor Position 1";
+			this._input1 = input1.Input;
+			this._input1.OnChanged += value => this.HandleInputChange(value, 0);
+
+			var pos2Instance = GameObject.Instantiate(Assets.InspectorVector2Prefab, instance.transform);
+			var input2 = pos2Instance.GetComponent<InspectorVector2>();
+			input2.Label.text = "Anchor Position 2";
+			this._input2 = input2.Input;
+			this._input2.OnChanged += value => this.HandleInputChange(value, 1);
+
+			return instance;
 		}
 
-		private RopeAnchorPositionHandler GetAnchorHandler(MapObjectInstance target, int anchor)
+		public override void OnUpdate()
 		{
-			return target.GetComponent<EditorRopeInstance>().GetAnchor(anchor).GetComponent<RopeAnchorPositionHandler>();
+			var ropeInstance = this.Context.InspectorTarget.GetComponent<EditorRopeInstance>();
+			this._input1.SetWithoutEvent(ropeInstance.GetAnchor(0).GetAnchoredPosition());
+			this._input2.SetWithoutEvent(ropeInstance.GetAnchor(1).GetAnchoredPosition());
+		}
+
+		private void HandleInputChange(Vector2 value, int anchor)
+		{
+			var ropeInstance = this.Context.InspectorTarget.GetComponent<EditorRopeInstance>();
+			ropeInstance.GetAnchor(anchor).GetComponent<RopeAnchorPositionHandler>().SetValue(value);
+			this.Context.Editor.TakeSnaphot();
 		}
 	}
 

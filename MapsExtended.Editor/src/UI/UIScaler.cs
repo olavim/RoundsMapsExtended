@@ -2,15 +2,15 @@
 
 namespace MapsExt.Editor.UI
 {
-	class UIScaler : MonoBehaviour
+	public class UIScaler : MonoBehaviour
 	{
-		public GameObject referenceGameObject;
-		public float padding;
-		public Vector2 constantSize = Vector2.zero;
+		public GameObject ReferenceGameObject { get; set; }
+		public float Padding { get; set; }
+		public Vector2 ConstantSize { get; set; }
 
 		protected virtual void Awake()
 		{
-			this.referenceGameObject = null;
+			this.ReferenceGameObject = null;
 		}
 
 		protected virtual void Start()
@@ -21,17 +21,17 @@ namespace MapsExt.Editor.UI
 
 		protected virtual void Update()
 		{
-			if (!this.referenceGameObject)
+			if (!this.ReferenceGameObject)
 			{
 				return;
 			}
 
-			var scale = this.referenceGameObject.transform.localScale;
-			var refSize = this.constantSize == Vector2.zero ? (Vector2) scale : this.constantSize;
+			var scale = this.ReferenceGameObject.transform.localScale;
+			var refSize = this.ConstantSize == Vector2.zero ? (Vector2) scale : this.ConstantSize;
 
 			float zoomRatio = MainCam.instance.cam.orthographicSize / 20f;
 			var zoomedScale = new Vector2(refSize.x / scale.x, refSize.y / scale.y) * zoomRatio;
-			var zoomedPadding = new Vector2(this.padding / scale.x, this.padding / scale.y) * zoomRatio * 2f;
+			var zoomedPadding = new Vector2(this.Padding / scale.x, this.Padding / scale.y) * zoomRatio * 2f;
 			this.transform.localScale = zoomedScale + zoomedPadding;
 
 			this.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);

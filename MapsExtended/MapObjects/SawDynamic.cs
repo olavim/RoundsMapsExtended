@@ -4,8 +4,8 @@ namespace MapsExt.MapObjects
 {
 	public class SawDynamicData : SpatialMapObjectData { }
 
-	[MapObject]
-	public class SawDynamic : IMapObject<SawDynamicData>
+	[MapObject(typeof(SawDynamicData))]
+	public class SawDynamic : IMapObject
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Saw Dynamic");
 

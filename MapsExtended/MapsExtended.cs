@@ -44,8 +44,8 @@ namespace MapsExt
 		internal string _loadedMapSceneName;
 		internal List<CustomMap> _maps;
 		internal MapObjectManager _mapObjectManager;
-		internal PropertyManager _propertyManager = new PropertyManager();
-		internal Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new Dictionary<PhotonMapObject, Action<GameObject>>();
+		internal PropertyManager _propertyManager = new();
+		internal Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new();
 
 #pragma warning disable CS0649
 		internal bool _forceCustomMaps;
@@ -111,11 +111,12 @@ namespace MapsExt
 			{
 				try
 				{
-					var propertyType = MapObjectUtils.GetMapObjectPropertySerializerTargetType(propertySerializerType);
+					var attr = propertySerializerType.GetCustomAttribute<PropertySerializerAttribute>();
+					var propertyType = attr.PropertyType;
 
-					if (propertyType == null)
+					if (!typeof(IPropertySerializer).IsAssignableFrom(propertySerializerType))
 					{
-						throw new Exception($"Invalid serializer: {propertySerializerType.Name} does not inherit from {typeof(IPropertySerializer<>)}");
+						throw new Exception($"{propertySerializerType.Name} is not assignable to {typeof(IPropertySerializer)}");
 					}
 
 					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
@@ -136,23 +137,29 @@ namespace MapsExt
 			var serializer = new PropertyCompositeSerializer(this._propertyManager);
 			var types = assembly.GetTypes();
 
-			foreach (var type in types.Where(t => t.GetCustomAttribute<MapObjectAttribute>() != null))
+			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<MapObjectAttribute>() != null))
 			{
 				try
 				{
-					var dataType = MapObjectUtils.GetMapObjectDataType(type);
+					var attr = mapObjectType.GetCustomAttribute<MapObjectAttribute>();
+					var dataType = attr.DataType;
 
-					if (dataType == null)
+					if (!typeof(MapObjectData).IsAssignableFrom(dataType))
 					{
-						throw new Exception($"Invalid map object: {type.Name} does not inherit from {typeof(IMapObject<>)}");
+						throw new Exception($"Data type {mapObjectType.Name} is not assignable to {typeof(MapObjectData)}");
 					}
 
-					var mapObject = (IMapObject) AccessTools.CreateInstance(type);
+					if (!typeof(IMapObject).IsAssignableFrom(mapObjectType))
+					{
+						throw new Exception($"{mapObjectType.Name} is not assignable to {typeof(IMapObject)}");
+					}
+
+					var mapObject = (IMapObject) AccessTools.CreateInstance(mapObjectType);
 					this._mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register map object {type.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register map object {mapObjectType.Name}: {ex.Message}");
 
 #if DEBUG
 					UnityEngine.Debug.LogError(ex.StackTrace);
@@ -173,7 +180,7 @@ namespace MapsExt
 			var pluginPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
 			var rootPaths = Directory.GetFiles(Path.Combine(BepInEx.Paths.GameRootPath, "maps"), "*.map", SearchOption.AllDirectories);
 
-			this._maps = new List<CustomMap>();
+			this._maps = new();
 			this._maps.AddRange(pluginPaths.Select(p => MapLoader.LoadPath(p)));
 			this._maps.AddRange(rootPaths.Select(p => MapLoader.LoadPath(p)));
 
@@ -306,7 +313,7 @@ namespace MapsExt
 			// Ensure at least one spawn exists
 			if (spawns.Count == 0)
 			{
-				spawns.Add(new SpawnPoint()
+				spawns.Add(new()
 				{
 					ID = 0,
 					TEAMID = 0,
@@ -328,7 +335,7 @@ namespace MapsExt
 				var prevTeamSpawn = spawns.Count > teamCount ? spawns[spawns.Count - 1 - teamCount] : null;
 				var nextPosition = prevTeamSpawn ? prevTeamSpawn.localStartPos : prevSpawn.localStartPos;
 
-				spawns.Add(new SpawnPoint()
+				spawns.Add(new()
 				{
 					ID = nextID,
 					TEAMID = nextTeamID,
@@ -398,7 +405,7 @@ namespace MapsExt
 			var newInstructions = new List<CodeInstruction>();
 
 			var f_shake = AccessTools.Field(typeof(DamageBox), "shake");
-			var m_getCharacterData = AccessTools.Method(typeof(Component), "GetComponent", null, new Type[] { typeof(CharacterData) });
+			var m_getCharacterData = AccessTools.Method(typeof(Component), "GetComponent", null, new[] { typeof(CharacterData) });
 			var m_opImplicit = typeof(UnityEngine.Object)
 				.GetMethods(BindingFlags.Public | BindingFlags.Static)
 				.First(mi => mi.Name == "op_Implicit" && mi.ReturnType == typeof(bool));
@@ -408,7 +415,7 @@ namespace MapsExt
 				if (list[i].IsLdloc() && list[i + 1].Calls(m_getCharacterData))
 				{
 					// Call GetComponent<CharacterData>() on a non-null component (base game bug)
-					newInstructions.Add(new CodeInstruction(OpCodes.Ldloc_1));
+					newInstructions.Add(new(OpCodes.Ldloc_1));
 					newInstructions.Add(list[i + 1]);
 					i++;
 				}
@@ -419,9 +426,9 @@ namespace MapsExt
 				)
 				{
 					// Make sure local variable `component2` is not null before using it
-					newInstructions.Add(new CodeInstruction(OpCodes.Ldloc_S, 4));
-					newInstructions.Add(new CodeInstruction(OpCodes.Call, m_opImplicit));
-					newInstructions.Add(new CodeInstruction(OpCodes.Brfalse, list[i + 3].operand));
+					newInstructions.Add(new(OpCodes.Ldloc_S, 4));
+					newInstructions.Add(new(OpCodes.Call, m_opImplicit));
+					newInstructions.Add(new(OpCodes.Brfalse, list[i + 3].operand));
 					newInstructions.Add(list[i]);
 					newInstructions.Add(list[i + 1]);
 					newInstructions.Add(list[i + 2]);
@@ -483,7 +490,7 @@ namespace MapsExt
 				if (list[i].Calls(m_instantiate))
 				{
 					newInstructions.Add(list[i]);
-					newInstructions.Add(new CodeInstruction(OpCodes.Ldarg_0));
+					newInstructions.Add(new(OpCodes.Ldarg_0));
 					newInstructions.Add(CodeInstruction.Call(typeof(PhotonMapObjectPatch_Update), "OnPhotonInstantiate"));
 					i++;
 				}

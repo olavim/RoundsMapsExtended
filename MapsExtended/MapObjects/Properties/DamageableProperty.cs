@@ -17,7 +17,7 @@ namespace MapsExt.MapObjects.Properties
 		public static implicit operator DamageableProperty(bool value) => new DamageableProperty(value);
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(DamageableProperty))]
 	public class DamageablePropertySerializer : PropertySerializer<DamageableProperty>
 	{
 		public override DamageableProperty Serialize(GameObject instance)

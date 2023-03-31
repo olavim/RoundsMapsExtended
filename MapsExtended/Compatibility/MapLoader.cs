@@ -82,7 +82,7 @@ namespace MapsExt.Compatibility
 		{
 			int depth = -1;
 
-			using (var reader = new JsonTextReader(stream, context ?? new DeserializationContext()))
+			using (var reader = new JsonTextReader(stream, context ?? new()))
 			{
 				EntryType entry = 0;
 				string key = null;

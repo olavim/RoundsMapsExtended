@@ -5,23 +5,28 @@ namespace MapsExt.Editor.UI
 {
 	public class AnimationWindow : Window
 	{
-		public Button deleteButton;
-		public Button addButton;
-		public MapEditor editor;
-		public MapObjectInspector inspector;
+		[SerializeField] private Button _deleteButton;
+		[SerializeField] private Button _addButton;
+		[SerializeField] private MapEditor _editor;
+		[SerializeField] private MapObjectInspector _inspector;
+
+		public Button DeleteButton { get => this._deleteButton; set => this._deleteButton = value; }
+		public Button AddButton { get => this._addButton; set => this._addButton = value; }
+		public MapEditor Editor { get => this._editor; set => this._editor = value; }
+		public MapObjectInspector Inspector { get => this._inspector; set => this._inspector = value; }
 
 		protected new virtual void Start()
 		{
-			this.closeButton.onClick.AddListener(this.Close);
-			this.deleteButton.onClick.AddListener(this.DeleteAnimationKeyframe);
-			this.addButton.onClick.AddListener(this.AddAnimationKeyframe);
+			this.CloseButton.onClick.AddListener(this.Close);
+			this.DeleteButton.onClick.AddListener(this.DeleteAnimationKeyframe);
+			this.AddButton.onClick.AddListener(this.AddAnimationKeyframe);
 		}
 
 		public void Refresh()
 		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 
-			var anim = this.editor.animationHandler.animation;
+			var anim = this.Editor.AnimationHandler.Animation;
 
 			if (!anim)
 			{
@@ -31,30 +36,30 @@ namespace MapsExt.Editor.UI
 			for (int i = 0; i < anim.Keyframes.Count; i++)
 			{
 				var settings = this.AddAnimationKeyframeSettings(i);
-				settings.SetSelected(i == this.editor.animationHandler.KeyframeIndex);
+				settings.SetSelected(i == this.Editor.AnimationHandler.KeyframeIndex);
 			}
 
-			this.deleteButton.interactable = this.editor.animationHandler.KeyframeIndex > 0;
+			this.DeleteButton.interactable = this.Editor.AnimationHandler.KeyframeIndex > 0;
 		}
 
 		private KeyframeSettings AddAnimationKeyframeSettings(int keyframe)
 		{
-			var anim = this.editor.animationHandler.animation;
-			var keyframeSettings = GameObject.Instantiate(Assets.KeyframeSettingsPrefab, this.content.transform).GetComponent<KeyframeSettings>();
+			var anim = this.Editor.AnimationHandler.Animation;
+			var keyframeSettings = GameObject.Instantiate(Assets.KeyframeSettingsPrefab, this.Content.transform).GetComponent<KeyframeSettings>();
 
-			keyframeSettings.contentFoldout.label.text = keyframe == 0 ? "Base" : $"Keyframe {keyframe}";
+			keyframeSettings.ContentFoldout.Label.text = keyframe == 0 ? "Base" : $"Keyframe {keyframe}";
 
 			if (keyframe == 0)
 			{
-				keyframeSettings.contentFoldout.label.text = "Base";
-				GameObjectUtils.DestroyImmediateSafe(keyframeSettings.contentFoldout.content);
+				keyframeSettings.ContentFoldout.Label.text = "Base";
+				GameObjectUtils.DestroyImmediateSafe(keyframeSettings.ContentFoldout.Content);
 			}
 			else
 			{
-				keyframeSettings.contentFoldout.label.text = $"Keyframe {keyframe}";
+				keyframeSettings.ContentFoldout.Label.text = $"Keyframe {keyframe}";
 			}
 
-			keyframeSettings.onDurationChanged += (value, type) =>
+			keyframeSettings.OnDurationChanged += (value, type) =>
 			{
 				float durationDelta = value - anim.Keyframes[keyframe].Duration;
 				anim.Keyframes[keyframe].Duration = value;
@@ -62,11 +67,11 @@ namespace MapsExt.Editor.UI
 
 				if (type == ChangeType.ChangeEnd)
 				{
-					this.editor.TakeSnaphot();
+					this.Editor.TakeSnaphot();
 				}
 			};
 
-			keyframeSettings.onEasingChanged += value =>
+			keyframeSettings.OnEasingChanged += value =>
 			{
 				var curveType =
 					value == "In" ? CurveType.EaseIn :
@@ -77,51 +82,51 @@ namespace MapsExt.Editor.UI
 				anim.Keyframes[keyframe].CurveType = curveType;
 				anim.Keyframes[keyframe].UpdateCurve();
 
-				this.editor.TakeSnaphot();
+				this.Editor.TakeSnaphot();
 			};
 
-			keyframeSettings.onClick += () =>
+			keyframeSettings.OnClick += () =>
 			{
-				foreach (var settings in this.content.GetComponentsInChildren<KeyframeSettings>())
+				foreach (var settings in this.Content.GetComponentsInChildren<KeyframeSettings>())
 				{
 					settings.SetSelected(settings == keyframeSettings);
 				}
 
-				this.editor.animationHandler.SetKeyframe(keyframe);
-				this.deleteButton.interactable = keyframe > 0;
+				this.Editor.AnimationHandler.SetKeyframe(keyframe);
+				this.DeleteButton.interactable = keyframe > 0;
 			};
 
-			keyframeSettings.durationInput.Value = anim.Keyframes[keyframe].Duration;
-			keyframeSettings.easingDropdown.value = (int) anim.Keyframes[keyframe].CurveType;
+			keyframeSettings.DurationInput.Value = anim.Keyframes[keyframe].Duration;
+			keyframeSettings.EasingDropdown.value = (int) anim.Keyframes[keyframe].CurveType;
 
 			return keyframeSettings;
 		}
 
 		private void AddAnimationKeyframe()
 		{
-			this.editor.animationHandler.AddKeyframe();
+			this.Editor.AnimationHandler.AddKeyframe();
 			this.Refresh();
 		}
 
 		private void DeleteAnimationKeyframe()
 		{
-			this.editor.animationHandler.DeleteKeyframe(this.editor.animationHandler.KeyframeIndex);
+			this.Editor.AnimationHandler.DeleteKeyframe(this.Editor.AnimationHandler.KeyframeIndex);
 			this.Refresh();
 		}
 
 		public void Open()
 		{
-			if (this.editor.animationHandler.animation == null)
+			if (this.Editor.AnimationHandler.Animation == null)
 			{
-				var anim = this.editor.ActiveObject.GetComponent<MapObjectAnimation>();
+				var anim = this.Editor.ActiveObject.GetComponent<MapObjectAnimation>();
 
 				if (anim)
 				{
-					this.editor.animationHandler.SetAnimation(anim);
+					this.Editor.AnimationHandler.SetAnimation(anim);
 				}
 				else
 				{
-					this.editor.animationHandler.AddAnimation(this.editor.ActiveObject);
+					this.Editor.AnimationHandler.AddAnimation(this.Editor.ActiveObject);
 				}
 			}
 
@@ -132,8 +137,8 @@ namespace MapsExt.Editor.UI
 		public void Close()
 		{
 			this.gameObject.SetActive(false);
-			this.editor.animationHandler.SetAnimation(null);
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.content);
+			this.Editor.AnimationHandler.SetAnimation(null);
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 
 		public void SetOpen(bool open)

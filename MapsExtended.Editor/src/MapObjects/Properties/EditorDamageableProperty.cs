@@ -3,14 +3,18 @@ using MapsExt.MapObjects.Properties;
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[EditorPropertySerializer]
-	public class EditorDamageablePropertySerializer : DamageablePropertySerializer, IInspectable
+	[EditorPropertySerializer(typeof(DamageableProperty))]
+	public class EditorDamageablePropertySerializer : DamageablePropertySerializer { }
+
+	[PropertyInspector(typeof(DamageableProperty))]
+	public class DamageableElement : BooleanElement
 	{
-		public void OnInspectorLayout(MapObjectInspector inspector, InspectorLayoutBuilder builder)
+		protected override bool Value
 		{
-			var propBuilder = builder.Property<bool>("Damageable by Environment")
-				.ValueSetter(value => inspector.target.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment = value)
-				.ValueGetter(() => inspector.target.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment);
+			get => this.Context.InspectorTarget.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment;
+			set => this.Context.InspectorTarget.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment = value;
 		}
+
+		public DamageableElement() : base("Damageable by Environment") { }
 	}
 }

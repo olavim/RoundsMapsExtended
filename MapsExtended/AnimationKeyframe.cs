@@ -29,7 +29,7 @@ namespace MapsExt
 
 		public AnimationKeyframe()
 		{
-			this.ComponentValues = new List<ILinearProperty>();
+			this.ComponentValues = new();
 			this.Duration = 1;
 			this.CurveType = CurveType.Linear;
 
@@ -71,13 +71,13 @@ namespace MapsExt
 			switch (this.CurveType)
 			{
 				case CurveType.Linear:
-					return new BezierAnimationCurve(0, 0, 1, 1);
+					return new(0, 0, 1, 1);
 				case CurveType.EaseIn:
-					return new BezierAnimationCurve(0.12f, 0, 0.39f, 0);
+					return new(0.12f, 0, 0.39f, 0);
 				case CurveType.EaseOut:
-					return new BezierAnimationCurve(0.61f, 1, 0.88f, 1);
+					return new(0.61f, 1, 0.88f, 1);
 				case CurveType.EaseInOut:
-					return new BezierAnimationCurve(0.37f, 0, 0.63f, 1);
+					return new(0.37f, 0, 0.63f, 1);
 				default:
 					return null;
 			}

@@ -27,13 +27,13 @@ namespace MapsExt.MapObjects.Properties
 		public static bool operator !=(SpawnIDProperty a, SpawnIDProperty b) => !a.Equals(b);
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(SpawnIDProperty))]
 	public class SpawnIDPropertySerializer : PropertySerializer<SpawnIDProperty>
 	{
 		public override SpawnIDProperty Serialize(GameObject instance)
 		{
 			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
-			return new SpawnIDProperty
+			return new()
 			{
 				Id = spawnPoint.ID,
 				TeamId = spawnPoint.TEAMID

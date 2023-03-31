@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using HarmonyLib;
 using MapsExt.MapObjects.Properties;
 using System.Reflection;
@@ -12,12 +11,16 @@ namespace MapsExt
 {
 	public class PropertyManager
 	{
-		private readonly Dictionary<Type, IPropertySerializer> _serializers = new Dictionary<Type, IPropertySerializer>();
+		private readonly Dictionary<Type, IPropertySerializer> _serializers = new();
 
 		public void RegisterProperty(Type propertyType, Type propertySerializerType)
 		{
-			var serializer = (IPropertySerializer) AccessTools.CreateInstance(propertySerializerType);
-			this._serializers.Add(propertyType, serializer);
+			if (this._serializers.ContainsKey(propertyType))
+			{
+				throw new ArgumentException($"{propertyType.Name} is already registered");
+			}
+
+			this._serializers[propertyType] = (IPropertySerializer) AccessTools.CreateInstance(propertySerializerType);
 		}
 
 		public IPropertySerializer GetSerializer(Type type)

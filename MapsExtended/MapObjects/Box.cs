@@ -4,8 +4,8 @@ namespace MapsExt.MapObjects
 {
 	public class BoxData : SpatialMapObjectData { }
 
-	[MapObject]
-	public class Box : IMapObject<BoxData>
+	[MapObject(typeof(BoxData))]
+	public class Box : IMapObject
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Box");
 

@@ -13,15 +13,15 @@ namespace MapsExt
 	public class MapObjectManager : MonoBehaviour
 	{
 		private static AssetBundle s_mapObjectBundle;
-		private static readonly Dictionary<string, TargetSyncedStore<int>> s_syncStores = new Dictionary<string, TargetSyncedStore<int>>();
+		private static readonly Dictionary<string, TargetSyncedStore<int>> s_syncStores = new();
 
 		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
 		{
 			return s_mapObjectBundle.LoadAsset<TObj>(name);
 		}
 
-		private readonly Dictionary<Type, IMapObjectSerializer> _dataSerializers = new Dictionary<Type, IMapObjectSerializer>();
-		private readonly Dictionary<Type, IMapObject> _mapObjects = new Dictionary<Type, IMapObject>();
+		private readonly Dictionary<Type, IMapObjectSerializer> _dataSerializers = new();
+		private readonly Dictionary<Type, IMapObject> _mapObjects = new();
 
 		private string _networkID;
 
@@ -48,10 +48,15 @@ namespace MapsExt
 		{
 			if (mapObject.Prefab == null)
 			{
-				throw new Exception($"Cannot register map object {dataType.Name}: Prefab cannot be null");
+				throw new ArgumentException($"Prefab cannot be null");
 			}
 
-			this._mapObjects.Add(dataType, mapObject);
+			if (this._mapObjects.ContainsKey(dataType))
+			{
+				throw new ArgumentException($"{dataType.Name} is already registered");
+			}
+
+			this._mapObjects[dataType] = mapObject;
 
 			if (mapObject.Prefab.GetComponent<PhotonMapObject>())
 			{

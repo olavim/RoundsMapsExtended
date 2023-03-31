@@ -9,7 +9,7 @@ namespace MapsExt.MapObjects.Properties
 
 		public override Vector2 Value
 		{
-			get => new Vector2(this._x, this._y);
+			get => new(this._x, this._y);
 			set { this._x = value.x; this._y = value.y; }
 		}
 
@@ -24,14 +24,14 @@ namespace MapsExt.MapObjects.Properties
 
 		public static implicit operator Vector2(ScaleProperty prop) => prop.Value;
 		public static implicit operator Vector3(ScaleProperty prop) => prop.Value;
-		public static implicit operator ScaleProperty(Vector2 value) => new ScaleProperty(value);
-		public static implicit operator ScaleProperty(Vector3 value) => new ScaleProperty(value);
+		public static implicit operator ScaleProperty(Vector2 value) => new(value);
+		public static implicit operator ScaleProperty(Vector3 value) => new(value);
 
 		public static ScaleProperty operator -(ScaleProperty a, ScaleProperty b) => a.Value - b.Value;
 		public static ScaleProperty operator +(ScaleProperty a, ScaleProperty b) => a.Value + b.Value;
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(ScaleProperty))]
 	public class ScalePropertySerializer : PropertySerializer<ScaleProperty>
 	{
 		public override ScaleProperty Serialize(GameObject instance)

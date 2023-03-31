@@ -2,6 +2,14 @@
 
 namespace MapsExt.Editor.MapObjects.Properties
 {
-	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-	public class EditorPropertySerializerAttribute : Attribute { }
+	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+	public sealed class EditorPropertySerializerAttribute : Attribute
+	{
+		public Type PropertyType { get; }
+
+		public EditorPropertySerializerAttribute(Type propertyType)
+		{
+			PropertyType = propertyType;
+		}
+	}
 }

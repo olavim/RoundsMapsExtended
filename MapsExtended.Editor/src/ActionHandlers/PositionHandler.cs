@@ -84,11 +84,11 @@ namespace MapsExt.Editor.ActionHandlers
 			var referenceAngles = referenceRotation.eulerAngles;
 			referenceRotation.eulerAngles = new Vector3(referenceAngles.x, referenceAngles.y, referenceAngles.z % 90);
 
-			this.Editor.grid.transform.rotation = referenceRotation;
+			this.Editor.Grid.transform.rotation = referenceRotation;
 
 			var scaleOffset = Vector2.zero;
-			var objectCell = this.Editor.grid.WorldToCell(this.GetValue());
-			var snappedPosition = (Vector2) this.Editor.grid.CellToWorld(objectCell);
+			var objectCell = this.Editor.Grid.WorldToCell(this.GetValue());
+			var snappedPosition = (Vector2) this.Editor.Grid.CellToWorld(objectCell);
 
 			if (snappedPosition != this.GetValue().Value)
 			{
@@ -106,7 +106,7 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 
 			this._offset = scaleOffset;
-			this._prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
+			this._prevCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 		}
 
 		public override void OnPointerUp()
@@ -144,7 +144,7 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
+			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this._prevMouse;
 			var cellDelta = mouseCell - this._prevCell;
 
@@ -152,8 +152,8 @@ namespace MapsExt.Editor.ActionHandlers
 
 			if (this.Editor.SnapToGrid)
 			{
-				var objectCell = (Vector2Int) this.Editor.grid.WorldToCell(this.GetValue());
-				var snappedPosition = (Vector2) this.Editor.grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
+				var objectCell = (Vector2Int) this.Editor.Grid.WorldToCell(this.GetValue());
+				var snappedPosition = (Vector2) this.Editor.Grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
 
 				delta = snappedPosition + this._offset - this.GetValue();
 			}

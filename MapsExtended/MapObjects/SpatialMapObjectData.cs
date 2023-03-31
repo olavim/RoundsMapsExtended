@@ -19,16 +19,16 @@ namespace MapsExt.MapObjects
 		public RotationProperty Rotation { get => this._rotation; set => this._rotation = value; }
 		public AnimationProperty Animation
 		{
-			get => new AnimationProperty(this._keyframes);
+			get => new(this._keyframes);
 			set => this._keyframes = value.Keyframes;
 		}
 
 		protected SpatialMapObjectData()
 		{
-			this.Position = new PositionProperty();
-			this.Scale = new ScaleProperty();
-			this.Rotation = new RotationProperty();
-			this.Animation = new AnimationProperty();
+			this.Position = new();
+			this.Scale = new();
+			this.Rotation = new();
+			this.Animation = new();
 		}
 	}
 }

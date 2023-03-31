@@ -9,7 +9,7 @@ namespace MapsExt.MapObjects.Properties
 
 		public override Vector2 Value
 		{
-			get => new Vector2(this._x, this._y);
+			get => new(this._x, this._y);
 			set { this._x = value.x; this._y = value.y; }
 		}
 
@@ -24,11 +24,11 @@ namespace MapsExt.MapObjects.Properties
 
 		public static implicit operator Vector2(PositionProperty prop) => prop.Value;
 		public static implicit operator Vector3(PositionProperty prop) => prop.Value;
-		public static implicit operator PositionProperty(Vector2 value) => new PositionProperty(value);
-		public static implicit operator PositionProperty(Vector3 value) => new PositionProperty(value);
+		public static implicit operator PositionProperty(Vector2 value) => new(value);
+		public static implicit operator PositionProperty(Vector3 value) => new(value);
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(PositionProperty))]
 	public class PositionPropertySerializer : PropertySerializer<PositionProperty>
 	{
 		public override void Deserialize(PositionProperty property, GameObject target)

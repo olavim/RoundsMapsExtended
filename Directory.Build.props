@@ -9,6 +9,7 @@
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<BaseOutputPath>build\bin</BaseOutputPath>
 		<BaseIntermediateOutputPath>build\obj</BaseIntermediateOutputPath>
+		<LangVersion>9.0</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

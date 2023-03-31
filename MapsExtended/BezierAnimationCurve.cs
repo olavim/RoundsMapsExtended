@@ -9,8 +9,8 @@ namespace MapsExt
 
 		public BezierAnimationCurve(float x1, float y1, float x2, float y2)
 		{
-			this._c1 = new Vector2(x1, y1);
-			this._c2 = new Vector2(x2, y2);
+			this._c1 = new(x1, y1);
+			this._c2 = new(x2, y2);
 		}
 
 		public float Evaluate(float time)

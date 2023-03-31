@@ -5,9 +5,10 @@ namespace MapsExt.Editor.UI
 {
 	public class DragHandle : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler
 	{
-		public GameObject target;
-
+		[SerializeField] private GameObject _target;
 		private Vector2 _offset;
+
+		public GameObject Target { get => this._target; set => this._target = value; }
 
 		public void OnPointerDown(PointerEventData data)
 		{
@@ -16,12 +17,12 @@ namespace MapsExt.Editor.UI
 
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			this._offset = (Vector2) target.transform.position - EditorInput.MousePosition;
+			this._offset = (Vector2) Target.transform.position - EditorInput.MousePosition;
 		}
 
 		public void OnDrag(PointerEventData data)
 		{
-			this.target.transform.position = EditorInput.MousePosition + this._offset;
+			this.Target.transform.position = EditorInput.MousePosition + this._offset;
 		}
 	}
 }

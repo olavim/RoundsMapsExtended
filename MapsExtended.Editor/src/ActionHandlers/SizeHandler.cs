@@ -128,12 +128,12 @@ namespace MapsExt.Editor.ActionHandlers
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 
-			this.Editor.grid.transform.rotation = this.transform.rotation;
+			this.Editor.Grid.transform.rotation = this.transform.rotation;
 
 			this._isResizing = true;
 			this._resizeDirection = resizeDirection;
 			this._prevMouse = mouseWorldPos;
-			this._prevCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
+			this._prevCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 			this._prevScale = this.transform.localScale;
 		}
 
@@ -152,13 +152,13 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = (Vector2Int) this.Editor.grid.WorldToCell(mouseWorldPos);
+			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this._prevMouse;
 			Vector2 cellDelta = mouseCell - this._prevCell;
 
 			var sizeDelta = this.Editor.SnapToGrid
 				? cellDelta * this.Editor.GridSize
-				: (Vector2) (Quaternion.Inverse(this.Editor.grid.transform.rotation) * mouseDelta);
+				: (Vector2) (Quaternion.Inverse(this.Editor.Grid.transform.rotation) * mouseDelta);
 
 			if (sizeDelta != Vector2.zero)
 			{
@@ -176,13 +176,13 @@ namespace MapsExt.Editor.ActionHandlers
 			go.AddComponent<Image>();
 
 			var aligner = go.AddComponent<UI.UIAligner>();
-			aligner.referenceGameObject = this.gameObject;
-			aligner.position = direction;
-			aligner.padding = 0.6f;
+			aligner.ReferenceGameObject = this.gameObject;
+			aligner.Position = direction;
+			aligner.Padding = 0.6f;
 
 			var scaler = go.AddComponent<UI.UIScaler>();
-			scaler.referenceGameObject = this.gameObject;
-			scaler.constantSize = new Vector2(0.4f, 0.4f);
+			scaler.ReferenceGameObject = this.gameObject;
+			scaler.ConstantSize = new Vector2(0.4f, 0.4f);
 
 			var button = go.AddComponent<Button>();
 			button.colors = new ColorBlock()
@@ -196,7 +196,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			var events = go.AddComponent<PointerDownHandler>();
 
-			events.pointerDown += _ =>
+			events.PointerDown += _ =>
 			{
 				if (!this._isResizing)
 				{
@@ -204,7 +204,7 @@ namespace MapsExt.Editor.ActionHandlers
 				}
 			};
 
-			events.pointerUp += _ =>
+			events.PointerUp += _ =>
 			{
 				if (this._isResizing)
 				{

@@ -28,7 +28,7 @@ namespace MapsExt
 		private bool _mapEntered;
 		private string _rpcKey;
 
-		public List<AnimationKeyframe> Keyframes { get; set; } = new List<AnimationKeyframe>();
+		public List<AnimationKeyframe> Keyframes { get; set; } = new();
 		public bool PlayOnAwake { get; set; } = true;
 		public bool IsPlaying { get; private set; }
 

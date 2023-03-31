@@ -5,38 +5,44 @@ namespace MapsExt.Editor.UI
 {
 	public class Foldout : MonoBehaviour
 	{
-		public Button foldoutToggle;
-		public Text label;
-		public GameObject content;
-		public GameObject expandedFeature;
-		public GameObject collapsedFeature;
+		[SerializeField] private Button _foldoutToggle;
+		[SerializeField] private Text _label;
+		[SerializeField] private GameObject _content;
+		[SerializeField] private GameObject _expandedFeature;
+		[SerializeField] private GameObject _collapsedFeature;
+
+		public Button FoldoutToggle { get => this._foldoutToggle; set => this._foldoutToggle = value; }
+		public Text Label { get => this._label; set => this._label = value; }
+		public GameObject Content { get => this._content; set => this._content = value; }
+		public GameObject ExpandedFeature { get => this._expandedFeature; set => this._expandedFeature = value; }
+		public GameObject CollapsedFeature { get => this._collapsedFeature; set => this._collapsedFeature = value; }
 
 		protected virtual void Start()
 		{
-			this.foldoutToggle.onClick.AddListener(() =>
+			this.FoldoutToggle.onClick.AddListener(() =>
 			{
-				if (this.content)
+				if (this.Content)
 				{
-					this.SetOpen(!this.content.activeSelf);
+					this.SetOpen(!this.Content.activeSelf);
 				}
 			});
 		}
 
 		public void SetOpen(bool open)
 		{
-			if (this.content)
+			if (this.Content)
 			{
-				this.content.SetActive(open);
+				this.Content.SetActive(open);
 			}
 
-			if (this.expandedFeature)
+			if (this.ExpandedFeature)
 			{
-				this.expandedFeature.SetActive(open);
+				this.ExpandedFeature.SetActive(open);
 			}
 
-			if (this.collapsedFeature)
+			if (this.CollapsedFeature)
 			{
-				this.collapsedFeature.SetActive(!open);
+				this.CollapsedFeature.SetActive(!open);
 			}
 		}
 	}

@@ -6,57 +6,61 @@ namespace MapsExt.Editor.UI
 {
 	public class KeyframeSettings : MonoBehaviour
 	{
-		public Foldout contentFoldout;
-		public TextSliderInput durationInput;
-		public Dropdown easingDropdown;
-		public ColorBlock colors;
+		[SerializeField] private Foldout _contentFoldout;
+		[SerializeField] private TextSliderInput _durationInput;
+		[SerializeField] private Dropdown _easingDropdown;
+		[SerializeField] private ColorBlock _colors;
+		private bool _isSelected;
 
-		public Action onClick;
-		public Action<float, ChangeType> onDurationChanged;
-		public Action<string> onEasingChanged;
+		public Foldout ContentFoldout { get => this._contentFoldout; set => this._contentFoldout = value; }
+		public TextSliderInput DurationInput { get => this._durationInput; set => this._durationInput = value; }
+		public Dropdown EasingDropdown { get => this._easingDropdown; set => this._easingDropdown = value; }
+		public ColorBlock Colors { get => this._colors; set => this._colors = value; }
+
+		public Action OnClick { get; set; }
+		public Action<float, ChangeType> OnDurationChanged { get; set; }
+		public Action<string> OnEasingChanged { get; set; }
 
 		public float Duration { get; private set; }
 		public string Easing { get; private set; }
 
-		private bool _isSelected;
-
 		protected virtual void Start()
 		{
-			this.contentFoldout.foldoutToggle.onClick.AddListener(() =>
+			this.ContentFoldout.FoldoutToggle.onClick.AddListener(() =>
 			{
 				this.UpdateFoldoutColors();
-				this.onClick?.Invoke();
+				this.OnClick?.Invoke();
 			});
 
-			this.durationInput.onChanged += this.UpdateDuration;
-			this.easingDropdown.onValueChanged.AddListener(this.UpdateEasing);
+			this.DurationInput.OnChanged += this.UpdateDuration;
+			this.EasingDropdown.onValueChanged.AddListener(this.UpdateEasing);
 
 			this.UpdateFoldoutColors();
 		}
 
 		private void UpdateFoldoutColors()
 		{
-			this.contentFoldout.foldoutToggle.colors = new ColorBlock()
+			this.ContentFoldout.FoldoutToggle.colors = new ColorBlock()
 			{
-				colorMultiplier = this.colors.colorMultiplier,
-				fadeDuration = this.colors.fadeDuration,
-				normalColor = this._isSelected ? this.colors.pressedColor : this.colors.normalColor,
-				highlightedColor = this.colors.highlightedColor,
-				pressedColor = this.colors.pressedColor,
-				disabledColor = this.colors.disabledColor
+				colorMultiplier = this.Colors.colorMultiplier,
+				fadeDuration = this.Colors.fadeDuration,
+				normalColor = this._isSelected ? this.Colors.pressedColor : this.Colors.normalColor,
+				highlightedColor = this.Colors.highlightedColor,
+				pressedColor = this.Colors.pressedColor,
+				disabledColor = this.Colors.disabledColor
 			};
 		}
 
 		private void UpdateDuration(float value, ChangeType type)
 		{
 			this.Duration = value;
-			this.onDurationChanged?.Invoke(this.Duration, type);
+			this.OnDurationChanged?.Invoke(this.Duration, type);
 		}
 
 		private void UpdateEasing(int index)
 		{
-			this.Easing = this.easingDropdown.options[index].text;
-			this.onEasingChanged?.Invoke(this.Easing);
+			this.Easing = this.EasingDropdown.options[index].text;
+			this.OnEasingChanged?.Invoke(this.Easing);
 		}
 
 		public void Select()
@@ -75,7 +79,7 @@ namespace MapsExt.Editor.UI
 
 			if (!selected)
 			{
-				this.contentFoldout.SetOpen(false);
+				this.ContentFoldout.SetOpen(false);
 			}
 
 			this.UpdateFoldoutColors();

@@ -6,19 +6,19 @@ namespace MapsExt.Editor
 {
 	public class MapEditorInputHandler : MonoBehaviour
 	{
-		private readonly float clickTimeMsEpsilon = 500f;
-		private readonly float clickPositionEpsilon = 5f;
+		private const float ClickTimeMsEpsilon = 500f;
+		private const float ClickPositionEpsilon = 5f;
 
-		private MapEditor editor;
-		private float mouseDownSince;
-		private Vector2 mouseDownPosition;
-		private bool isSelecting;
+		private MapEditor _editor;
+		private float _mouseDownSince;
+		private Vector2 _mouseDownPosition;
+		private bool _isSelecting;
 
 		protected virtual void Awake()
 		{
-			this.editor = this.gameObject.GetComponent<MapEditor>();
-			this.mouseDownSince = 0;
-			this.isSelecting = false;
+			this._editor = this.gameObject.GetComponent<MapEditor>();
+			this._mouseDownSince = 0;
+			this._isSelecting = false;
 
 			// The KeyMonitor component handles pressing and then holding keys in a more familiar way
 			var monitor = this.gameObject.AddComponent<KeyMonitor>();
@@ -32,13 +32,13 @@ namespace MapsExt.Editor
 
 			foreach (var key in editorKeys)
 			{
-				monitor.AddListener(key, () => this.editor.OnKeyDown(key));
+				monitor.AddListener(key, () => this._editor.OnKeyDown(key));
 			}
 		}
 
 		protected virtual void Update()
 		{
-			if (this.editor.IsSimulating)
+			if (this._editor.IsSimulating)
 			{
 				return;
 			}
@@ -55,12 +55,12 @@ namespace MapsExt.Editor
 
 			if (EditorInput.GetKeyDown(KeyCode.LeftShift))
 			{
-				this.editor.OnToggleSnapToGrid(false);
+				this._editor.OnToggleSnapToGrid(false);
 			}
 
 			if (EditorInput.GetKeyUp(KeyCode.LeftShift))
 			{
-				this.editor.OnToggleSnapToGrid(true);
+				this._editor.OnToggleSnapToGrid(true);
 			}
 
 			if (EditorInput.GetKeyDown(KeyCode.Delete))
@@ -88,11 +88,11 @@ namespace MapsExt.Editor
 
 			if (direction > 0)
 			{
-				this.editor.OnZoomIn();
+				this._editor.OnZoomIn();
 			}
 			else
 			{
-				this.editor.OnZoomOut();
+				this._editor.OnZoomOut();
 			}
 		}
 
@@ -103,7 +103,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.editor.OnDeleteSelectedMapObjects();
+			this._editor.OnDeleteSelectedMapObjects();
 		}
 
 		private void HandleMouseDown()
@@ -113,19 +113,19 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.mouseDownSince = Time.time * 1000;
-			this.mouseDownPosition = EditorInput.MousePosition;
+			this._mouseDownSince = Time.time * 1000;
+			this._mouseDownPosition = EditorInput.MousePosition;
 
-			var list = EditorUtils.GetActionHandlersAt(this.mouseDownPosition).Select(h => h.gameObject).Distinct();
+			var list = EditorUtils.GetActionHandlersAt(this._mouseDownPosition).Select(h => h.gameObject).Distinct();
 
-			if (list.Any(this.editor.IsSelected))
+			if (list.Any(this._editor.IsSelected))
 			{
-				this.editor.OnPointerDown();
+				this._editor.OnPointerDown();
 			}
 			else
 			{
-				this.isSelecting = true;
-				this.editor.OnSelectionStart();
+				this._isSelecting = true;
+				this._editor.OnSelectionStart();
 			}
 		}
 
@@ -133,21 +133,21 @@ namespace MapsExt.Editor
 		{
 			EventSystem.current.SetSelectedGameObject(null);
 
-			this.editor.OnPointerUp();
+			this._editor.OnPointerUp();
 
 			var mouseUpTime = Time.time * 1000;
 			var newMousePosition = EditorInput.MousePosition;
-			var mouseDelta = this.mouseDownPosition - newMousePosition;
+			var mouseDelta = this._mouseDownPosition - newMousePosition;
 
-			if (mouseDelta.magnitude <= this.clickPositionEpsilon && mouseUpTime - this.mouseDownSince <= this.clickTimeMsEpsilon)
+			if (mouseDelta.magnitude <= ClickPositionEpsilon && mouseUpTime - this._mouseDownSince <= ClickTimeMsEpsilon)
 			{
-				this.editor.OnClickActionHandlers(EditorUtils.GetActionHandlersAt(newMousePosition));
+				this._editor.OnClickActionHandlers(EditorUtils.GetActionHandlersAt(newMousePosition));
 			}
 
-			if (this.isSelecting)
+			if (this._isSelecting)
 			{
-				this.isSelecting = false;
-				this.editor.OnSelectionEnd();
+				this._isSelecting = false;
+				this._editor.OnSelectionEnd();
 			}
 		}
 	}

@@ -20,8 +20,8 @@ namespace MapsExt
 			public bool[] movingPlayer;
 		}
 
-		private static readonly ConditionalWeakTable<MapObjet_Rope, ExtraRopeData> ropeData = new ConditionalWeakTable<MapObjet_Rope, ExtraRopeData>();
-		private static readonly ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData> pmData = new ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData>();
+		private static readonly ConditionalWeakTable<MapObjet_Rope, ExtraRopeData> ropeData = new();
+		private static readonly ConditionalWeakTable<PlayerManager, ExtraPlayerManagerData> pmData = new();
 
 		internal static void OnJointAdded(this MapObjet_Rope instance, Action<AnchoredJoint2D> cb)
 		{
@@ -46,7 +46,7 @@ namespace MapsExt
 
 		public static Vector3 Round(this Vector3 vector, int decimalPlaces)
 		{
-			return new Vector3(
+			return new(
 				(float) System.Math.Round(vector.x, decimalPlaces),
 				(float) System.Math.Round(vector.y, decimalPlaces),
 				(float) System.Math.Round(vector.z, decimalPlaces)
@@ -55,7 +55,7 @@ namespace MapsExt
 
 		public static Vector2 Round(this Vector2 vector, int decimalPlaces)
 		{
-			return new Vector2(
+			return new(
 				(float) System.Math.Round(vector.x, decimalPlaces),
 				(float) System.Math.Round(vector.y, decimalPlaces)
 			);

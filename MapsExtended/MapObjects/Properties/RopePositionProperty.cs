@@ -29,12 +29,12 @@ namespace MapsExt.MapObjects.Properties
 		public static bool operator !=(RopePositionProperty a, RopePositionProperty b) => !a.Equals(b);
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(RopePositionProperty))]
 	public class RopePositionPropertySerializer : PropertySerializer<RopePositionProperty>
 	{
 		public override RopePositionProperty Serialize(GameObject instance)
 		{
-			return new RopePositionProperty
+			return new()
 			{
 				StartPosition = instance.transform.position,
 				EndPosition = instance.transform.GetChild(0).position

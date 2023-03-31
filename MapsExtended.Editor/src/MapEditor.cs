@@ -16,11 +16,23 @@ namespace MapsExt.Editor
 {
 	public class MapEditor : MonoBehaviour
 	{
-		// These are set in Unity editor
-		public GameObject content;
-		public GameObject simulatedContent;
-		public MapEditorAnimationHandler animationHandler;
-		public Grid grid;
+		[SerializeField] private GameObject _content;
+		[SerializeField] private GameObject _simulatedContent;
+		[SerializeField] private MapEditorAnimationHandler _animationHandler;
+		[SerializeField] private Grid _grid;
+		private readonly Dictionary<Type, Type[]> _groupActionHandlers = new();
+		private StateHistory<CustomMap> _stateHistory;
+		private bool _isCreatingSelection;
+		private Vector3 _selectionStartPosition;
+		private Rect _selectionRect;
+		private List<MapObjectData> _clipboardMapObjects;
+		private GameObject _tempSpawn;
+		private GameObject _dummyGroup;
+
+		public GameObject Content { get => this._content; set => this._content = value; }
+		public GameObject SimulatedContent { get => this._simulatedContent; set => this._simulatedContent = value; }
+		public MapEditorAnimationHandler AnimationHandler { get => this._animationHandler; set => this._animationHandler = value; }
+		public Grid Grid { get => this._grid; set => this._grid = value; }
 
 		public GameObject ActiveObject { get; set; }
 		public RangeObservableCollection<GameObject> SelectedObjects { get; } = new RangeObservableCollection<GameObject>();
@@ -30,20 +42,9 @@ namespace MapsExt.Editor
 
 		public float GridSize
 		{
-			get => this.grid.cellSize.x;
-			set => this.grid.cellSize = Vector2.one * value;
+			get => this.Grid.cellSize.x;
+			set => this.Grid.cellSize = Vector2.one * value;
 		}
-
-		private readonly Dictionary<Type, Type[]> _groupActionHandlers = new Dictionary<Type, Type[]>();
-
-		private StateHistory<CustomMap> _stateHistory;
-		private bool _isCreatingSelection;
-		private Vector3 _selectionStartPosition;
-		private Rect _selectionRect;
-		private List<MapObjectData> _clipboardMapObjects;
-
-		private GameObject _tempSpawn;
-		private GameObject _dummyGroup;
 
 		protected virtual void Awake()
 		{
@@ -88,11 +89,11 @@ namespace MapsExt.Editor
 		{
 			var mapObjects = new List<MapObjectData>();
 
-			foreach (var mapObject in this.content.GetComponentsInChildren<MapObjectInstance>(true))
+			foreach (var mapObject in this.Content.GetComponentsInChildren<MapObjectInstance>(true))
 			{
-				var data = MapsExtendedEditor.instance.mapObjectManager.Serialize(mapObject);
+				var data = MapsExtendedEditor.instance._mapObjectManager.Serialize(mapObject);
 
-				if (!data.active && mapObject.gameObject == this.animationHandler.animation?.gameObject)
+				if (!data.active && mapObject.gameObject == this.AnimationHandler.Animation?.gameObject)
 				{
 					data.active = true;
 				}
@@ -112,7 +113,7 @@ namespace MapsExt.Editor
 
 			foreach (var instance in mapObjectInstances)
 			{
-				this._clipboardMapObjects.Add(MapsExtendedEditor.instance.mapObjectManager.Serialize(instance));
+				this._clipboardMapObjects.Add(MapsExtendedEditor.instance._mapObjectManager.Serialize(instance));
 			}
 		}
 
@@ -136,21 +137,21 @@ namespace MapsExt.Editor
 		// A more graceful version of LoadMap which makes an effort to maintain selections and such
 		private void LoadState(CustomMap state)
 		{
-			var dict = this.content.GetComponentsInChildren<MapObjectInstance>(true).ToDictionary(item => item.mapObjectId, item => item.gameObject);
+			var dict = this.Content.GetComponentsInChildren<MapObjectInstance>(true).ToDictionary(item => item.mapObjectId, item => item.gameObject);
 
 			foreach (var mapObject in state.MapObjects)
 			{
 				if (dict.ContainsKey(mapObject.mapObjectId))
 				{
 					// This map object already exists in the scene, so we just recover its state
-					MapsExtendedEditor.instance.mapObjectManager.Deserialize(mapObject, dict[mapObject.mapObjectId]);
+					MapsExtendedEditor.instance._mapObjectManager.Deserialize(mapObject, dict[mapObject.mapObjectId]);
 
 					// Mark a map object as "handled" by removing it from the dictionary
 					dict.Remove(mapObject.mapObjectId);
 				}
 				else
 				{
-					MapsExtendedEditor.instance.SpawnObject(this.content, mapObject);
+					MapsExtendedEditor.instance.SpawnObject(this.Content, mapObject);
 				}
 			}
 
@@ -159,9 +160,9 @@ namespace MapsExt.Editor
 			// Destroy map objects remaining in the dictionary since they don't exist in the new state
 			foreach (var id in dict.Keys)
 			{
-				if (dict[id] == this.animationHandler.animation?.gameObject)
+				if (dict[id] == this.AnimationHandler.Animation?.gameObject)
 				{
-					this.animationHandler.SetAnimation(null);
+					this.AnimationHandler.SetAnimation(null);
 				}
 
 				GameObjectUtils.DestroyImmediateSafe(dict[id]);
@@ -169,7 +170,7 @@ namespace MapsExt.Editor
 
 			this.ClearSelected();
 			this.AddSelected(remainingSelected);
-			this.animationHandler.Refresh();
+			this.AnimationHandler.Refresh();
 		}
 
 		public bool CanUndo()
@@ -194,7 +195,7 @@ namespace MapsExt.Editor
 
 			foreach (var mapObject in this._clipboardMapObjects)
 			{
-				MapsExtendedEditor.instance.SpawnObject(this.content, mapObject, obj =>
+				MapsExtendedEditor.instance.SpawnObject(this.Content, mapObject, obj =>
 				{
 					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
 					{
@@ -220,7 +221,7 @@ namespace MapsExt.Editor
 		{
 			this.ClearSelected();
 
-			MapsExtendedEditor.instance.SpawnObject(this.content, mapObjectDataType, obj =>
+			MapsExtendedEditor.instance.SpawnObject(this.Content, mapObjectDataType, obj =>
 			{
 				var objectsWithHandlers = obj
 					.GetComponentsInChildren<ActionHandler>()
@@ -257,9 +258,9 @@ namespace MapsExt.Editor
 		{
 			foreach (var instance in this.SelectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
 			{
-				if (instance == this.animationHandler.animation?.gameObject)
+				if (instance == this.AnimationHandler.Animation?.gameObject)
 				{
-					this.animationHandler.SetAnimation(null);
+					this.AnimationHandler.SetAnimation(null);
 				}
 
 				GameObjectUtils.DestroyImmediateSafe(instance);
@@ -276,13 +277,13 @@ namespace MapsExt.Editor
 		{
 			this.ClearSelected();
 			this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
-			this.animationHandler.enabled = false;
+			this.AnimationHandler.enabled = false;
 			this.IsSimulating = true;
 			this._isCreatingSelection = false;
 
-			if (this.content.GetComponentsInChildren<SpawnPoint>().Length == 0)
+			if (this.Content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
-				MapsExtendedEditor.instance.SpawnObject(this.content, new SpawnData(), instance =>
+				MapsExtendedEditor.instance.SpawnObject(this.Content, new SpawnData(), instance =>
 				{
 					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this._tempSpawn = instance;
@@ -297,10 +298,10 @@ namespace MapsExt.Editor
 
 		private void DoStartSimulation()
 		{
-			MapsExtended.LoadMap(this.simulatedContent, this.GetMapData(), () =>
+			MapsExtended.LoadMap(this.SimulatedContent, this.GetMapData(), () =>
 			{
-				this.content.SetActive(false);
-				this.simulatedContent.SetActive(true);
+				this.Content.SetActive(false);
+				this.SimulatedContent.SetActive(true);
 
 				GameModeManager.SetGameMode("Sandbox");
 				GameModeManager.CurrentHandler.StartGame();
@@ -311,10 +312,10 @@ namespace MapsExt.Editor
 
 				this.ExecuteAfterFrames(1, () =>
 				{
-					MapsExtendedEditor.instance.SetMapPhysicsActive(this.simulatedContent, true);
-					this.gameObject.GetComponent<Map>().allRigs = this.simulatedContent.GetComponentsInChildren<Rigidbody2D>();
+					MapsExtendedEditor.instance.SetMapPhysicsActive(this.SimulatedContent, true);
+					this.gameObject.GetComponent<Map>().allRigs = this.SimulatedContent.GetComponentsInChildren<Rigidbody2D>();
 
-					foreach (var rope in this.simulatedContent.GetComponentsInChildren<MapObjet_Rope>())
+					foreach (var rope in this.SimulatedContent.GetComponentsInChildren<MapObjet_Rope>())
 					{
 						rope.Go();
 					}
@@ -338,16 +339,16 @@ namespace MapsExt.Editor
 				this._tempSpawn = null;
 			}
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.simulatedContent);
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.SimulatedContent);
 
-			this.content.SetActive(true);
-			this.simulatedContent.SetActive(false);
-			this.animationHandler.enabled = true;
+			this.Content.SetActive(true);
+			this.SimulatedContent.SetActive(false);
+			this.AnimationHandler.enabled = true;
 		}
 
 		public void LoadMap(string mapFilePath)
 		{
-			MapsExtendedEditor.instance.LoadMap(this.content, mapFilePath);
+			MapsExtendedEditor.instance.LoadMap(this.Content, mapFilePath);
 
 			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
 			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");
@@ -377,11 +378,11 @@ namespace MapsExt.Editor
 				this.ClearSelected();
 
 				// When editing animation, don't allow selecting other map objects
-				if (this.animationHandler.animation != null && list.Any(obj => obj.gameObject == this.animationHandler.keyframeMapObject))
+				if (this.AnimationHandler.Animation != null && list.Any(obj => obj.gameObject == this.AnimationHandler.KeyframeMapObject))
 				{
-					this.AddSelected(this.animationHandler.keyframeMapObject);
+					this.AddSelected(this.AnimationHandler.KeyframeMapObject);
 				}
-				else if (this.animationHandler.animation == null)
+				else if (this.AnimationHandler.Animation == null)
 				{
 					this.AddSelected(list.Select(h => h.gameObject).Distinct());
 				}
@@ -398,11 +399,11 @@ namespace MapsExt.Editor
 			GameObject selectedObject = null;
 
 			// When editing animation, don't allow selecting other map objects
-			if (this.animationHandler.animation != null && objects.Any(obj => obj == this.animationHandler.keyframeMapObject))
+			if (this.AnimationHandler.Animation != null && objects.Any(obj => obj == this.AnimationHandler.KeyframeMapObject))
 			{
-				selectedObject = this.animationHandler.keyframeMapObject;
+				selectedObject = this.AnimationHandler.KeyframeMapObject;
 			}
-			else if (this.animationHandler.animation == null && objects.Count > 0)
+			else if (this.AnimationHandler.Animation == null && objects.Count > 0)
 			{
 				selectedObject = objects[0];
 
@@ -524,7 +525,7 @@ namespace MapsExt.Editor
 			if (list.Count() >= 2)
 			{
 				this._dummyGroup = new GameObject("Group");
-				this._dummyGroup.transform.SetParent(this.content.transform);
+				this._dummyGroup.transform.SetParent(this.Content.transform);
 				this._dummyGroup.SetActive(false);
 
 				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
@@ -567,7 +568,7 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 
 			var list = new List<GameObject>();
-			foreach (Transform child in this.content.transform)
+			foreach (Transform child in this.Content.transform)
 			{
 				list.Add(child.gameObject);
 			}
@@ -577,7 +578,7 @@ namespace MapsExt.Editor
 
 		public void ResetSpawnLabels()
 		{
-			var spawns = this.content.GetComponentsInChildren<SpawnPoint>().ToList();
+			var spawns = this.Content.GetComponentsInChildren<SpawnPoint>().ToList();
 			for (int i = 0; i < spawns.Count; i++)
 			{
 				spawns[i].ID = i;
@@ -588,7 +589,7 @@ namespace MapsExt.Editor
 
 		public void UpdateRopeAttachments()
 		{
-			foreach (var rope in this.content.GetComponentsInChildren<EditorRopeInstance>())
+			foreach (var rope in this.Content.GetComponentsInChildren<EditorRopeInstance>())
 			{
 				rope.UpdateAttachments();
 			}

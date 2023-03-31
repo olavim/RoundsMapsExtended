@@ -7,8 +7,8 @@ namespace MapsExt
 	public class TargetSyncedStore<T> where T : IEquatable<T>
 	{
 		private object _currentTarget;
-		private readonly Dictionary<int, T> _values = new Dictionary<int, T>();
-		private readonly Dictionary<int, bool> _valueSet = new Dictionary<int, bool>();
+		private readonly Dictionary<int, T> _values = new();
+		private readonly Dictionary<int, bool> _valueSet = new();
 
 		public int Allocate(object target)
 		{

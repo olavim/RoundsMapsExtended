@@ -9,7 +9,7 @@ namespace MapsExt.MapObjects.Properties
 
 		public override Quaternion Value
 		{
-			get => new Quaternion(0, 0, this._z, this._w);
+			get => new(0, 0, this._z, this._w);
 			set { this._z = value.z; this._w = value.w; }
 		}
 
@@ -25,15 +25,15 @@ namespace MapsExt.MapObjects.Properties
 		public override bool Equals(ValueProperty<Quaternion> other) => base.Equals(other) || this.Value == other.Value;
 
 		public static implicit operator Quaternion(RotationProperty prop) => prop.Value;
-		public static implicit operator RotationProperty(Quaternion value) => new RotationProperty(value);
-		public static implicit operator RotationProperty(float angle) => new RotationProperty(angle);
+		public static implicit operator RotationProperty(Quaternion value) => new(value);
+		public static implicit operator RotationProperty(float angle) => new(angle);
 
 		public static RotationProperty operator *(RotationProperty a, RotationProperty b) => a.Value * b.Value;
 		public static Vector3 operator *(RotationProperty a, Vector2 b) => a.Value * b;
 		public static Vector3 operator *(RotationProperty a, Vector3 b) => a.Value * b;
 	}
 
-	[PropertySerializer]
+	[PropertySerializer(typeof(RotationProperty))]
 	public class RotationPropertySerializer : PropertySerializer<RotationProperty>
 	{
 		public override RotationProperty Serialize(GameObject instance)

@@ -10,18 +10,18 @@ namespace MapsExt.MapObjects
 
 		public RopePositionProperty Position
 		{
-			get => new RopePositionProperty(this._pos1, this._pos2);
+			get => new(this._pos1, this._pos2);
 			set { this._pos1 = value.StartPosition; this._pos2 = value.EndPosition; }
 		}
 
 		public RopeData()
 		{
-			this.Position = new RopePositionProperty();
+			this.Position = new();
 		}
 	}
 
-	[MapObject]
-	public class Rope : IMapObject<RopeData>
+	[MapObject(typeof(RopeData))]
+	public class Rope : IMapObject
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
