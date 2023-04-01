@@ -201,7 +201,7 @@ namespace MapsExt.Geometry
 		{
 			public Vertex first;
 			public Vertex second;
-			public LineSegment Segment => new LineSegment(this.first.position, this.second.position);
+			public LineSegment Segment => new(this.first.position, this.second.position);
 
 			public Edge(Vertex first, Vertex second)
 			{

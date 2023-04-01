@@ -8,7 +8,7 @@ namespace MapsExt.Editor.ActionHandlers
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
-		private readonly Dictionary<GameObject, Vector2> _localPositions = new Dictionary<GameObject, Vector2>();
+		private readonly Dictionary<GameObject, Vector2> _localPositions = new();
 
 		protected virtual void Awake()
 		{

@@ -36,14 +36,7 @@ namespace MapsExt.Compatibility
 			long pos = stream.Position;
 			string version = ReadVersion(stream, context);
 			stream.Seek(pos, SeekOrigin.Begin);
-			var map = ForVersion(version, context).Load(stream);
-
-			if (map == null)
-			{
-				throw new MapLoaderException("Map load failed");
-			}
-
-			return map;
+			return ForVersion(version, context).Load(stream) ?? throw new MapLoaderException("Map load failed");
 		}
 
 		public static CustomMap LoadResource(string resourceName, DeserializationContext context = null)
@@ -51,10 +44,8 @@ namespace MapsExt.Compatibility
 			try
 			{
 				var assembly = Assembly.GetCallingAssembly();
-				using (var stream = assembly.GetManifestResourceStream(resourceName))
-				{
-					return Load(stream, context);
-				}
+				using var stream = assembly.GetManifestResourceStream(resourceName);
+				return Load(stream, context);
 			}
 			catch (Exception ex)
 			{
@@ -67,10 +58,8 @@ namespace MapsExt.Compatibility
 			try
 			{
 				var bytes = File.ReadAllBytes(path);
-				using (var stream = new MemoryStream(bytes))
-				{
-					return Load(stream, context);
-				}
+				using var stream = new MemoryStream(bytes);
+				return Load(stream, context);
 			}
 			catch (Exception ex)
 			{
@@ -82,30 +71,28 @@ namespace MapsExt.Compatibility
 		{
 			int depth = -1;
 
-			using (var reader = new JsonTextReader(stream, context ?? new()))
+			using var reader = new JsonTextReader(stream, context ?? new());
+			EntryType entry = 0;
+			string key = null;
+			string value = null;
+
+			while (entry != EntryType.EndOfStream)
 			{
-				EntryType entry = 0;
-				string key = null;
-				string value = null;
+				reader.ReadToNextEntry(out key, out value, out entry);
 
-				while (entry != EntryType.EndOfStream)
+				if (entry == EntryType.StartOfNode)
 				{
-					reader.ReadToNextEntry(out key, out value, out entry);
+					depth++;
+				}
 
-					if (entry == EntryType.StartOfNode)
-					{
-						depth++;
-					}
+				if (entry == EntryType.EndOfNode)
+				{
+					depth--;
+				}
 
-					if (entry == EntryType.EndOfNode)
-					{
-						depth--;
-					}
-
-					if (key == "version" && depth == 0)
-					{
-						return value.Trim('"');
-					}
+				if (key == "version" && depth == 0)
+				{
+					return value.Trim('"');
 				}
 			}
 
@@ -122,10 +109,8 @@ namespace MapsExt.Compatibility
 		public virtual CustomMap LoadResource(string resourceName)
 		{
 			var assembly = Assembly.GetCallingAssembly();
-			using (var stream = assembly.GetManifestResourceStream(resourceName))
-			{
-				return this.Load(stream);
-			}
+			using var stream = assembly.GetManifestResourceStream(resourceName);
+			return this.Load(stream);
 		}
 
 		public abstract CustomMap Load(Stream stream);

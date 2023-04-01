@@ -23,16 +23,18 @@ namespace MapsExt.Editor
 		{
 			if (list == null)
 			{
-				throw new ArgumentNullException("list");
+				throw new ArgumentNullException(nameof(list));
 			}
 
 			this._suppressNotification = true;
 			IList oldItems = this.ToArray();
 
+#pragma warning disable RCS1235
 			foreach (T item in list)
 			{
 				this.Add(item);
 			}
+#pragma warning restore RCS1235
 
 			this._suppressNotification = false;
 
@@ -43,7 +45,7 @@ namespace MapsExt.Editor
 		{
 			if (list == null)
 			{
-				throw new ArgumentNullException("list");
+				throw new ArgumentNullException(nameof(list));
 			}
 
 			this._suppressNotification = true;

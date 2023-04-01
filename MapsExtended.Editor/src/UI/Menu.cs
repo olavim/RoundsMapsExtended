@@ -296,7 +296,7 @@ namespace MapsExt.Editor.UI
 				});
 			}
 
-			var subitems = item.items ?? new List<MenuItem>() { };
+			var subitems = item.items ?? new List<MenuItem>();
 			foreach (var subitem in subitems)
 			{
 				this.PatchMenuItemActions(subitem);

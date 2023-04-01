@@ -12,7 +12,7 @@ namespace MapsExt.Editor
 				pixels[i] = color;
 			}
 
-			Texture2D result = new Texture2D(width, height);
+			Texture2D result = new(width, height);
 			result.SetPixels(pixels);
 			result.Apply();
 

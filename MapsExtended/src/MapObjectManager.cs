@@ -48,7 +48,7 @@ namespace MapsExt
 		{
 			if (mapObject.Prefab == null)
 			{
-				throw new ArgumentException($"Prefab cannot be null");
+				throw new ArgumentException("Prefab cannot be null");
 			}
 
 			if (this._mapObjects.ContainsKey(dataType))
@@ -76,13 +76,9 @@ namespace MapsExt
 
 		public MapObjectData Serialize(GameObject go)
 		{
-			var mapObjectInstance = go.GetComponent<MapObjectInstance>();
-
-			if (mapObjectInstance == null)
-			{
-				throw new ArgumentException($"Cannot serialize GameObject: missing MapObjectInstance");
-			}
-
+			var mapObjectInstance =
+				go.GetComponent<MapObjectInstance>() ??
+				throw new ArgumentException("Cannot serialize GameObject: missing MapObjectInstance");
 			return this.Serialize(mapObjectInstance);
 		}
 
@@ -90,7 +86,7 @@ namespace MapsExt
 		{
 			if (mapObjectInstance == null)
 			{
-				throw new ArgumentException($"Cannot serialize null MapObjectInstance");
+				throw new ArgumentException("Cannot serialize null MapObjectInstance");
 			}
 
 			if (mapObjectInstance.dataType == null)
@@ -98,25 +94,17 @@ namespace MapsExt
 				throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}): missing dataType");
 			}
 
-			var serializer = this._dataSerializers.GetValueOrDefault(mapObjectInstance.dataType, null);
-
-			if (serializer == null)
-			{
+			var serializer =
+				this._dataSerializers.GetValueOrDefault(mapObjectInstance.dataType, null) ??
 				throw new ArgumentException($"Map object type not registered: {mapObjectInstance.dataType}");
-			}
-
 			return serializer.Serialize(mapObjectInstance);
 		}
 
 		public void Deserialize(MapObjectData data, GameObject target)
 		{
-			var serializer = this._dataSerializers.GetValueOrDefault(data.GetType(), null);
-
-			if (serializer == null)
-			{
+			var serializer =
+				this._dataSerializers.GetValueOrDefault(data.GetType(), null) ??
 				throw new ArgumentException($"Map object type not registered: {data.GetType()}");
-			}
-
 			serializer.Deserialize(data, target);
 		}
 
@@ -184,7 +172,6 @@ namespace MapsExt
 				instance = PhotonNetwork.Instantiate(this.GetInstanceName(data.GetType()), Vector3.zero, Quaternion.identity, 0, new object[] { "lateInstantiated" });
 				instance.transform.SetParent(parent);
 			}
-
 
 			instance.name = this.GetInstanceName(data.GetType());
 

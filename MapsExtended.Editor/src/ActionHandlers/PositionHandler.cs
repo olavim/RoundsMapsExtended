@@ -7,26 +7,14 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		public static Vector2 KeyCodeToNudge(KeyCode key)
 		{
-			Vector2 delta;
-
-			switch (key)
+			var delta = key switch
 			{
-				case KeyCode.RightArrow:
-					delta = new Vector2(1, 0);
-					break;
-				case KeyCode.LeftArrow:
-					delta = new Vector2(-1, 0);
-					break;
-				case KeyCode.UpArrow:
-					delta = new Vector2(0, 1);
-					break;
-				case KeyCode.DownArrow:
-					delta = new Vector2(0, -1);
-					break;
-				default:
-					delta = Vector2.zero;
-					break;
-			}
+				KeyCode.RightArrow => new Vector2(1, 0),
+				KeyCode.LeftArrow => new Vector2(-1, 0),
+				KeyCode.UpArrow => new Vector2(0, 1),
+				KeyCode.DownArrow => new Vector2(0, -1),
+				_ => Vector2.zero,
+			};
 
 			if (EditorInput.GetKey(KeyCode.LeftShift))
 			{

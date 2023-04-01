@@ -5,8 +5,8 @@ namespace MapsExt.Editor.Tests
 {
 	class TtlDictionary<TKey, TValue>
 	{
-		private Dictionary<TKey, TValue> dict = new Dictionary<TKey, TValue>();
-		private Dictionary<TKey, int> ttl = new Dictionary<TKey, int>();
+		private Dictionary<TKey, TValue> dict = new();
+		private Dictionary<TKey, int> ttl = new();
 
 		public void Set(TKey key, TValue value, int ttl)
 		{
@@ -34,7 +34,7 @@ namespace MapsExt.Editor.Tests
 
 		public TValue this[TKey key]
 		{
-			get { return this.dict.GetValueOrDefault(key, default(TValue)); }
+			get { return this.dict.GetValueOrDefault(key, default); }
 		}
 	}
 
@@ -43,80 +43,80 @@ namespace MapsExt.Editor.Tests
 		public Vector2 MouseScrollDelta { get; private set; }
 		public Vector3 MousePosition { get; private set; }
 
-		private Dictionary<KeyCode, bool> keyDict = new Dictionary<KeyCode, bool>();
-		private Dictionary<int, bool> mouseButtonDict = new Dictionary<int, bool>();
+		private readonly Dictionary<KeyCode, bool> _keyDict = new();
+		private readonly Dictionary<int, bool> _mouseButtonDict = new();
 
-		private TtlDictionary<KeyCode, bool> keyDownDict = new TtlDictionary<KeyCode, bool>();
-		private TtlDictionary<KeyCode, bool> keyUpDict = new TtlDictionary<KeyCode, bool>();
-		private TtlDictionary<int, bool> mouseButtonDownDict = new TtlDictionary<int, bool>();
-		private TtlDictionary<int, bool> mouseButtonUpDict = new TtlDictionary<int, bool>();
+		private readonly TtlDictionary<KeyCode, bool> _keyDownDict = new();
+		private readonly TtlDictionary<KeyCode, bool> _keyUpDict = new();
+		private readonly TtlDictionary<int, bool> _mouseButtonDownDict = new();
+		private readonly TtlDictionary<int, bool> _mouseButtonUpDict = new();
 
 		private void LateUpdate()
 		{
-			this.keyDownDict.Tick();
-			this.keyUpDict.Tick();
-			this.mouseButtonDownDict.Tick();
-			this.mouseButtonUpDict.Tick();
+			this._keyDownDict.Tick();
+			this._keyUpDict.Tick();
+			this._mouseButtonDownDict.Tick();
+			this._mouseButtonUpDict.Tick();
 		}
 
 		public bool GetKey(KeyCode key)
 		{
-			return this.keyDict.GetValueOrDefault(key, false);
+			return this._keyDict.GetValueOrDefault(key, false);
 		}
 
 		public void SetKey(KeyCode key, bool value = true)
 		{
-			this.keyDict[key] = value;
+			this._keyDict[key] = value;
 		}
 
 		public bool GetKeyDown(KeyCode key)
 		{
-			return this.keyDownDict[key];
+			return this._keyDownDict[key];
 		}
 
 		public void SetKeyDown(KeyCode key, bool value = true)
 		{
-			this.keyDownDict.Set(key, value, 1);
+			this._keyDownDict.Set(key, value, 1);
 		}
 
 		public bool GetKeyUp(KeyCode key)
 		{
-			return this.keyUpDict[key];
+			return this._keyUpDict[key];
 		}
 
 		public void SetKeyUp(KeyCode key, bool value = true)
 		{
-			this.keyUpDict.Set(key, value, 1);
+			this._keyUpDict.Set(key, value, 1);
 		}
 
 		public bool GetMouseButtonDown(int button)
 		{
-			return this.mouseButtonDownDict[button];
+			return this._mouseButtonDownDict[button];
 		}
 
 		public void SetMouseButtonDown(int button, bool value = true)
 		{
-			this.mouseButtonDownDict.Set(button, value, 1);
+			this._mouseButtonDownDict.Set(button, value, 1);
 		}
 
 		public bool GetMouseButtonUp(int button)
 		{
-			return this.mouseButtonUpDict[button];
+			return this._mouseButtonUpDict[button];
 		}
 
 		public void SetMouseButtonUp(int button, bool value = true)
 		{
-			this.mouseButtonUpDict.Set(button, value, 1);
+			this._mouseButtonUpDict.Set(button, value, 1);
 		}
 
 		public bool GetMouseButton(int button)
 		{
-			return this.mouseButtonDict.GetValueOrDefault(button, false);
+			return this._mouseButtonDict.GetValueOrDefault(button, false);
 		}
 
 		public void SetMouseButton(int button, bool value = true)
 		{
-			this.mouseButtonDict[button] = value;
+			this._mouseButtonDict[button] = value;
 		}
 
 		public void SetMousePosition(Vector3 position)

@@ -1,6 +1,6 @@
 using System;
 
-namespace MapsExt.Editor.Tests
+namespace MapsExt.Tests
 {
 	internal class SerializationLogger : Sirenix.Serialization.ILogger
 	{

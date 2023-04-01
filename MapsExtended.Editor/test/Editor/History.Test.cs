@@ -149,8 +149,10 @@ namespace MapsExt.Editor.Tests
 			yield return this.utils.SpawnMapObject<RopeData>();
 			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
-			var list = new List<Vector2>();
-			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
+			var list = new List<Vector2>
+			{
+				rope.GetAnchor(0).GetAnchoredPosition()
+			};
 
 			rope.GetAnchor(0).SetHandlerValue(new PositionProperty(0.25f, 0.5f));
 			this.editor.TakeSnaphot();

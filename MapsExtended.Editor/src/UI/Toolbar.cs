@@ -72,5 +72,4 @@ namespace MapsExt.Editor.UI
 			this.GridSizeValueLabel.text = this.GridSizeSlider.value.ToString("F2");
 		}
 	}
-
 }

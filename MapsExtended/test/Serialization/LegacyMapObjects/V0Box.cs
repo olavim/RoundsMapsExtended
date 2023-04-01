@@ -3,7 +3,7 @@ using UnityEngine;
 
 #pragma warning disable CS0618
 
-namespace MapsExt.Editor.Tests
+namespace MapsExt.Tests
 {
 	public class V0Box : SpatialMapObject { }
 

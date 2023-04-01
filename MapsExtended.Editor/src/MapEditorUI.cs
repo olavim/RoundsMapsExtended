@@ -83,8 +83,10 @@ namespace MapsExt.Editor
 			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow));
 			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Inspector").Action(this.OpenInspectorWindow));
 
-			var mapObjects = new Dictionary<string, List<(string, Type)>>();
-			mapObjects.Add("", new List<(string, Type)>());
+			var mapObjects = new Dictionary<string, List<(string, Type)>>
+			{
+				{ "", new List<(string, Type)>() }
+			};
 
 			foreach (var (type, label, category) in MapsExtendedEditor.instance._mapObjectAttributes)
 			{

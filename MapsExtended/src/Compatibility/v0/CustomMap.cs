@@ -7,7 +7,6 @@ namespace MapsExt.Compatibility.V0
 {
 	internal class CustomMap : IUpgradable
 	{
-
 		public string id;
 		public string name;
 

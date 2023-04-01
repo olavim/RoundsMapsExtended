@@ -13,7 +13,6 @@ namespace MapsExt.Editor.Tests
 
 	public class ListIterator<T>
 	{
-
 		private readonly IList<T> list;
 		private int index;
 

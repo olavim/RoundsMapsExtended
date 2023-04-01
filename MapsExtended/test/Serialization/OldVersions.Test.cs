@@ -6,12 +6,12 @@ using Sirenix.Serialization;
 using Surity;
 using UnityEngine;
 
-namespace MapsExt.Editor.Tests
+namespace MapsExt.Tests
 {
 	[TestClass]
 	public class OldVersionSerializationTests
 	{
-		private static readonly DeserializationContext deserializationContext = new DeserializationContext
+		private static readonly DeserializationContext deserializationContext = new()
 		{
 			Config = new SerializationConfig
 			{

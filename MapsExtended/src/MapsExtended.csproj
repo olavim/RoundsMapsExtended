@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="..\RoundsReferences.props" />
+	<Import Project="..\..\RoundsReferences.props" />
 
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\assets\mapbase" />
-		<EmbeddedResource Include="..\assets\mapobjects" />
+		<EmbeddedResource Include="..\..\assets\mapbase" />
+		<EmbeddedResource Include="..\..\assets\mapobjects" />
 	</ItemGroup>
 
 	<ItemGroup>

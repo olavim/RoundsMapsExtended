@@ -205,7 +205,7 @@ namespace MapsExt.Editor.Tests
 			var prop1 = new RotationProperty(Quaternion.identity);
 			var prop2 = new RotationProperty(Quaternion.Euler(0, 0, 45));
 
-			RotationProperty KeyframeProperty(int keyframe)
+			static RotationProperty KeyframeProperty(int keyframe)
 			{
 				float angle = 15 * (keyframe + 1);
 				return new RotationProperty(Quaternion.Euler(0, 0, angle));

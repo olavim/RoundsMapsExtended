@@ -68,19 +68,14 @@ namespace MapsExt
 
 		private BezierAnimationCurve GetCurve()
 		{
-			switch (this.CurveType)
+			return this.CurveType switch
 			{
-				case CurveType.Linear:
-					return new(0, 0, 1, 1);
-				case CurveType.EaseIn:
-					return new(0.12f, 0, 0.39f, 0);
-				case CurveType.EaseOut:
-					return new(0.61f, 1, 0.88f, 1);
-				case CurveType.EaseInOut:
-					return new(0.37f, 0, 0.63f, 1);
-				default:
-					return null;
-			}
+				CurveType.Linear => new(0, 0, 1, 1),
+				CurveType.EaseIn => new(0.12f, 0, 0.39f, 0),
+				CurveType.EaseOut => new(0.61f, 1, 0.88f, 1),
+				CurveType.EaseInOut => new(0.37f, 0, 0.63f, 1),
+				_ => null,
+			};
 		}
 	}
 }

@@ -59,9 +59,10 @@ namespace MapsExt
 		/// <param name="attributeType">Type of the attribute to look for.</param>
 		public static TDelegate GetAttributedMethod<TDelegate>(Type type, Type attributeType) where TDelegate : Delegate
 		{
-			var deserializerMethod = type
-				.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-				.FirstOrDefault(m => m.GetCustomAttribute(attributeType) != null);
+			var deserializerMethod = Array.Find(
+				type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
+				m => m.GetCustomAttribute(attributeType) != null
+			);
 
 			if (deserializerMethod != null)
 			{
@@ -80,10 +81,11 @@ namespace MapsExt
 
 		public static T GetAttributedProperty<T>(Type type, Type attributeType) where T : class
 		{
-			return type
-				.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-				.FirstOrDefault(m => m.GetCustomAttribute(attributeType) != null)
-				?.GetValue(null) as T;
+			var prop = Array.Find(
+				type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
+				m => m.GetCustomAttribute(attributeType) != null
+			);
+			return prop?.GetValue(null) as T;
 		}
 
 		public static IEnumerable<Type> GetParentTypes(this Type type)

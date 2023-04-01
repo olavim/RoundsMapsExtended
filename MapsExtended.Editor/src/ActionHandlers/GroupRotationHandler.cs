@@ -9,8 +9,8 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		private IEnumerable<GameObject> _gameObjects;
 
-		private readonly Dictionary<GameObject, Vector2> _localPositions = new Dictionary<GameObject, Vector2>();
-		private readonly Dictionary<GameObject, float> _localAngles = new Dictionary<GameObject, float>();
+		private readonly Dictionary<GameObject, Vector2> _localPositions = new();
+		private readonly Dictionary<GameObject, float> _localAngles = new();
 
 		protected override void Awake()
 		{

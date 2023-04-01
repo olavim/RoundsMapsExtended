@@ -57,7 +57,7 @@ namespace MapsExt.Editor.UI
 				return;
 			}
 
-			if (valueStr == "")
+			if (valueStr?.Length == 0)
 			{
 				this._inputValue = new Vector2(this._inputValue.x, 0);
 			}

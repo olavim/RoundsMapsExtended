@@ -55,10 +55,14 @@ namespace MapsExt.Editor.Tests
 				throw new ArgumentException("anchorPosition cannot be 0");
 			}
 
-			var go = this.editor.ActiveObject;
-			var resizeInteractionContent = go.GetComponent<SizeHandler>().Content;
-			var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + anchorPosition).gameObject;
-			yield return this.DragMouse(resizeHandle.transform.position, delta);
+			IEnumerator DoResizeSelectedWithMouse()
+			{
+				var resizeInteractionContent = this.editor.ActiveObject.GetComponent<SizeHandler>().Content;
+				var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + anchorPosition).gameObject;
+				yield return this.DragMouse(resizeHandle.transform.position, delta);
+			}
+
+			return DoResizeSelectedWithMouse();
 		}
 
 		public IEnumerator RotateSelectedWithMouse(float degrees)
