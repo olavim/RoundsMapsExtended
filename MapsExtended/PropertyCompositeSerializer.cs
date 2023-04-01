@@ -30,6 +30,8 @@ namespace MapsExt
 				mapObjectInstance.dataType = data.GetType();
 				target.SetActive(data.active);
 
+				this.FixMapObjectRendering(target);
+
 				this.CacheMemberSerializers(mapObjectInstance.dataType);
 
 				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.dataType])
@@ -67,6 +69,23 @@ namespace MapsExt
 			catch (Exception ex)
 			{
 				throw new MapObjectSerializationException($"Could not serialize map object: {mapObjectInstance.gameObject.name}", ex);
+			}
+		}
+
+		private void FixMapObjectRendering(GameObject go)
+		{
+			var renderer = go.gameObject.GetComponent<SpriteRenderer>();
+			if (renderer && renderer.color.a >= 0.5f)
+			{
+				renderer.transform.position = new Vector3(renderer.transform.position.x, renderer.transform.position.y, -3f);
+				if (renderer.gameObject.tag != "NoMask")
+				{
+					renderer.color = new Color(0.21568628f, 0.21568628f, 0.21568628f);
+					if (!renderer.GetComponent<SpriteMask>())
+					{
+						renderer.gameObject.AddComponent<SpriteMask>().sprite = renderer.sprite;
+					}
+				}
 			}
 		}
 

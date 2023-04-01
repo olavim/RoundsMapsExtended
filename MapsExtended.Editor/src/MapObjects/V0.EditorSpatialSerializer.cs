@@ -17,6 +17,12 @@ namespace MapsExt.Editor.MapObjects
 			target.GetOrAddComponent<PositionHandler>();
 			target.GetOrAddComponent<SizeHandler>();
 			target.GetOrAddComponent<ActionHandlers.RotationHandler>();
+
+			GameObjectUtils.DisableRigidbody(target);
+			if (target.GetComponent<Damagable>())
+			{
+				GameObject.Destroy(target.GetComponent<Damagable>());
+			}
 		}
 
 		public static SerializerAction<T> BuildSerializer<T>(SerializerAction<T> action) where T : SpatialMapObject

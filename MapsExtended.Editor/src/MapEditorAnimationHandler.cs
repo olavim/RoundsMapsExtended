@@ -6,19 +6,24 @@ using System.Collections.Generic;
 using MapsExt.Editor.UI;
 using MapsExt.MapObjects.Properties;
 using System.Linq;
+using UnityEngine.Rendering.PostProcessing;
+using UnboundLib;
 
 namespace MapsExt.Editor
 {
 	public class MapEditorAnimationHandler : MonoBehaviour
 	{
 		[SerializeField] private MapEditor _editor;
+		[SerializeField] private Camera _animationCamera;
 		private SmoothLineRenderer _lineRenderer;
 		private GameObject _curtain;
 		private int _prevKeyframe = -1;
 		private GameObject _particles;
 		private GameObject _keyframeMapObject;
+		private GameObject _postProcessCamera;
 
 		public MapEditor Editor { get => this._editor; set => this._editor = value; }
+		public Camera AnimationCamera { get => this._animationCamera; set => this._animationCamera = value; }
 		public SmoothLineRenderer LineRenderer { get => this._lineRenderer; set => this._lineRenderer = value; }
 
 		public MapObjectAnimation Animation { get; private set; }
@@ -32,10 +37,28 @@ namespace MapsExt.Editor
 		protected virtual void Awake()
 		{
 			this.SetupLayerCurtain();
+			this.SetupPostProcessing();
 
 			this._lineRenderer = this.gameObject.AddComponent<SmoothLineRenderer>();
 			this._lineRenderer.Renderer.sortingLayerID = SortingLayer.NameToID("MostFront");
 			this._lineRenderer.Renderer.sortingOrder = 9;
+		}
+
+		private void SetupPostProcessing()
+		{
+			this._postProcessCamera = new GameObject("PostProcessCamera");
+			this._postProcessCamera.transform.SetParent(this.transform);
+
+			var camera = this._postProcessCamera.AddComponent<Camera>();
+			camera.CopyFrom(MainCam.instance.cam);
+			camera.depth = 2;
+			camera.cullingMask = 0; // Render nothing, only apply post-processing fx
+
+			var layer = this._postProcessCamera.AddComponent<PostProcessLayer>();
+			layer.Init((PostProcessResources) MainCam.instance.gameObject.GetComponent<PostProcessLayer>().GetFieldValue("m_Resources"));
+			layer.volumeTrigger = this._postProcessCamera.transform;
+			layer.volumeLayer = 1 << LayerMask.NameToLayer("Default Post");
+			layer.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
 		}
 
 		/* Creates a transparent image that "separates" the bottom and top layers. The bottom layer (and curtain)
@@ -58,6 +81,9 @@ namespace MapsExt.Editor
 
 		protected virtual void OnEnable()
 		{
+			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = false;
+			this._postProcessCamera.SetActive(true);
+
 			if (this.Animation == null)
 			{
 				return;
@@ -72,6 +98,9 @@ namespace MapsExt.Editor
 
 		protected virtual void OnDisable()
 		{
+			this._postProcessCamera.SetActive(false);
+			MainCam.instance.gameObject.GetComponent<PostProcessLayer>().enabled = true;
+
 			if (this.Animation == null)
 			{
 				return;
@@ -132,14 +161,15 @@ namespace MapsExt.Editor
 		 * second camera can only render stuff on a specific layer, we need to duplicate the
 		 * particle rendering stuff on it.
 		 */
-		public void RefreshParticles()
+		private void RefreshParticles()
 		{
 			if (this._particles)
 			{
 				GameObjectUtils.DestroyImmediateSafe(this._particles);
 			}
 
-			this._particles = GameObject.Instantiate(MapsExtendedEditor.instance._frontParticles, Vector3.zero, Quaternion.identity, this.transform);
+			var defaultParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
+			this._particles = GameObject.Instantiate(defaultParticles, Vector3.zero, Quaternion.identity, this.transform);
 
 			foreach (var p in this._particles.GetComponentsInChildren<ParticleSystem>())
 			{
@@ -321,7 +351,7 @@ namespace MapsExt.Editor
 			frameData.active = true;
 			MapsExtendedEditor.instance._propertyManager.SetProperty(frameData, new AnimationProperty());
 
-			MapsExtendedEditor.instance.SpawnObject(this.gameObject, frameData, instance =>
+			MapObjectSpawner.SpawnObject(this.gameObject, frameData, instance =>
 			{
 				System.Diagnostics.Debug.Assert(
 					instance.GetComponent<MapObjectAnimation>() == null,

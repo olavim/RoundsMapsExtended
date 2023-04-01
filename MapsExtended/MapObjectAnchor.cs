@@ -9,7 +9,7 @@ namespace MapsExt
 		public GameObject Target { get; private set; }
 		public bool IsAttached => this.Target != this.gameObject;
 
-		protected Vector2 targetLocalPosition;
+		private Vector2 _targetLocalPosition;
 
 		protected virtual void Awake()
 		{
@@ -36,7 +36,7 @@ namespace MapsExt
 				return this.transform.position;
 			}
 
-			return this.Target.transform.TransformPoint(this.targetLocalPosition);
+			return this.Target.transform.TransformPoint(this._targetLocalPosition);
 		}
 
 		public void UpdateAttachment()
@@ -55,14 +55,14 @@ namespace MapsExt
 			else if (collider.gameObject != this.Target)
 			{
 				this.Target = collider.gameObject;
-				this.targetLocalPosition = this.Target.transform.InverseTransformPoint(pos);
+				this._targetLocalPosition = this.Target.transform.InverseTransformPoint(pos);
 			}
 		}
 
 		public void Detach()
 		{
 			this.Target = this.gameObject;
-			this.targetLocalPosition = Vector2.zero;
+			this._targetLocalPosition = Vector2.zero;
 		}
 	}
 }

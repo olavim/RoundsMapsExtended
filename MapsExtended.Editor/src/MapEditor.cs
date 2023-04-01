@@ -151,7 +151,7 @@ namespace MapsExt.Editor
 				}
 				else
 				{
-					MapsExtendedEditor.instance.SpawnObject(this.Content, mapObject);
+					MapObjectSpawner.SpawnObject(this.Content, mapObject);
 				}
 			}
 
@@ -195,7 +195,7 @@ namespace MapsExt.Editor
 
 			foreach (var mapObject in this._clipboardMapObjects)
 			{
-				MapsExtendedEditor.instance.SpawnObject(this.Content, mapObject, obj =>
+				MapObjectSpawner.SpawnObject(this.Content, mapObject, obj =>
 				{
 					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
 					{
@@ -221,7 +221,7 @@ namespace MapsExt.Editor
 		{
 			this.ClearSelected();
 
-			MapsExtendedEditor.instance.SpawnObject(this.Content, mapObjectDataType, obj =>
+			MapObjectSpawner.SpawnObject(this.Content, mapObjectDataType, obj =>
 			{
 				var objectsWithHandlers = obj
 					.GetComponentsInChildren<ActionHandler>()
@@ -283,7 +283,7 @@ namespace MapsExt.Editor
 
 			if (this.Content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
-				MapsExtendedEditor.instance.SpawnObject(this.Content, new SpawnData(), instance =>
+				MapObjectSpawner.SpawnObject<SpawnData>(this.Content, instance =>
 				{
 					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this._tempSpawn = instance;
@@ -312,7 +312,6 @@ namespace MapsExt.Editor
 
 				this.ExecuteAfterFrames(1, () =>
 				{
-					MapsExtendedEditor.instance.SetMapPhysicsActive(this.SimulatedContent, true);
 					this.gameObject.GetComponent<Map>().allRigs = this.SimulatedContent.GetComponentsInChildren<Rigidbody2D>();
 
 					foreach (var rope in this.SimulatedContent.GetComponentsInChildren<MapObjet_Rope>())
@@ -348,7 +347,7 @@ namespace MapsExt.Editor
 
 		public void LoadMap(string mapFilePath)
 		{
-			MapsExtendedEditor.instance.LoadMap(this.Content, mapFilePath);
+			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.instance._mapObjectManager);
 
 			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
 			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");

@@ -14,7 +14,7 @@ namespace MapsExt.MapObjects.Properties
 		public DamageableProperty(bool value) : base(value) { }
 
 		public static implicit operator bool(DamageableProperty prop) => prop.Value;
-		public static implicit operator DamageableProperty(bool value) => new DamageableProperty(value);
+		public static implicit operator DamageableProperty(bool value) => new(value);
 	}
 
 	[PropertySerializer(typeof(DamageableProperty))]

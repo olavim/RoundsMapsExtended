@@ -53,14 +53,8 @@ namespace MapsExt.MapObjects.Properties
 			if (property.Keyframes.Length > 1)
 			{
 				var keyframes = property.Keyframes.ToList();
-				var anim = target.GetOrAddComponent<MapObjectAnimation>();
-
-				for (int i = 0; i < keyframes.Count; i++)
-				{
-					keyframes[i].UpdateCurve();
-				}
-
-				anim.Keyframes = keyframes;
+				keyframes.ForEach(k => k.UpdateCurve());
+				target.GetOrAddComponent<MapObjectAnimation>().Keyframes = keyframes;
 			}
 			else if (target.GetComponent<MapObjectAnimation>())
 			{

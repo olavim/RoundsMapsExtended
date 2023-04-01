@@ -25,5 +25,17 @@ namespace MapsExt
 				GameObjectUtils.DestroyImmediateSafe(child);
 			}
 		}
+
+		public static void DisableRigidbody(GameObject go)
+		{
+			var rigidbody = go.GetComponent<Rigidbody2D>();
+			if (rigidbody != null)
+			{
+				rigidbody.simulated = true;
+				rigidbody.velocity = Vector2.zero;
+				rigidbody.angularVelocity = 0;
+				rigidbody.isKinematic = true;
+			}
+		}
 	}
 }

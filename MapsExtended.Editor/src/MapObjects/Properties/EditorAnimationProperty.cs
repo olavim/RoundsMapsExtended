@@ -15,6 +15,7 @@ namespace MapsExt.Editor.MapObjects.Properties
 			{
 				var anim = target.GetOrAddComponent<MapObjectAnimation>();
 				anim.PlayOnAwake = false;
+				anim.Stop();
 				anim.Keyframes = property.Keyframes.ToList();
 			}
 			else if (target.GetComponent<MapObjectAnimation>())

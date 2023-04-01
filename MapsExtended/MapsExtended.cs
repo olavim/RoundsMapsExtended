@@ -154,6 +154,11 @@ namespace MapsExt
 						throw new Exception($"{mapObjectType.Name} is not assignable to {typeof(IMapObject)}");
 					}
 
+					if (mapObjectType.GetConstructor(Type.EmptyTypes) == null)
+					{
+						throw new Exception($"{mapObjectType.Name} does not have a default constructor");
+					}
+
 					var mapObject = (IMapObject) AccessTools.CreateInstance(mapObjectType);
 					this._mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
 				}

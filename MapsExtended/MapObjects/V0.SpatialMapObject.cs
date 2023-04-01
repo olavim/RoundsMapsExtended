@@ -1,4 +1,3 @@
-using MapsExt.MapObjects.Properties;
 using System;
 using UnityEngine;
 
@@ -27,6 +26,8 @@ namespace MapsExt.MapObjects
 			target.transform.position = data.position;
 			target.transform.localScale = data.scale;
 			target.transform.rotation = data.rotation;
+
+			GameObjectUtils.DisableRigidbody(target);
 		}
 	}
 }
