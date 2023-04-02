@@ -5,7 +5,7 @@ using UnityEngine;
 namespace MapsExt.Editor.MapObjects
 {
 	[EditorMapObject(typeof(BallData), "Ball", Category = "Dynamic")]
-	public class EditorBall : Ball
+	public sealed class EditorBall : Ball
 	{
 		public override void OnInstantiate(GameObject instance)
 		{
@@ -15,7 +15,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObject(typeof(BoxData), "Box", Category = "Dynamic")]
-	public class EditorBox : Box
+	public sealed class EditorBox : Box
 	{
 		public override void OnInstantiate(GameObject instance)
 		{
@@ -25,7 +25,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObject(typeof(BoxBackgroundData), "Box (Background)", Category = "Dynamic")]
-	public class EditorBoxBackground : BoxBackground
+	public sealed class EditorBoxBackground : BoxBackground
 	{
 		public override void OnInstantiate(GameObject instance)
 		{
@@ -35,7 +35,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObject(typeof(BoxDestructibleData), "Box (Destructible)", Category = "Dynamic")]
-	public class EditorBoxDestructible : BoxDestructible
+	public sealed class EditorBoxDestructible : BoxDestructible
 	{
 		public override void OnInstantiate(GameObject instance)
 		{
@@ -46,16 +46,16 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObject(typeof(GroundData), "Ground", Category = "Static")]
-	public class EditorGround : Ground { }
+	public sealed class EditorGround : Ground { }
 
 	[EditorMapObject(typeof(GroundCircleData), "Ground (Circle)", Category = "Static")]
-	public class EditorGroundCircle : GroundCircle { }
+	public sealed class EditorGroundCircle : GroundCircle { }
 
 	[EditorMapObject(typeof(SawData), "Saw", Category = "Static")]
-	public class EditorSaw : MapsExt.MapObjects.Saw { }
+	public sealed class EditorSaw : MapsExt.MapObjects.Saw { }
 
 	[EditorMapObject(typeof(SawDynamicData), "Saw", Category = "Dynamic")]
-	public class EditorSawDynamic : SawDynamic
+	public sealed class EditorSawDynamic : SawDynamic
 	{
 		public override void OnInstantiate(GameObject instance)
 		{
@@ -65,7 +65,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObject(typeof(SpawnData), "Spawn")]
-	public class EditorSpawn : Spawn
+	public sealed class EditorSpawn : Spawn
 	{
 		public override void OnInstantiate(GameObject instance)
 		{
@@ -75,7 +75,7 @@ namespace MapsExt.Editor.MapObjects
 	}
 
 	[EditorMapObject(typeof(RopeData), "Rope")]
-	public class EditorRope : Rope
+	public sealed class EditorRope : Rope
 	{
 		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
 	}

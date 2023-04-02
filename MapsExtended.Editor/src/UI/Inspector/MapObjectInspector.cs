@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace MapsExt.Editor.UI
 {
-	public class MapObjectInspector : MonoBehaviour
+	public sealed class MapObjectInspector : MonoBehaviour
 	{
 		[SerializeField] private MapEditor _editor;
 
@@ -24,7 +24,7 @@ namespace MapsExt.Editor.UI
 			Editor = this.Editor
 		};
 
-		protected virtual void Update()
+		private void Update()
 		{
 			MapObjectInstance instance = null;
 

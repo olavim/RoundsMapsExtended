@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.UI
 {
-	public class FileDialog : MonoBehaviour
+	public sealed class FileDialog : MonoBehaviour
 	{
 		public static void OpenDialog(Action<string> cb)
 		{

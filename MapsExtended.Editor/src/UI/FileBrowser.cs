@@ -6,7 +6,7 @@ using TMPro;
 
 namespace MapsExt.Editor.UI
 {
-	public class FileBrowser : MonoBehaviour
+	public sealed class FileBrowser : MonoBehaviour
 	{
 		[SerializeField] private Button _openButton;
 		[SerializeField] private Button _closeButton;

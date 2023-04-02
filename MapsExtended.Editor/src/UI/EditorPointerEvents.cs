@@ -9,12 +9,12 @@ namespace MapsExt
 		public Action<GameObject> PointerDown { get; set; }
 		public Action<GameObject> PointerUp { get; set; }
 
-		public void OnPointerDown(PointerEventData eventData)
+		public virtual void OnPointerDown(PointerEventData eventData)
 		{
 			this.PointerDown?.Invoke(this.gameObject);
 		}
 
-		public void OnPointerUp(PointerEventData eventData)
+		public virtual void OnPointerUp(PointerEventData eventData)
 		{
 			this.PointerUp?.Invoke(this.gameObject);
 		}

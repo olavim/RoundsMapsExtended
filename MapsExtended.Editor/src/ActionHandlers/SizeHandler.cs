@@ -182,7 +182,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			var scaler = go.AddComponent<UI.UIScaler>();
 			scaler.ReferenceGameObject = this.gameObject;
-			scaler.ConstantSize = new Vector2(0.4f, 0.4f);
+			scaler.ConstantScale = new Vector2(0.4f, 0.4f);
 
 			var button = go.AddComponent<Button>();
 			button.colors = new ColorBlock()

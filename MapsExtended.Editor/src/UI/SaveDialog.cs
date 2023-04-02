@@ -4,7 +4,7 @@ using TMPro;
 
 namespace MapsExt.Editor.UI
 {
-	public class SaveDialog : MonoBehaviour
+	public sealed class SaveDialog : MonoBehaviour
 	{
 		[SerializeField] private Button _saveButton;
 		[SerializeField] private Button _closeButton;

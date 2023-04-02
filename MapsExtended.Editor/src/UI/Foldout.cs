@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.UI
 {
-	public class Foldout : MonoBehaviour
+	public sealed class Foldout : MonoBehaviour
 	{
 		[SerializeField] private Button _foldoutToggle;
 		[SerializeField] private Text _label;
@@ -17,7 +17,7 @@ namespace MapsExt.Editor.UI
 		public GameObject ExpandedFeature { get => this._expandedFeature; set => this._expandedFeature = value; }
 		public GameObject CollapsedFeature { get => this._collapsedFeature; set => this._collapsedFeature = value; }
 
-		protected virtual void Start()
+		private void Start()
 		{
 			this.FoldoutToggle.onClick.AddListener(() =>
 			{

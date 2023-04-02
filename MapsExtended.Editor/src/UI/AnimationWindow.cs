@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.UI
 {
-	public class AnimationWindow : Window
+	public sealed class AnimationWindow : Window
 	{
 		[SerializeField] private Button _deleteButton;
 		[SerializeField] private Button _addButton;
@@ -15,7 +15,7 @@ namespace MapsExt.Editor.UI
 		public MapEditor Editor { get => this._editor; set => this._editor = value; }
 		public MapObjectInspector Inspector { get => this._inspector; set => this._inspector = value; }
 
-		protected new virtual void Start()
+		protected override void Start()
 		{
 			this.CloseButton.onClick.AddListener(this.Close);
 			this.DeleteButton.onClick.AddListener(this.DeleteAnimationKeyframe);

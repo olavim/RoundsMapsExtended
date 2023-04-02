@@ -21,7 +21,7 @@ namespace MapsExt.Editor.UI
 		HOVER
 	}
 
-	public class Menu : MonoBehaviour, ISerializationCallbackReceiver, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
+	public sealed class Menu : MonoBehaviour, ISerializationCallbackReceiver, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 	{
 		public enum MenuState
 		{
@@ -85,7 +85,7 @@ namespace MapsExt.Editor.UI
 			this._serializationData = SerializationUtility.SerializeValue(this.Items, DataFormat.Binary, out this._serializationDataRefs);
 		}
 
-		protected virtual void Start()
+		private void Start()
 		{
 			this._content = GameObject.Instantiate(this.ContentTemplate, this.transform);
 
@@ -112,7 +112,7 @@ namespace MapsExt.Editor.UI
 			this.RedrawContent();
 		}
 
-		protected virtual void Update()
+		private void Update()
 		{
 			if (this.State == MenuState.DISABLED)
 			{

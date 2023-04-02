@@ -4,7 +4,7 @@ using System;
 
 namespace MapsExt.Editor.UI
 {
-	public class KeyframeSettings : MonoBehaviour
+	public sealed class KeyframeSettings : MonoBehaviour
 	{
 		[SerializeField] private Foldout _contentFoldout;
 		[SerializeField] private TextSliderInput _durationInput;
@@ -24,7 +24,7 @@ namespace MapsExt.Editor.UI
 		public float Duration { get; private set; }
 		public string Easing { get; private set; }
 
-		protected virtual void Start()
+		private void Start()
 		{
 			this.ContentFoldout.FoldoutToggle.onClick.AddListener(() =>
 			{

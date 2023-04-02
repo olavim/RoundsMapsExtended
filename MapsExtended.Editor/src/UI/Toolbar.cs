@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.UI
 {
-	public class Toolbar : MonoBehaviour
+	public sealed class Toolbar : MonoBehaviour
 	{
 		private const float GridStep = 0.25f;
 
@@ -28,7 +28,7 @@ namespace MapsExt.Editor.UI
 
 		public Action<bool> OnToggleSimulation { get; set; }
 
-		protected virtual void Start()
+		private void Start()
 		{
 			this.SetGridSize(GridStep);
 			this._simulationEnabled = false;

@@ -3,7 +3,7 @@
 namespace MapsExt.Editor.MapObjects
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-	public class EditorMapObjectAttribute : Attribute
+	public sealed class EditorMapObjectAttribute : Attribute
 	{
 		public Type DataType { get; }
 		public string Label { get; }

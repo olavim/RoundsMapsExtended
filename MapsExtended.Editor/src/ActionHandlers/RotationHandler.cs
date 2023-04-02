@@ -107,7 +107,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			var scaler = go.AddComponent<UI.UIScaler>();
 			scaler.ReferenceGameObject = this.gameObject;
-			scaler.ConstantSize = new Vector2(0.5f, 0.5f);
+			scaler.ConstantScale = new Vector2(0.5f, 0.5f);
 
 			var modifier = go.AddComponent<UniformModifier>();
 			modifier.Radius = 0.5f;
