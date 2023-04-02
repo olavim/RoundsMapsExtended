@@ -15,6 +15,11 @@ namespace MapsExt
 
 		public float Evaluate(float time)
 		{
+			/* Bezier curves can be kind of "grouped up" at certain points. What this means is that the
+			 * visual half-way point of the curve may not be at t = 0.5, and the visual one-third of the
+			 * way -point may not be at t = 0.33, etc. Instead we need to search for the t-value that
+			 * corresponds to the time-value.
+			 */
 			float t = this.BinarySearchT(time, 0, 1);
 			return this.CalcBezier(t).y;
 		}

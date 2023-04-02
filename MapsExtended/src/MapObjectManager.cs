@@ -89,14 +89,14 @@ namespace MapsExt
 				throw new ArgumentException("Cannot serialize null MapObjectInstance");
 			}
 
-			if (mapObjectInstance.dataType == null)
+			if (mapObjectInstance.DataType == null)
 			{
 				throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}): missing dataType");
 			}
 
 			var serializer =
-				this._dataSerializers.GetValueOrDefault(mapObjectInstance.dataType, null) ??
-				throw new ArgumentException($"Map object type not registered: {mapObjectInstance.dataType}");
+				this._dataSerializers.GetValueOrDefault(mapObjectInstance.DataType, null) ??
+				throw new ArgumentException($"Map object type not registered: {mapObjectInstance.DataType}");
 			return serializer.Serialize(mapObjectInstance);
 		}
 

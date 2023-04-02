@@ -7,7 +7,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(BallData))]
 	public class Ball : IMapObject
 	{
-		public virtual GameObject Prefab => Resources.Load<GameObject>("4 Map Objects/Ball_Big");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ball");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

@@ -56,7 +56,7 @@ namespace MapsExt.Editor.Tests
 		{
 			yield return this.utils.SpawnMapObject<BoxData>();
 			var go = this.editor.ActiveObject;
-			var id = go.GetComponent<MapObjectInstance>().mapObjectId;
+			var id = go.GetComponent<MapObjectInstance>().MapObjectId;
 
 			this.editor.OnUndo();
 			this.editor.Content.transform.childCount.Should().Be(0);
@@ -66,7 +66,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.ActiveObject.Should().BeNull();
 
 			var instance = this.editor.Content.transform.GetChild(0).GetComponent<MapObjectInstance>();
-			instance.mapObjectId.Should().Be(id);
+			instance.MapObjectId.Should().Be(id);
 		}
 
 		[Test]

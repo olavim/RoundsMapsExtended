@@ -19,27 +19,8 @@ namespace MapsExt
 			public static void Deserialize(MapObjectData data, GameObject target)
 			{
 				var c = target.GetOrAddComponent<MapObjectInstance>();
-				c.dataType = data.GetType();
+				c.DataType = data.GetType();
 				target.SetActive(data.active);
-
-				FixMapObjectRendering(target);
-			}
-
-			private static void FixMapObjectRendering(GameObject go)
-			{
-				var renderer = go.gameObject.GetComponent<SpriteRenderer>();
-				if (renderer && renderer.color.a >= 0.5f)
-				{
-					renderer.transform.position = new Vector3(renderer.transform.position.x, renderer.transform.position.y, -3f);
-					if (renderer.gameObject.tag != "NoMask")
-					{
-						renderer.color = new Color(0.21568628f, 0.21568628f, 0.21568628f);
-						if (!renderer.GetComponent<SpriteMask>())
-						{
-							renderer.gameObject.AddComponent<SpriteMask>().sprite = renderer.sprite;
-						}
-					}
-				}
 			}
 		}
 
@@ -69,7 +50,7 @@ namespace MapsExt
 		{
 			try
 			{
-				var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.dataType);
+				var data = (MapObject) AccessTools.CreateInstance(mapObjectInstance.DataType);
 				BaseMapObjectSerializer.Serialize(mapObjectInstance.gameObject, data);
 				this._serializer(mapObjectInstance.gameObject, data);
 				return data;

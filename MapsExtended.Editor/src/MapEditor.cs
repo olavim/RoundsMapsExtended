@@ -137,7 +137,7 @@ namespace MapsExt.Editor
 		// A more graceful version of LoadMap which makes an effort to maintain selections and such
 		private void LoadState(CustomMap state)
 		{
-			var dict = this.Content.GetComponentsInChildren<MapObjectInstance>(true).ToDictionary(item => item.mapObjectId, item => item.gameObject);
+			var dict = this.Content.GetComponentsInChildren<MapObjectInstance>(true).ToDictionary(item => item.MapObjectId, item => item.gameObject);
 
 			foreach (var mapObject in state.MapObjects)
 			{
@@ -155,7 +155,7 @@ namespace MapsExt.Editor
 				}
 			}
 
-			var remainingSelected = this.SelectedObjects.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().mapObjectId)).ToList();
+			var remainingSelected = this.SelectedObjects.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().MapObjectId)).ToList();
 
 			// Destroy map objects remaining in the dictionary since they don't exist in the new state
 			foreach (var id in dict.Keys)

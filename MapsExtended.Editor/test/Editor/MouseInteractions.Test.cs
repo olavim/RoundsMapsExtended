@@ -63,7 +63,7 @@ namespace MapsExt.Editor.Tests
 			this.editor.Content.transform.childCount.Should().Be(1);
 
 			var box = this.editor.ActiveObject;
-			box.GetComponent<MapObjectInstance>().dataType.Should().Be(typeof(BoxData));
+			box.GetComponent<MapObjectInstance>().DataType.Should().Be(typeof(BoxData));
 			box.GetHandlerValue<PositionProperty>().Should().Be((PositionProperty) Vector2.zero);
 		}
 

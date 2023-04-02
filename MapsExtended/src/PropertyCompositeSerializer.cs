@@ -26,15 +26,13 @@ namespace MapsExt
 			try
 			{
 				var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
-				mapObjectInstance.mapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
-				mapObjectInstance.dataType = data.GetType();
+				mapObjectInstance.MapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
+				mapObjectInstance.DataType = data.GetType();
 				target.SetActive(data.active);
 
-				this.FixMapObjectRendering(target);
+				this.CacheMemberSerializers(mapObjectInstance.DataType);
 
-				this.CacheMemberSerializers(mapObjectInstance.dataType);
-
-				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.dataType])
+				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.DataType])
 				{
 					var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
 					serializer.Deserialize(prop, mapObjectInstance.gameObject);
@@ -50,14 +48,14 @@ namespace MapsExt
 		{
 			try
 			{
-				var data = (MapObjectData) AccessTools.CreateInstance(mapObjectInstance.dataType);
+				var data = (MapObjectData) AccessTools.CreateInstance(mapObjectInstance.DataType);
 
-				data.mapObjectId = mapObjectInstance.mapObjectId;
+				data.mapObjectId = mapObjectInstance.MapObjectId;
 				data.active = mapObjectInstance.gameObject.activeSelf;
 
-				this.CacheMemberSerializers(mapObjectInstance.dataType);
+				this.CacheMemberSerializers(mapObjectInstance.DataType);
 
-				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.dataType])
+				foreach (var (memberInfo, serializer) in this._memberSerializerCache[mapObjectInstance.DataType])
 				{
 					// var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
 					var prop = serializer.Serialize(mapObjectInstance.gameObject);
@@ -69,23 +67,6 @@ namespace MapsExt
 			catch (Exception ex)
 			{
 				throw new MapObjectSerializationException($"Could not serialize map object: {mapObjectInstance.gameObject.name}", ex);
-			}
-		}
-
-		private void FixMapObjectRendering(GameObject go)
-		{
-			var renderer = go.gameObject.GetComponent<SpriteRenderer>();
-			if (renderer && renderer.color.a >= 0.5f)
-			{
-				renderer.transform.position = new Vector3(renderer.transform.position.x, renderer.transform.position.y, -3f);
-				if (renderer.gameObject.tag != "NoMask")
-				{
-					renderer.color = new Color(0.21568628f, 0.21568628f, 0.21568628f);
-					if (!renderer.GetComponent<SpriteMask>())
-					{
-						renderer.gameObject.AddComponent<SpriteMask>().sprite = renderer.sprite;
-					}
-				}
 			}
 		}
 

@@ -1,20 +1,35 @@
 using System;
 using System.Collections.Generic;
+using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.MapObjects
 {
-	public class MapObjectInstance : MonoBehaviour
+	public sealed class MapObjectInstance : MonoBehaviour
 	{
-		public string mapObjectId;
-		public Type dataType;
+		public string MapObjectId { get; set; }
+		public Type DataType { get; set; }
 
-		protected virtual void Start()
+		private void Start()
 		{
+			this.ReplaceCircleCollider();
 			this.FixShadow();
+			this.FixRendering();
 		}
 
-		public void FixShadow()
+		private void ReplaceCircleCollider()
+		{
+			var circleCollider = this.gameObject.GetComponent<CircleCollider2D>();
+			if (circleCollider)
+			{
+				var radius = new Vector2(circleCollider.radius, circleCollider.radius);
+				GameObject.DestroyImmediate(circleCollider);
+				var ellipseCollider = this.gameObject.GetOrAddComponent<EllipseCollider2D>();
+				ellipseCollider.Radius = radius;
+			}
+		}
+
+		private void FixShadow()
 		{
 			var collider = this.gameObject.GetComponent<Collider2D>();
 			var sf = this.gameObject.GetComponent<SFPolygon>();
@@ -49,6 +64,23 @@ namespace MapsExt.MapObjects
 				}
 
 				sf.SetPath(0, vertices.ToArray());
+			}
+		}
+
+		private void FixRendering()
+		{
+			var renderer = this.GetComponent<SpriteRenderer>();
+			if (renderer && renderer.color.a >= 0.5f)
+			{
+				renderer.transform.position = new Vector3(renderer.transform.position.x, renderer.transform.position.y, -3f);
+				if (renderer.gameObject.tag != "NoMask")
+				{
+					renderer.color = new Color(0.21568628f, 0.21568628f, 0.21568628f);
+					if (!renderer.GetComponent<SpriteMask>())
+					{
+						renderer.gameObject.AddComponent<SpriteMask>().sprite = renderer.sprite;
+					}
+				}
 			}
 		}
 	}
