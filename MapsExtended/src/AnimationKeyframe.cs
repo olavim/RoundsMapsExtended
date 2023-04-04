@@ -20,12 +20,12 @@ namespace MapsExt
 		private CurveType _curveType;
 
 		[NonSerialized]
-		private BezierAnimationCurve _curve;
+		private BezierCurve _curve;
 
 		public List<ILinearProperty> ComponentValues { get => this._componentValues; set => this._componentValues = value; }
 		public float Duration { get => this._duration; set => this._duration = value; }
 		public CurveType CurveType { get => this._curveType; set => this._curveType = value; }
-		public BezierAnimationCurve Curve { get => this._curve; set => this._curve = value; }
+		public BezierCurve Curve { get => this._curve; set => this._curve = value; }
 
 		public AnimationKeyframe()
 		{
@@ -66,14 +66,14 @@ namespace MapsExt
 			return (T) this.ComponentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
 		}
 
-		private BezierAnimationCurve GetCurve()
+		private BezierCurve GetCurve()
 		{
 			return this.CurveType switch
 			{
-				CurveType.Linear => new(0, 0, 1, 1),
-				CurveType.EaseIn => new(0.12f, 0, 0.39f, 0),
-				CurveType.EaseOut => new(0.61f, 1, 0.88f, 1),
-				CurveType.EaseInOut => new(0.37f, 0, 0.63f, 1),
+				CurveType.Linear => new(new(0, 0), new(0.33f, 0.33f), new(0.66f, 0.66f), new(1, 1)),
+				CurveType.EaseIn => new(new(0, 0), new(0.12f, 0), new(0.39f, 0), new(1, 1)),
+				CurveType.EaseOut => new(new(0, 0), new(0.61f, 1), new(0.88f, 1), new(1, 1)),
+				CurveType.EaseInOut => new(new(0, 0), new(0.37f, 0), new(0.63f, 1), new(1, 1)),
 				_ => null,
 			};
 		}

@@ -136,7 +136,7 @@ namespace MapsExt
 			var startFrame = frameIndex > 0 ? this.Keyframes[frameIndex - 1] : this.Keyframes[0];
 			var endFrame = this.Keyframes[frameIndex];
 
-			float curveValue = endFrame.Curve.Evaluate(time / endFrame.Duration);
+			float curveValue = endFrame.Curve.EvaluateForDistance(time / endFrame.Duration);
 
 			for (int i = 0; i < startFrame.ComponentValues.Count; i++)
 			{
