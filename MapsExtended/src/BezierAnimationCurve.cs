@@ -47,6 +47,14 @@ namespace MapsExt
 			return currentT;
 		}
 
-		private Vector2 CalcBezier(float t) => t * ((t * ((t * (Vector2.one - (3 * this._c2) + (3 * this._c1))) + ((3 * this._c2) - (6 * this._c1)))) + (3 * this._c1));
+		private Vector2 CalcBezier(float t)
+		{
+			float t2 = t * t;
+			float t3 = t2 * t;
+			return
+					(this._c1 * ((3f * t3) - (6f * t2) + (3f * t))) +
+					(this._c2 * ((-3f * t3) + (3f * t2))) +
+					(Vector2.one * t3);
+		}
 	}
 }

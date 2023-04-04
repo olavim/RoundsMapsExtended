@@ -40,6 +40,8 @@ namespace MapsExt.Editor.Tests
 			{
 				yield return null;
 			}
+
+			yield return null;
 		}
 
 		public IEnumerator MoveSelectedWithMouse(Vector2 delta)

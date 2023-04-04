@@ -11,29 +11,29 @@ namespace MapsExt.Editor.UI
 	{
 		[SerializeField] private MapEditor _editor;
 
-		public MapEditor Editor { get => this._editor; set => this._editor = value; }
-
 		private bool _isLinked;
-		private MapObjectInstance _target;
 
 		private Action OnUpdate { get; set; }
 
 		private InspectorContext Context => new()
 		{
-			InspectorTarget = this._target?.gameObject,
+			InspectorTarget = this.Target,
 			Editor = this.Editor
 		};
 
+		public MapEditor Editor { get => this._editor; set => this._editor = value; }
+		public GameObject Target { get; private set; }
+
 		private void Update()
 		{
-			MapObjectInstance instance = null;
+			GameObject instance = null;
 
 			if (this.Editor.ActiveObject != null)
 			{
-				instance = this.Editor.ActiveObject.GetComponentInParent<MapObjectInstance>();
+				instance = this.Editor.ActiveObject.GetComponentInParent<MapObjectInstance>().gameObject;
 			}
 
-			if (instance != this._target || (this._isLinked && this._target == null))
+			if (instance != this.Target || (this._isLinked && this.Target == null))
 			{
 				this.Unlink();
 
@@ -43,22 +43,23 @@ namespace MapsExt.Editor.UI
 				}
 			}
 
-			if (this._target != null)
+			if (this.Target != null)
 			{
 				this.OnUpdate?.Invoke();
 			}
 		}
 
-		private void Link(MapObjectInstance target)
+		private void Link(GameObject target)
 		{
 			this._isLinked = true;
-			this._target = target;
+			this.Target = target;
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
 			var elements = new List<IInspectorElement>();
+			var targetDataType = this.Target.GetComponent<MapObjectInstance>().DataType;
 
-			foreach (var member in MapsExtendedEditor.instance._propertyManager.GetSerializableMembers(this._target.DataType))
+			foreach (var member in MapsExtendedEditor.instance._propertyManager.GetSerializableMembers(targetDataType))
 			{
 				var propertyType = member.GetReturnType();
 				var elementType = MapsExtendedEditor.instance._propertyInspectorElements.GetValueOrDefault(propertyType, null);
@@ -90,7 +91,7 @@ namespace MapsExt.Editor.UI
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
-			this._target = null;
+			this.Target = null;
 			this._isLinked = false;
 		}
 	}

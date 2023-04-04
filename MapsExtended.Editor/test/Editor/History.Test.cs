@@ -12,142 +12,105 @@ using UnityEngine;
 namespace MapsExt.Editor.Tests
 {
 	[TestClass]
-	public class HistoryTests
+	internal class HistoryTests : EditorTestBase
 	{
-		private MapEditor editor;
-		private SimulatedInputSource inputSource;
-		private EditorTestUtils utils;
-
-		[BeforeAll]
-		public void SetInputSource()
-		{
-			var rootGo = MapsExtendedEditor.instance.gameObject;
-			this.inputSource = rootGo.AddComponent<SimulatedInputSource>();
-			EditorInput.SetInputSource(this.inputSource);
-		}
-
-		[AfterAll]
-		public void ResetInputSource()
-		{
-			GameObject.Destroy(this.inputSource);
-			this.inputSource = null;
-			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
-		}
-
-		[AfterAll]
-		[BeforeEach]
-		public IEnumerator OpenEditor()
-		{
-			yield return MapsExtendedEditor.instance.OpenEditorCoroutine();
-			var rootGo = GameObject.Find("/Map");
-			this.editor = rootGo.GetComponentInChildren<MapEditor>();
-			this.utils = new EditorTestUtils(this.editor, this.inputSource);
-		}
-
-		[AfterEach]
-		public IEnumerator CloseEditor()
-		{
-			yield return MapsExtendedEditor.instance.CloseEditorCoroutine();
-			this.editor = null;
-		}
-
 		[Test]
 		public IEnumerator Test_Spawn()
 		{
-			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.ActiveObject;
+			yield return this.Utils.SpawnMapObject<BoxData>();
+			var go = this.Editor.ActiveObject;
 			var id = go.GetComponent<MapObjectInstance>().MapObjectId;
 
-			this.editor.OnUndo();
-			this.editor.Content.transform.childCount.Should().Be(0);
-			this.editor.ActiveObject.Should().BeNull();
-			this.editor.OnRedo();
-			this.editor.Content.transform.childCount.Should().Be(1);
-			this.editor.ActiveObject.Should().BeNull();
+			this.Editor.OnUndo();
+			this.Editor.Content.transform.childCount.Should().Be(0);
+			this.Editor.ActiveObject.Should().BeNull();
+			this.Editor.OnRedo();
+			this.Editor.Content.transform.childCount.Should().Be(1);
+			this.Editor.ActiveObject.Should().BeNull();
 
-			var instance = this.editor.Content.transform.GetChild(0).GetComponent<MapObjectInstance>();
+			var instance = this.Editor.Content.transform.GetChild(0).GetComponent<MapObjectInstance>();
 			instance.MapObjectId.Should().Be(id);
 		}
 
 		[Test]
 		public IEnumerator Test_MoveWithMouse()
 		{
-			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.ActiveObject;
+			yield return this.Utils.SpawnMapObject<BoxData>();
+			var go = this.Editor.ActiveObject;
 
 			var pos1 = go.GetHandlerValue<PositionProperty>();
 			var pos2 = new PositionProperty(1, 0);
 
-			yield return this.utils.MoveSelectedWithMouse(pos2);
+			yield return this.Utils.MoveSelectedWithMouse(pos2);
 			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
 
-			this.editor.OnUndo();
+			this.Editor.OnUndo();
 			go.GetHandlerValue<PositionProperty>().Should().Be(pos1);
-			this.editor.OnRedo();
+			this.Editor.OnRedo();
 			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
 		}
 
 		[Test]
 		public IEnumerator Test_ResizeWithMouse()
 		{
-			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.ActiveObject;
+			yield return this.Utils.SpawnMapObject<BoxData>();
+			var go = this.Editor.ActiveObject;
 
 			var size1 = go.GetHandlerValue<ScaleProperty>();
 			var size2 = new ScaleProperty(4, 2);
 
-			yield return this.utils.ResizeSelectedWithMouse(size2 - size1, AnchorPosition.MiddleRight);
+			yield return this.Utils.ResizeSelectedWithMouse(size2 - size1, AnchorPosition.MiddleRight);
 			go.GetHandlerValue<ScaleProperty>().Should().Be(size2);
 
-			this.editor.OnUndo();
+			this.Editor.OnUndo();
 			go.GetHandlerValue<ScaleProperty>().Should().Be(size1);
-			this.editor.OnRedo();
+			this.Editor.OnRedo();
 			go.GetHandlerValue<ScaleProperty>().Should().Be(size2);
 		}
 
 		[Test]
 		public IEnumerator Test_RotateWithMouse()
 		{
-			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.ActiveObject;
+			yield return this.Utils.SpawnMapObject<BoxData>();
+			var go = this.Editor.ActiveObject;
 
 			var rot1 = go.GetHandlerValue<RotationProperty>();
 			var rot2 = new RotationProperty(45);
 
-			yield return this.utils.RotateSelectedWithMouse(rot2.Value.eulerAngles.z - rot1.Value.eulerAngles.z);
+			yield return this.Utils.RotateSelectedWithMouse(rot2.Value.eulerAngles.z - rot1.Value.eulerAngles.z);
 			go.GetHandlerValue<RotationProperty>().Should().Be(rot2);
 
-			this.editor.OnUndo();
+			this.Editor.OnUndo();
 			go.GetHandlerValue<RotationProperty>().Should().Be(rot1);
-			this.editor.OnRedo();
+			this.Editor.OnRedo();
 			go.GetHandlerValue<RotationProperty>().Should().Be(rot2);
 		}
 
 		[Test]
 		public IEnumerator Test_MoveWithNudge()
 		{
-			yield return this.utils.SpawnMapObject<BoxData>();
-			var go = this.editor.ActiveObject;
+			yield return this.Utils.SpawnMapObject<BoxData>();
+			var go = this.Editor.ActiveObject;
 
 			var pos1 = go.GetHandlerValue<PositionProperty>();
 			var pos2 = new PositionProperty(0.25f, 0);
 
-			this.editor.OnKeyDown(KeyCode.RightArrow);
+			this.Editor.OnKeyDown(KeyCode.RightArrow);
 			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
 
-			this.editor.OnUndo();
+			this.Editor.OnUndo();
 			go.GetHandlerValue<PositionProperty>().Should().Be(pos1);
-			this.editor.OnRedo();
+			this.Editor.OnRedo();
 			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
 		}
 
 		[Test]
 		public IEnumerator Test_RopeAttachment()
 		{
-			yield return this.utils.SpawnMapObject<BoxData>();
-			var boxGo = this.editor.ActiveObject;
-			yield return this.utils.SpawnMapObject<RopeData>();
-			var rope = this.editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+			var boxGo = this.Editor.ActiveObject;
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
 
 			var list = new List<Vector2>
 			{
@@ -155,68 +118,68 @@ namespace MapsExt.Editor.Tests
 			};
 
 			rope.GetAnchor(0).SetHandlerValue(new PositionProperty(0.25f, 0.5f));
-			this.editor.TakeSnaphot();
+			this.Editor.TakeSnaphot();
 			rope.GetAnchor(1).SetHandlerValue(new PositionProperty(0, 5));
-			this.editor.TakeSnaphot();
+			this.Editor.TakeSnaphot();
 
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
-			this.editor.ClearSelected();
-			this.editor.AddSelected(boxGo);
+			this.Editor.ClearSelected();
+			this.Editor.AddSelected(boxGo);
 
-			yield return this.utils.MoveSelectedWithMouse(new Vector3(1, 0, 0));
+			yield return this.Utils.MoveSelectedWithMouse(new Vector3(1, 0, 0));
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
-			yield return this.utils.ResizeSelectedWithMouse(new Vector3(4, 2, 0), AnchorPosition.MiddleRight);
+			yield return this.Utils.ResizeSelectedWithMouse(new Vector3(4, 2, 0), AnchorPosition.MiddleRight);
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
-			yield return this.utils.RotateSelectedWithMouse(45);
+			yield return this.Utils.RotateSelectedWithMouse(45);
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
-			this.editor.OnDeleteSelectedMapObjects();
+			this.Editor.OnDeleteSelectedMapObjects();
 			yield return null;
 
-			this.editor.ActiveObject.Should().BeNull();
-			this.editor.Content.transform.childCount.Should().Be(1);
+			this.Editor.ActiveObject.Should().BeNull();
+			this.Editor.Content.transform.childCount.Should().Be(1);
 
 			var iter = ListIterator.From(list);
 
-			this.editor.OnUndo(); // Undo delete
-			this.editor.Content.transform.childCount.Should().Be(2);
+			this.Editor.OnUndo(); // Undo delete
+			this.Editor.Content.transform.childCount.Should().Be(2);
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().BeApproximately(iter.MoveLast().Current);
-			this.editor.OnUndo(); // Undo rotate
+			this.Editor.OnUndo(); // Undo rotate
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.editor.OnUndo(); // Undo resize
+			this.Editor.OnUndo(); // Undo resize
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.editor.OnUndo(); // Undo move
+			this.Editor.OnUndo(); // Undo move
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.editor.OnUndo(); // Undo set anchor 2 position
-			this.editor.OnUndo(); // Undo set anchor 1 position
+			this.Editor.OnUndo(); // Undo set anchor 2 position
+			this.Editor.OnUndo(); // Undo set anchor 1 position
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.editor.OnUndo(); // Undo spawn rope
-			this.editor.OnUndo(); // Undo spawn box
-			this.editor.Content.transform.childCount.Should().Be(0);
+			this.Editor.OnUndo(); // Undo spawn rope
+			this.Editor.OnUndo(); // Undo spawn box
+			this.Editor.Content.transform.childCount.Should().Be(0);
 
-			this.editor.OnRedo(); // Redo spawn box
-			this.editor.OnRedo(); // Redo spawn rope
-			this.editor.Content.transform.childCount.Should().Be(2);
-			rope = this.editor.Content.transform.GetChild(1).GetComponentInParent<EditorRopeInstance>();
+			this.Editor.OnRedo(); // Redo spawn box
+			this.Editor.OnRedo(); // Redo spawn rope
+			this.Editor.Content.transform.childCount.Should().Be(2);
+			rope = this.Editor.Content.transform.GetChild(1).GetComponentInParent<EditorRopeInstance>();
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.Current);
 
-			this.editor.OnRedo(); // Redo set anchor 1 position
-			this.editor.OnRedo(); // Redo set anchor 2 position
+			this.Editor.OnRedo(); // Redo set anchor 1 position
+			this.Editor.OnRedo(); // Redo set anchor 2 position
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
 
-			this.editor.OnRedo(); // Redo move
+			this.Editor.OnRedo(); // Redo move
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
-			this.editor.OnRedo(); // Redo resize
+			this.Editor.OnRedo(); // Redo resize
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
-			this.editor.OnRedo(); // Redo rotate
+			this.Editor.OnRedo(); // Redo rotate
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
-			this.editor.OnRedo(); // Redo Delete
-			this.editor.ActiveObject.Should().BeNull();
-			this.editor.Content.transform.childCount.Should().Be(1);
+			this.Editor.OnRedo(); // Redo Delete
+			this.Editor.ActiveObject.Should().BeNull();
+			this.Editor.Content.transform.childCount.Should().Be(1);
 		}
 	}
 }
