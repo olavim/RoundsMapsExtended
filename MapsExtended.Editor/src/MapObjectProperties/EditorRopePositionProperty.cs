@@ -24,15 +24,8 @@ namespace MapsExt.Editor.Properties
 		public override void Deserialize(RopePositionProperty property, GameObject target)
 		{
 			var ropeInstance = target.GetComponent<EditorRope.RopeInstance>();
-
-			ropeInstance.GetAnchor(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
-			ropeInstance.GetAnchor(0).gameObject.GetOrAddComponent<SelectionHandler>();
-
-			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
-			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<SelectionHandler>();
-
-			ropeInstance.GetAnchor(0).SetHandlerValue<PositionProperty>(property.StartPosition);
-			ropeInstance.GetAnchor(1).SetHandlerValue<PositionProperty>(property.EndPosition);
+			ropeInstance.GetAnchor(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>().SetValue(property.StartPosition);
+			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>().SetValue(property.EndPosition);
 		}
 	}
 

@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Reflection;
+using MapsExt.Properties;
 
 namespace MapsExt
 {

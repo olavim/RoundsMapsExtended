@@ -1,4 +1,5 @@
 ﻿using MapsExt.Properties;
+using UnboundLib;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
@@ -14,6 +15,8 @@ namespace MapsExt.Editor.ActionHandlers
 
 		protected virtual void Awake()
 		{
+			this.gameObject.GetOrAddComponent<SelectionHandler>();
+
 			this.Content = new GameObject("Rotate Interaction Content");
 			this.Content.transform.SetParent(this.transform);
 			this.Content.transform.localScale = Vector3.one;

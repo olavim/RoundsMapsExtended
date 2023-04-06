@@ -1,7 +1,9 @@
 ﻿using MapsExt.Properties;
+using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
+	[RequireComponent(typeof(SelectionHandler))]
 	public class RopeAnchorPositionHandler : PositionHandler
 	{
 		public override void Move(PositionProperty delta)

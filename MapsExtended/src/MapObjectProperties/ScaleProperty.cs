@@ -27,8 +27,8 @@ namespace MapsExt.Properties
 		public static implicit operator ScaleProperty(Vector2 value) => new(value);
 		public static implicit operator ScaleProperty(Vector3 value) => new(value);
 
-		public static ScaleProperty operator -(ScaleProperty a, ScaleProperty b) => a.Value - b.Value;
 		public static ScaleProperty operator +(ScaleProperty a, ScaleProperty b) => a.Value + b.Value;
+		public static ScaleProperty operator -(ScaleProperty a, ScaleProperty b) => a.Value - b.Value;
 	}
 
 	[PropertySerializer(typeof(ScaleProperty))]

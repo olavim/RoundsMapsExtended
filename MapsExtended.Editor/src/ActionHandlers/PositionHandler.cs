@@ -1,4 +1,5 @@
 using MapsExt.Properties;
+using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
@@ -35,9 +36,14 @@ namespace MapsExt.Editor.ActionHandlers
 		private Vector2Int _prevCell;
 		private Vector2 _offset;
 
+		protected virtual void Awake()
+		{
+			this.gameObject.GetOrAddComponent<SelectionHandler>();
+		}
+
 		public virtual void Move(PositionProperty delta)
 		{
-			this.SetValue((PositionProperty) ((Vector2) this.transform.position + delta));
+			this.SetValue(this.GetValue() + delta);
 		}
 
 		public override void SetValue(PositionProperty position)
@@ -48,7 +54,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override PositionProperty GetValue()
 		{
-			return new PositionProperty(this.transform.position);
+			return this.transform.position;
 		}
 
 		protected virtual void Update()
@@ -143,7 +149,7 @@ namespace MapsExt.Editor.ActionHandlers
 				var objectCell = (Vector2Int) this.Editor.Grid.WorldToCell(this.GetValue());
 				var snappedPosition = (Vector2) this.Editor.Grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
 
-				delta = snappedPosition + this._offset - this.GetValue();
+				delta = snappedPosition + this._offset - (Vector2) this.GetValue();
 			}
 
 			if (delta != Vector2.zero)

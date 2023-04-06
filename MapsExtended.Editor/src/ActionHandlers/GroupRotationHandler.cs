@@ -15,15 +15,8 @@ namespace MapsExt.Editor.ActionHandlers
 		protected override void Awake()
 		{
 			base.Awake();
-
-			foreach (var obj in this._gameObjects)
-			{
-				var posHandler = obj.GetComponent<PositionHandler>();
-				var rotHandler = obj.GetComponent<RotationHandler>();
-
-				this._localPositions[obj] = posHandler.GetValue() - (Vector2) this.transform.position;
-				this._localAngles[obj] = rotHandler.GetValue().Value.eulerAngles.z;
-			}
+			this.RefreshLocalPositions();
+			this.RefreshLocalAngles();
 		}
 
 		public override void SetValue(RotationProperty rotation)
@@ -37,11 +30,29 @@ namespace MapsExt.Editor.ActionHandlers
 				rotHandler.SetValue(Quaternion.Euler(0, 0, _localAngles[obj] + rotation.Value.eulerAngles.z));
 			}
 			this.transform.rotation = rotation;
+
+			this.GetComponent<GroupPositionHandler>()?.RefreshLocalPositions();
 		}
 
 		public void Initialize(IEnumerable<GameObject> gameObjects)
 		{
 			this._gameObjects = gameObjects;
+		}
+
+		public void RefreshLocalPositions()
+		{
+			foreach (var obj in this._gameObjects)
+			{
+				this._localPositions[obj] = obj.GetHandlerValue<PositionProperty>() - (PositionProperty) this.transform.position;
+			}
+		}
+
+		public void RefreshLocalAngles()
+		{
+			foreach (var obj in this._gameObjects)
+			{
+				this._localAngles[obj] = obj.GetHandlerValue<RotationProperty>().Value.eulerAngles.z;
+			}
 		}
 	}
 }

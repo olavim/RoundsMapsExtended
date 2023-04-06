@@ -26,6 +26,10 @@ namespace MapsExt.Properties
 		public static implicit operator Vector3(PositionProperty prop) => prop.Value;
 		public static implicit operator PositionProperty(Vector2 value) => new(value);
 		public static implicit operator PositionProperty(Vector3 value) => new(value);
+
+		public static PositionProperty operator *(RotationProperty a, PositionProperty b) => a.Value * b.Value;
+		public static PositionProperty operator +(PositionProperty a, PositionProperty b) => a.Value + b.Value;
+		public static PositionProperty operator -(PositionProperty a, PositionProperty b) => a.Value - b.Value;
 	}
 
 	[PropertySerializer(typeof(PositionProperty))]

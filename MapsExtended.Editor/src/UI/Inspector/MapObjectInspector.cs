@@ -35,8 +35,14 @@ namespace MapsExt.Editor.UI
 
 		private void Update()
 		{
-			var selectedInstances = this.Editor.SelectedObjects.Select(x => x.GetComponentInParent<MapObjectInstance>()).Distinct().ToList();
-			GameObject instance = selectedInstances.Count == 1 ? selectedInstances[0].gameObject : null;
+			var selectedInstances = this.Editor.SelectedObjects
+				.Where(x => x != null)
+				.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject)
+				.Where(x => x != null)
+				.Distinct()
+				.ToList();
+
+			GameObject instance = selectedInstances.Count == 1 ? selectedInstances[0] : null;
 
 			if (instance != this.Target || (this._isLinked && this.Target == null))
 			{

@@ -1,5 +1,6 @@
 using MapsExt.Properties;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
@@ -8,26 +9,23 @@ namespace MapsExt.Editor.ActionHandlers
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
-		private readonly Dictionary<GameObject, Vector2> _localPositions = new();
+		private readonly Dictionary<GameObject, PositionProperty> _localPositions = new();
 
-		protected virtual void Awake()
+		protected override void Awake()
 		{
-			foreach (var obj in this._gameObjects)
-			{
-				this._localPositions[obj] = obj.GetHandlerValue<PositionProperty>() - (Vector2) this.transform.position;
-			}
+			this.RefreshLocalPositions();
 		}
 
 		public override void Move(PositionProperty delta)
 		{
-			this.SetValue((Vector2) this.transform.position + delta);
+			this.SetValue(this.GetValue() + delta);
 		}
 
 		public override void SetValue(PositionProperty position)
 		{
 			foreach (var obj in this._gameObjects)
 			{
-				obj.SetHandlerValue<PositionProperty>(position + this._localPositions[obj]);
+				obj.SetHandlerValue(position + this._localPositions[obj]);
 			}
 			this.transform.position = position;
 		}
@@ -35,6 +33,22 @@ namespace MapsExt.Editor.ActionHandlers
 		public void Initialize(IEnumerable<GameObject> gameObjects)
 		{
 			this._gameObjects = gameObjects;
+
+			var pos = Vector2.zero;
+			foreach (var obj in this._gameObjects)
+			{
+				pos += obj.GetHandlerValue<PositionProperty>().Value;
+			}
+
+			this.transform.position = pos / this._gameObjects.Count();
+		}
+
+		public void RefreshLocalPositions()
+		{
+			foreach (var obj in this._gameObjects)
+			{
+				this._localPositions[obj] = obj.GetHandlerValue<PositionProperty>() - (PositionProperty) this.transform.position;
+			}
 		}
 	}
 }

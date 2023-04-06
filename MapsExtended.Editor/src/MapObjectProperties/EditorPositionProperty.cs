@@ -13,7 +13,6 @@ namespace MapsExt.Editor.Properties
 		{
 			base.Deserialize(property, target);
 			target.GetOrAddComponent<PositionHandler>();
-			target.GetOrAddComponent<SelectionHandler>();
 		}
 	}
 
