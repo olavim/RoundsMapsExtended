@@ -3,7 +3,7 @@ using System.Linq;
 using UnboundLib;
 using UnityEngine;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public class AnimationProperty : IProperty
 	{

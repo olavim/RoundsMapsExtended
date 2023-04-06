@@ -1,4 +1,4 @@
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using System;
 using UnityEngine;
 
@@ -11,6 +11,7 @@ namespace MapsExt.Editor.ActionHandlers
 		public abstract void SetValue(IProperty value);
 		public abstract void OnSelect();
 		public abstract void OnDeselect();
+		public abstract void OnRefresh();
 		public abstract void OnPointerDown();
 		public abstract void OnPointerUp();
 		public abstract void OnKeyDown(KeyCode key);
@@ -29,6 +30,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void OnSelect() { }
 		public override void OnDeselect() { }
+		public override void OnRefresh() { }
 		public override void OnPointerDown() { }
 		public override void OnPointerUp() { }
 		public override void OnKeyDown(KeyCode key) { }

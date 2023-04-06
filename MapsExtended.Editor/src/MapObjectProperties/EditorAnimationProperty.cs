@@ -1,10 +1,10 @@
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using System.Linq;
 using UnboundLib;
 using UnityEngine;
 
-namespace MapsExt.Editor.MapObjects.Properties
+namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(AnimationProperty))]
 	public class EditorAnimationPropertySerializer : AnimationPropertySerializer

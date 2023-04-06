@@ -3,7 +3,10 @@ using UnityEngine;
 using System;
 using MapsExt.MapObjects;
 using Sirenix.Utilities;
-using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Collections;
+using MapsExt.Properties;
+using System.Linq;
 
 namespace MapsExt.Editor.UI
 {
@@ -12,6 +15,7 @@ namespace MapsExt.Editor.UI
 		[SerializeField] private MapEditor _editor;
 
 		private bool _isLinked;
+		private OrderedDictionary _elements;
 
 		private Action OnUpdate { get; set; }
 
@@ -24,14 +28,15 @@ namespace MapsExt.Editor.UI
 		public MapEditor Editor { get => this._editor; set => this._editor = value; }
 		public GameObject Target { get; private set; }
 
+		public IInspectorElement GetElement<T>() where T : IProperty
+		{
+			return (IInspectorElement) this._elements[typeof(T)];
+		}
+
 		private void Update()
 		{
-			GameObject instance = null;
-
-			if (this.Editor.ActiveObject != null)
-			{
-				instance = this.Editor.ActiveObject.GetComponentInParent<MapObjectInstance>().gameObject;
-			}
+			var selectedInstances = this.Editor.SelectedObjects.Select(x => x.GetComponentInParent<MapObjectInstance>()).Distinct().ToList();
+			GameObject instance = selectedInstances.Count == 1 ? selectedInstances[0].gameObject : null;
 
 			if (instance != this.Target || (this._isLinked && this.Target == null))
 			{
@@ -56,8 +61,9 @@ namespace MapsExt.Editor.UI
 
 			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
-			var elements = new List<IInspectorElement>();
 			var targetDataType = this.Target.GetComponent<MapObjectInstance>().DataType;
+
+			this._elements = new();
 
 			foreach (var member in MapsExtendedEditor.instance._propertyManager.GetSerializableMembers(targetDataType))
 			{
@@ -66,13 +72,13 @@ namespace MapsExt.Editor.UI
 
 				if (elementType != null)
 				{
-					var element = (IInspectorElement) Activator.CreateInstance(elementType);
-					elements.Add(element);
+					this._elements[propertyType] = (IInspectorElement) Activator.CreateInstance(elementType);
 				}
 			}
 
-			foreach (var elem in elements)
+			foreach (DictionaryEntry entry in this._elements)
 			{
+				var elem = (IInspectorElement) entry.Value;
 				var instance = elem.Instantiate(this.Context);
 
 				if (!instance)

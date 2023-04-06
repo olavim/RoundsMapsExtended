@@ -5,7 +5,7 @@ using FluentAssertions;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using Surity;
 using UnityEngine;
 
@@ -110,7 +110,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 			yield return this.Utils.SpawnMapObject<RopeData>();
-			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRopeInstance>();
+			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
 
 			var list = new List<Vector2>
 			{
@@ -164,7 +164,7 @@ namespace MapsExt.Editor.Tests
 			this.Editor.OnRedo(); // Redo spawn box
 			this.Editor.OnRedo(); // Redo spawn rope
 			this.Editor.Content.transform.childCount.Should().Be(2);
-			rope = this.Editor.Content.transform.GetChild(1).GetComponentInParent<EditorRopeInstance>();
+			rope = this.Editor.Content.transform.GetChild(1).GetComponentInParent<EditorRope.RopeInstance>();
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.Current);
 
 			this.Editor.OnRedo(); // Redo set anchor 1 position

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public class RotationProperty : ValueProperty<Quaternion>, ILinearProperty<RotationProperty>
 	{

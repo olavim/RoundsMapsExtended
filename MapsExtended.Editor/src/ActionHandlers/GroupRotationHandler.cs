@@ -1,4 +1,4 @@
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using System.Collections.Generic;
 using UnityEngine;
 

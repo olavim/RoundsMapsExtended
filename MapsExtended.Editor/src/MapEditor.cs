@@ -6,7 +6,6 @@ using Sirenix.Serialization;
 using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
-using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections;
@@ -213,7 +212,7 @@ namespace MapsExt.Editor
 			}
 
 			this.ResetSpawnLabels();
-			this.UpdateRopeAttachments();
+			this.RefreshHandlers();
 			this.TakeSnaphot();
 		}
 
@@ -230,7 +229,7 @@ namespace MapsExt.Editor
 
 				this.AddSelected(objectsWithHandlers);
 				this.ResetSpawnLabels();
-				this.UpdateRopeAttachments();
+				this.RefreshHandlers();
 				this.TakeSnaphot();
 			});
 		}
@@ -268,7 +267,7 @@ namespace MapsExt.Editor
 
 			this.ResetSpawnLabels();
 			this.ClearSelected();
-			this.UpdateRopeAttachments();
+			this.RefreshHandlers();
 
 			this.TakeSnaphot();
 		}
@@ -359,7 +358,7 @@ namespace MapsExt.Editor
 				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 				this.ResetSpawnLabels();
 				this.ClearSelected();
-				this.UpdateRopeAttachments();
+				this.RefreshHandlers();
 			});
 		}
 
@@ -586,11 +585,11 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void UpdateRopeAttachments()
+		public void RefreshHandlers()
 		{
-			foreach (var rope in this.Content.GetComponentsInChildren<EditorRopeInstance>())
+			foreach (var handler in this.Content.GetComponentsInChildren<ActionHandler>())
 			{
-				rope.UpdateAttachments();
+				handler.OnRefresh();
 			}
 		}
 

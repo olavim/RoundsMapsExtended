@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public class SpawnIDProperty : IProperty, IEquatable<SpawnIDProperty>
 	{

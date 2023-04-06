@@ -1,10 +1,10 @@
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using UnboundLib;
 using UnityEngine;
 
-namespace MapsExt.Editor.MapObjects.Properties
+namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(RotationProperty))]
 	public class EditorRotationPropertySerializer : RotationPropertySerializer
@@ -19,7 +19,7 @@ namespace MapsExt.Editor.MapObjects.Properties
 	[PropertyInspector(typeof(RotationProperty))]
 	public class RotationElement : QuaternionElement
 	{
-		protected override Quaternion Value
+		public override Quaternion Value
 		{
 			get => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
 			set => this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(value);

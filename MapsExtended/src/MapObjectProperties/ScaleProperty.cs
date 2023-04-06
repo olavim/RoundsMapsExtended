@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public class ScaleProperty : ValueProperty<Vector2>, ILinearProperty<ScaleProperty>
 	{

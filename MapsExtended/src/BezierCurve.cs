@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -5,57 +6,74 @@ namespace MapsExt
 {
 	public class BezierCurve
 	{
-		private class Segment
+		private class DistanceToPoint : IComparable<DistanceToPoint>, IComparable
 		{
 			public float Distance { get; set; }
 			public Vector2 Point { get; set; }
 
-			public Segment(float distance, Vector2 point)
+			public DistanceToPoint(float distance, Vector2 point)
 			{
 				this.Distance = distance;
 				this.Point = point;
 			}
+
+			public int CompareTo(DistanceToPoint obj)
+			{
+				return this.Distance.CompareTo(obj.Distance);
+			}
+
+			public int CompareTo(object obj)
+			{
+				return this.CompareTo((DistanceToPoint) obj);
+			}
 		}
 
-		private const int SegmentCount = 20;
-
-		private readonly Segment[] _segments;
-		private readonly Vector2 _p0;
-		private readonly Vector2 _p1;
-		private readonly Vector2 _p2;
-		private readonly Vector2 _p3;
-		private readonly float _totalLength;
-
-		public Vector2[] Points => this._segments.Select(s => s.Point).ToArray();
-
-		public BezierCurve(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3)
+		private static Vector2 FindPositionForDistance(float distance, DistanceToPoint[] segments)
 		{
-			this._p0 = p0;
-			this._p1 = p1;
-			this._p2 = p2;
-			this._p3 = p3;
-
-			var segments = new Segment[SegmentCount + 1];
-			segments[0] = new Segment(0, p0);
-
-			for (int i = 1; i <= SegmentCount; i++)
+			int index = Array.BinarySearch(segments, new DistanceToPoint(distance, Vector2.zero));
+			if (index < 0)
 			{
-				float t = i / (float) SegmentCount;
-				var point = this.EvaluatePosition(t);
-				this._totalLength += Vector2.Distance(point, segments[i - 1].Point);
-				segments[i] = new Segment(this._totalLength, point);
+				index = ~index - 1;
 			}
 
-			this._segments = new Segment[SegmentCount + 1];
-			this._segments[0] = new Segment(0, p0);
-
-			float step = this._totalLength / SegmentCount;
-
-			for (int i = 1; i <= SegmentCount; i++)
+			if (index >= segments.Length - 1)
 			{
-				float distance = i * step;
-				this._segments[i] = new Segment(distance, this.FindPositionForDistance(distance, segments));
+				return segments.Last().Point;
 			}
+
+			var segment = segments[index];
+			var nextSegment = segments[index + 1];
+
+			float t = (distance - segment.Distance) / (nextSegment.Distance - segment.Distance);
+			return Vector2.Lerp(segment.Point, nextSegment.Point, t);
+		}
+
+		private const int DefaultSegmentCount = 40;
+
+		private readonly DistanceToPoint[] _distancesToPoints;
+
+		public Vector2 P0 { get; }
+		public Vector2 P1 { get; }
+		public Vector2 P2 { get; }
+		public Vector2 P3 { get; }
+
+		public Vector2[] Points => this._distancesToPoints.Select(s => s.Point).ToArray();
+		public float Length => this._distancesToPoints.Last().Distance;
+
+		public BezierCurve(Vector2 p1, Vector2 p2, int segmentCount = DefaultSegmentCount) : this(Vector2.zero, p1, p2, Vector2.one, segmentCount) { }
+
+		public BezierCurve(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, int segmentCount = DefaultSegmentCount)
+		{
+			if (segmentCount < 2)
+			{
+				throw new ArgumentOutOfRangeException(nameof(segmentCount), "Must be at least 2");
+			}
+
+			this.P0 = p0;
+			this.P1 = p1;
+			this.P2 = p2;
+			this.P3 = p3;
+			this._distancesToPoints = this.GetDistancesToPoints(segmentCount);
 		}
 
 		public float Evaluate(float t)
@@ -70,7 +88,7 @@ namespace MapsExt
 			float u = 1 - t;
 			float u2 = u * u;
 			float u3 = u2 * u;
-			return (u3 * this._p0) + (3 * u2 * t * this._p1) + (3 * u * t2 * this._p2) + (t3 * this._p3);
+			return (u3 * this.P0) + (3 * u2 * t * this.P1) + (3 * u * t2 * this.P2) + (t3 * this.P3);
 		}
 
 		public float EvaluateForDistance(float distance)
@@ -82,53 +100,47 @@ namespace MapsExt
 		{
 			if (distance <= 0)
 			{
-				return this._p0;
+				return this.P0;
 			}
 
 			if (distance >= 1)
 			{
-				return this._p3;
+				return this.P3;
 			}
 
-			float targetLength = distance * this._totalLength;
-			int segmentIndex = (int) (distance * (this._segments.Length - 1));
+			float targetLength = distance * this.Length;
+			int segmentIndex = (int) (distance * (this._distancesToPoints.Length - 1));
 
-			var segment = this._segments[segmentIndex];
-			var nextSegment = this._segments[segmentIndex + 1];
+			var segment = this._distancesToPoints[segmentIndex];
+			var nextSegment = this._distancesToPoints[segmentIndex + 1];
 
 			float t = (targetLength - segment.Distance) / (nextSegment.Distance - segment.Distance);
 			return Vector2.Lerp(segment.Point, nextSegment.Point, t);
 		}
 
-		private Vector2 FindPositionForDistance(float distance, Segment[] segments)
+		private DistanceToPoint[] GetDistancesToPoints(int count)
 		{
-			int low = 0;
-			int high = segments.Length - 1;
-			int index = 0;
+			var initialSegments = new DistanceToPoint[count + 1];
+			initialSegments[0] = new DistanceToPoint(0, this.P0);
 
-			while (low < high)
+			for (int i = 1; i <= count; i++)
 			{
-				index = (low + high) / 2;
-				if (segments[index].Distance < distance)
-				{
-					low = index + 1;
-				}
-				else
-				{
-					high = index;
-				}
+				float t = i / (float) count;
+				var point = this.EvaluatePosition(t);
+				float totalLength = initialSegments[i - 1].Distance + Vector2.Distance(point, initialSegments[i - 1].Point);
+				initialSegments[i] = new DistanceToPoint(totalLength, point);
 			}
 
-			if (segments[index].Distance > distance)
+			float step = initialSegments[count].Distance / count;
+			var spacedSegments = new DistanceToPoint[count + 1];
+
+			for (int i = 0; i <= count; i++)
 			{
-				index--;
+				float distance = i * step;
+				spacedSegments[i] = new DistanceToPoint(distance, FindPositionForDistance(distance, initialSegments));
 			}
 
-			var segment = segments[index];
-			var nextSegment = segments[index + 1];
-
-			float t = (distance - segment.Distance) / (nextSegment.Distance - segment.Distance);
-			return Vector2.Lerp(segment.Point, nextSegment.Point, t);
+			return spacedSegments;
 		}
 	}
 }

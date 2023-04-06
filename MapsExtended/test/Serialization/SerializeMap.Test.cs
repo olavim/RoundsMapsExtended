@@ -1,6 +1,6 @@
 using FluentAssertions;
 using MapsExt.MapObjects;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using Sirenix.Serialization;
 using Surity;
 using System.IO;

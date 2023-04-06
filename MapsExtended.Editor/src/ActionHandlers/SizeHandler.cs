@@ -1,4 +1,4 @@
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -140,7 +140,7 @@ namespace MapsExt.Editor.ActionHandlers
 		private void OnResizeEnd()
 		{
 			this._isResizing = false;
-			this.Editor.UpdateRopeAttachments();
+			this.Editor.RefreshHandlers();
 
 			if (this._prevScale != this.GetValue().Value)
 			{

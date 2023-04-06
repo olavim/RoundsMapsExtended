@@ -8,7 +8,7 @@ namespace MapsExt.Editor.UI
 		private readonly string _name;
 		private Toggle _toggle;
 
-		protected abstract bool Value { get; set; }
+		public abstract bool Value { get; set; }
 
 		protected BooleanElement(string name)
 		{

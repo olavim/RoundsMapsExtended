@@ -7,7 +7,7 @@ namespace MapsExt.Visualizers
 {
 	public class RopeVisualizer : MonoBehaviour, IMapObjectVisualizer
 	{
-		private EditorRopeInstance _rope;
+		private EditorRope.RopeInstance _rope;
 		private LineRenderer _renderer;
 		private Graphic _startGraphic;
 		private Graphic _endGraphic;
@@ -19,7 +19,7 @@ namespace MapsExt.Visualizers
 
 		protected virtual void Start()
 		{
-			this._rope = this.gameObject.GetComponent<EditorRopeInstance>();
+			this._rope = this.gameObject.GetComponent<EditorRope.RopeInstance>();
 		}
 
 		protected virtual void OnEnable()

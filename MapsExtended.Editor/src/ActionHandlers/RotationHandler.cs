@@ -1,4 +1,4 @@
-﻿using MapsExt.MapObjects.Properties;
+﻿using MapsExt.Properties;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
@@ -71,7 +71,7 @@ namespace MapsExt.Editor.ActionHandlers
 		private void OnRotateEnd()
 		{
 			this._isRotating = false;
-			this.Editor.UpdateRopeAttachments();
+			this.Editor.RefreshHandlers();
 
 			if (this.transform.rotation.eulerAngles.z != this._prevAngle)
 			{

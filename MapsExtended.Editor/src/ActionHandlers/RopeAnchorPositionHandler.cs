@@ -1,4 +1,4 @@
-﻿using MapsExt.MapObjects.Properties;
+﻿using MapsExt.Properties;
 
 namespace MapsExt.Editor.ActionHandlers
 {
@@ -18,6 +18,11 @@ namespace MapsExt.Editor.ActionHandlers
 			anchor.Detach();
 			base.SetValue(property);
 			anchor.UpdateAttachment();
+		}
+
+		public override void OnRefresh()
+		{
+			this.GetComponent<MapObjectAnchor>().UpdateAttachment();
 		}
 	}
 }

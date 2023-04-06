@@ -1,5 +1,5 @@
 using MapsExt.MapObjects;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using UnityEngine;
 
 #pragma warning disable CS0649

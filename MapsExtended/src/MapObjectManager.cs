@@ -143,9 +143,8 @@ namespace MapsExt
 					{
 						MapsExtended.instance.OnPhotonMapObjectInstantiate(instance.GetComponent<PhotonMapObject>(), networkInstance =>
 						{
+							mapObject.OnInstantiate(networkInstance);
 							this.Deserialize(data, networkInstance);
-
-							mapObject.OnInstantiate(instance);
 
 							onInstantiate?.Invoke(networkInstance);
 
@@ -175,9 +174,8 @@ namespace MapsExt
 
 			instance.name = this.GetInstanceName(data.GetType());
 
-			this.Deserialize(data, instance);
-
 			mapObject.OnInstantiate(instance);
+			this.Deserialize(data, instance);
 
 			// The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
 			onInstantiate?.Invoke(instance);

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public abstract class PropertySerializer<T> : IPropertySerializer<T> where T : IProperty
 	{

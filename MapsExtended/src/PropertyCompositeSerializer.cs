@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using MapsExt.MapObjects;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using Sirenix.Utilities;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,7 @@
-﻿using MapsExt.MapObjects;
+﻿using MapsExt.Editor.ActionHandlers;
+using MapsExt.MapObjects;
+using System.Collections.Generic;
+using System.Linq;
 using UnboundLib;
 using UnityEngine;
 
@@ -77,6 +80,28 @@ namespace MapsExt.Editor.MapObjects
 	[EditorMapObject(typeof(RopeData), "Rope")]
 	public sealed class EditorRope : Rope
 	{
+		public class RopeInstance : MonoBehaviour
+		{
+			private List<MapObjectAnchor> anchors;
+
+			protected virtual void Awake()
+			{
+				this.anchors = this.gameObject.GetComponentsInChildren<MapObjectAnchor>().ToList();
+			}
+
+			public MapObjectAnchor GetAnchor(int index)
+			{
+				return this.anchors[index];
+			}
+		}
+
 		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
+
+		public override void OnInstantiate(GameObject instance)
+		{
+			base.OnInstantiate(instance);
+			instance.GetOrAddComponent<RopeInstance>();
+			instance.GetOrAddComponent<Visualizers.RopeVisualizer>();
+		}
 	}
 }

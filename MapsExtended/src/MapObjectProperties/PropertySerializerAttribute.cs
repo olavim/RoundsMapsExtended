@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 	public sealed class PropertySerializerAttribute : Attribute

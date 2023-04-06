@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Surity;
 using System;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 
 namespace MapsExt.Editor.Tests
 {

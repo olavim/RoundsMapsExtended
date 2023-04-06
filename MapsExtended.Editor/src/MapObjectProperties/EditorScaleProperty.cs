@@ -1,10 +1,10 @@
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using UnboundLib;
 using UnityEngine;
 
-namespace MapsExt.Editor.MapObjects.Properties
+namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(ScaleProperty))]
 	public class EditorScalePropertySerializer : ScalePropertySerializer
@@ -19,7 +19,7 @@ namespace MapsExt.Editor.MapObjects.Properties
 	[PropertyInspector(typeof(ScaleProperty))]
 	public class ScaleElement : Vector2Element
 	{
-		protected override Vector2 Value
+		public override Vector2 Value
 		{
 			get => this.Context.InspectorTarget.GetHandlerValue<ScaleProperty>();
 			set => this.Context.InspectorTarget.SetHandlerValue<ScaleProperty>(value);

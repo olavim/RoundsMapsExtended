@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HarmonyLib;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using System.Reflection;
 using System.Linq;
 using Sirenix.Utilities;

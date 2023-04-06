@@ -4,7 +4,7 @@ using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections.Generic;
 using MapsExt.Editor.UI;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnboundLib;

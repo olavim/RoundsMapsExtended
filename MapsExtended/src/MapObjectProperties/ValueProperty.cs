@@ -1,6 +1,6 @@
 using System;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public abstract class ValueProperty<T> : IProperty, IEquatable<ValueProperty<T>> where T : IEquatable<T>
 	{

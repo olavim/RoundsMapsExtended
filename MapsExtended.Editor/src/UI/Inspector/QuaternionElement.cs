@@ -7,7 +7,7 @@ namespace MapsExt.Editor.UI
 		private readonly string _name;
 		private TextSliderInput _input;
 
-		protected abstract Quaternion Value { get; set; }
+		public abstract Quaternion Value { get; set; }
 
 		protected QuaternionElement(string name)
 		{
@@ -38,7 +38,7 @@ namespace MapsExt.Editor.UI
 
 			if (changeType == ChangeType.ChangeEnd)
 			{
-				this.Context.Editor.UpdateRopeAttachments();
+				this.Context.Editor.RefreshHandlers();
 				this.Context.Editor.TakeSnaphot();
 			}
 		}

@@ -7,7 +7,7 @@ namespace MapsExt.Editor.UI
 		private readonly string _name;
 		private InspectorVector2 _input;
 
-		protected abstract Vector2 Value { get; set; }
+		public abstract Vector2 Value { get; set; }
 
 		protected Vector2Element(string name)
 		{
@@ -31,7 +31,7 @@ namespace MapsExt.Editor.UI
 		protected virtual void HandleInputChange(Vector2 value)
 		{
 			this.Value = value;
-			this.Context.Editor.UpdateRopeAttachments();
+			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

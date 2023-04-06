@@ -30,17 +30,6 @@ namespace MapsExt.Editor.Tests
 			return new AndConstraint<Vector2Assertions>(this);
 		}
 
-		public AndConstraint<Vector2Assertions> Be(Vector3 expected, string because = "", params object[] becauseArgs)
-		{
-			Execute.Assertion
-					.BecauseOf(because, becauseArgs)
-					.ForCondition(this.Subject == (Vector2) expected)
-					.WithDefaultIdentifier(this.Identifier)
-					.FailWith("Expected {context} to be {0}{reason}, but found {1}.", (Vector2) expected, this.Subject);
-
-			return new AndConstraint<Vector2Assertions>(this);
-		}
-
 		public AndConstraint<Vector2Assertions> BeApproximately(Vector2 expected, int precision = 6, string because = "", params object[] becauseArgs)
 		{
 			Execute.Assertion

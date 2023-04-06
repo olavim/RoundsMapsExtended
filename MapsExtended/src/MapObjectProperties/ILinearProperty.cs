@@ -1,4 +1,4 @@
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public interface ILinearProperty : IProperty
 	{

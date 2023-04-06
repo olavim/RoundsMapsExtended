@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using UnboundLib;
 
-namespace MapsExt.MapObjects.Properties
+namespace MapsExt.Properties
 {
 	public class RopePositionProperty : IProperty, IEquatable<RopePositionProperty>
 	{

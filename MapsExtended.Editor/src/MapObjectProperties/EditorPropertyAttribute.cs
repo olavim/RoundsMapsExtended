@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MapsExt.Editor.MapObjects.Properties
+namespace MapsExt.Editor.Properties
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 	public sealed class EditorPropertySerializerAttribute : Attribute

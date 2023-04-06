@@ -15,7 +15,7 @@ using UnboundLib.Utils.UI;
 using Photon.Pun;
 using System.Collections;
 using MapsExt.MapObjects;
-using MapsExt.MapObjects.Properties;
+using MapsExt.Properties;
 using UnboundLib.Utils;
 using MapsExt.Compatibility;
 
