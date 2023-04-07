@@ -28,6 +28,7 @@ namespace MapsExt.Properties
 		public static implicit operator RotationProperty(Quaternion value) => new(value);
 		public static implicit operator RotationProperty(float angle) => new(angle);
 
+		public static RotationProperty operator +(RotationProperty a, RotationProperty b) => a.Value.eulerAngles.z + b.Value.eulerAngles.z;
 		public static RotationProperty operator *(RotationProperty a, RotationProperty b) => a.Value * b.Value;
 		public static Vector3 operator *(RotationProperty a, Vector2 b) => a.Value * b;
 		public static Vector3 operator *(RotationProperty a, Vector3 b) => a.Value * b;

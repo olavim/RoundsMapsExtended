@@ -9,12 +9,7 @@ namespace MapsExt.Editor.ActionHandlers
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
-		private readonly Dictionary<GameObject, PositionProperty> _localPositions = new();
-
-		protected override void Awake()
-		{
-			this.RefreshLocalPositions();
-		}
+		private readonly Dictionary<GameObject, Vector2> _localPositions = new();
 
 		public override void Move(PositionProperty delta)
 		{
@@ -23,28 +18,31 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void SetValue(PositionProperty position)
 		{
+			this.transform.position = position;
+			this.RefreshPositions();
+		}
+
+		public virtual void RefreshPositions()
+		{
 			foreach (var obj in this._gameObjects)
 			{
-				obj.SetHandlerValue(position + this._localPositions[obj]);
+				var newLocalPos = this.transform.rotation * this._localPositions[obj];
+				obj.SetHandlerValue<PositionProperty>((this.transform.position + newLocalPos).Round(4));
 			}
-			this.transform.position = position;
 		}
 
 		public void Initialize(IEnumerable<GameObject> gameObjects)
 		{
 			this._gameObjects = gameObjects;
 
-			var pos = Vector2.zero;
+			var bounds = new Bounds(this._gameObjects.First().transform.position, Vector3.zero);
 			foreach (var obj in this._gameObjects)
 			{
-				pos += obj.GetHandlerValue<PositionProperty>().Value;
+				bounds.Encapsulate(obj.GetHandlerValue<PositionProperty>());
 			}
 
-			this.transform.position = pos / this._gameObjects.Count();
-		}
+			this.transform.position = bounds.center;
 
-		public void RefreshLocalPositions()
-		{
 			foreach (var obj in this._gameObjects)
 			{
 				this._localPositions[obj] = obj.GetHandlerValue<PositionProperty>() - (PositionProperty) this.transform.position;
