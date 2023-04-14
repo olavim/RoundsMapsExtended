@@ -35,16 +35,13 @@ namespace MapsExt.Editor.Properties
 		private Vector2Input _input1;
 		private Vector2Input _input2;
 
-		public Vector2 AnchorPosition1
+		public RopePositionProperty Value
 		{
-			get => this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>().GetAnchor(0).GetAnchoredPosition();
-			set => this.HandleInputChange(value, 0);
-		}
-
-		public Vector2 AnchorPosition2
-		{
-			get => this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>().GetAnchor(1).GetAnchoredPosition();
-			set => this.HandleInputChange(value, 1);
+			get => new(
+				this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>().GetAnchor(0).GetAnchoredPosition(),
+				this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>().GetAnchor(1).GetAnchoredPosition()
+			);
+			set => this.HandleInputChange(value);
 		}
 
 		protected override GameObject GetInstance()
@@ -59,27 +56,29 @@ namespace MapsExt.Editor.Properties
 			var input1 = pos1Instance.GetComponent<InspectorVector2>();
 			input1.Label.text = "Anchor Position 1";
 			this._input1 = input1.Input;
-			this._input1.OnChanged += value => this.HandleInputChange(value, 0);
+			this._input1.OnChanged += value => this.HandleInputChange(new(value, this.Value.EndPosition));
 
 			var pos2Instance = GameObject.Instantiate(Assets.InspectorVector2Prefab, instance.transform);
 			var input2 = pos2Instance.GetComponent<InspectorVector2>();
 			input2.Label.text = "Anchor Position 2";
 			this._input2 = input2.Input;
-			this._input2.OnChanged += value => this.HandleInputChange(value, 1);
+			this._input2.OnChanged += value => this.HandleInputChange(new(this.Value.StartPosition, value));
 
 			return instance;
 		}
 
 		public override void OnUpdate()
 		{
-			this._input1.SetWithoutEvent(this.AnchorPosition1);
-			this._input2.SetWithoutEvent(this.AnchorPosition2);
+			var val = this.Value;
+			this._input1.SetWithoutEvent(val.StartPosition);
+			this._input2.SetWithoutEvent(val.EndPosition);
 		}
 
-		private void HandleInputChange(Vector2 value, int anchor)
+		private void HandleInputChange(RopePositionProperty value)
 		{
 			var ropeInstance = this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>();
-			ropeInstance.GetAnchor(anchor).SetHandlerValue<PositionProperty>(value);
+			ropeInstance.GetAnchor(0).SetHandlerValue<PositionProperty>(value.StartPosition);
+			ropeInstance.GetAnchor(1).SetHandlerValue<PositionProperty>(value.EndPosition);
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

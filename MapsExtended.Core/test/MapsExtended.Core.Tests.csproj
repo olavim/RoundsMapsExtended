@@ -3,23 +3,20 @@
 
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
+		<IsPublishable>false</IsPublishable>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\..\assets\mapbase" />
-		<EmbeddedResource Include="..\..\assets\mapobjects" />
+		<EmbeddedResource Include="Serialization\Fixtures\*" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ThisAssembly.Project" Version="1.0.0" />
-		<ProjectProperty Include="Version" />
+		<PackageReference Include="FluentAssertions" Version="6.10.0" />
+		<PackageReference Include="Surity.BepInEx" Version="2.0.1" />
+		<ProjectReference Include="..\src\MapsExtended.Core.csproj" Private="false" IncludeAssets="compile" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="0Harmony">
-			<HintPath>$(BepInExDir)\core\0Harmony.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
 		<Reference Include="BepInEx">
 			<HintPath>$(BepInExDir)\core\BepInEx.dll</HintPath>
 			<Private>false</Private>

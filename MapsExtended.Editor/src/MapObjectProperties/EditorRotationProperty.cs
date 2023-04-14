@@ -19,12 +19,22 @@ namespace MapsExt.Editor.Properties
 	[PropertyInspector(typeof(RotationProperty))]
 	public class RotationElement : QuaternionElement
 	{
-		public override Quaternion Value
+		public RotationElement() : base("Rotation") { }
+
+		protected override void OnChange(Quaternion rotation, ChangeType changeType)
 		{
-			get => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
-			set => this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(value);
+			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
+			{
+				this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(rotation);
+			}
+
+			if (changeType == ChangeType.ChangeEnd)
+			{
+				this.Context.Editor.RefreshHandlers();
+				this.Context.Editor.TakeSnaphot();
+			}
 		}
 
-		public RotationElement() : base("Rotation") { }
+		protected override Quaternion GetValue() => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
 	}
 }

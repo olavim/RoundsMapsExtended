@@ -19,12 +19,15 @@ namespace MapsExt.Editor.Properties
 	[PropertyInspector(typeof(ScaleProperty))]
 	public class ScaleElement : Vector2Element
 	{
-		public override Vector2 Value
-		{
-			get => this.Context.InspectorTarget.GetHandlerValue<ScaleProperty>();
-			set => this.Context.InspectorTarget.SetHandlerValue<ScaleProperty>(value);
-		}
-
 		public ScaleElement() : base("Size") { }
+
+		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetHandlerValue<ScaleProperty>();
+
+		protected override void OnChange(Vector2 value)
+		{
+			this.Context.InspectorTarget.SetHandlerValue<ScaleProperty>(value);
+			this.Context.Editor.RefreshHandlers();
+			this.Context.Editor.TakeSnaphot();
+		}
 	}
 }

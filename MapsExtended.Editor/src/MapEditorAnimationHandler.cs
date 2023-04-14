@@ -8,6 +8,7 @@ using MapsExt.Properties;
 using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnboundLib;
+using Sirenix.Utilities;
 
 namespace MapsExt.Editor
 {
@@ -132,7 +133,6 @@ namespace MapsExt.Editor
 			}
 
 			this.Editor.ActiveObject = this.KeyframeMapObject;
-
 			this.Refresh();
 		}
 
@@ -153,7 +153,7 @@ namespace MapsExt.Editor
 				this.SetKeyframe(this.Animation.Keyframes.Count - 1);
 			}
 
-			this.RefreshKeyframeMapObject();
+			this.RefreshKeyframeValues();
 			this.UpdateTraceLine();
 		}
 
@@ -298,18 +298,6 @@ namespace MapsExt.Editor
 						renderer.gameObject.layer = MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT;
 					}
 
-					foreach (var handler in instance.GetComponentsInChildren<ActionHandler>())
-					{
-						handler.OnChange += () =>
-						{
-							var data = MapsExtendedEditor.instance._mapObjectManager.Serialize(instance);
-							var animatableProperties = MapsExtendedEditor.instance._propertyManager.GetProperties<ILinearProperty>(data);
-
-							this.Animation.Keyframes[frameIndex].ComponentValues = animatableProperties.ToList();
-							this.Refresh();
-						};
-					}
-
 					instance.transform.SetAsLastSibling();
 
 					this.KeyframeMapObject = instance;
@@ -369,9 +357,26 @@ namespace MapsExt.Editor
 			});
 		}
 
-		public void RefreshKeyframeMapObject()
+		private void RefreshKeyframeValues()
 		{
 			if (this.KeyframeMapObject == null || this.Keyframe == null)
+			{
+				return;
+			}
+
+			var data = MapsExtendedEditor.instance._mapObjectManager.Serialize(this.KeyframeMapObject);
+			var animatableProperties = MapsExtendedEditor.instance._propertyManager.GetProperties<ILinearProperty>(data);
+			this.Keyframe.ComponentValues = animatableProperties.ToList();
+
+			if (this.KeyframeIndex == 0)
+			{
+				this.RefreshBaseMapObject();
+			}
+		}
+
+		private void RefreshBaseMapObject()
+		{
+			if (this.Animation?.Keyframes.IsNullOrEmpty() != false)
 			{
 				return;
 			}
@@ -379,11 +384,8 @@ namespace MapsExt.Editor
 			for (int i = 0; i < this.Animation.Keyframes[0].ComponentValues.Count; i++)
 			{
 				var baseFrameValue = this.Animation.Keyframes[0].ComponentValues[i];
-				var currentFrameValue = this.Keyframe.ComponentValues[i];
-
 				var serializer = MapsExtendedEditor.instance._propertyManager.GetSerializer(baseFrameValue.GetType());
 				serializer.Deserialize(baseFrameValue, this.Animation.gameObject);
-				serializer.Deserialize(currentFrameValue, this.KeyframeMapObject);
 			}
 		}
 	}

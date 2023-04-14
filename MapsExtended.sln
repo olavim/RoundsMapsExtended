@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		publish.ps1 = publish.ps1
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapsExtended", "MapsExtended\src\MapsExtended.csproj", "{B2C65EF9-CA5E-46C3-AF98-5760A6EDDCFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapsExtended.Core", "MapsExtended.Core\src\MapsExtended.Core.csproj", "{B2C65EF9-CA5E-46C3-AF98-5760A6EDDCFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapsExtended.Tests", "MapsExtended\test\MapsExtended.Tests.csproj", "{6B1482A8-5D37-4737-A27F-D89E3C20CA65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapsExtended.Core.Tests", "MapsExtended.Core\test\MapsExtended.Core.Tests.csproj", "{6B1482A8-5D37-4737-A27F-D89E3C20CA65}"
 EndProject
 Project("{5CB4441B-9C84-4FFA-BA39-0290BBC79373}") = "MapsExtended.Editor", "MapsExtended.Editor\src\MapsExtended.Editor.csproj", "{43885CDF-DA4E-421D-8FE9-943FFA8A9C96}"
 EndProject

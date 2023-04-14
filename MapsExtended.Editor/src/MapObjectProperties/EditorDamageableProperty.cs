@@ -9,12 +9,14 @@ namespace MapsExt.Editor.Properties
 	[PropertyInspector(typeof(DamageableProperty))]
 	public class DamageableElement : BooleanElement
 	{
-		public override bool Value
-		{
-			get => this.Context.InspectorTarget.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment;
-			set => this.Context.InspectorTarget.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment = value;
-		}
-
 		public DamageableElement() : base("Damageable by Environment") { }
+
+		protected override bool GetValue() => this.Context.InspectorTarget.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment;
+
+		protected override void OnChange(bool value)
+		{
+			this.Context.InspectorTarget.GetComponent<DamageableMapObjectInstance>().damageableByEnvironment = value;
+			this.Context.Editor.TakeSnaphot();
+		}
 	}
 }

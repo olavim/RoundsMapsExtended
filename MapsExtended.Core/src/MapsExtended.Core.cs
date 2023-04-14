@@ -8,7 +8,6 @@ using BepInEx;
 using HarmonyLib;
 using Jotunn.Utils;
 using UnityEngine.SceneManagement;
-using Sirenix.Serialization;
 using UnityEngine;
 using UnboundLib;
 using UnboundLib.Utils.UI;

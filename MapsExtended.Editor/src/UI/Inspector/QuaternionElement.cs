@@ -7,7 +7,11 @@ namespace MapsExt.Editor.UI
 		private readonly string _name;
 		private TextSliderInput _input;
 
-		public abstract Quaternion Value { get; set; }
+		public Quaternion Value
+		{
+			get => this.GetValue();
+			set => this.OnChange(value, ChangeType.ChangeEnd);
+		}
 
 		protected QuaternionElement(string name)
 		{
@@ -20,7 +24,7 @@ namespace MapsExt.Editor.UI
 			var quaternionInput = instance.GetComponent<InspectorQuaternion>();
 			quaternionInput.Label.text = this._name;
 			this._input = quaternionInput.Input;
-			this._input.OnChanged += this.HandleInputChange;
+			this._input.OnChanged += this.OnChange;
 			return instance;
 		}
 
@@ -29,18 +33,12 @@ namespace MapsExt.Editor.UI
 			this._input.SetWithoutEvent(this.Value.eulerAngles.z);
 		}
 
-		protected virtual void HandleInputChange(float angle, ChangeType changeType)
+		private void OnChange(float angle, ChangeType changeType)
 		{
-			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
-			{
-				this.Value = Quaternion.Euler(0, 0, angle);
-			}
-
-			if (changeType == ChangeType.ChangeEnd)
-			{
-				this.Context.Editor.RefreshHandlers();
-				this.Context.Editor.TakeSnaphot();
-			}
+			this.OnChange(Quaternion.Euler(0, 0, angle), changeType);
 		}
+
+		protected abstract Quaternion GetValue();
+		protected abstract void OnChange(Quaternion rotation, ChangeType changeType);
 	}
 }

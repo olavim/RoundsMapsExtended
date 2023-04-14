@@ -3,9 +3,9 @@ using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using UnityEngine;
 
-namespace MapsExt.Tests
+namespace MapsExt.Editor.Tests
 {
-	public static class Vector2Extensions
+	public static class Vector2AssertionExtensions
 	{
 		public static Vector2Assertions Should(this Vector2 instance)
 		{

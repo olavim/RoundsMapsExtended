@@ -35,7 +35,7 @@
 		<Error Condition="!Exists('$(BepInExDir)')" Text="$([System.String]::Format('$(ErrorTextBepInExDir)'))" />
 	</Target>
 
-	<Target Name="CopyDLLsToBepInExProfile" AfterTargets="AfterBuild">
+	<Target Name="CopyDLLsToBepInExProfile" Condition="'$(IsBepInExPlugin)' != 'false'" AfterTargets="AfterBuild">
 		<ItemGroup>
 			<_Files Include="$(TargetDir)*.*" />
 		</ItemGroup>

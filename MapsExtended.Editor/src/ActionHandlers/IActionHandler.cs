@@ -6,8 +6,6 @@ namespace MapsExt.Editor.ActionHandlers
 {
 	public interface IActionHandler
 	{
-		Action OnChange { get; set; }
-
 		IProperty GetValue();
 		void SetValue(IProperty value);
 		void OnSelect();

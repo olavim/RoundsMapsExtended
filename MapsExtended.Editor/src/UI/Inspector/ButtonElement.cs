@@ -5,7 +5,8 @@ namespace MapsExt.Editor.UI
 {
 	public abstract class ButtonElement : InspectorElement
 	{
-		protected Button Button { get; private set; }
+		public Button Button { get; private set; }
+
 		protected string ButtonText
 		{
 			get => this.Button.GetComponentInChildren<Text>().text;

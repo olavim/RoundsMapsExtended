@@ -49,7 +49,6 @@ namespace MapsExt.Editor.ActionHandlers
 		public override void SetValue(PositionProperty position)
 		{
 			this.transform.position = position;
-			this.OnChange();
 		}
 
 		public override PositionProperty GetValue()

@@ -166,8 +166,6 @@ namespace MapsExt.Editor.ActionHandlers
 			if (sizeDelta != Vector2.zero)
 			{
 				this.Resize(sizeDelta, this._resizeDirection);
-				this.OnChange();
-
 				this._prevMouse += mouseDelta;
 				this._prevCell = mouseCell;
 			}

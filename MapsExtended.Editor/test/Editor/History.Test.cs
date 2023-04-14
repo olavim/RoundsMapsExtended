@@ -4,6 +4,7 @@ using System.Linq;
 using FluentAssertions;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
+using MapsExt.Editor.Properties;
 using MapsExt.MapObjects;
 using MapsExt.Properties;
 using Surity;
@@ -180,6 +181,101 @@ namespace MapsExt.Editor.Tests
 			this.Editor.OnRedo(); // Redo Delete
 			this.Editor.ActiveObject.Should().BeNull();
 			this.Editor.Content.transform.childCount.Should().Be(1);
+		}
+
+		[Test]
+		public IEnumerator Test_Inspector_Position()
+		{
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			var element = (PositionElement) this.Inspector.GetElement<PositionProperty>();
+
+			var val1 = new PositionProperty(0, 0);
+			var val2 = new PositionProperty(1, 1);
+
+			element.Value.Should().Be(val1.Value);
+			element.Value = val2.Value;
+			element.Value.Should().Be(val2.Value);
+			this.Editor.OnUndo();
+			element.Value.Should().Be(val1.Value);
+			this.Editor.OnRedo();
+			element.Value.Should().Be(val2.Value);
+		}
+
+		[Test]
+		public IEnumerator Test_Inspector_Scale()
+		{
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			var element = (ScaleElement) this.Inspector.GetElement<ScaleProperty>();
+
+			var val1 = new ScaleProperty(2, 2);
+			var val2 = new ScaleProperty(3, 3);
+
+			element.Value.Should().Be(val1.Value);
+			element.Value = val2.Value;
+			element.Value.Should().Be(val2.Value);
+			this.Editor.OnUndo();
+			element.Value.Should().Be(val1.Value);
+			this.Editor.OnRedo();
+			element.Value.Should().Be(val2.Value);
+		}
+
+		[Test]
+		public IEnumerator Test_Inspector_Rotation()
+		{
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			var element = (RotationElement) this.Inspector.GetElement<RotationProperty>();
+
+			var val1 = new RotationProperty();
+			var val2 = new RotationProperty(45);
+
+			element.Value.Should().Be(val1.Value);
+			element.Value = val2.Value;
+			element.Value.Should().Be(val2.Value);
+			this.Editor.OnUndo();
+			element.Value.Should().Be(val1.Value);
+			this.Editor.OnRedo();
+			element.Value.Should().Be(val2.Value);
+		}
+
+		[Test]
+		public IEnumerator Test_Inspector_Damageable()
+		{
+			yield return this.Utils.SpawnMapObject<BoxDestructibleData>();
+
+			var element = (DamageableElement) this.Inspector.GetElement<DamageableProperty>();
+
+			var val1 = new DamageableProperty(true);
+			var val2 = new DamageableProperty(false);
+
+			element.Value.Should().Be(val1.Value);
+			element.Value = val2.Value;
+			element.Value.Should().Be(val2.Value);
+			this.Editor.OnUndo();
+			element.Value.Should().Be(val1.Value);
+			this.Editor.OnRedo();
+			element.Value.Should().Be(val2.Value);
+		}
+
+		[Test]
+		public IEnumerator Test_Inspector_RopePosition()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+
+			var element = (RopePositionElement) this.Inspector.GetElement<RopePositionProperty>();
+
+			var val1 = new RopePositionProperty(new(0, 1), new(0, -1));
+			var val2 = new RopePositionProperty(new(0, 2), new(0, -2));
+
+			element.Value.Should().Be(val1);
+			element.Value = val2;
+			element.Value.Should().Be(val2);
+			this.Editor.OnUndo();
+			element.Value.Should().Be(val1);
+			this.Editor.OnRedo();
+			element.Value.Should().Be(val2);
 		}
 	}
 }

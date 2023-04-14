@@ -59,7 +59,7 @@ namespace MapsExt.Editor.Tests
 			this.Editor.ActiveObject.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
 		}
 
-		private void GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IProperty
+		private IEnumerator GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IProperty
 		{
 			for (int i = 1; i < keyframeCount; i++)
 			{
@@ -75,6 +75,7 @@ namespace MapsExt.Editor.Tests
 				this.GetKeyframeValue<T>(i).Should().Be(prop1);
 				this.AnimationHandler.KeyframeMapObject.SetHandlerValue(nextProp);
 				this.AnimationHandler.KeyframeMapObject.GetHandlerValue<T>().Should().Be(nextProp);
+				yield return null;
 				this.GetKeyframeValue<T>(i).Should().Be(nextProp);
 			}
 
@@ -84,6 +85,7 @@ namespace MapsExt.Editor.Tests
 
 			this.animationMapObject.GetHandlerValue<T>().Should().Be(KeyframeProperty(0));
 			this.animationMapObject.SetHandlerValue(prop2);
+			yield return null;
 
 			for (int i = 0; i < keyframeCount; i++)
 			{
@@ -101,7 +103,7 @@ namespace MapsExt.Editor.Tests
 		}
 
 		[Test]
-		public void Test_MoveKeyframe()
+		public IEnumerator Test_MoveKeyframe()
 		{
 			var prop1 = new PositionProperty(0, 0);
 			var prop2 = new PositionProperty(5, 5);
@@ -114,7 +116,7 @@ namespace MapsExt.Editor.Tests
 
 			for (int i = 1; i <= 4; i++)
 			{
-				this.GeneratePropertyTests(i, prop1, prop2, KeyframeProperty);
+				yield return this.GeneratePropertyTests(i, prop1, prop2, KeyframeProperty);
 			}
 		}
 
@@ -130,7 +132,7 @@ namespace MapsExt.Editor.Tests
 		}
 
 		[Test]
-		public void Test_ResizeKeyframe()
+		public IEnumerator Test_ResizeKeyframe()
 		{
 			var prop1 = new ScaleProperty(2, 2);
 			var prop2 = new ScaleProperty(5, 5);
@@ -143,7 +145,7 @@ namespace MapsExt.Editor.Tests
 
 			for (int i = 1; i <= 4; i++)
 			{
-				this.GeneratePropertyTests(i, prop1, prop2, KeyframeProperty);
+				yield return this.GeneratePropertyTests(i, prop1, prop2, KeyframeProperty);
 			}
 		}
 
@@ -159,7 +161,7 @@ namespace MapsExt.Editor.Tests
 		}
 
 		[Test]
-		public void Test_RotateKeyframe()
+		public IEnumerator Test_RotateKeyframe()
 		{
 			var prop1 = new RotationProperty(Quaternion.identity);
 			var prop2 = new RotationProperty(Quaternion.Euler(0, 0, 45));
@@ -172,7 +174,7 @@ namespace MapsExt.Editor.Tests
 
 			for (int i = 1; i <= 4; i++)
 			{
-				this.GeneratePropertyTests(i, prop1, prop2, KeyframeProperty);
+				yield return this.GeneratePropertyTests(i, prop1, prop2, KeyframeProperty);
 			}
 		}
 

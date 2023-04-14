@@ -108,18 +108,26 @@ namespace MapsExt.Editor.Tests
 			var val1 = new RopePositionProperty(new(0, 1), new(0, -1));
 			var val2 = new RopePositionProperty(new(0, 2), new(0, -2));
 
-			element.AnchorPosition1.Should().Be(val1.StartPosition);
-			element.AnchorPosition2.Should().Be(val1.EndPosition);
+			element.Value.Should().Be(val1);
 			this.Inspector.Target.GetComponent<EditorRope.RopeInstance>().GetAnchor(0).GetAnchoredPosition().Should().Be(val1.StartPosition);
 			this.Inspector.Target.GetComponent<EditorRope.RopeInstance>().GetAnchor(1).GetAnchoredPosition().Should().Be(val1.EndPosition);
 
-			element.AnchorPosition1 = val2.StartPosition;
-			element.AnchorPosition2 = val2.EndPosition;
+			element.Value = val2;
 
-			element.AnchorPosition1.Should().Be(val2.StartPosition);
-			element.AnchorPosition2.Should().Be(val2.EndPosition);
+			element.Value.Should().Be(val2);
 			this.Inspector.Target.GetComponent<EditorRope.RopeInstance>().GetAnchor(0).GetAnchoredPosition().Should().Be(val2.StartPosition);
 			this.Inspector.Target.GetComponent<EditorRope.RopeInstance>().GetAnchor(1).GetAnchoredPosition().Should().Be(val2.EndPosition);
+		}
+
+		[Test]
+		public IEnumerator Test_Animation()
+		{
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			var element = (AnimationButtonElement) this.Inspector.GetElement<AnimationProperty>();
+			element.Button.onClick.Invoke();
+
+			this.AnimationHandler.Animation?.Should().BeSameAs(this.Inspector.Target.GetComponent<MapObjectAnimation>());
 		}
 	}
 }

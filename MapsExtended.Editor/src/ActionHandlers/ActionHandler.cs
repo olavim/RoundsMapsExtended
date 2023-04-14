@@ -1,12 +1,10 @@
 using MapsExt.Properties;
-using System;
 using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
 	public abstract class ActionHandlerBase : MonoBehaviour, IActionHandler
 	{
-		public abstract Action OnChange { get; set; }
 		public abstract IProperty GetValue();
 		public abstract void SetValue(IProperty value);
 		public abstract void OnSelect();
@@ -21,7 +19,6 @@ namespace MapsExt.Editor.ActionHandlers
 	public abstract class ActionHandler : ActionHandlerBase
 	{
 		protected MapEditor Editor => this.GetComponentInParent<MapEditor>();
-		public override Action OnChange { get; set; } = () => { };
 
 		public sealed override IProperty GetValue() => this.GetValueInternal();
 

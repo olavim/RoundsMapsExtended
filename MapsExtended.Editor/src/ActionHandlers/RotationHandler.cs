@@ -47,7 +47,6 @@ namespace MapsExt.Editor.ActionHandlers
 		public override void SetValue(RotationProperty rotation)
 		{
 			this.transform.rotation = rotation;
-			this.OnChange();
 		}
 
 		public override RotationProperty GetValue()

@@ -6,14 +6,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="..\..\assets\uielements" />
-		<EmbeddedResource Include="..\..\assets\mapeditor" />
+		<EmbeddedResource Include="..\..\assets\mapbase" />
+		<EmbeddedResource Include="..\..\assets\mapobjects" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="UnboundLib" Version="3.2.8" IncludeAssets="compile" />
-		<PackageReference Include="NetTopologySuite" Version="2.4.0" IncludeAssets="compile;runtime" />
-		<ProjectReference Include="..\..\MapsExtended.Core\src\MapsExtended.Core.csproj" Private="false" IncludeAssets="compile" />
+		<PackageReference Include="ThisAssembly.Project" Version="1.0.0" />
+		<ProjectProperty Include="Version" />
 	</ItemGroup>
 
 	<ItemGroup>

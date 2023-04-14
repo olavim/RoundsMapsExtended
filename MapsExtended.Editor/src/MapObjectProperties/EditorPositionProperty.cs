@@ -19,12 +19,15 @@ namespace MapsExt.Editor.Properties
 	[PropertyInspector(typeof(PositionProperty))]
 	public class PositionElement : Vector2Element
 	{
-		public override Vector2 Value
-		{
-			get => this.Context.InspectorTarget.GetHandlerValue<PositionProperty>();
-			set => this.Context.InspectorTarget.SetHandlerValue<PositionProperty>(value);
-		}
-
 		public PositionElement() : base("Position") { }
+
+		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetHandlerValue<PositionProperty>();
+
+		protected override void OnChange(Vector2 value)
+		{
+			this.Context.InspectorTarget.SetHandlerValue<PositionProperty>(value);
+			this.Context.Editor.RefreshHandlers();
+			this.Context.Editor.TakeSnaphot();
+		}
 	}
 }
