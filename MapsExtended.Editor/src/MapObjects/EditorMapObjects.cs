@@ -1,5 +1,4 @@
-﻿using MapsExt.Editor.ActionHandlers;
-using MapsExt.MapObjects;
+﻿using MapsExt.MapObjects;
 using System.Collections.Generic;
 using System.Linq;
 using UnboundLib;

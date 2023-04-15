@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Specialized;
-using System.Linq;
 using FluentAssertions;
 using MapsExt.Editor.ActionHandlers;
 using MapsExt.MapObjects;
@@ -9,6 +8,11 @@ using UnityEngine.UI;
 using Surity;
 using System;
 using MapsExt.Properties;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
+using MapsExt.Editor.MapObjects;
+using MapsExt.Editor.UI;
 
 namespace MapsExt.Editor.Tests
 {
@@ -27,15 +31,62 @@ namespace MapsExt.Editor.Tests
 			box.GetHandlerValue<PositionProperty>().Should().Be((PositionProperty) Vector2.zero);
 		}
 
-		[Test]
-		public IEnumerator Test_MoveBox()
+		[TestGenerator]
+		public IEnumerable<TestInfo> GenMoveTests()
 		{
-			yield return this.SpawnFromMapObjectWindow("Box");
+			foreach (var type in this.MapObjectsWithProperty<PositionProperty>())
+			{
+				var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
+				yield return new TestInfo($"Test_Move_{type.Name}", () => this.Test_SpawnAndMove(attr.Label, attr.Category));
+			}
+		}
 
-			var box = this.Editor.ActiveObject;
+		[TestGenerator]
+		public IEnumerable<TestInfo> GenResizeTests()
+		{
+			foreach (var type in this.MapObjectsWithProperty<ScaleProperty>())
+			{
+				var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
+				yield return new TestInfo($"Test_Resize_{type.Name}", () => this.Test_SpawnAndResize(attr.Label, attr.Category));
+			}
+		}
+
+		[TestGenerator]
+		public IEnumerable<TestInfo> GenRotateTests()
+		{
+			foreach (var type in this.MapObjectsWithProperty<RotationProperty>())
+			{
+				var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
+				yield return new TestInfo($"Test_Rotate_{type.Name}", () => this.Test_SpawnAndRotate(attr.Label, attr.Category));
+			}
+		}
+
+		private IEnumerator Test_SpawnAndMove(string label, string category = null)
+		{
+			yield return this.SpawnFromMapObjectWindow(label, category);
+			var obj = this.Editor.ActiveObject;
 			var delta = new PositionProperty(-5, 0);
+			obj.GetHandlerValue<PositionProperty>().Should().Be(new PositionProperty(0, 0));
 			yield return this.Utils.MoveSelectedWithMouse(delta);
-			box.GetHandlerValue<PositionProperty>().Should().Be(delta);
+			obj.GetHandlerValue<PositionProperty>().Should().Be(delta);
+		}
+
+		private IEnumerator Test_SpawnAndResize(string label, string category = null)
+		{
+			yield return this.SpawnFromMapObjectWindow(label, category);
+			var obj = this.Editor.ActiveObject;
+			obj.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(2, 2));
+			yield return this.Utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
+			obj.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
+		}
+
+		private IEnumerator Test_SpawnAndRotate(string label, string category = null)
+		{
+			yield return this.SpawnFromMapObjectWindow(label, category);
+			var obj = this.Editor.ActiveObject;
+			obj.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(0));
+			yield return this.Utils.RotateSelectedWithMouse(45);
+			obj.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(45));
 		}
 
 		[Test]
@@ -99,29 +150,26 @@ namespace MapsExt.Editor.Tests
 			box2.GetHandlerValue<PositionProperty>().Should().Be(delta);
 		}
 
-		[Test]
-		public IEnumerator Test_ResizeBox()
+		private IEnumerable<Type> MapObjectsWithProperty<T>() where T : IProperty
 		{
-			yield return this.SpawnFromMapObjectWindow("Box");
-			var box = this.Editor.ActiveObject;
-
-			box.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(2, 2));
-			yield return this.Utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
-			box.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
+			return typeof(MapsExtendedEditor).Assembly
+				.GetTypes()
+				.Where(
+					t =>
+						t.GetCustomAttribute<EditorMapObjectAttribute>() != null &&
+						this.HasProperty<T>(t.GetCustomAttribute<EditorMapObjectAttribute>().DataType)
+				);
 		}
 
-		[Test]
-		public IEnumerator Test_RotateBox()
+		private bool HasProperty<T>(Type type) where T : IProperty
 		{
-			yield return this.SpawnFromMapObjectWindow("Box");
-			var box = this.Editor.ActiveObject;
-
-			box.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(0));
-			yield return this.Utils.RotateSelectedWithMouse(45);
-			box.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(45));
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+			return
+				type.GetProperties(flags).Any(p => typeof(T).IsAssignableFrom(p.PropertyType)) ||
+				type.GetFields(flags).Any(p => typeof(T).IsAssignableFrom(p.FieldType));
 		}
 
-		private IEnumerator SpawnFromMapObjectWindow(string objectName)
+		private IEnumerator SpawnFromMapObjectWindow(string objectName, string category = null)
 		{
 			bool collectionChanged = false;
 
@@ -136,7 +184,7 @@ namespace MapsExt.Editor.Tests
 
 			this.Editor.SelectedObjects.CollectionChanged += OnEditorSelectionChanged;
 
-			var btn = this.GetMapObjectWindowButton(objectName);
+			var btn = this.GetMapObjectWindowButton(objectName, category);
 			btn.Should().NotBeNull();
 			btn.onClick.Invoke();
 
@@ -146,9 +194,18 @@ namespace MapsExt.Editor.Tests
 			}
 		}
 
-		private Button GetMapObjectWindowButton(string label)
+		private Button GetMapObjectWindowButton(string label, string category = null)
 		{
-			var boxText = Array.Find(this.EditorUI.MapObjectWindow.Content.GetComponentsInChildren<Text>(), t => t.text == label);
+			var container = category == null
+				? this.EditorUI.MapObjectWindow.Content
+				: Array.Find(this.EditorUI.MapObjectWindow.Content.GetComponentsInChildren<Text>(), t => t.text == category)?.GetComponentInParent<Foldout>()?.Content;
+
+			if (container == null)
+			{
+				throw new Exception($"Could not find category '{category}' in MapObjectWindow");
+			}
+
+			var boxText = Array.Find(container.GetComponentsInChildren<Text>(), t => t.text == label);
 			return boxText.gameObject.GetComponentInParent<Button>();
 		}
 	}
