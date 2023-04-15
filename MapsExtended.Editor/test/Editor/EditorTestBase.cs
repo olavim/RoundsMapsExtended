@@ -22,16 +22,7 @@ namespace MapsExt.Editor.Tests
 			EditorInput.SetInputSource(this.InputSource);
 		}
 
-		[AfterAll]
-		public void ResetInputSource()
-		{
-			GameObject.Destroy(this.InputSource);
-			this.InputSource = null;
-			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
-		}
-
-		[AfterAll]
-		[BeforeEach]
+		[BeforeAll]
 		public IEnumerator OpenEditor()
 		{
 			yield return MapsExtendedEditor.instance.OpenEditorCoroutine();
@@ -43,10 +34,27 @@ namespace MapsExt.Editor.Tests
 			this.Inspector = this.EditorUI.Inspector;
 		}
 
-		[AfterEach]
+		[AfterAll]
+		public void ResetInputSource()
+		{
+			GameObject.Destroy(this.InputSource);
+			this.InputSource = null;
+			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
+		}
+
+		[AfterAll]
 		public IEnumerator CloseEditor()
 		{
 			yield return MapsExtendedEditor.instance.CloseEditorCoroutine();
+		}
+
+		[AfterEach]
+		public void Cleanup()
+		{
+			this.Editor.AnimationHandler.SetAnimation(null);
+			this.Editor.SelectAll();
+			this.Editor.OnDeleteSelectedMapObjects();
+			this.Editor.ClearHistory();
 		}
 	}
 }

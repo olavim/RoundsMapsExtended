@@ -71,6 +71,11 @@ namespace MapsExt.Editor
 			}
 		}
 
+		public void ClearHistory()
+		{
+			this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
+		}
+
 		public void SaveMap(string filename)
 		{
 			var bytes = SerializationUtility.SerializeValue(this.GetMapData(filename), DataFormat.JSON);
@@ -255,6 +260,11 @@ namespace MapsExt.Editor
 
 		public void OnDeleteSelectedMapObjects()
 		{
+			if (this.AnimationHandler.Animation != null)
+			{
+				throw new Exception("Cannot delete map objects while animating a map object.");
+			}
+
 			foreach (var instance in this.SelectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
 			{
 				if (instance == this.AnimationHandler.Animation?.gameObject)
@@ -520,6 +530,12 @@ namespace MapsExt.Editor
 
 		public void AddSelected(IEnumerable<GameObject> list)
 		{
+			if (list.Any(obj => obj.GetComponentInParent<MapObjectInstance>() == null))
+			{
+				var offendingGameObject = list.First(obj => obj.GetComponentInParent<MapObjectInstance>() == null);
+				throw new ArgumentException($"Cannot select {offendingGameObject.name}: One of the object's parents must contain a MapObjectInstance.");
+			}
+
 			if (list.Count() >= 2)
 			{
 				this._dummyGroup = new GameObject("Group");
@@ -564,6 +580,12 @@ namespace MapsExt.Editor
 		public void SelectAll()
 		{
 			this.ClearSelected();
+
+			if (this.AnimationHandler.Animation != null)
+			{
+				this.AddSelected(this.AnimationHandler.KeyframeMapObject);
+				return;
+			}
 
 			var list = new List<GameObject>();
 			foreach (Transform child in this.Content.transform)
