@@ -42,7 +42,7 @@ namespace MapsExt.Editor
 						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
 
 					var serializer = new MapObjectSpecSerializer(serializerAction, deserializerAction);
-					this._mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
+					this.MapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
 
 					this._mapObjectAttributes.Add((attr.dataType, attr.label, attr.category));
 				}

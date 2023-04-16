@@ -30,6 +30,11 @@ namespace MapsExt.Properties
 		{
 			this._keyframes = keyframes.ToArray();
 		}
+
+		public AnimationProperty(params AnimationKeyframe[] keyframes)
+		{
+			this._keyframes = keyframes.ToArray();
+		}
 	}
 
 	[PropertySerializer(typeof(AnimationProperty))]

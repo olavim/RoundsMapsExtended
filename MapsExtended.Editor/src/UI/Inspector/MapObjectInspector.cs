@@ -35,14 +35,7 @@ namespace MapsExt.Editor.UI
 
 		private void Update()
 		{
-			var selectedInstances = this.Editor.SelectedObjects
-				.Where(x => x != null)
-				.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject)
-				.Where(x => x != null)
-				.Distinct()
-				.ToList();
-
-			GameObject instance = selectedInstances.Count == 1 ? selectedInstances[0] : null;
+			var instance = this.Editor.ActiveMapObject;
 
 			if (instance != this.Target || (this._isLinked && this.Target == null))
 			{
@@ -71,7 +64,7 @@ namespace MapsExt.Editor.UI
 
 			this._elements = new();
 
-			foreach (var member in MapsExtendedEditor.instance._propertyManager.GetSerializableMembers(targetDataType))
+			foreach (var member in MapsExtendedEditor.instance.PropertyManager.GetSerializableMembers(targetDataType))
 			{
 				var propertyType = member.GetReturnType();
 				var elementType = MapsExtendedEditor.instance._propertyInspectorElements.GetValueOrDefault(propertyType, null);

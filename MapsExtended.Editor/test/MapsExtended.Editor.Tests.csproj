@@ -8,7 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="6.10.0" />
-		<PackageReference Include="Surity.BepInEx" Version="2.1.0" />
+		<PackageReference Include="Surity.BepInEx" Version="2.1.1" />
 		<ProjectReference Include="..\src\MapsExtended.Editor.csproj" Private="false" IncludeAssets="compile" />
 	</ItemGroup>
 

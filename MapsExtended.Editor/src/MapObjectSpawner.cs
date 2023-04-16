@@ -21,7 +21,7 @@ namespace MapsExt.Editor
 		{
 			try
 			{
-				MapsExtendedEditor.instance._mapObjectManager.Instantiate(data, container.transform, cb);
+				MapsExtendedEditor.instance.MapObjectManager.Instantiate(data, container.transform, cb);
 			}
 			catch (Exception ex)
 			{

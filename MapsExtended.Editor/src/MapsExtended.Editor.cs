@@ -33,11 +33,12 @@ namespace MapsExt.Editor
 
 		public static MapsExtendedEditor instance;
 
+		public PropertyManager PropertyManager { get; } = new();
+		public MapObjectManager MapObjectManager { get; private set; }
+
 		internal bool _editorActive;
 		internal bool _editorClosing;
 		internal List<(Type, string, string)> _mapObjectAttributes = new();
-		internal MapObjectManager _mapObjectManager;
-		internal PropertyManager _propertyManager = new();
 		internal Dictionary<Type, Type> _propertyInspectorElements = new();
 
 		private void Awake()
@@ -51,8 +52,8 @@ namespace MapsExt.Editor
 
 			var mapObjectManagerGo = new GameObject("Editor Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
-			this._mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
-			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
+			this.MapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this.MapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
 			SceneManager.sceneLoaded += (_, mode) =>
 			{
@@ -152,7 +153,7 @@ namespace MapsExt.Editor
 						throw new Exception($"{propertyType.Name} is not assignable to {typeof(PropertySerializer<>)}");
 					}
 
-					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
+					this.PropertyManager.RegisterProperty(propertyType, propertySerializerType);
 				}
 				catch (Exception ex)
 				{
@@ -167,7 +168,7 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
-			var serializer = new PropertyCompositeSerializer(this._propertyManager);
+			var serializer = new PropertyCompositeSerializer(this.PropertyManager);
 			var types = assembly.GetTypes();
 
 			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
@@ -193,7 +194,7 @@ namespace MapsExt.Editor
 					}
 
 					var mapObject = (IMapObject) AccessTools.CreateInstance(mapObjectType);
-					this._mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
+					this.MapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
 					this._mapObjectAttributes.Add((dataType, attr.Label, attr.Category ?? ""));
 				}
 				catch (Exception ex)

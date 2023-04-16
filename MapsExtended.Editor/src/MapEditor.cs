@@ -35,6 +35,24 @@ namespace MapsExt.Editor
 
 		public GameObject ActiveObject { get; set; }
 		public RangeObservableCollection<GameObject> SelectedObjects { get; } = new RangeObservableCollection<GameObject>();
+
+		public IEnumerable<GameObject> SelectedMapObjects => this.SelectedObjects
+			.Where(x => x != null)
+			.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject)
+			.Where(x => x != null)
+			.Distinct();
+
+		public GameObject ActiveMapObject
+		{
+			get
+			{
+				var selected = this.SelectedMapObjects.ToList();
+				return selected.Count == 1 ? selected[0] : null;
+			}
+		}
+
+		public IEnumerable<GameObject> MapObjects => this.Content.GetComponentsInChildren<MapObjectInstance>(true).Select(x => x.gameObject);
+
 		public bool SnapToGrid { get; set; } = true;
 		public string CurrentMapName { get; private set; }
 		public bool IsSimulating { get; private set; }
@@ -95,7 +113,7 @@ namespace MapsExt.Editor
 
 			foreach (var mapObject in this.Content.GetComponentsInChildren<MapObjectInstance>(true))
 			{
-				var data = MapsExtendedEditor.instance._mapObjectManager.Serialize(mapObject);
+				var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(mapObject);
 
 				if (!data.active && mapObject.gameObject == this.AnimationHandler.Animation?.gameObject)
 				{
@@ -117,13 +135,42 @@ namespace MapsExt.Editor
 
 			foreach (var instance in mapObjectInstances)
 			{
-				this._clipboardMapObjects.Add(MapsExtendedEditor.instance._mapObjectManager.Serialize(instance));
+				this._clipboardMapObjects.Add(MapsExtendedEditor.instance.MapObjectManager.Serialize(instance));
 			}
 		}
 
-		public void OnPaste()
+		public IEnumerator OnPaste()
 		{
-			this.StartCoroutine(this.OnPasteCoroutine());
+			if (this._clipboardMapObjects == null || this._clipboardMapObjects.Count == 0)
+			{
+				yield break;
+			}
+
+			int waiting = this._clipboardMapObjects.Count;
+			this.ClearSelected();
+
+			foreach (var mapObject in this._clipboardMapObjects)
+			{
+				MapObjectSpawner.SpawnObject(this.Content, mapObject, obj =>
+				{
+					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
+					{
+						handler.Move(new Vector2(1, -1));
+					}
+
+					this.AddSelected(obj);
+					waiting--;
+				});
+			}
+
+			while (waiting > 0)
+			{
+				yield return null;
+			}
+
+			this.ResetSpawnLabels();
+			this.RefreshHandlers();
+			this.TakeSnaphot();
 		}
 
 		public void OnUndo()
@@ -148,7 +195,7 @@ namespace MapsExt.Editor
 				if (dict.ContainsKey(mapObject.mapObjectId))
 				{
 					// This map object already exists in the scene, so we just recover its state
-					MapsExtendedEditor.instance._mapObjectManager.Deserialize(mapObject, dict[mapObject.mapObjectId]);
+					MapsExtendedEditor.instance.MapObjectManager.Deserialize(mapObject, dict[mapObject.mapObjectId]);
 
 					// Mark a map object as "handled" by removing it from the dictionary
 					dict.Remove(mapObject.mapObjectId);
@@ -185,40 +232,6 @@ namespace MapsExt.Editor
 		public bool CanRedo()
 		{
 			return this._stateHistory.CanRedo();
-		}
-
-		private IEnumerator OnPasteCoroutine()
-		{
-			if (this._clipboardMapObjects == null || this._clipboardMapObjects.Count == 0)
-			{
-				yield break;
-			}
-
-			int waiting = this._clipboardMapObjects.Count;
-			this.ClearSelected();
-
-			foreach (var mapObject in this._clipboardMapObjects)
-			{
-				MapObjectSpawner.SpawnObject(this.Content, mapObject, obj =>
-				{
-					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
-					{
-						handler.Move(new Vector2(1, -1));
-					}
-
-					this.AddSelected(obj);
-					waiting--;
-				});
-			}
-
-			while (waiting > 0)
-			{
-				yield return null;
-			}
-
-			this.ResetSpawnLabels();
-			this.RefreshHandlers();
-			this.TakeSnaphot();
 		}
 
 		public void CreateMapObject(Type mapObjectDataType)
@@ -356,7 +369,7 @@ namespace MapsExt.Editor
 
 		public void LoadMap(string mapFilePath)
 		{
-			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.instance._mapObjectManager);
+			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.instance.MapObjectManager);
 
 			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
 			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");

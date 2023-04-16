@@ -1,8 +1,13 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Reflection;
 using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
+using MapsExt.Properties;
 using UnityEngine;
 
 namespace MapsExt.Editor.Tests
@@ -22,26 +27,59 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator SpawnMapObject<T>() where T : MapObjectData
 		{
-			bool spawned = false;
+			return this.SpawnMapObject(typeof(T));
+		}
 
-			void OnChange(object sender, NotifyCollectionChangedEventArgs e)
+		public IEnumerator SpawnMapObject(Type type)
+		{
+			if (!typeof(MapObjectData).IsAssignableFrom(type))
 			{
-				if (this.editor.SelectedObjects.Count > 0)
-				{
-					this.editor.SelectedObjects.CollectionChanged -= OnChange;
-					spawned = true;
-				}
+				throw new ArgumentException("Type must be assignable to MapObjectData");
 			}
 
-			this.editor.SelectedObjects.CollectionChanged += OnChange;
-			this.editor.CreateMapObject(typeof(T));
-
-			while (!spawned)
+			IEnumerator Run()
 			{
+				bool spawned = false;
+
+				void OnChange(object sender, NotifyCollectionChangedEventArgs e)
+				{
+					if (this.editor.SelectedObjects.Count > 0)
+					{
+						this.editor.SelectedObjects.CollectionChanged -= OnChange;
+						spawned = true;
+					}
+				}
+
+				this.editor.SelectedObjects.CollectionChanged += OnChange;
+				this.editor.CreateMapObject(type);
+
+				while (!spawned)
+				{
+					yield return null;
+				}
+
 				yield return null;
 			}
 
-			yield return null;
+			return Run();
+		}
+
+		public IEnumerable<Type> GetMapObjects()
+		{
+			return typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null);
+		}
+
+		public IEnumerable<Type> GetMapObjectsWithProperty<T>() where T : IProperty
+		{
+			return this.GetMapObjects().Where(t => this.HasProperty<T>(t.GetCustomAttribute<EditorMapObjectAttribute>().DataType));
+		}
+
+		public bool HasProperty<T>(Type type) where T : IProperty
+		{
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+			return
+				type.GetProperties(flags).Any(p => typeof(T).IsAssignableFrom(p.PropertyType)) ||
+				type.GetFields(flags).Any(p => typeof(T).IsAssignableFrom(p.FieldType));
 		}
 
 		public IEnumerator MoveSelectedWithMouse(Vector2 delta)

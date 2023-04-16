@@ -341,7 +341,7 @@ namespace MapsExt.Editor
 
 		public void OnClickPaste()
 		{
-			this.Editor.OnPaste();
+			this.StartCoroutine(this.Editor.OnPaste());
 		}
 
 		public void OpenMapObjectWindow()

@@ -30,7 +30,7 @@ namespace MapsExt
 
 		public T GetProperty<T>(object obj) where T : IProperty
 		{
-			return (T) this.GetSerializableMember<T>(obj.GetType()).GetMemberValue(obj);
+			return (T) this.GetSerializableMember<T>(obj.GetType())?.GetMemberValue(obj);
 		}
 
 		public T[] GetProperties<T>(MapObjectData data) where T : IProperty
@@ -41,6 +41,18 @@ namespace MapsExt
 		public void SetProperty<T>(object obj, T property) where T : IProperty
 		{
 			this.GetSerializableMember<T>(obj.GetType()).SetMemberValue(obj, property);
+		}
+
+		public bool TrySetProperty<T>(object obj, T property) where T : IProperty
+		{
+			var member = this.GetSerializableMember<T>(obj.GetType());
+			if (member == null)
+			{
+				return false;
+			}
+
+			member.SetMemberValue(obj, property);
+			return true;
 		}
 
 		public List<MemberInfo> GetSerializableMembers(Type type)

@@ -10,7 +10,6 @@ using System;
 using MapsExt.Properties;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Linq;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.UI;
 
@@ -32,32 +31,32 @@ namespace MapsExt.Editor.Tests
 		}
 
 		[TestGenerator]
-		public IEnumerable<TestInfo> GenMoveTests()
+		public IEnumerable<TestInfo> Gen_SpawnAndMove()
 		{
-			foreach (var type in this.MapObjectsWithProperty<PositionProperty>())
+			foreach (var type in this.Utils.GetMapObjectsWithProperty<PositionProperty>())
 			{
 				var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
-				yield return new TestInfo($"Test_Move_{type.Name}", () => this.Test_SpawnAndMove(attr.Label, attr.Category));
+				yield return new TestInfo($"Gen_SpawnAndMove > {type.Name}", () => this.Test_SpawnAndMove(attr.Label, attr.Category));
 			}
 		}
 
 		[TestGenerator]
-		public IEnumerable<TestInfo> GenResizeTests()
+		public IEnumerable<TestInfo> Gen_SpawnAndResize()
 		{
-			foreach (var type in this.MapObjectsWithProperty<ScaleProperty>())
+			foreach (var type in this.Utils.GetMapObjectsWithProperty<ScaleProperty>())
 			{
 				var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
-				yield return new TestInfo($"Test_Resize_{type.Name}", () => this.Test_SpawnAndResize(attr.Label, attr.Category));
+				yield return new TestInfo($"Gen_SpawnAndResize > {type.Name}", () => this.Test_SpawnAndResize(attr.Label, attr.Category));
 			}
 		}
 
 		[TestGenerator]
-		public IEnumerable<TestInfo> GenRotateTests()
+		public IEnumerable<TestInfo> Gen_SpawnAndRotate()
 		{
-			foreach (var type in this.MapObjectsWithProperty<RotationProperty>())
+			foreach (var type in this.Utils.GetMapObjectsWithProperty<RotationProperty>())
 			{
 				var attr = type.GetCustomAttribute<EditorMapObjectAttribute>();
-				yield return new TestInfo($"Test_Rotate_{type.Name}", () => this.Test_SpawnAndRotate(attr.Label, attr.Category));
+				yield return new TestInfo($"Gen_SpawnAndRotate > {type.Name}", () => this.Test_SpawnAndRotate(attr.Label, attr.Category));
 			}
 		}
 
@@ -148,25 +147,6 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.MoveSelectedWithMouse(delta);
 			box1.GetHandlerValue<PositionProperty>().Should().Be(delta);
 			box2.GetHandlerValue<PositionProperty>().Should().Be(delta);
-		}
-
-		private IEnumerable<Type> MapObjectsWithProperty<T>() where T : IProperty
-		{
-			return typeof(MapsExtendedEditor).Assembly
-				.GetTypes()
-				.Where(
-					t =>
-						t.GetCustomAttribute<EditorMapObjectAttribute>() != null &&
-						this.HasProperty<T>(t.GetCustomAttribute<EditorMapObjectAttribute>().DataType)
-				);
-		}
-
-		private bool HasProperty<T>(Type type) where T : IProperty
-		{
-			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
-			return
-				type.GetProperties(flags).Any(p => typeof(T).IsAssignableFrom(p.PropertyType)) ||
-				type.GetFields(flags).Any(p => typeof(T).IsAssignableFrom(p.FieldType));
 		}
 
 		private IEnumerator SpawnFromMapObjectWindow(string objectName, string category = null)
