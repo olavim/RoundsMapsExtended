@@ -1,3 +1,4 @@
+using MapsExt.Editor.Properties;
 using MapsExt.Properties;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,6 @@ namespace MapsExt.Editor.ActionHandlers
 		private IEnumerable<GameObject> _gameObjects;
 		private readonly Dictionary<GameObject, Vector2> _localPositions = new();
 
-		public override void Move(PositionProperty delta)
-		{
-			this.SetValue(this.GetValue() + delta);
-		}
-
 		public override void SetValue(PositionProperty position)
 		{
 			this.transform.position = position;
@@ -27,7 +23,7 @@ namespace MapsExt.Editor.ActionHandlers
 			foreach (var obj in this._gameObjects)
 			{
 				var newLocalPos = this.transform.rotation * this._localPositions[obj];
-				obj.SetHandlerValue<PositionProperty>((this.transform.position + newLocalPos).Round(4));
+				obj.GetComponent<PositionHandler>().SetValue((this.transform.position + newLocalPos).Round(4));
 			}
 		}
 
@@ -38,14 +34,14 @@ namespace MapsExt.Editor.ActionHandlers
 			var bounds = new Bounds(this._gameObjects.First().transform.position, Vector3.zero);
 			foreach (var obj in this._gameObjects)
 			{
-				bounds.Encapsulate(obj.GetHandlerValue<PositionProperty>());
+				bounds.Encapsulate(obj.GetComponent<PositionHandler>().GetValue());
 			}
 
 			this.transform.position = bounds.center;
 
 			foreach (var obj in this._gameObjects)
 			{
-				this._localPositions[obj] = obj.GetHandlerValue<PositionProperty>() - (PositionProperty) this.transform.position;
+				this._localPositions[obj] = obj.GetComponent<PositionHandler>()?.GetValue() - (PositionProperty) this.transform.position;
 			}
 		}
 	}

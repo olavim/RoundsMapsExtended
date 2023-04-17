@@ -21,11 +21,11 @@ namespace MapsExt.Editor.Properties
 	{
 		public PositionElement() : base("Position") { }
 
-		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetHandlerValue<PositionProperty>();
+		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetEditorMapObjectProperty<PositionProperty>();
 
 		protected override void OnChange(Vector2 value)
 		{
-			this.Context.InspectorTarget.SetHandlerValue<PositionProperty>(value);
+			this.Context.InspectorTarget.SetEditorMapObjectProperty<PositionProperty>(value);
 			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}

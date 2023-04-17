@@ -25,7 +25,7 @@ namespace MapsExt.Editor.Properties
 		{
 			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
 			{
-				this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(EditorUtils.Snap(angle, 5));
+				this.Context.InspectorTarget.SetEditorMapObjectProperty<RotationProperty>(EditorUtils.Snap(angle, 5));
 			}
 
 			if (changeType == ChangeType.ChangeEnd)
@@ -35,6 +35,6 @@ namespace MapsExt.Editor.Properties
 			}
 		}
 
-		protected override float GetValue() => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
+		protected override float GetValue() => this.Context.InspectorTarget.GetEditorMapObjectProperty<RotationProperty>();
 	}
 }

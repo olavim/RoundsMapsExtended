@@ -21,7 +21,7 @@ namespace MapsExt.Properties
 		public RotationProperty Lerp(RotationProperty end, float t) => new(Mathf.LerpAngle(this.Value, end.Value, t));
 		public IProperty Lerp(IProperty end, float t) => this.Lerp((RotationProperty) end, t);
 
-		public static explicit operator Quaternion(RotationProperty prop) => Quaternion.Euler(0, 0, prop.Value);
+		public static explicit operator Quaternion(RotationProperty prop) => Quaternion.Euler(0, 0, prop.Value % 360);
 		public static implicit operator RotationProperty(float angle) => new(angle);
 		public static implicit operator float(RotationProperty prop) => prop.Value;
 

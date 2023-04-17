@@ -158,9 +158,9 @@ namespace MapsExt.Editor
 			{
 				MapObjectSpawner.SpawnObject(this.Content, mapObject, obj =>
 				{
-					foreach (var handler in obj.GetComponentsInChildren<PositionHandler>())
+					foreach (var handler in obj.GetComponentsInChildren<ActionHandler>())
 					{
-						handler.Move(new Vector2(1, -1));
+						handler.OnPaste();
 					}
 
 					this.AddSelected(obj);

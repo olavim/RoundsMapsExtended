@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.Properties;
 using MapsExt.MapObjects;
@@ -39,16 +38,16 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var go = this.Editor.ActiveObject;
 
-			var pos1 = go.GetHandlerValue<PositionProperty>();
+			var pos1 = go.GetEditorMapObjectProperty<PositionProperty>();
 			var pos2 = new PositionProperty(1, 0);
 
 			yield return this.Utils.MoveSelectedWithMouse(pos2);
-			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
+			go.GetEditorMapObjectProperty<PositionProperty>().Should().Be(pos2);
 
 			this.Editor.OnUndo();
-			go.GetHandlerValue<PositionProperty>().Should().Be(pos1);
+			go.GetEditorMapObjectProperty<PositionProperty>().Should().Be(pos1);
 			this.Editor.OnRedo();
-			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
+			go.GetEditorMapObjectProperty<PositionProperty>().Should().Be(pos2);
 		}
 
 		[Test]
@@ -57,16 +56,16 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var go = this.Editor.ActiveObject;
 
-			var size1 = go.GetHandlerValue<ScaleProperty>();
+			var size1 = go.GetEditorMapObjectProperty<ScaleProperty>();
 			var size2 = new ScaleProperty(4, 2);
 
 			yield return this.Utils.ResizeSelectedWithMouse(size2 - size1, AnchorPosition.MiddleRight);
-			go.GetHandlerValue<ScaleProperty>().Should().Be(size2);
+			go.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(size2);
 
 			this.Editor.OnUndo();
-			go.GetHandlerValue<ScaleProperty>().Should().Be(size1);
+			go.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(size1);
 			this.Editor.OnRedo();
-			go.GetHandlerValue<ScaleProperty>().Should().Be(size2);
+			go.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(size2);
 		}
 
 		[Test]
@@ -75,16 +74,16 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var go = this.Editor.ActiveObject;
 
-			var rot1 = go.GetHandlerValue<RotationProperty>();
+			var rot1 = go.GetEditorMapObjectProperty<RotationProperty>();
 			var rot2 = new RotationProperty(45);
 
 			yield return this.Utils.RotateSelectedWithMouse(rot2 - rot1);
-			go.GetHandlerValue<RotationProperty>().Should().Be(rot2);
+			go.GetEditorMapObjectProperty<RotationProperty>().Should().Be(rot2);
 
 			this.Editor.OnUndo();
-			go.GetHandlerValue<RotationProperty>().Should().Be(rot1);
+			go.GetEditorMapObjectProperty<RotationProperty>().Should().Be(rot1);
 			this.Editor.OnRedo();
-			go.GetHandlerValue<RotationProperty>().Should().Be(rot2);
+			go.GetEditorMapObjectProperty<RotationProperty>().Should().Be(rot2);
 		}
 
 		[Test]
@@ -93,16 +92,16 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var go = this.Editor.ActiveObject;
 
-			var pos1 = go.GetHandlerValue<PositionProperty>();
+			var pos1 = go.GetEditorMapObjectProperty<PositionProperty>();
 			var pos2 = new PositionProperty(0.25f, 0);
 
 			this.Editor.OnKeyDown(KeyCode.RightArrow);
-			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
+			go.GetEditorMapObjectProperty<PositionProperty>().Should().Be(pos2);
 
 			this.Editor.OnUndo();
-			go.GetHandlerValue<PositionProperty>().Should().Be(pos1);
+			go.GetEditorMapObjectProperty<PositionProperty>().Should().Be(pos1);
 			this.Editor.OnRedo();
-			go.GetHandlerValue<PositionProperty>().Should().Be(pos2);
+			go.GetEditorMapObjectProperty<PositionProperty>().Should().Be(pos2);
 		}
 
 		[Test]
@@ -118,9 +117,7 @@ namespace MapsExt.Editor.Tests
 				rope.GetAnchor(0).GetAnchoredPosition()
 			};
 
-			rope.GetAnchor(0).SetHandlerValue(new PositionProperty(0.25f, 0.5f));
-			this.Editor.TakeSnaphot();
-			rope.GetAnchor(1).SetHandlerValue(new PositionProperty(0, 5));
+			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0.25f, 0.5f), new(0, 5)));
 			this.Editor.TakeSnaphot();
 
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
@@ -155,8 +152,7 @@ namespace MapsExt.Editor.Tests
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
 			this.Editor.OnUndo(); // Undo move
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.Editor.OnUndo(); // Undo set anchor 2 position
-			this.Editor.OnUndo(); // Undo set anchor 1 position
+			this.Editor.OnUndo(); // Undo rope position
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
 			this.Editor.OnUndo(); // Undo spawn rope
 			this.Editor.OnUndo(); // Undo spawn box
@@ -168,8 +164,7 @@ namespace MapsExt.Editor.Tests
 			rope = this.Editor.Content.transform.GetChild(1).GetComponentInParent<EditorRope.RopeInstance>();
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.Current);
 
-			this.Editor.OnRedo(); // Redo set anchor 1 position
-			this.Editor.OnRedo(); // Redo set anchor 2 position
+			this.Editor.OnRedo(); // Redo rope position
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
 
 			this.Editor.OnRedo(); // Redo move

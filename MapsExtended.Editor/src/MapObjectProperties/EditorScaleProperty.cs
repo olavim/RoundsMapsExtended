@@ -21,11 +21,11 @@ namespace MapsExt.Editor.Properties
 	{
 		public ScaleElement() : base("Size") { }
 
-		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetHandlerValue<ScaleProperty>();
+		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetEditorMapObjectProperty<ScaleProperty>();
 
 		protected override void OnChange(Vector2 value)
 		{
-			this.Context.InspectorTarget.SetHandlerValue<ScaleProperty>(value);
+			this.Context.InspectorTarget.SetEditorMapObjectProperty<ScaleProperty>(value);
 			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}

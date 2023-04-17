@@ -24,7 +24,7 @@ namespace MapsExt
 			}
 		}
 
-		public void UpdatePosition()
+		private void UpdatePosition()
 		{
 			this.transform.position = this.GetAnchoredPosition();
 		}

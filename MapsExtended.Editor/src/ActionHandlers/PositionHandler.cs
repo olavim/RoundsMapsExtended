@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class PositionHandler : ActionHandler<PositionProperty>
+	public class PositionHandler : ActionHandler
 	{
-		public static Vector2 KeyCodeToNudge(KeyCode key)
+		private static Vector2 KeyCodeToNudge(KeyCode key)
 		{
 			var delta = key switch
 			{
@@ -41,17 +41,17 @@ namespace MapsExt.Editor.ActionHandlers
 			this.gameObject.GetOrAddComponent<SelectionHandler>();
 		}
 
-		public virtual void Move(PositionProperty delta)
+		public void Move(PositionProperty delta)
 		{
 			this.SetValue(this.GetValue() + delta);
 		}
 
-		public override void SetValue(PositionProperty position)
+		public virtual void SetValue(PositionProperty position)
 		{
 			this.transform.position = position;
 		}
 
-		public override PositionProperty GetValue()
+		public virtual PositionProperty GetValue()
 		{
 			return this.transform.position;
 		}
@@ -133,6 +133,11 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
+		public override void OnPaste()
+		{
+			this.Move(new(1, -1));
+		}
+
 		private void DragMapObjects()
 		{
 			var mousePos = EditorInput.MousePosition;
@@ -153,7 +158,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			if (delta != Vector2.zero)
 			{
-				this.Move(delta);
+				this.SetValue(((Vector2) this.GetValue() + delta).Round(4));
 			}
 
 			this._prevMouse += mouseDelta;

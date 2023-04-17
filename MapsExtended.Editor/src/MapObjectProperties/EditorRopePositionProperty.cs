@@ -1,9 +1,9 @@
 using MapsExt.Properties;
-using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using MapsExt.Editor.MapObjects;
+using MapsExt.Editor.ActionHandlers;
 using UnboundLib;
 
 namespace MapsExt.Editor.Properties
@@ -24,8 +24,16 @@ namespace MapsExt.Editor.Properties
 		public override void Deserialize(RopePositionProperty property, GameObject target)
 		{
 			var ropeInstance = target.GetComponent<EditorRope.RopeInstance>();
-			ropeInstance.GetAnchor(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>().SetValue(property.StartPosition);
-			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>().SetValue(property.EndPosition);
+
+			ropeInstance.GetAnchor(0).Detach();
+			ropeInstance.GetAnchor(0).transform.position = property.StartPosition;
+			ropeInstance.GetAnchor(0).UpdateAttachment();
+			ropeInstance.GetAnchor(0).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
+
+			ropeInstance.GetAnchor(1).Detach();
+			ropeInstance.GetAnchor(1).transform.position = property.EndPosition;
+			ropeInstance.GetAnchor(1).UpdateAttachment();
+			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
 		}
 	}
 
@@ -76,9 +84,7 @@ namespace MapsExt.Editor.Properties
 
 		private void HandleInputChange(RopePositionProperty value)
 		{
-			var ropeInstance = this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>();
-			ropeInstance.GetAnchor(0).SetHandlerValue<PositionProperty>(value.StartPosition);
-			ropeInstance.GetAnchor(1).SetHandlerValue<PositionProperty>(value.EndPosition);
+			this.Context.InspectorTarget.SetEditorMapObjectProperty(value);
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

@@ -108,7 +108,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator RotateSelectedWithMouse(float degrees)
 		{
 			var go = this.editor.ActiveObject;
-			var resizeInteractionContent = go.GetComponent<MapsExt.Editor.ActionHandlers.RotationHandler>().Content;
+			var resizeInteractionContent = go.GetComponent<ActionHandlers.RotationHandler>().Content;
 			var handle = resizeInteractionContent.transform.Find("Rotation Handle").gameObject;
 
 			var from = handle.transform.position;

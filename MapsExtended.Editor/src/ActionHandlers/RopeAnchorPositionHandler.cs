@@ -6,14 +6,6 @@ namespace MapsExt.Editor.ActionHandlers
 	[RequireComponent(typeof(SelectionHandler))]
 	public class RopeAnchorPositionHandler : PositionHandler
 	{
-		public override void Move(PositionProperty delta)
-		{
-			var anchor = this.GetComponent<MapObjectAnchor>();
-			anchor.Detach();
-			base.Move(delta);
-			anchor.UpdateAttachment();
-		}
-
 		public override void SetValue(PositionProperty property)
 		{
 			var anchor = this.GetComponent<MapObjectAnchor>();

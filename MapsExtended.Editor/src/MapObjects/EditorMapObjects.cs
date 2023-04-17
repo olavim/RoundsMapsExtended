@@ -81,16 +81,16 @@ namespace MapsExt.Editor.MapObjects
 	{
 		public class RopeInstance : MonoBehaviour
 		{
-			private List<MapObjectAnchor> anchors;
+			private List<MapObjectAnchor> _anchors;
 
 			protected virtual void Awake()
 			{
-				this.anchors = this.gameObject.GetComponentsInChildren<MapObjectAnchor>().ToList();
+				this._anchors = this.gameObject.GetComponentsInChildren<MapObjectAnchor>().ToList();
 			}
 
 			public MapObjectAnchor GetAnchor(int index)
 			{
-				return this.anchors[index];
+				return this._anchors[index];
 			}
 		}
 

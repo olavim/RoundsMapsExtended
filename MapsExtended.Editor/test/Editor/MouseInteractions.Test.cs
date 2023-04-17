@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.UI;
+using MapsExt.Editor.Properties;
 
 namespace MapsExt.Editor.Tests
 {
@@ -27,7 +28,7 @@ namespace MapsExt.Editor.Tests
 
 			var box = this.Editor.ActiveObject;
 			box.GetComponent<MapObjectInstance>().DataType.Should().Be(typeof(BoxData));
-			box.GetHandlerValue<PositionProperty>().Should().Be((PositionProperty) Vector2.zero);
+			box.GetEditorMapObjectProperty<PositionProperty>().Should().Be(new PositionProperty());
 		}
 
 		[TestGenerator]
@@ -65,27 +66,27 @@ namespace MapsExt.Editor.Tests
 			yield return this.SpawnFromMapObjectWindow(label, category);
 			var obj = this.Editor.ActiveObject;
 			var delta = new PositionProperty(-5, 0);
-			obj.GetHandlerValue<PositionProperty>().Should().Be(new PositionProperty(0, 0));
+			obj.GetEditorMapObjectProperty<PositionProperty>().Should().Be(new PositionProperty());
 			yield return this.Utils.MoveSelectedWithMouse(delta);
-			obj.GetHandlerValue<PositionProperty>().Should().Be(delta);
+			obj.GetEditorMapObjectProperty<PositionProperty>().Should().Be(delta);
 		}
 
 		private IEnumerator Test_SpawnAndResize(string label, string category = null)
 		{
 			yield return this.SpawnFromMapObjectWindow(label, category);
 			var obj = this.Editor.ActiveObject;
-			obj.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(2, 2));
+			obj.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(new ScaleProperty());
 			yield return this.Utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
-			obj.GetHandlerValue<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
+			obj.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
 		}
 
 		private IEnumerator Test_SpawnAndRotate(string label, string category = null)
 		{
 			yield return this.SpawnFromMapObjectWindow(label, category);
 			var obj = this.Editor.ActiveObject;
-			obj.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(0));
+			obj.GetEditorMapObjectProperty<RotationProperty>().Should().Be(new RotationProperty());
 			yield return this.Utils.RotateSelectedWithMouse(45);
-			obj.GetHandlerValue<RotationProperty>().Should().Be(new RotationProperty(45));
+			obj.GetEditorMapObjectProperty<RotationProperty>().Should().Be(new RotationProperty(45));
 		}
 
 		[Test]
@@ -96,7 +97,7 @@ namespace MapsExt.Editor.Tests
 			var box = this.Editor.ActiveObject;
 			var delta = new PositionProperty(-5.2f, 0);
 			yield return this.Utils.MoveSelectedWithMouse(delta);
-			box.GetHandlerValue<PositionProperty>().Should().Be(new PositionProperty(-5.25f, 0));
+			box.GetEditorMapObjectProperty<PositionProperty>().Should().Be(new PositionProperty(-5.25f, 0));
 		}
 
 		[Test]
@@ -145,8 +146,8 @@ namespace MapsExt.Editor.Tests
 
 			var delta = new PositionProperty(-5, 0);
 			yield return this.Utils.MoveSelectedWithMouse(delta);
-			box1.GetHandlerValue<PositionProperty>().Should().Be(delta);
-			box2.GetHandlerValue<PositionProperty>().Should().Be(delta);
+			box1.GetEditorMapObjectProperty<PositionProperty>().Should().Be(delta);
+			box2.GetEditorMapObjectProperty<PositionProperty>().Should().Be(delta);
 		}
 
 		private IEnumerator SpawnFromMapObjectWindow(string objectName, string category = null)

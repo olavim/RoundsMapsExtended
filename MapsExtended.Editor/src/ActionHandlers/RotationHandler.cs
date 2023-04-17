@@ -6,7 +6,7 @@ using UnityEngine.UI.ProceduralImage;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class RotationHandler : ActionHandler<RotationProperty>
+	public class RotationHandler : ActionHandler
 	{
 		public GameObject Content { get; private set; }
 
@@ -44,13 +44,13 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void SetValue(RotationProperty rotation)
+		public virtual void SetValue(RotationProperty rotation)
 		{
 			this.GetComponent<RotationPropertyInstance>().Rotation = rotation;
 			this.transform.rotation = (Quaternion) rotation;
 		}
 
-		public override RotationProperty GetValue()
+		public virtual RotationProperty GetValue()
 		{
 			return this.GetComponent<RotationPropertyInstance>().Rotation;
 		}
@@ -91,6 +91,10 @@ namespace MapsExt.Editor.ActionHandlers
 
 			float angle = (Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg) - 90;
 			angle = EditorUtils.Snap(angle, this.Editor.SnapToGrid ? 15f : 2f);
+			if (angle < 0)
+			{
+				angle += 360;
+			}
 			this.SetValue(angle);
 		}
 

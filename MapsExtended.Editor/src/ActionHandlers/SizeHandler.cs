@@ -1,3 +1,4 @@
+using MapsExt.Editor.Properties;
 using MapsExt.Properties;
 using UnboundLib;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine.UI;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	public class SizeHandler : ActionHandler<ScaleProperty>
+	public class SizeHandler : ActionHandler
 	{
 		private bool _isResizing;
 		private int _resizeDirection;
@@ -46,18 +47,18 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public virtual void Resize(ScaleProperty delta, int resizeDirection = 0)
+		protected void Resize(ScaleProperty delta, int resizeDirection = 0)
 		{
 			var newScale = this.GetValue().Value + delta.Value;
 			this.SetValue(newScale, resizeDirection);
 		}
 
-		public override void SetValue(ScaleProperty size)
+		public void SetValue(ScaleProperty size)
 		{
 			this.SetValue(size, 0);
 		}
 
-		public override ScaleProperty GetValue()
+		public virtual ScaleProperty GetValue()
 		{
 			return new ScaleProperty(this.transform.localScale);
 		}
@@ -102,11 +103,14 @@ namespace MapsExt.Editor.ActionHandlers
 				return;
 			}
 
-			var positionDelta = (Vector2) (currentRotation * Vector2.Scale(scaleDelta, directionMulti));
 			this.transform.localScale = newScale;
 
-			var posHandler = this.gameObject.GetComponent<PositionHandler>();
-			posHandler?.Move(positionDelta * 0.5f);
+			var posHandler = this.GetComponent<PositionHandler>();
+			if (posHandler != null)
+			{
+				var positionDelta = (PositionProperty) (currentRotation * Vector2.Scale(scaleDelta, directionMulti));
+				posHandler.Move(positionDelta * 0.5f);
+			}
 		}
 
 		public override void OnSelect()

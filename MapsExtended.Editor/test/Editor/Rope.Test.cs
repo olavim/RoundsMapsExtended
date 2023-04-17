@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Linq;
 using FluentAssertions;
-using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
 using UnityEngine;
 using Surity;
 using MapsExt.Properties;
+using MapsExt.Editor.Properties;
 
 namespace MapsExt.Editor.Tests
 {
@@ -31,8 +31,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 
-			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0));
-			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
+			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 0));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
@@ -40,7 +39,7 @@ namespace MapsExt.Editor.Tests
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 
-			boxGo.SetHandlerValue<PositionProperty>(new Vector2(0, 1));
+			boxGo.SetEditorMapObjectProperty<PositionProperty>(new Vector2(0, 1));
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 1));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
 		}
@@ -53,13 +52,11 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var box2 = this.Editor.ActiveObject;
 
-			box2.GetComponent<PositionHandler>().Move(new Vector2(2, 0));
+			box2.SetEditorMapObjectProperty(new PositionProperty(4, 2));
 
 			yield return this.Utils.SpawnMapObject<RopeData>();
 			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
-
-			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0));
-			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
+			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
 
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
@@ -67,7 +64,7 @@ namespace MapsExt.Editor.Tests
 			this.Editor.ClearSelected();
 			this.Editor.AddSelected(new GameObject[] { box1, box2, rope.GetAnchor(0).gameObject });
 
-			this.Editor.ActiveObject.GetComponent<PositionHandler>().Move(new Vector2(1, 0));
+			this.Utils.MoveSelectedWithMouse(new(1, 0));
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(1, 0));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
@@ -81,12 +78,11 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 
-			rope.GetAnchor(0).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 0.25f));
-			rope.GetAnchor(1).gameObject.SetHandlerValue<PositionProperty>(new Vector2(0, 5));
+			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0, 0.25f), new(0, 5)));
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.SetHandlerValue<RotationProperty>(90);
+			boxGo.SetEditorMapObjectProperty<RotationProperty>(90);
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
@@ -100,21 +96,14 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 
-			rope.GetAnchor(0).gameObject.GetComponent<PositionHandler>().SetValue(new Vector2(-0.25f, 0));
-			rope.GetAnchor(1).gameObject.GetComponent<PositionHandler>().SetValue(new Vector2(0, 5));
+			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(-0.25f, 0), new(0, 5)));
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(4, 2), AnchorPosition.MiddleRight);
+			boxGo.SetEditorMapObjectProperty(new ScaleProperty(4, 2));
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 
-			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(2, 2), AnchorPosition.MiddleRight);
-			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
-
-			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(4, 2), AnchorPosition.MiddleLeft);
-			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
-
-			boxGo.GetComponent<SizeHandler>().SetValue(new Vector2(2, 2), AnchorPosition.MiddleLeft);
+			boxGo.SetEditorMapObjectProperty(new ScaleProperty(2, 2));
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 		}
 	}
