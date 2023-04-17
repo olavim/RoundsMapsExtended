@@ -13,6 +13,7 @@ namespace MapsExt.Editor
 		private float _mouseDownSince;
 		private Vector2 _mouseDownPosition;
 		private bool _isSelecting;
+		private bool _isMouseDown;
 
 		protected virtual void Awake()
 		{
@@ -32,7 +33,7 @@ namespace MapsExt.Editor
 
 			foreach (var key in editorKeys)
 			{
-				monitor.AddListener(key, () => this._editor.OnKeyDown(key));
+				monitor.AddListener(key, () => this.HandleKeyDown(key));
 			}
 		}
 
@@ -113,6 +114,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
+			this._isMouseDown = true;
 			this._mouseDownSince = Time.time * 1000;
 			this._mouseDownPosition = EditorInput.MousePosition;
 
@@ -131,7 +133,12 @@ namespace MapsExt.Editor
 
 		private void HandleMouseUp()
 		{
-			EventSystem.current.SetSelectedGameObject(null);
+			if (!this._isMouseDown)
+			{
+				return;
+			}
+
+			this._isMouseDown = false;
 
 			this._editor.OnPointerUp();
 
@@ -149,6 +156,16 @@ namespace MapsExt.Editor
 				this._isSelecting = false;
 				this._editor.OnSelectionEnd();
 			}
+		}
+
+		private void HandleKeyDown(KeyCode key)
+		{
+			if (EventSystem.current.currentSelectedGameObject != null)
+			{
+				return;
+			}
+
+			this._editor.OnKeyDown(key);
 		}
 	}
 }

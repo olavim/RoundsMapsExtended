@@ -17,15 +17,15 @@ namespace MapsExt.Editor.Properties
 	}
 
 	[PropertyInspector(typeof(RotationProperty))]
-	public class RotationElement : QuaternionElement
+	public class RotationElement : FloatElement
 	{
 		public RotationElement() : base("Rotation") { }
 
-		protected override void OnChange(Quaternion rotation, ChangeType changeType)
+		protected override void OnChange(float angle, ChangeType changeType)
 		{
 			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
 			{
-				this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(rotation);
+				this.Context.InspectorTarget.SetHandlerValue<RotationProperty>(EditorUtils.Snap(angle, 5));
 			}
 
 			if (changeType == ChangeType.ChangeEnd)
@@ -35,6 +35,6 @@ namespace MapsExt.Editor.Properties
 			}
 		}
 
-		protected override Quaternion GetValue() => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
+		protected override float GetValue() => this.Context.InspectorTarget.GetHandlerValue<RotationProperty>();
 	}
 }

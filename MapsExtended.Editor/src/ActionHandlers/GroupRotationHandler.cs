@@ -9,11 +9,17 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		private IEnumerable<GameObject> _gameObjects;
 
-		private readonly Dictionary<GameObject, Quaternion> _localRotations = new();
+		private readonly Dictionary<GameObject, RotationProperty> _localRotations = new();
+
+		protected override void Awake()
+		{
+			base.Awake();
+			this.gameObject.AddComponent<RotationPropertyInstance>();
+		}
 
 		public override void SetValue(RotationProperty rotation)
 		{
-			this.transform.rotation = rotation;
+			base.SetValue(rotation);
 			this.RefreshRotations();
 			this.GetComponent<GroupPositionHandler>()?.RefreshPositions();
 		}
@@ -22,7 +28,7 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			foreach (var obj in this._gameObjects)
 			{
-				float newAngle = (this.transform.rotation * this._localRotations[obj]).eulerAngles.z % 360;
+				float newAngle = (this.GetValue() + this._localRotations[obj]) % 360;
 				obj.TrySetHandlerValue<RotationProperty>(EditorUtils.Snap(newAngle, 1f));
 			}
 		}
@@ -33,7 +39,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			foreach (var obj in this._gameObjects)
 			{
-				this._localRotations[obj] = obj.GetComponent<RotationHandler>()?.GetValue() ?? Quaternion.identity;
+				this._localRotations[obj] = obj.GetComponent<RotationHandler>()?.GetValue() ?? new();
 			}
 		}
 	}

@@ -6,7 +6,6 @@ using Sirenix.Utilities;
 using System.Collections.Specialized;
 using System.Collections;
 using MapsExt.Properties;
-using System.Linq;
 
 namespace MapsExt.Editor.UI
 {
@@ -99,32 +98,5 @@ namespace MapsExt.Editor.UI
 			this.Target = null;
 			this._isLinked = false;
 		}
-	}
-
-	public class InspectorVector2 : MonoBehaviour
-	{
-		[SerializeField] private Text _label;
-		[SerializeField] private Vector2Input _input;
-
-		public Text Label { get => this._label; set => this._label = value; }
-		public Vector2Input Input { get => this._input; set => this._input = value; }
-	}
-
-	public class InspectorQuaternion : MonoBehaviour
-	{
-		[SerializeField] private Text _label;
-		[SerializeField] private TextSliderInput _input;
-
-		public Text Label { get => this._label; set => this._label = value; }
-		public TextSliderInput Input { get => this._input; set => this._input = value; }
-	}
-
-	public class InspectorBoolean : MonoBehaviour
-	{
-		[SerializeField] private Text _label;
-		[SerializeField] private Toggle _input;
-
-		public Text Label { get => this._label; set => this._label = value; }
-		public Toggle Input { get => this._input; set => this._input = value; }
 	}
 }

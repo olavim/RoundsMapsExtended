@@ -4,20 +4,20 @@ namespace MapsExt.Properties
 {
 	public class PositionProperty : ValueProperty<Vector2>, ILinearProperty<PositionProperty>
 	{
-		private float _x;
-		private float _y;
+		private readonly float _x;
+		private readonly float _y;
 
-		public override Vector2 Value
-		{
-			get => new(this._x, this._y);
-			set { this._x = value.x; this._y = value.y; }
-		}
+		public override Vector2 Value => new(this._x, this._y);
 
 		public PositionProperty() { }
 
-		public PositionProperty(Vector2 value) : base(value) { }
+		public PositionProperty(Vector2 value) : this(value.x, value.y) { }
 
-		public PositionProperty(float x, float y) : base(new Vector2(x, y)) { }
+		public PositionProperty(float x, float y)
+		{
+			this._x = x;
+			this._y = y;
+		}
 
 		public PositionProperty Lerp(PositionProperty end, float t) => Vector2.Lerp(this, end, t);
 		public IProperty Lerp(IProperty end, float t) => this.Lerp((PositionProperty) end, t);

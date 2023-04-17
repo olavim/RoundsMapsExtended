@@ -5,13 +5,16 @@ namespace MapsExt.Properties
 {
 	public class DamageableProperty : ValueProperty<bool>
 	{
-		private bool _value;
+		private readonly bool _value;
 
-		public override bool Value { get => this._value; set => this._value = value; }
+		public override bool Value => this._value;
 
 		public DamageableProperty() : this(true) { }
 
-		public DamageableProperty(bool value) : base(value) { }
+		public DamageableProperty(bool value)
+		{
+			this._value = value;
+		}
 
 		public static implicit operator bool(DamageableProperty prop) => prop.Value;
 		public static implicit operator DamageableProperty(bool value) => new(value);

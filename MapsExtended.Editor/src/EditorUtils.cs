@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using MapsExt.Editor.ActionHandlers;
+using MapsExt.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -11,7 +12,7 @@ namespace MapsExt.Editor
 		{
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(position.x, position.y));
 			var colliders = Physics2D.OverlapPointAll(mouseWorldPos);
-			return colliders.SelectMany(c => c.GetComponentsInChildren<ActionHandler>()).ToList();
+			return colliders.Where(c => c.GetComponentInParent<MapObjectInstance>()).SelectMany(c => c.GetComponentsInChildren<ActionHandler>()).ToList();
 		}
 
 		public static List<ActionHandler> GetContainedActionHandlers(Rect rect)

@@ -11,7 +11,7 @@ namespace MapsExt.Editor.ActionHandlers
 		public GameObject Content { get; private set; }
 
 		private bool _isRotating;
-		private float _prevAngle;
+		private RotationProperty _prevRotation;
 
 		protected virtual void Awake()
 		{
@@ -46,12 +46,13 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public override void SetValue(RotationProperty rotation)
 		{
-			this.transform.rotation = rotation;
+			this.GetComponent<RotationPropertyInstance>().Rotation = rotation;
+			this.transform.rotation = (Quaternion) rotation;
 		}
 
 		public override RotationProperty GetValue()
 		{
-			return new RotationProperty(this.transform.rotation);
+			return this.GetComponent<RotationPropertyInstance>().Rotation;
 		}
 
 		public override void OnSelect()
@@ -67,7 +68,7 @@ namespace MapsExt.Editor.ActionHandlers
 		private void OnRotateStart()
 		{
 			this._isRotating = true;
-			this._prevAngle = this.transform.rotation.eulerAngles.z;
+			this._prevRotation = this.GetValue();
 		}
 
 		private void OnRotateEnd()
@@ -75,7 +76,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this._isRotating = false;
 			this.Editor.RefreshHandlers();
 
-			if (this.transform.rotation.eulerAngles.z != this._prevAngle)
+			if (this.GetValue() != this._prevRotation)
 			{
 				this.Editor.TakeSnaphot();
 			}
@@ -90,9 +91,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			float angle = (Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg) - 90;
 			angle = EditorUtils.Snap(angle, this.Editor.SnapToGrid ? 15f : 2f);
-			var toRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-			this.SetValue(toRotation);
+			this.SetValue(angle);
 		}
 
 		private void AddRotationHandle()

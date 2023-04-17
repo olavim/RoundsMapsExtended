@@ -4,14 +4,9 @@ namespace MapsExt.Properties
 {
 	public abstract class ValueProperty<T> : IProperty, IEquatable<ValueProperty<T>> where T : IEquatable<T>
 	{
-		public abstract T Value { get; set; }
+		public abstract T Value { get; }
 
 		protected ValueProperty() { }
-
-		protected ValueProperty(T value)
-		{
-			this.Value = value;
-		}
 
 		public override string ToString() => this.Value.ToString();
 

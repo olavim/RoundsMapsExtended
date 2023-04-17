@@ -65,7 +65,7 @@ namespace MapsExt.Editor.Tests
 
 			var element = (RotationElement) this.Inspector.GetElement<RotationProperty>();
 
-			var val1 = new RotationProperty(Quaternion.identity);
+			var val1 = new RotationProperty();
 			var val2 = new RotationProperty(45);
 
 			element.Value.Should().Be(val1.Value);

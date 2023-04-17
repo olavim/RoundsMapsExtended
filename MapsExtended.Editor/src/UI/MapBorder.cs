@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnboundLib;
+using UnityEngine;
 
 namespace MapsExt.UI
 {
@@ -17,7 +18,7 @@ namespace MapsExt.UI
 					new Vector3(-x, y)
 				};
 
-			LineRenderer lr = gameObject.AddComponent<LineRenderer>();
+			var lr = this.gameObject.GetOrAddComponent<LineRenderer>();
 			lr.material = new Material(Shader.Find("Sprites/Default"));
 			lr.widthMultiplier = 0.2f;
 			lr.positionCount = positions.Length;

@@ -46,6 +46,11 @@ namespace MapsExt.Editor
 		{
 			get
 			{
+				if (this.ActiveObject?.GetComponentInParent<MapObjectInstance>() is MapObjectInstance instance)
+				{
+					return instance.gameObject;
+				}
+
 				var selected = this.SelectedMapObjects.ToList();
 				return selected.Count == 1 ? selected[0] : null;
 			}

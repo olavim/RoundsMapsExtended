@@ -86,7 +86,7 @@ namespace MapsExt.Editor.Tests
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.SetHandlerValue<RotationProperty>(Quaternion.Euler(0, 0, 90));
+			boxGo.SetHandlerValue<RotationProperty>(90);
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));

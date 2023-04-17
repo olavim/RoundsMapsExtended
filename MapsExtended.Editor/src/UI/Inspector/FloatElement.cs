@@ -2,18 +2,18 @@ using UnityEngine;
 
 namespace MapsExt.Editor.UI
 {
-	public abstract class QuaternionElement : InspectorElement
+	public abstract class FloatElement : InspectorElement
 	{
 		private readonly string _name;
 		private TextSliderInput _input;
 
-		public Quaternion Value
+		public float Value
 		{
 			get => this.GetValue();
 			set => this.OnChange(value, ChangeType.ChangeEnd);
 		}
 
-		protected QuaternionElement(string name)
+		protected FloatElement(string name)
 		{
 			this._name = name;
 		}
@@ -30,15 +30,10 @@ namespace MapsExt.Editor.UI
 
 		public override void OnUpdate()
 		{
-			this._input.SetWithoutEvent(this.Value.eulerAngles.z);
+			this._input.SetWithoutEvent(this.Value);
 		}
 
-		private void OnChange(float angle, ChangeType changeType)
-		{
-			this.OnChange(Quaternion.Euler(0, 0, angle), changeType);
-		}
-
-		protected abstract Quaternion GetValue();
-		protected abstract void OnChange(Quaternion rotation, ChangeType changeType);
+		protected abstract float GetValue();
+		protected abstract void OnChange(float angle, ChangeType changeType);
 	}
 }

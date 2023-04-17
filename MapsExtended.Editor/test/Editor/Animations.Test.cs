@@ -163,13 +163,12 @@ namespace MapsExt.Editor.Tests
 		[Test]
 		public IEnumerator Test_RotateKeyframe()
 		{
-			var prop1 = new RotationProperty(Quaternion.identity);
-			var prop2 = new RotationProperty(Quaternion.Euler(0, 0, 45));
+			var prop1 = new RotationProperty();
+			var prop2 = new RotationProperty(45);
 
 			static RotationProperty KeyframeProperty(int keyframe)
 			{
-				float angle = 15 * (keyframe + 1);
-				return new RotationProperty(Quaternion.Euler(0, 0, angle));
+				return 15 * (keyframe + 1);
 			}
 
 			for (int i = 1; i <= 4; i++)

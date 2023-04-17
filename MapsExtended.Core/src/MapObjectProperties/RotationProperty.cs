@@ -1,37 +1,34 @@
+using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.Properties
 {
-	public class RotationProperty : ValueProperty<Quaternion>, ILinearProperty<RotationProperty>
+	public class RotationProperty : ValueProperty<float>, ILinearProperty<RotationProperty>
 	{
-		private float _z;
-		private float _w;
+		private readonly float _angle;
 
-		public override Quaternion Value
+		public override float Value => this._angle;
+
+		public RotationProperty() { }
+
+		public RotationProperty(float angle)
 		{
-			get => new(0, 0, this._z, this._w);
-			set { this._z = value.z; this._w = value.w; }
+			this._angle = angle;
 		}
 
-		public RotationProperty() : base(Quaternion.identity) { }
+		public override bool Equals(ValueProperty<float> other) => base.Equals(other) || this.Value == other.Value;
 
-		public RotationProperty(float angle) : base(Quaternion.Euler(0, 0, angle)) { }
-
-		public RotationProperty(Quaternion value) : base(value) { }
-
-		public RotationProperty Lerp(RotationProperty end, float t) => Quaternion.Lerp(this, end, t);
+		public RotationProperty Lerp(RotationProperty end, float t) => new(Mathf.LerpAngle(this.Value, end.Value, t));
 		public IProperty Lerp(IProperty end, float t) => this.Lerp((RotationProperty) end, t);
 
-		public override bool Equals(ValueProperty<Quaternion> other) => base.Equals(other) || this.Value == other.Value;
-
-		public static implicit operator Quaternion(RotationProperty prop) => prop.Value;
-		public static implicit operator RotationProperty(Quaternion value) => new(value);
+		public static explicit operator Quaternion(RotationProperty prop) => Quaternion.Euler(0, 0, prop.Value);
 		public static implicit operator RotationProperty(float angle) => new(angle);
+		public static implicit operator float(RotationProperty prop) => prop.Value;
 
-		public static RotationProperty operator +(RotationProperty a, RotationProperty b) => a.Value.eulerAngles.z + b.Value.eulerAngles.z;
-		public static RotationProperty operator *(RotationProperty a, RotationProperty b) => a.Value * b.Value;
-		public static Vector3 operator *(RotationProperty a, Vector2 b) => a.Value * b;
-		public static Vector3 operator *(RotationProperty a, Vector3 b) => a.Value * b;
+		public static RotationProperty operator +(RotationProperty a, RotationProperty b) => a.Value + b.Value;
+		public static RotationProperty operator -(RotationProperty a, RotationProperty b) => a.Value - b.Value;
+		public static Vector3 operator *(RotationProperty a, Vector2 b) => (Quaternion) a * b;
+		public static Vector3 operator *(RotationProperty a, Vector3 b) => (Quaternion) a * b;
 	}
 
 	[PropertySerializer(typeof(RotationProperty))]
@@ -39,12 +36,18 @@ namespace MapsExt.Properties
 	{
 		public override RotationProperty Serialize(GameObject instance)
 		{
-			return instance.transform.rotation;
+			return instance.GetComponent<RotationPropertyInstance>().Rotation;
 		}
 
 		public override void Deserialize(RotationProperty property, GameObject target)
 		{
-			target.transform.rotation = property;
+			target.GetOrAddComponent<RotationPropertyInstance>().Rotation = property;
+			target.transform.rotation = (Quaternion) property;
 		}
+	}
+
+	public class RotationPropertyInstance : MonoBehaviour
+	{
+		public RotationProperty Rotation { get; set; }
 	}
 }
