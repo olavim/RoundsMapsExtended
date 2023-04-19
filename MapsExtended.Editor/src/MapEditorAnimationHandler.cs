@@ -8,6 +8,8 @@ using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnboundLib;
 using Sirenix.Utilities;
+using MapsExt.Editor.Properties;
+using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -114,8 +116,7 @@ namespace MapsExt.Editor
 
 			for (int i = 0; i < firstFrame.ComponentValues.Count; i++)
 			{
-				var value = firstFrame.ComponentValues[i];
-				MapsExtendedEditor.instance.PropertyManager.GetSerializer(value.GetType()).Deserialize(value, baseObject);
+				baseObject.SetEditorMapObjectProperty(firstFrame.ComponentValues[i]);
 			}
 
 			baseObject.SetActive(true);
@@ -173,7 +174,7 @@ namespace MapsExt.Editor
 			foreach (var p in this._particles.GetComponentsInChildren<ParticleSystem>())
 			{
 				// Render these particles on the second camera's layer
-				p.gameObject.layer = MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT;
+				p.gameObject.layer = MapsExtendedEditor.MapObjectAnimationLayer;
 				p.Play();
 			}
 		}
@@ -215,8 +216,7 @@ namespace MapsExt.Editor
 			this._curtain.SetActive(true);
 			this.RefreshParticles();
 
-			var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(this.Animation.gameObject);
-			var animatableProperties = MapsExtendedEditor.instance.PropertyManager.GetProperties<ILinearProperty>(data);
+			var animatableProperties = this.Animation.SerializeEditorMapObject().GetProperties<ILinearProperty>();
 
 			if (this.Animation.Keyframes.Count == 0)
 			{
@@ -235,8 +235,7 @@ namespace MapsExt.Editor
 
 			if (this.Animation.Keyframes.Count == 0)
 			{
-				var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(this.Animation.gameObject);
-				var animatableProperties = MapsExtendedEditor.instance.PropertyManager.GetProperties<ILinearProperty>(data);
+				var animatableProperties = this.Animation.SerializeEditorMapObject().GetProperties<ILinearProperty>();
 
 				this.Animation.PlayOnAwake = false;
 				this.Animation.Initialize(new AnimationKeyframe(animatableProperties));
@@ -294,7 +293,7 @@ namespace MapsExt.Editor
 					 */
 					foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
 					{
-						renderer.gameObject.layer = MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT;
+						renderer.gameObject.layer = MapsExtendedEditor.MapObjectAnimationLayer;
 					}
 
 					instance.transform.SetAsLastSibling();
@@ -333,12 +332,12 @@ namespace MapsExt.Editor
 
 		private void SpawnKeyframeMapObject(AnimationKeyframe frame, Action<GameObject> cb)
 		{
-			var frameData = MapsExtendedEditor.instance.MapObjectManager.Serialize(this.Animation.gameObject);
+			var frameData = this.Animation.SerializeEditorMapObject();
 			frameData.mapObjectId = $"{frameData.mapObjectId}:keyframeMapObject";
 			frameData.active = true;
-			MapsExtendedEditor.instance.PropertyManager.SetProperty(frameData, new AnimationProperty());
+			frameData.SetProperty(new AnimationProperty());
 
-			MapObjectSpawner.SpawnObject(this.gameObject, frameData, instance =>
+			MapsExtendedEditor.MapObjectManager.Instantiate(frameData, this.transform, instance =>
 			{
 				System.Diagnostics.Debug.Assert(
 					instance.GetComponent<MapObjectAnimation>() == null,
@@ -347,9 +346,7 @@ namespace MapsExt.Editor
 
 				for (int i = 0; i < this.Animation.Keyframes[0].ComponentValues.Count; i++)
 				{
-					var value = frame.ComponentValues[i];
-					var serializer = MapsExtendedEditor.instance.PropertyManager.GetSerializer(value.GetType());
-					serializer.Deserialize(value, instance);
+					instance.SetEditorMapObjectProperty(frame.ComponentValues[i]);
 				}
 
 				cb(instance);
@@ -363,8 +360,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(this.KeyframeMapObject);
-			var animatableProperties = MapsExtendedEditor.instance.PropertyManager.GetProperties<ILinearProperty>(data);
+			var animatableProperties = this.KeyframeMapObject.SerializeEditorMapObject().GetProperties<ILinearProperty>();
 			this.Keyframe.ComponentValues = animatableProperties.ToList();
 
 			if (this.KeyframeIndex == 0)
@@ -382,9 +378,7 @@ namespace MapsExt.Editor
 
 			for (int i = 0; i < this.Animation.Keyframes[0].ComponentValues.Count; i++)
 			{
-				var baseFrameValue = this.Animation.Keyframes[0].ComponentValues[i];
-				var serializer = MapsExtendedEditor.instance.PropertyManager.GetSerializer(baseFrameValue.GetType());
-				serializer.Deserialize(baseFrameValue, this.Animation.gameObject);
+				this.Animation.SetEditorMapObjectProperty(this.Animation.Keyframes[0].ComponentValues[i]);
 			}
 		}
 	}

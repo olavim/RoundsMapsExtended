@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
 using Photon.Pun;
+using MapsExt.Properties;
 
 namespace MapsExt
 {
@@ -142,9 +143,7 @@ namespace MapsExt
 			{
 				var startValue = startFrame.ComponentValues[i];
 				var endValue = endFrame.ComponentValues[i];
-				var nextValue = startValue.Lerp(endValue, curveValue);
-				var serializer = MapsExtended.PropertyManager.GetSerializer(startValue.GetType());
-				serializer.Deserialize(nextValue, this.gameObject);
+				this.gameObject.SetMapObjectProperty(startValue.Lerp(endValue, curveValue));
 			}
 		}
 

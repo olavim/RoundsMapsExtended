@@ -5,7 +5,6 @@ using MapsExt.Properties;
 using System.Reflection;
 using System.Linq;
 using Sirenix.Utilities;
-using MapsExt.MapObjects;
 
 namespace MapsExt
 {
@@ -23,51 +22,24 @@ namespace MapsExt
 			this._serializers[propertyType] = (IPropertySerializer) AccessTools.CreateInstance(propertySerializerType);
 		}
 
-		public IPropertySerializer GetSerializer(Type type)
+		public IPropertySerializer GetSerializer(Type propertyType)
 		{
-			return this._serializers[type];
+			return this._serializers[propertyType];
 		}
 
-		public IPropertySerializer GetSerializer<T>() where T : IProperty
+		public IPropertySerializer GetSerializer<TProperty>() where TProperty : IProperty
 		{
-			return this.GetSerializer(typeof(T));
+			return this.GetSerializer(typeof(TProperty));
 		}
 
-		public T GetProperty<T>(object obj) where T : IProperty
-		{
-			return (T) this.GetSerializableMember<T>(obj.GetType())?.GetMemberValue(obj);
-		}
-
-		public T[] GetProperties<T>(MapObjectData data) where T : IProperty
-		{
-			return this.GetSerializableMembers<T>(data.GetType()).Select(m => (T) m.GetMemberValue(data)).ToArray();
-		}
-
-		public void SetProperty<T>(object obj, T property) where T : IProperty
-		{
-			this.GetSerializableMember<T>(obj.GetType()).SetMemberValue(obj, property);
-		}
-
-		public bool TrySetProperty<T>(object obj, T property) where T : IProperty
-		{
-			var member = this.GetSerializableMember<T>(obj.GetType());
-			if (member == null)
-			{
-				return false;
-			}
-
-			member.SetMemberValue(obj, property);
-			return true;
-		}
-
-		public List<MemberInfo> GetSerializableMembers(Type type)
+		public List<MemberInfo> GetSerializableMembers(Type dataType)
 		{
 			var list = new List<MemberInfo>();
 
-			var props = type
+			var props = dataType
 				.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
 				.Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType()));
-			var fields = type
+			var fields = dataType
 				.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
 				.Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType()));
 
@@ -76,14 +48,24 @@ namespace MapsExt
 			return list;
 		}
 
-		private MemberInfo GetSerializableMember<T>(Type type) where T : IProperty
+		public MemberInfo[] GetSerializableMembers<TProperty>(Type dataType) where TProperty : IProperty
 		{
-			return this.GetSerializableMembers(type).Find(m => typeof(T).IsAssignableFrom(m.GetReturnType()));
+			return this.GetSerializableMembers(dataType, typeof(TProperty));
 		}
 
-		private MemberInfo[] GetSerializableMembers<T>(Type type) where T : IProperty
+		public MemberInfo[] GetSerializableMembers(Type dataType, Type propertyType)
 		{
-			return this.GetSerializableMembers(type).Where(m => typeof(T).IsAssignableFrom(m.GetReturnType())).ToArray();
+			return this.GetSerializableMembers(dataType).Where(m => propertyType.IsAssignableFrom(m.GetReturnType())).ToArray();
+		}
+
+		public MemberInfo GetSerializableMember<TProperty>(Type dataType) where TProperty : IProperty
+		{
+			return this.GetSerializableMember(dataType, typeof(TProperty));
+		}
+
+		public MemberInfo GetSerializableMember(Type dataType, Type propertyType)
+		{
+			return this.GetSerializableMembers(dataType).Find(m => propertyType.IsAssignableFrom(m.GetReturnType()));
 		}
 	}
 }

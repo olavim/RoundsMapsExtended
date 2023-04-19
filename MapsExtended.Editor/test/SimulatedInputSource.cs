@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using MapsExt.Editor;
 
 namespace MapsExt.Editor.Tests
 {

@@ -23,7 +23,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this.Content.transform.localScale = Vector3.one;
 			this.Content.transform.localPosition = Vector3.zero;
 			this.Content.transform.localRotation = Quaternion.identity;
-			this.Content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
+			this.Content.layer = MapsExtendedEditor.MapObjectUILayer;
 
 			var canvas = this.Content.AddComponent<Canvas>();
 			canvas.renderMode = RenderMode.WorldSpace;

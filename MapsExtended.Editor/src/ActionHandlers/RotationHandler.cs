@@ -20,7 +20,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this.Content = new GameObject("Rotate Interaction Content");
 			this.Content.transform.SetParent(this.transform);
 			this.Content.transform.localScale = Vector3.one;
-			this.Content.layer = MapsExtendedEditor.LAYER_MAPOBJECT_UI;
+			this.Content.layer = MapsExtendedEditor.MapObjectUILayer;
 
 			this.Content.AddComponent<GraphicRaycaster>();
 			var canvas = this.Content.GetComponent<Canvas>();

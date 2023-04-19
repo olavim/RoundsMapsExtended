@@ -20,13 +20,28 @@ namespace MapsExt.Editor.Tests
 	}
 
 	[TestClass]
-	public class SimulatedInputSourceTests
+	internal class SimulatedInputSourceTests
 	{
-		[Test]
-		public IEnumerator Test_MouseDown_ActiveForOneFrame()
+		private GameObject _container;
+
+		[BeforeAll]
+		private void CreateContainer()
 		{
-			var input = MapsExtendedEditor.instance.gameObject.AddComponent<SimulatedInputSource>();
-			var counter = MapsExtendedEditor.instance.gameObject.AddComponent<MouseDownLifeCounter>();
+			this._container = new GameObject("SimulatedInputSourceTests");
+			GameObject.DontDestroyOnLoad(this._container);
+		}
+
+		[AfterAll]
+		private void DestroyContainer()
+		{
+			GameObject.Destroy(this._container);
+		}
+
+		[Test]
+		private IEnumerator Test_MouseDown_ActiveForOneFrame()
+		{
+			var input = this._container.AddComponent<SimulatedInputSource>();
+			var counter = this._container.AddComponent<MouseDownLifeCounter>();
 
 			counter.inputSource = input;
 			input.SetMouseButtonDown(0);

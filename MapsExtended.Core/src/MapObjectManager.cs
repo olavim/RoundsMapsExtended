@@ -108,6 +108,17 @@ namespace MapsExt
 			serializer.Deserialize(data, target);
 		}
 
+		public void Instantiate<TData>(Transform parent, Action<GameObject> onInstantiate = null) where TData : MapObjectData
+		{
+			this.Instantiate(typeof(TData), parent, onInstantiate);
+		}
+
+		public void Instantiate(Type dataType, Transform parent, Action<GameObject> onInstantiate = null)
+		{
+			var data = (MapObjectData) Activator.CreateInstance(dataType);
+			this.Instantiate(data, parent, onInstantiate);
+		}
+
 		public void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null)
 		{
 			var mapObject = this._mapObjects[data.GetType()];

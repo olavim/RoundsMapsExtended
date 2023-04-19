@@ -88,7 +88,7 @@ namespace MapsExt.Editor
 				{ "", new List<(string, Type)>() }
 			};
 
-			foreach (var (type, label, category) in MapsExtendedEditor.instance._mapObjectAttributes)
+			foreach (var (type, label, category) in MapsExtendedEditor.MapObjectAttributes)
 			{
 				if (!mapObjects.ContainsKey(category))
 				{

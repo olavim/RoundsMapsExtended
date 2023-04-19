@@ -36,9 +36,9 @@ namespace MapsExt
 
 		private static MapsExtended s_instance;
 
-		internal static MapObjectManager MapObjectManager => s_instance._mapObjectManager;
-		internal static PropertyManager PropertyManager => s_instance._propertyManager;
-		internal static List<CustomMap> LoadedMaps => s_instance._maps;
+		public static MapObjectManager MapObjectManager => s_instance._mapObjectManager;
+		public static PropertyManager PropertyManager => s_instance._propertyManager;
+		public static IEnumerable<CustomMap> LoadedMaps => s_instance._maps;
 
 		private readonly Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new();
 		private readonly PropertyManager _propertyManager = new();
@@ -191,16 +191,6 @@ namespace MapsExt
 			}
 		}
 
-		public static void LoadMap(GameObject container, string mapFilePath, Action onLoad = null)
-		{
-			MapsExtended.LoadMap(container, mapFilePath, MapObjectManager, onLoad);
-		}
-
-		public static void LoadMap(GameObject container, CustomMap mapData, Action onLoad = null)
-		{
-			MapsExtended.LoadMap(container, mapData, MapObjectManager, onLoad);
-		}
-
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
 			var mapData = MapLoader.LoadPath(mapFilePath);
@@ -247,7 +237,7 @@ namespace MapsExt
 
 			SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
 			Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).FirstOrDefault(m => m != null);
-			MapsExtended.LoadMap(map.gameObject, s_loadedMap);
+			MapsExtended.LoadMap(map.gameObject, s_loadedMap, MapsExtended.MapObjectManager);
 		}
 
 		[HarmonyPrefix]

@@ -14,18 +14,20 @@ namespace MapsExt.Editor.Tests
 		protected EditorTestUtils Utils { get; private set; }
 		protected MapEditorAnimationHandler AnimationHandler { get; private set; }
 
+		private GameObject _content;
+
 		[BeforeAll]
 		public void SetInputSource()
 		{
-			var rootGo = MapsExtendedEditor.instance.gameObject;
-			this.InputSource = rootGo.AddComponent<SimulatedInputSource>();
+			this._content = new GameObject("EditorTestBaseContent");
+			this.InputSource = this._content.AddComponent<SimulatedInputSource>();
 			EditorInput.SetInputSource(this.InputSource);
 		}
 
 		[BeforeAll]
 		public IEnumerator OpenEditor()
 		{
-			yield return MapsExtendedEditor.instance.OpenEditorCoroutine();
+			yield return MapsExtendedEditor.OpenEditorCoroutine();
 			var rootGo = GameObject.Find("/Map");
 			this.Editor = rootGo.GetComponentInChildren<MapEditor>();
 			this.EditorUI = rootGo.GetComponentInChildren<MapEditorUI>();
@@ -37,15 +39,15 @@ namespace MapsExt.Editor.Tests
 		[AfterAll]
 		public void ResetInputSource()
 		{
-			GameObject.Destroy(this.InputSource);
-			this.InputSource = null;
 			EditorInput.SetInputSource(EditorInput.DefaultInputSource);
+			this.InputSource = null;
+			GameObject.Destroy(this._content);
 		}
 
 		[AfterAll]
 		public IEnumerator CloseEditor()
 		{
-			yield return MapsExtendedEditor.instance.CloseEditorCoroutine();
+			yield return MapsExtendedEditor.CloseEditorCoroutine();
 		}
 
 		[AfterEach]

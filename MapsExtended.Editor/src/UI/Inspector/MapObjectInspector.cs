@@ -63,10 +63,10 @@ namespace MapsExt.Editor.UI
 
 			this._elements = new();
 
-			foreach (var member in MapsExtendedEditor.instance.PropertyManager.GetSerializableMembers(targetDataType))
+			foreach (var member in MapsExtendedEditor.PropertyManager.GetSerializableMembers(targetDataType))
 			{
 				var propertyType = member.GetReturnType();
-				var elementType = MapsExtendedEditor.instance._propertyInspectorElements.GetValueOrDefault(propertyType, null);
+				var elementType = MapsExtendedEditor.PropertyInspectorElements.GetValueOrDefault(propertyType, null);
 
 				if (elementType != null)
 				{

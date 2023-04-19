@@ -10,6 +10,7 @@ using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections;
 using System.Reflection;
+using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -82,8 +83,8 @@ namespace MapsExt.Editor
 
 		protected virtual void Start()
 		{
-			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.LAYER_ANIMATION_MAPOBJECT);
-			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.LAYER_MAPOBJECT_UI);
+			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.MapObjectAnimationLayer);
+			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.MapObjectUILayer);
 		}
 
 		protected virtual void Update()
@@ -118,7 +119,7 @@ namespace MapsExt.Editor
 
 			foreach (var mapObject in this.Content.GetComponentsInChildren<MapObjectInstance>(true))
 			{
-				var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(mapObject);
+				var data = mapObject.SerializeEditorMapObject();
 
 				if (!data.active && mapObject.gameObject == this.AnimationHandler.Animation?.gameObject)
 				{
@@ -140,7 +141,7 @@ namespace MapsExt.Editor
 
 			foreach (var instance in mapObjectInstances)
 			{
-				this._clipboardMapObjects.Add(MapsExtendedEditor.instance.MapObjectManager.Serialize(instance));
+				this._clipboardMapObjects.Add(instance.SerializeEditorMapObject());
 			}
 		}
 
@@ -156,7 +157,7 @@ namespace MapsExt.Editor
 
 			foreach (var mapObject in this._clipboardMapObjects)
 			{
-				MapObjectSpawner.SpawnObject(this.Content, mapObject, obj =>
+				MapsExtendedEditor.MapObjectManager.Instantiate(mapObject, this.Content.transform, obj =>
 				{
 					foreach (var handler in obj.GetComponentsInChildren<ActionHandler>())
 					{
@@ -200,14 +201,14 @@ namespace MapsExt.Editor
 				if (dict.ContainsKey(mapObject.mapObjectId))
 				{
 					// This map object already exists in the scene, so we just recover its state
-					MapsExtendedEditor.instance.MapObjectManager.Deserialize(mapObject, dict[mapObject.mapObjectId]);
+					mapObject.DeserializeEditorMapObject(dict[mapObject.mapObjectId]);
 
 					// Mark a map object as "handled" by removing it from the dictionary
 					dict.Remove(mapObject.mapObjectId);
 				}
 				else
 				{
-					MapObjectSpawner.SpawnObject(this.Content, mapObject);
+					MapsExtendedEditor.MapObjectManager.Instantiate(mapObject, this.Content.transform);
 				}
 			}
 
@@ -243,7 +244,7 @@ namespace MapsExt.Editor
 		{
 			this.ClearSelected();
 
-			MapObjectSpawner.SpawnObject(this.Content, mapObjectDataType, obj =>
+			MapsExtendedEditor.MapObjectManager.Instantiate(mapObjectDataType, this.Content.transform, obj =>
 			{
 				var objectsWithHandlers = obj
 					.GetComponentsInChildren<ActionHandler>()
@@ -310,7 +311,7 @@ namespace MapsExt.Editor
 
 			if (this.Content.GetComponentsInChildren<SpawnPoint>().Length == 0)
 			{
-				MapObjectSpawner.SpawnObject<SpawnData>(this.Content, instance =>
+				MapsExtendedEditor.MapObjectManager.Instantiate<SpawnData>(this.Content.transform, instance =>
 				{
 					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this._tempSpawn = instance;
@@ -325,7 +326,7 @@ namespace MapsExt.Editor
 
 		private void DoStartSimulation()
 		{
-			MapsExtended.LoadMap(this.SimulatedContent, this.GetMapData(), () =>
+			MapsExtended.LoadMap(this.SimulatedContent, this.GetMapData(), MapsExtended.MapObjectManager, () =>
 			{
 				this.Content.SetActive(false);
 				this.SimulatedContent.SetActive(true);
@@ -374,7 +375,7 @@ namespace MapsExt.Editor
 
 		public void LoadMap(string mapFilePath)
 		{
-			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.instance.MapObjectManager);
+			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.MapObjectManager);
 
 			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
 			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");

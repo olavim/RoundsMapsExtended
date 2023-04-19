@@ -28,22 +28,28 @@ namespace MapsExt.Editor
 		public const string ModName = "MapsExtended.Editor";
 		public const string ModVersion = MapsExtended.ModVersion;
 
-		internal const int LAYER_ANIMATION_MAPOBJECT = 30;
-		internal const int LAYER_MAPOBJECT_UI = 31;
+		public const int MapObjectAnimationLayer = 30;
+		public const int MapObjectUILayer = 31;
 
-		public static MapsExtendedEditor instance;
+		public static PropertyManager PropertyManager => s_instance._propertyManager;
+		public static MapObjectManager MapObjectManager => s_instance._mapObjectManager;
 
-		public PropertyManager PropertyManager { get; } = new();
-		public MapObjectManager MapObjectManager { get; private set; }
+		internal static Dictionary<Type, Type> PropertyInspectorElements => s_instance._propertyInspectorElements;
+		internal static List<(Type, string, string)> MapObjectAttributes => s_instance._mapObjectAttributes;
+		internal static bool IsEditorActive => s_instance._editorActive;
 
-		internal bool _editorActive;
-		internal bool _editorClosing;
-		internal List<(Type, string, string)> _mapObjectAttributes = new();
-		internal Dictionary<Type, Type> _propertyInspectorElements = new();
+		private static MapsExtendedEditor s_instance;
+
+		private readonly List<(Type, string, string)> _mapObjectAttributes = new();
+		private readonly Dictionary<Type, Type> _propertyInspectorElements = new();
+		private readonly PropertyManager _propertyManager = new();
+		private MapObjectManager _mapObjectManager;
+		private bool _editorActive;
+		private bool _editorClosing;
 
 		private void Awake()
 		{
-			MapsExtendedEditor.instance = this;
+			s_instance = this;
 
 			var harmony = new Harmony(MapsExtendedEditor.ModId);
 			harmony.PatchAll();
@@ -52,8 +58,8 @@ namespace MapsExt.Editor
 
 			var mapObjectManagerGo = new GameObject("Editor Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
-			this.MapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
-			this.MapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
+			this._mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
 			SceneManager.sceneLoaded += (_, mode) =>
 			{
@@ -76,48 +82,48 @@ namespace MapsExt.Editor
 				this.RegisterPropertyInspectors(asm);
 			}
 
-			Unbound.RegisterMenu("Map Editor", this.OpenEditor, (_) => { }, null, false);
+			Unbound.RegisterMenu("Map Editor", OpenEditor, (_) => { }, null, false);
 		}
 
-		public void OpenEditor()
+		public static void OpenEditor()
 		{
-			this.StartCoroutine(this.OpenEditorCoroutine());
+			s_instance.StartCoroutine(OpenEditorCoroutine());
 		}
 
-		public void CloseEditor()
+		public static void CloseEditor()
 		{
-			this.StartCoroutine(this.CloseEditorCoroutine());
+			s_instance.StartCoroutine(CloseEditorCoroutine());
 		}
 
-		public IEnumerator OpenEditorCoroutine()
+		public static IEnumerator OpenEditorCoroutine()
 		{
-			yield return this.CloseEditorCoroutine();
+			yield return CloseEditorCoroutine();
 
 			AccessTools.Field(typeof(UnboundLib.Utils.UI.ModOptions), "showingModOptions").SetValue(null, false);
 			GameManager.instance.isPlaying = true;
 
 			MapManager.instance.RPCA_LoadLevel("MapEditor");
-			SceneManager.sceneLoaded += this.OnEditorLevelLoad;
+			SceneManager.sceneLoaded += OnEditorLevelLoad;
 
-			while (!this._editorActive)
+			while (!s_instance._editorActive)
 			{
 				yield return null;
 			}
 		}
 
-		public IEnumerator CloseEditorCoroutine()
+		public static IEnumerator CloseEditorCoroutine()
 		{
-			while (this._editorClosing)
+			while (s_instance._editorClosing)
 			{
 				yield return null;
 			}
 
-			if (!this._editorActive)
+			if (!s_instance._editorActive)
 			{
 				yield break;
 			}
 
-			this._editorClosing = true;
+			s_instance._editorClosing = true;
 			var op = SceneManager.UnloadSceneAsync("MapEditor");
 			MapManager.instance.currentMap = null;
 
@@ -126,8 +132,8 @@ namespace MapsExt.Editor
 				yield return null;
 			}
 
-			this._editorActive = false;
-			this._editorClosing = false;
+			s_instance._editorActive = false;
+			s_instance._editorClosing = false;
 
 			MapManager.instance.isTestingMap = false;
 			GameObject.Find("Game/UI/UI_MainMenu").gameObject.SetActive(true);
@@ -149,7 +155,7 @@ namespace MapsExt.Editor
 						throw new Exception($"{propertyType.Name} is not assignable to {typeof(PropertySerializer<>)}");
 					}
 
-					this.PropertyManager.RegisterProperty(propertyType, propertySerializerType);
+					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
 				}
 				catch (Exception ex)
 				{
@@ -164,7 +170,7 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
-			var serializer = new PropertyCompositeSerializer(this.PropertyManager);
+			var serializer = new PropertyCompositeSerializer(this._propertyManager);
 			var types = assembly.GetTypes();
 
 			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
@@ -190,7 +196,7 @@ namespace MapsExt.Editor
 					}
 
 					var mapObject = (IMapObject) AccessTools.CreateInstance(mapObjectType);
-					this.MapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
+					this._mapObjectManager.RegisterMapObject(dataType, mapObject, serializer);
 					this._mapObjectAttributes.Add((dataType, attr.Label, attr.Category ?? ""));
 				}
 				catch (Exception ex)
@@ -247,11 +253,11 @@ namespace MapsExt.Editor
 			this.RegisterV0MapObjects(assembly);
 		}
 
-		private void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)
+		private static void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)
 		{
-			SceneManager.sceneLoaded -= this.OnEditorLevelLoad;
+			SceneManager.sceneLoaded -= OnEditorLevelLoad;
 
-			this._editorActive = true;
+			s_instance._editorActive = true;
 			var map = MapManager.instance.currentMap.Map;
 			map.SetFieldValue("hasCalledReady", true);
 
@@ -273,7 +279,7 @@ namespace MapsExt.Editor
 	{
 		public static bool Prefix()
 		{
-			return !MapsExtendedEditor.instance._editorActive;
+			return !MapsExtendedEditor.IsEditorActive;
 		}
 	}
 }
