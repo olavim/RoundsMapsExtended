@@ -5,7 +5,7 @@ namespace MapsExt.Editor.ActionHandlers
 {
 	public interface IActionHandler
 	{
-		void OnSelect();
+		void OnSelect(bool inGroup);
 		void OnDeselect();
 		void OnPointerDown();
 		void OnPointerUp();

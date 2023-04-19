@@ -15,9 +15,10 @@ namespace MapsExt.Editor.ActionHandlers
 			return this.GetComponent<Collider2D>().bounds;
 		}
 
-		public override void OnSelect()
+		public override void OnSelect(bool inGroup)
 		{
 			this.Content = new GameObject("SelectionHandler Content");
+			this.Content.SetActive(!inGroup);
 			this.Content.transform.SetParent(this.transform);
 			this.Content.transform.localScale = Vector3.one;
 			this.Content.transform.localPosition = Vector3.zero;

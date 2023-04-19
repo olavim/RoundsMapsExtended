@@ -6,7 +6,7 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		protected MapEditor Editor => this.GetComponentInParent<MapEditor>();
 
-		public virtual void OnSelect() { }
+		public virtual void OnSelect(bool inGroup) { }
 		public virtual void OnDeselect() { }
 		public virtual void OnRefresh() { }
 		public virtual void OnPaste() { }

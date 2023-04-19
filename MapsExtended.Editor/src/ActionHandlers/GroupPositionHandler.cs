@@ -1,4 +1,3 @@
-using MapsExt.Editor.Properties;
 using MapsExt.Properties;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +30,7 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			this._gameObjects = gameObjects;
 
-			var bounds = new Bounds(this._gameObjects.First().transform.position, Vector3.zero);
+			var bounds = new Bounds(this._gameObjects.First().GetComponent<PositionHandler>().GetValue(), Vector3.zero);
 			foreach (var obj in this._gameObjects)
 			{
 				bounds.Encapsulate(obj.GetComponent<PositionHandler>().GetValue());
@@ -41,7 +40,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			foreach (var obj in this._gameObjects)
 			{
-				this._localPositions[obj] = obj.GetComponent<PositionHandler>()?.GetValue() - (PositionProperty) this.transform.position;
+				this._localPositions[obj] = obj.GetComponent<PositionHandler>().GetValue() - this.GetValue();
 			}
 		}
 	}

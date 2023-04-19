@@ -113,16 +113,19 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnSelect()
+		public override void OnSelect(bool inGroup)
 		{
-			this.AddResizeHandle(AnchorPosition.TopLeft);
-			this.AddResizeHandle(AnchorPosition.TopRight);
-			this.AddResizeHandle(AnchorPosition.BottomLeft);
-			this.AddResizeHandle(AnchorPosition.BottomRight);
-			this.AddResizeHandle(AnchorPosition.MiddleLeft);
-			this.AddResizeHandle(AnchorPosition.MiddleRight);
-			this.AddResizeHandle(AnchorPosition.BottomMiddle);
-			this.AddResizeHandle(AnchorPosition.TopMiddle);
+			if (!inGroup)
+			{
+				this.AddResizeHandle(AnchorPosition.TopLeft);
+				this.AddResizeHandle(AnchorPosition.TopRight);
+				this.AddResizeHandle(AnchorPosition.BottomLeft);
+				this.AddResizeHandle(AnchorPosition.BottomRight);
+				this.AddResizeHandle(AnchorPosition.MiddleLeft);
+				this.AddResizeHandle(AnchorPosition.MiddleRight);
+				this.AddResizeHandle(AnchorPosition.BottomMiddle);
+				this.AddResizeHandle(AnchorPosition.TopMiddle);
+			}
 		}
 
 		public override void OnDeselect()

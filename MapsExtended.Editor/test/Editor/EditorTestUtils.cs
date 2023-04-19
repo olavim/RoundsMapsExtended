@@ -84,7 +84,7 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator MoveSelectedWithMouse(Vector2 delta)
 		{
-			var go = this.editor.ActiveObject;
+			var go = this.editor.SelectedObjects[0];
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 

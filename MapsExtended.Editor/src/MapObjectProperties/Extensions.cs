@@ -7,8 +7,7 @@ namespace MapsExt.Editor.Properties
 	{
 		public static T GetEditorMapObjectProperty<T>(this GameObject mapObject) where T : IProperty
 		{
-			var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(mapObject);
-			return MapsExtendedEditor.instance.PropertyManager.GetProperty<T>(data);
+			return (T) MapsExtendedEditor.instance.PropertyManager.GetSerializer<T>().Serialize(mapObject);
 		}
 
 		public static T GetEditorMapObjectProperty<T>(this Component comp) where T : IProperty
@@ -18,9 +17,7 @@ namespace MapsExt.Editor.Properties
 
 		public static void SetEditorMapObjectProperty<T>(this GameObject mapObject, T prop) where T : IProperty
 		{
-			var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(mapObject);
-			MapsExtendedEditor.instance.PropertyManager.SetProperty(data, prop);
-			MapsExtendedEditor.instance.MapObjectManager.Deserialize(data, mapObject);
+			MapsExtendedEditor.instance.PropertyManager.GetSerializer<T>().Deserialize(prop, mapObject);
 		}
 
 		public static void SetEditorMapObjectProperty<T>(this Component comp, T prop) where T : IProperty
@@ -30,10 +27,13 @@ namespace MapsExt.Editor.Properties
 
 		public static bool TrySetEditorMapObjectProperty<T>(this GameObject mapObject, T prop) where T : IProperty
 		{
-			var data = MapsExtendedEditor.instance.MapObjectManager.Serialize(mapObject);
-			bool result = MapsExtendedEditor.instance.PropertyManager.TrySetProperty(data, prop);
-			MapsExtendedEditor.instance.MapObjectManager.Deserialize(data, mapObject);
-			return result;
+			var serializer = MapsExtendedEditor.instance.PropertyManager.GetSerializer<T>();
+			if (serializer == null)
+			{
+				return false;
+			}
+			serializer.Deserialize(prop, mapObject);
+			return true;
 		}
 
 		public static bool TrySetEditorMapObjectProperty<T>(this Component comp, T prop) where T : IProperty

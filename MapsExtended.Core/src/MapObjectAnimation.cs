@@ -143,7 +143,7 @@ namespace MapsExt
 				var startValue = startFrame.ComponentValues[i];
 				var endValue = endFrame.ComponentValues[i];
 				var nextValue = startValue.Lerp(endValue, curveValue);
-				var serializer = MapsExtended.instance._propertyManager.GetSerializer(startValue.GetType());
+				var serializer = MapsExtended.PropertyManager.GetSerializer(startValue.GetType());
 				serializer.Deserialize(nextValue, this.gameObject);
 			}
 		}

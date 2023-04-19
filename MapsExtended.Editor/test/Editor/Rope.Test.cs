@@ -64,7 +64,7 @@ namespace MapsExt.Editor.Tests
 			this.Editor.ClearSelected();
 			this.Editor.AddSelected(new GameObject[] { box1, box2, rope.GetAnchor(0).gameObject });
 
-			this.Utils.MoveSelectedWithMouse(new(1, 0));
+			yield return this.Utils.MoveSelectedWithMouse(new(1, 0));
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(1, 0));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));

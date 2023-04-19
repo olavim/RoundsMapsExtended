@@ -65,18 +65,14 @@ namespace MapsExt.Editor
 			};
 
 			Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
-
-			MapsExtended.instance.RegisterMapObjectPropertiesAction += this.RegisterPropertySerializers;
-			MapsExtended.instance.RegisterMapObjectsAction += this.RegisterMapObjects;
 		}
 
 		private void Start()
 		{
-			MapsExtended.instance.RegisterMapObjectProperties();
-			MapsExtended.instance.RegisterMapObjects();
-
 			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				this.RegisterMapObjectProperties(asm);
+				this.RegisterMapObjects(asm);
 				this.RegisterPropertyInspectors(asm);
 			}
 
@@ -138,7 +134,7 @@ namespace MapsExt.Editor
 			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOnline();
 		}
 
-		private void RegisterPropertySerializers(Assembly assembly)
+		private void RegisterMapObjectProperties(Assembly assembly)
 		{
 			var types = assembly.GetTypes();
 			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<EditorPropertySerializerAttribute>() != null))

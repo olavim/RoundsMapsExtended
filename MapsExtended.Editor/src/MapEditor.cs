@@ -76,7 +76,7 @@ namespace MapsExt.Editor
 
 			foreach (var type in typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupActionHandlerAttribute>() != null))
 			{
-				this._groupActionHandlers[type] = type.GetCustomAttribute<GroupActionHandlerAttribute>().requiredHandlerTypes;
+				this._groupActionHandlers[type] = type.GetCustomAttribute<GroupActionHandlerAttribute>().RequiredHandlerTypes;
 			}
 		}
 
@@ -524,11 +524,19 @@ namespace MapsExt.Editor
 
 		public void ClearSelected()
 		{
-			if (this.ActiveObject != null)
+			if (this.SelectedObjects.Count >= 1)
 			{
 				foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 				{
 					handler.OnDeselect();
+				}
+
+				if (this.SelectedObjects.Count > 1)
+				{
+					foreach (var handler in this.SelectedObjects.SelectMany(obj => obj.GetComponentsInChildren<ActionHandler>()))
+					{
+						handler.OnDeselect();
+					}
 				}
 			}
 
@@ -586,11 +594,19 @@ namespace MapsExt.Editor
 
 			this.SelectedObjects.AddRange(list);
 
-			if (this.ActiveObject != null)
+			if (this.SelectedObjects.Count >= 1)
 			{
 				foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
 				{
-					handler.OnSelect();
+					handler.OnSelect(false);
+				}
+
+				if (this.SelectedObjects.Count > 1)
+				{
+					foreach (var handler in this.SelectedObjects.SelectMany(obj => obj.GetComponentsInChildren<ActionHandler>()))
+					{
+						handler.OnSelect(true);
+					}
 				}
 			}
 		}

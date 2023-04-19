@@ -141,7 +141,7 @@ namespace MapsExt
 					 */
 					if (PhotonNetwork.IsMasterClient)
 					{
-						MapsExtended.instance.OnPhotonMapObjectInstantiate(instance.GetComponent<PhotonMapObject>(), networkInstance =>
+						MapsExtended.AddPhotonInstantiateListener(instance.GetComponent<PhotonMapObject>(), networkInstance =>
 						{
 							mapObject.OnInstantiate(networkInstance);
 							this.Deserialize(data, networkInstance);

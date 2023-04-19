@@ -28,6 +28,11 @@ namespace MapsExt
 			return this._serializers[type];
 		}
 
+		public IPropertySerializer GetSerializer<T>() where T : IProperty
+		{
+			return this.GetSerializer(typeof(T));
+		}
+
 		public T GetProperty<T>(object obj) where T : IProperty
 		{
 			return (T) this.GetSerializableMember<T>(obj.GetType())?.GetMemberValue(obj);

@@ -55,9 +55,12 @@ namespace MapsExt.Editor.ActionHandlers
 			return this.GetComponent<RotationPropertyInstance>().Rotation;
 		}
 
-		public override void OnSelect()
+		public override void OnSelect(bool inGroup)
 		{
-			this.AddRotationHandle();
+			if (!inGroup)
+			{
+				this.AddRotationHandle();
+			}
 		}
 
 		public override void OnDeselect()
