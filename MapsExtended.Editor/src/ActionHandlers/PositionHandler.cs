@@ -109,6 +109,7 @@ namespace MapsExt.Editor.ActionHandlers
 				bool moved = this._prevPosition != this.GetValue().Value;
 				this.SetValue(this.GetValue().Value.Round(4));
 				this._isDragging = false;
+				this.Editor.RefreshHandlers();
 
 				if (moved)
 				{
@@ -158,7 +159,7 @@ namespace MapsExt.Editor.ActionHandlers
 
 			if (delta != Vector2.zero)
 			{
-				this.SetValue(((Vector2) this.GetValue() + delta).Round(4));
+				this.SetValue((Vector2) this.GetValue() + delta);
 			}
 
 			this._prevMouse += mouseDelta;

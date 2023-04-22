@@ -1,5 +1,9 @@
 <Project>
 	<ItemGroup>
+		<ProjectReference Include="$(SolutionDir)MapsExtended.Analyzer/MapsExtended.Analyzer.csproj" OutputItemType="analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Reference Include="AmplifyColor">
 			<HintPath>$(RoundsDir)\Rounds_Data\Managed\AmplifyColor.dll</HintPath>
 			<Private>false</Private>

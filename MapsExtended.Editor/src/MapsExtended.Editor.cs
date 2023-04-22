@@ -31,8 +31,8 @@ namespace MapsExt.Editor
 		public const int MapObjectAnimationLayer = 30;
 		public const int MapObjectUILayer = 31;
 
-		public static PropertyManager PropertyManager => s_instance._propertyManager;
-		public static MapObjectManager MapObjectManager => s_instance._mapObjectManager;
+		public static EditorPropertyManager PropertyManager => s_instance._propertyManager;
+		public static EditorMapObjectManager MapObjectManager => s_instance._mapObjectManager;
 
 		internal static Dictionary<Type, Type> PropertyInspectorElements => s_instance._propertyInspectorElements;
 		internal static List<(Type, string, string)> MapObjectAttributes => s_instance._mapObjectAttributes;
@@ -42,8 +42,8 @@ namespace MapsExt.Editor
 
 		private readonly List<(Type, string, string)> _mapObjectAttributes = new();
 		private readonly Dictionary<Type, Type> _propertyInspectorElements = new();
-		private readonly PropertyManager _propertyManager = new();
-		private MapObjectManager _mapObjectManager;
+		private readonly EditorPropertyManager _propertyManager = new();
+		private EditorMapObjectManager _mapObjectManager;
 		private bool _editorActive;
 		private bool _editorClosing;
 
@@ -58,8 +58,7 @@ namespace MapsExt.Editor
 
 			var mapObjectManagerGo = new GameObject("Editor Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
-			this._mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
-			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
+			this._mapObjectManager = mapObjectManagerGo.AddComponent<EditorMapObjectManager>();
 
 			SceneManager.sceneLoaded += (_, mode) =>
 			{
@@ -150,12 +149,11 @@ namespace MapsExt.Editor
 					var attr = propertySerializerType.GetCustomAttribute<EditorPropertySerializerAttribute>();
 					var propertyType = attr.PropertyType;
 
-					if (!typeof(IPropertySerializer).IsAssignableFrom(propertySerializerType))
-					{
-						throw new Exception($"{propertyType.Name} is not assignable to {typeof(PropertySerializer<>)}");
-					}
-
-					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
+					var instance = Activator.CreateInstance(propertySerializerType);
+					var writer = new PropertyWriterProxy(instance, propertyType);
+					var reader = new PropertyReaderProxy(instance, propertyType);
+					this._propertyManager.RegisterWriter(propertyType, writer);
+					this._propertyManager.RegisterReader(propertyType, reader);
 				}
 				catch (Exception ex)
 				{
@@ -170,7 +168,7 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
-			var serializer = new PropertyCompositeSerializer(this._propertyManager);
+			var serializer = new EditorPropertyCompositeSerializer(this._propertyManager);
 			var types = assembly.GetTypes();
 
 			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))

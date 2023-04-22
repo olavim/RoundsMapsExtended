@@ -9,10 +9,11 @@ namespace MapsExt.Editor.ActionHandlers
 	{
 		public void Initialize(IEnumerable<GameObject> gameObjects)
 		{
-			var bounds = gameObjects.First().GetComponent<SelectionHandler>().GetBounds();
-			foreach (var obj in gameObjects)
+			var boundsArr = gameObjects.Select(obj => obj.GetComponent<SelectionHandler>().GetBounds()).ToArray();
+			var bounds = boundsArr[0];
+			for (var i = 1; i < boundsArr.Length; i++)
 			{
-				bounds.Encapsulate(obj.GetComponent<SelectionHandler>().GetBounds());
+				bounds.Encapsulate(boundsArr[i]);
 			}
 
 			this.transform.localScale = bounds.size;

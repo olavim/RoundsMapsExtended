@@ -30,18 +30,9 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(RopePositionProperty))]
-	public class RopePositionPropertySerializer : PropertySerializer<RopePositionProperty>
+	public class RopePositionPropertySerializer : IPropertyWriter<RopePositionProperty>
 	{
-		public override RopePositionProperty Serialize(GameObject instance)
-		{
-			return new()
-			{
-				StartPosition = instance.transform.position,
-				EndPosition = instance.transform.GetChild(0).position
-			};
-		}
-
-		public override void Deserialize(RopePositionProperty property, GameObject target)
+		public virtual void WriteProperty(RopePositionProperty property, GameObject target)
 		{
 			target.transform.position = property.StartPosition;
 			target.transform.GetChild(0).position = property.EndPosition;

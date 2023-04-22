@@ -38,22 +38,9 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(AnimationProperty))]
-	public class AnimationPropertySerializer : PropertySerializer<AnimationProperty>
+	public class AnimationPropertySerializer : IPropertyWriter<AnimationProperty>
 	{
-		public override AnimationProperty Serialize(GameObject instance)
-		{
-			var keyframes = new List<AnimationKeyframe>();
-			var anim = instance.GetComponent<MapObjectAnimation>();
-
-			if (anim != null)
-			{
-				keyframes.AddRange(anim.Keyframes);
-			}
-
-			return new AnimationProperty(keyframes);
-		}
-
-		public override void Deserialize(AnimationProperty property, GameObject target)
+		public virtual void WriteProperty(AnimationProperty property, GameObject target)
 		{
 			if (property.Keyframes.Length > 1)
 			{

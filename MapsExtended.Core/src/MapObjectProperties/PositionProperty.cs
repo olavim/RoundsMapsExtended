@@ -34,16 +34,11 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(PositionProperty))]
-	public class PositionPropertySerializer : PropertySerializer<PositionProperty>
+	public class PositionPropertySerializer : IPropertyWriter<PositionProperty>
 	{
-		public override void Deserialize(PositionProperty property, GameObject target)
+		public virtual void WriteProperty(PositionProperty property, GameObject target)
 		{
 			target.transform.position = property;
-		}
-
-		public override PositionProperty Serialize(GameObject instance)
-		{
-			return instance.transform.position;
 		}
 	}
 }

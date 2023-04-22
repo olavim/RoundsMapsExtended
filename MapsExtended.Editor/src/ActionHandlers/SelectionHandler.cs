@@ -10,15 +10,40 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public GameObject Content { get; private set; }
 
+		protected virtual void Start()
+		{
+			var colliders = this.GetComponentsInChildren<Collider2D>();
+			if (colliders.Length == 0)
+			{
+				throw new System.Exception($"No colliders found on {this.gameObject.name}");
+			}
+		}
+
 		public Bounds GetBounds()
 		{
-			return this.GetComponent<Collider2D>().bounds;
+			if (this.GetComponent<Collider2D>())
+			{
+				return this.GetComponent<Collider2D>().bounds;
+			}
+
+			var colliders = this.GetComponentsInChildren<Collider2D>();
+			var bounds = colliders[0].bounds;
+			for (var i = 1; i < colliders.Length; i++)
+			{
+				bounds.Encapsulate(colliders[i].bounds);
+			}
+
+			return bounds;
 		}
 
 		public override void OnSelect(bool inGroup)
 		{
+			if (inGroup)
+			{
+				return;
+			}
+
 			this.Content = new GameObject("SelectionHandler Content");
-			this.Content.SetActive(!inGroup);
 			this.Content.transform.SetParent(this.transform);
 			this.Content.transform.localScale = Vector3.one;
 			this.Content.transform.localPosition = Vector3.zero;

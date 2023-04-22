@@ -1,10 +1,18 @@
 using MapsExt.Editor.UI;
 using MapsExt.Properties;
+using UnityEngine;
 
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(DamageableProperty))]
-	public class EditorDamageablePropertySerializer : DamageablePropertySerializer { }
+	public class EditorDamageablePropertySerializer : DamageablePropertySerializer, IPropertyReader<DamageableProperty>
+	{
+		public virtual DamageableProperty ReadProperty(GameObject instance)
+		{
+			var dmgInstance = instance.GetComponent<DamageableMapObjectInstance>();
+			return dmgInstance.damageableByEnvironment;
+		}
+	}
 
 	[PropertyInspector(typeof(DamageableProperty))]
 	public class DamageableElement : BooleanElement

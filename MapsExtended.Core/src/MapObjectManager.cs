@@ -10,41 +10,12 @@ using Photon.Pun;
 
 namespace MapsExt
 {
-	public class MapObjectManager : MonoBehaviour
+	public abstract class MapObjectManager<TSerializer> : MonoBehaviour where TSerializer : IMapObjectSerializer
 	{
-		private static AssetBundle s_mapObjectBundle;
-		private static readonly Dictionary<string, TargetSyncedStore<int>> s_syncStores = new();
-
-		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
-		{
-			return s_mapObjectBundle.LoadAsset<TObj>(name);
-		}
-
-		private readonly Dictionary<Type, IMapObjectSerializer> _dataSerializers = new();
+		private readonly Dictionary<Type, TSerializer> _dataSerializers = new();
 		private readonly Dictionary<Type, IMapObject> _mapObjects = new();
 
-		private string _networkID;
-
-		protected virtual void Awake()
-		{
-			if (s_mapObjectBundle == null)
-			{
-				s_mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
-			}
-		}
-
-		public void SetNetworkID(string id)
-		{
-			if (this._networkID != null)
-			{
-				s_syncStores.Remove(this._networkID);
-			}
-
-			this._networkID = id;
-			s_syncStores.Add(id, new TargetSyncedStore<int>());
-		}
-
-		public void RegisterMapObject(Type dataType, IMapObject mapObject, IMapObjectSerializer serializer)
+		public void RegisterMapObject(Type dataType, IMapObject mapObject, TSerializer serializer)
 		{
 			if (mapObject.Prefab == null)
 			{
@@ -69,42 +40,19 @@ namespace MapsExt
 			this._dataSerializers.Add(dataType, serializer);
 		}
 
-		private string GetInstanceName(Type type)
+		protected TSerializer GetSerializer(Type dataType)
 		{
-			return $"{this._networkID}/{type.FullName}";
+			return this._dataSerializers.GetValueOrDefault(dataType, default);
 		}
 
-		public MapObjectData Serialize(GameObject go)
+		protected IMapObject GetMapObject(Type dataType)
 		{
-			var mapObjectInstance =
-				go.GetComponent<MapObjectInstance>() ??
-				throw new ArgumentException("Cannot serialize GameObject: missing MapObjectInstance");
-			return this.Serialize(mapObjectInstance);
-		}
-
-		public MapObjectData Serialize(MapObjectInstance mapObjectInstance)
-		{
-			if (mapObjectInstance == null)
-			{
-				throw new ArgumentException("Cannot serialize null MapObjectInstance");
-			}
-
-			if (mapObjectInstance.DataType == null)
-			{
-				throw new ArgumentException($"Cannot serialize MapObjectInstance ({mapObjectInstance.gameObject.name}): missing dataType");
-			}
-
-			var serializer =
-				this._dataSerializers.GetValueOrDefault(mapObjectInstance.DataType, null) ??
-				throw new ArgumentException($"Map object type not registered: {mapObjectInstance.DataType}");
-			return serializer.Serialize(mapObjectInstance);
+			return this._mapObjects[dataType];
 		}
 
 		public void Deserialize(MapObjectData data, GameObject target)
 		{
-			var serializer =
-				this._dataSerializers.GetValueOrDefault(data.GetType(), null) ??
-				throw new ArgumentException($"Map object type not registered: {data.GetType()}");
+			var serializer = this.GetSerializer(data.GetType()) ?? throw new ArgumentException($"Map object type not registered: {data.GetType()}");
 			serializer.Deserialize(data, target);
 		}
 
@@ -119,9 +67,55 @@ namespace MapsExt
 			this.Instantiate(data, parent, onInstantiate);
 		}
 
-		public void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null)
+		protected abstract string GetInstanceName(Type dataType);
+		public abstract void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null);
+	}
+
+	public class MapObjectManager : MapObjectManager<IMapObjectSerializer>
+	{
+		private static AssetBundle s_mapObjectBundle;
+		private static readonly Dictionary<string, TargetSyncedStore<int>> s_syncStores = new();
+
+		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
 		{
-			var mapObject = this._mapObjects[data.GetType()];
+			return s_mapObjectBundle.LoadAsset<TObj>(name);
+		}
+
+		[UnboundRPC]
+		public static void RPC_SyncInstantiation(string networkID, int instantiationID, int viewID)
+		{
+			s_syncStores[networkID].Set(instantiationID, viewID);
+		}
+
+		private string _networkID;
+
+		protected virtual void Awake()
+		{
+			if (s_mapObjectBundle == null)
+			{
+				s_mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
+			}
+		}
+
+		public void SetNetworkID(string id)
+		{
+			if (this._networkID != null)
+			{
+				s_syncStores.Remove(this._networkID);
+			}
+
+			this._networkID = id;
+			s_syncStores.Add(id, new TargetSyncedStore<int>());
+		}
+
+		protected override string GetInstanceName(Type type)
+		{
+			return $"{this._networkID}/{type.FullName}";
+		}
+
+		public override void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null)
+		{
+			var mapObject = this.GetMapObject(data.GetType());
 			var prefab = mapObject.Prefab;
 
 			var syncStore = s_syncStores[this._networkID];
@@ -162,7 +156,7 @@ namespace MapsExt
 							int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
 
 							// Communicate the photon instantiated map object to other clients
-							NetworkingManager.RPC_Others(typeof(MapObjectManager), nameof(RPC_SyncInstantiation), this._networkID, instantiationID, viewID);
+							NetworkingManager.RPC_Others(typeof(MapObjectManager<>), nameof(RPC_SyncInstantiation), this._networkID, instantiationID, viewID);
 						});
 					}
 					else
@@ -206,12 +200,6 @@ namespace MapsExt
 
 				onInstantiate?.Invoke(networkInstance);
 			}
-		}
-
-		[UnboundRPC]
-		public static void RPC_SyncInstantiation(string networkID, int instantiationID, int viewID)
-		{
-			s_syncStores[networkID].Set(instantiationID, viewID);
 		}
 	}
 }

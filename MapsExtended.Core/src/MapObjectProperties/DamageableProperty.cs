@@ -21,15 +21,9 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(DamageableProperty))]
-	public class DamageablePropertySerializer : PropertySerializer<DamageableProperty>
+	public class DamageablePropertySerializer : IPropertyWriter<DamageableProperty>
 	{
-		public override DamageableProperty Serialize(GameObject instance)
-		{
-			var dmgInstance = instance.GetComponent<DamageableMapObjectInstance>();
-			return dmgInstance.damageableByEnvironment;
-		}
-
-		public override void Deserialize(DamageableProperty property, GameObject target)
+		public virtual void WriteProperty(DamageableProperty property, GameObject target)
 		{
 			var instance = target.GetOrAddComponent<DamageableMapObjectInstance>();
 			instance.damageableByEnvironment = property;

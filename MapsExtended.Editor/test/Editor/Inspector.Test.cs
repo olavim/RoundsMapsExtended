@@ -29,12 +29,12 @@ namespace MapsExt.Editor.Tests
 			var val2 = new PositionProperty(1, 1);
 
 			element.Value.Should().Be(val1.Value);
-			this.Inspector.Target.GetEditorMapObjectProperty<PositionProperty>().Should().Be(val1);
+			this.Inspector.Target.ReadProperty<PositionProperty>().Should().Be(val1);
 
 			element.Value = val2.Value;
 
 			element.Value.Should().Be(val2.Value);
-			this.Inspector.Target.GetEditorMapObjectProperty<PositionProperty>().Should().Be(val2);
+			this.Inspector.Target.ReadProperty<PositionProperty>().Should().Be(val2);
 		}
 
 		[Test]
@@ -48,12 +48,12 @@ namespace MapsExt.Editor.Tests
 			var val2 = new ScaleProperty(3, 3);
 
 			element.Value.Should().Be(val1.Value);
-			this.Inspector.Target.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(val1);
+			this.Inspector.Target.ReadProperty<ScaleProperty>().Should().Be(val1);
 
 			element.Value = val2.Value;
 
 			element.Value.Should().Be(val2.Value);
-			this.Inspector.Target.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(val2);
+			this.Inspector.Target.ReadProperty<ScaleProperty>().Should().Be(val2);
 		}
 
 		[Test]
@@ -67,12 +67,12 @@ namespace MapsExt.Editor.Tests
 			var val2 = new RotationProperty(45);
 
 			element.Value.Should().Be(val1.Value);
-			this.Inspector.Target.GetEditorMapObjectProperty<RotationProperty>().Should().Be(val1);
+			this.Inspector.Target.ReadProperty<RotationProperty>().Should().Be(val1);
 
 			element.Value = val2.Value;
 
 			element.Value.Should().Be(val2.Value);
-			this.Inspector.Target.GetEditorMapObjectProperty<RotationProperty>().Should().Be(val2);
+			this.Inspector.Target.ReadProperty<RotationProperty>().Should().Be(val2);
 		}
 
 		[Test]

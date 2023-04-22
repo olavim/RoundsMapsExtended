@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Reflection;
+using Sirenix.Utilities;
 
 namespace MapsExt
 {
@@ -67,6 +68,15 @@ namespace MapsExt
 				info is FieldInfo field ? field.GetValue(instance) :
 				info is PropertyInfo property ? property.GetValue(instance) :
 				throw new ArgumentException("MemberInfo must be of type FieldInfo or PropertyInfo");
+		}
+
+		public static bool HasFieldOrProperty(this Type type, Type returnType)
+		{
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+
+			return
+				type.GetProperties(flags).Any(p => p.GetReturnType() == returnType) ||
+				type.GetFields(flags).Any(p => p.GetReturnType() == returnType);
 		}
 	}
 }

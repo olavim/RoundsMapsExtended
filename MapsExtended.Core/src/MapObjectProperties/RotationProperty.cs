@@ -32,14 +32,9 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(RotationProperty))]
-	public class RotationPropertySerializer : PropertySerializer<RotationProperty>
+	public class RotationPropertySerializer : IPropertyWriter<RotationProperty>
 	{
-		public override RotationProperty Serialize(GameObject instance)
-		{
-			return instance.GetComponent<RotationPropertyInstance>().Rotation;
-		}
-
-		public override void Deserialize(RotationProperty property, GameObject target)
+		public virtual void WriteProperty(RotationProperty property, GameObject target)
 		{
 			target.GetOrAddComponent<RotationPropertyInstance>().Rotation = property;
 			target.transform.rotation = (Quaternion) property;

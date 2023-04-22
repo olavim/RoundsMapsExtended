@@ -66,6 +66,11 @@ namespace MapsExt
 			return (T) this.ComponentValues.Find(v => typeof(T).IsAssignableFrom(v.GetType()));
 		}
 
+		public ILinearProperty GetComponentValue(Type propertyType)
+		{
+			return this.ComponentValues.Find(v => propertyType.IsAssignableFrom(v.GetType()));
+		}
+
 		private BezierCurve GetCurve()
 		{
 			return this.CurveType switch

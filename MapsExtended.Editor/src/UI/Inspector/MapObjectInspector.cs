@@ -6,6 +6,9 @@ using Sirenix.Utilities;
 using System.Collections.Specialized;
 using System.Collections;
 using MapsExt.Properties;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
 
 namespace MapsExt.Editor.UI
 {
@@ -63,7 +66,13 @@ namespace MapsExt.Editor.UI
 
 			this._elements = new();
 
-			foreach (var member in MapsExtendedEditor.PropertyManager.GetSerializableMembers(targetDataType))
+			var members = new List<MemberInfo>();
+
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+			members.AddRange(targetDataType.GetProperties(flags).Where(p => p.GetReturnType() != null));
+			members.AddRange(targetDataType.GetFields(flags).Where(p => p.GetReturnType() != null));
+
+			foreach (var member in members)
 			{
 				var propertyType = member.GetReturnType();
 				var elementType = MapsExtendedEditor.PropertyInspectorElements.GetValueOrDefault(propertyType, null);

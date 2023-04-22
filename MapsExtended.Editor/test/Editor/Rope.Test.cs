@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Linq;
 using FluentAssertions;
 using MapsExt.Editor.MapObjects;
 using MapsExt.MapObjects;
@@ -17,7 +16,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_RopeSpawnsInTheMiddle()
 		{
 			yield return this.Utils.SpawnMapObject<RopeData>();
-			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 1));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, -1));
@@ -27,11 +26,11 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_MoveObject()
 		{
 			yield return this.Utils.SpawnMapObject<RopeData>();
-			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 
-			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
+			rope.WriteProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 0));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
@@ -39,7 +38,7 @@ namespace MapsExt.Editor.Tests
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 
-			boxGo.SetEditorMapObjectProperty<PositionProperty>(new Vector2(0, 1));
+			boxGo.WriteProperty<PositionProperty>(new Vector2(0, 1));
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(new Vector2(0, 1));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
 		}
@@ -52,11 +51,11 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var box2 = this.Editor.ActiveObject;
 
-			box2.SetEditorMapObjectProperty(new PositionProperty(4, 2));
+			box2.WriteProperty(new PositionProperty(4, 2));
 
 			yield return this.Utils.SpawnMapObject<RopeData>();
-			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
-			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			rope.WriteProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
 
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
@@ -74,15 +73,15 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_RotateObject()
 		{
 			yield return this.Utils.SpawnMapObject<RopeData>();
-			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 
-			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(0, 0.25f), new(0, 5)));
+			rope.WriteProperty(new RopePositionProperty(new(0, 0.25f), new(0, 5)));
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.SetEditorMapObjectProperty<RotationProperty>(90);
+			boxGo.WriteProperty<RotationProperty>(90);
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 			rope.GetAnchor(1).GetAnchoredPosition().Should().Be(new Vector2(0, 5));
@@ -92,19 +91,124 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_ResizeObject()
 		{
 			yield return this.Utils.SpawnMapObject<RopeData>();
-			var rope = this.Editor.SelectedObjects.First().GetComponentInParent<EditorRope.RopeInstance>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 			yield return this.Utils.SpawnMapObject<BoxData>();
 			var boxGo = this.Editor.ActiveObject;
 
-			rope.SetEditorMapObjectProperty(new RopePositionProperty(new(-0.25f, 0), new(0, 5)));
+			rope.WriteProperty(new RopePositionProperty(new(-0.25f, 0), new(0, 5)));
 
 			var localPos = (Vector2) boxGo.transform.InverseTransformPoint(rope.GetAnchor(0).GetAnchoredPosition());
 
-			boxGo.SetEditorMapObjectProperty(new ScaleProperty(4, 2));
+			boxGo.WriteProperty(new ScaleProperty(4, 2));
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
 
-			boxGo.SetEditorMapObjectProperty(new ScaleProperty(2, 2));
+			boxGo.WriteProperty(new ScaleProperty(2, 2));
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be((Vector2) boxGo.transform.TransformPoint(localPos));
+		}
+
+		[Test]
+		public IEnumerator Test_AnchorGetsAttachedWhenObjectAppearsOnTop_Mouse_Move()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			rope.WriteProperty(new RopePositionProperty(new(5, 5), new(-5, -5)));
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+
+			yield return this.Utils.MoveSelectedWithMouse(new(5, 5));
+
+			rope.GetAnchor(0).IsAttached.Should().BeTrue();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+		}
+
+		[Test]
+		public IEnumerator Test_AnchorGetsAttachedWhenObjectAppearsOnTop_Mouse_Rotate()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			rope.WriteProperty(new RopePositionProperty(new(1.25f, 0), new(-5, -5)));
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+
+			yield return this.Utils.RotateSelectedWithMouse(45);
+
+			rope.GetAnchor(0).IsAttached.Should().BeTrue();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+		}
+
+		[Test]
+		public IEnumerator Test_AnchorGetsAttachedWhenObjectAppearsOnTop_Mouse_Resize()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			rope.WriteProperty(new RopePositionProperty(new(3, 0), new(-5, -5)));
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+
+			yield return this.Utils.ResizeSelectedWithMouse(new(2, 0), AnchorPosition.MiddleRight);
+
+			rope.GetAnchor(0).IsAttached.Should().BeTrue();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+		}
+
+		[Test]
+		public IEnumerator Test_AnchorGetsAttachedWhenObjectAppearsOnTop_Inspector_Move()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			rope.WriteProperty(new RopePositionProperty(new(5, 5), new(-5, -5)));
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+
+			var element = (PositionElement) this.Inspector.GetElement<PositionProperty>();
+			element.Value = new(5, 5);
+
+			rope.GetAnchor(0).IsAttached.Should().BeTrue();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+		}
+
+		[Test]
+		public IEnumerator Test_AnchorGetsAttachedWhenObjectAppearsOnTop_Inspector_Rotate()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			rope.WriteProperty(new RopePositionProperty(new(1.25f, 0), new(-5, -5)));
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+
+			var element = (RotationElement) this.Inspector.GetElement<RotationProperty>();
+			element.Value = 45;
+
+			rope.GetAnchor(0).IsAttached.Should().BeTrue();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+		}
+
+		[Test]
+		public IEnumerator Test_AnchorGetsAttachedWhenObjectAppearsOnTop_Inspector_Resize()
+		{
+			yield return this.Utils.SpawnMapObject<RopeData>();
+			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			rope.WriteProperty(new RopePositionProperty(new(3, 0), new(-5, -5)));
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+
+			var element = (ScaleElement) this.Inspector.GetElement<ScaleProperty>();
+			element.Value = new(8, 2);
+
+			rope.GetAnchor(0).IsAttached.Should().BeTrue();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}
 	}
 }

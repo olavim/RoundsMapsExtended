@@ -98,13 +98,9 @@ namespace MapsExt
 				{
 					var attr = propertySerializerType.GetCustomAttribute<PropertySerializerAttribute>();
 					var propertyType = attr.PropertyType;
-
-					if (!typeof(IPropertySerializer).IsAssignableFrom(propertySerializerType))
-					{
-						throw new Exception($"{propertySerializerType.Name} is not assignable to {typeof(IPropertySerializer)}");
-					}
-
-					this._propertyManager.RegisterProperty(propertyType, propertySerializerType);
+					var instance = Activator.CreateInstance(propertySerializerType);
+					var writer = new PropertyWriterProxy(instance, propertyType);
+					this._propertyManager.RegisterWriter(propertyType, writer);
 				}
 				catch (Exception ex)
 				{
@@ -191,18 +187,18 @@ namespace MapsExt
 			}
 		}
 
-		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
+		public static void LoadMap<T>(GameObject container, string mapFilePath, MapObjectManager<T> mapObjectManager, Action onLoad = null) where T : IMapObjectSerializer
 		{
 			var mapData = MapLoader.LoadPath(mapFilePath);
 			MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
 		}
 
-		public static void LoadMap(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
+		public static void LoadMap<T>(GameObject container, CustomMap mapData, MapObjectManager<T> mapObjectManager, Action onLoad = null) where T : IMapObjectSerializer
 		{
 			s_instance.StartCoroutine(MapsExtended.LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
 		}
 
-		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
+		private static IEnumerator LoadMapCoroutine<T>(GameObject container, CustomMap mapData, MapObjectManager<T> mapObjectManager, Action onLoad = null) where T : IMapObjectSerializer
 		{
 			GameObjectUtils.DestroyChildrenImmediateSafe(container);
 

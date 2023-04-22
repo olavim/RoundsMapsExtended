@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.ActionHandlers
 {
-	[GroupActionHandler(typeof(PositionHandler))]
+	[GroupActionHandler(typeof(PositionHandler), typeof(SelectionHandler))]
 	public class GroupPositionHandler : PositionHandler, IGroupMapObjectActionHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
@@ -30,17 +30,18 @@ namespace MapsExt.Editor.ActionHandlers
 		{
 			this._gameObjects = gameObjects;
 
-			var bounds = new Bounds(this._gameObjects.First().GetComponent<PositionHandler>().GetValue(), Vector3.zero);
-			foreach (var obj in this._gameObjects)
+			var boundsArr = gameObjects.Select(obj => obj.GetComponent<SelectionHandler>().GetBounds()).ToArray();
+			var bounds = boundsArr[0];
+			for (var i = 1; i < boundsArr.Length; i++)
 			{
-				bounds.Encapsulate(obj.GetComponent<PositionHandler>().GetValue());
+				bounds.Encapsulate(boundsArr[i]);
 			}
 
 			this.transform.position = bounds.center;
 
 			foreach (var obj in this._gameObjects)
 			{
-				this._localPositions[obj] = obj.GetComponent<PositionHandler>().GetValue() - this.GetValue();
+				this._localPositions[obj] = obj.GetComponent<PositionHandler>().GetValue() - (PositionProperty) bounds.center;
 			}
 		}
 	}

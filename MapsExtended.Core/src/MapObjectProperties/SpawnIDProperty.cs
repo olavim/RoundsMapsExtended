@@ -28,19 +28,9 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(SpawnIDProperty))]
-	public class SpawnIDPropertySerializer : PropertySerializer<SpawnIDProperty>
+	public class SpawnIDPropertySerializer : IPropertyWriter<SpawnIDProperty>
 	{
-		public override SpawnIDProperty Serialize(GameObject instance)
-		{
-			var spawnPoint = instance.gameObject.GetComponent<SpawnPoint>();
-			return new()
-			{
-				Id = spawnPoint.ID,
-				TeamId = spawnPoint.TEAMID
-			};
-		}
-
-		public override void Deserialize(SpawnIDProperty property, GameObject target)
+		public virtual void WriteProperty(SpawnIDProperty property, GameObject target)
 		{
 			var spawnPoint = target.gameObject.GetComponent<SpawnPoint>();
 			spawnPoint.ID = property.Id;

@@ -1,71 +1,65 @@
 ﻿using System;
 using System.Collections.Generic;
-using HarmonyLib;
 using MapsExt.Properties;
 using System.Reflection;
 using System.Linq;
 using Sirenix.Utilities;
+using UnityEngine;
+using MapsExt.MapObjects;
 
 namespace MapsExt
 {
 	public class PropertyManager
 	{
-		private readonly Dictionary<Type, IPropertySerializer> _serializers = new();
+		private readonly Dictionary<Type, IPropertyWriter<IProperty>> _writers = new();
 
-		public void RegisterProperty(Type propertyType, Type propertySerializerType)
+		public void RegisterWriter(Type propertyType, IPropertyWriter<IProperty> writer)
 		{
-			if (this._serializers.ContainsKey(propertyType))
+			if (this._writers.ContainsKey(propertyType))
 			{
-				throw new ArgumentException($"{propertyType.Name} is already registered");
+				throw new ArgumentException($"Property writer for {propertyType.Name} is already registered", nameof(propertyType));
 			}
 
-			this._serializers[propertyType] = (IPropertySerializer) AccessTools.CreateInstance(propertySerializerType);
+			this._writers[propertyType] = writer;
 		}
 
-		public IPropertySerializer GetSerializer(Type propertyType)
+		public void Write(IProperty property, GameObject target)
 		{
-			return this._serializers[propertyType];
+			var propertyType = property.GetType();
+			var dataType = target.GetComponent<MapObjectInstance>()?.DataType;
+			if (dataType == null)
+			{
+				throw new ArgumentException("Target is not a map object", nameof(target));
+			}
+
+			if (!this._writers.ContainsKey(propertyType))
+			{
+				throw new ArgumentException($"No property writer registered for {propertyType.Name}", nameof(property));
+			}
+
+			if (dataType.HasFieldOrProperty(propertyType))
+			{
+				this._writers[propertyType].WriteProperty(property, target);
+			}
 		}
 
-		public IPropertySerializer GetSerializer<TProperty>() where TProperty : IProperty
+		public void Write(MapObjectData data, GameObject target)
 		{
-			return this.GetSerializer(typeof(TProperty));
+			foreach (var memberInfo in this.GetRegisteredMembers(data.GetType()))
+			{
+				var prop = (IProperty) memberInfo.GetFieldOrPropertyValue(data);
+				this.Write(prop, target);
+			}
 		}
 
-		public List<MemberInfo> GetSerializableMembers(Type dataType)
+		private IEnumerable<MemberInfo> GetRegisteredMembers(Type dataType)
 		{
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+
 			var list = new List<MemberInfo>();
-
-			var props = dataType
-				.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-				.Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType()));
-			var fields = dataType
-				.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-				.Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType()));
-
-			list.AddRange(props);
-			list.AddRange(fields);
+			list.AddRange(dataType.GetProperties(flags).Where(p => p.GetReturnType() != null && this._writers.ContainsKey(p.GetReturnType())));
+			list.AddRange(dataType.GetFields(flags).Where(p => p.GetReturnType() != null && this._writers.ContainsKey(p.GetReturnType())));
 			return list;
-		}
-
-		public MemberInfo[] GetSerializableMembers<TProperty>(Type dataType) where TProperty : IProperty
-		{
-			return this.GetSerializableMembers(dataType, typeof(TProperty));
-		}
-
-		public MemberInfo[] GetSerializableMembers(Type dataType, Type propertyType)
-		{
-			return this.GetSerializableMembers(dataType).Where(m => propertyType.IsAssignableFrom(m.GetReturnType())).ToArray();
-		}
-
-		public MemberInfo GetSerializableMember<TProperty>(Type dataType) where TProperty : IProperty
-		{
-			return this.GetSerializableMember(dataType, typeof(TProperty));
-		}
-
-		public MemberInfo GetSerializableMember(Type dataType, Type propertyType)
-		{
-			return this.GetSerializableMembers(dataType).Find(m => propertyType.IsAssignableFrom(m.GetReturnType()));
 		}
 	}
 }

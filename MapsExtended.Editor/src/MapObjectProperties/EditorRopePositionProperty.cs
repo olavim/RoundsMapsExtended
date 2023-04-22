@@ -9,19 +9,9 @@ using UnboundLib;
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(RopePositionProperty))]
-	public class EditorRopePositionPropertySerializer : PropertySerializer<RopePositionProperty>
+	public class EditorRopePositionPropertySerializer : IPropertyReader<RopePositionProperty>, IPropertyWriter<RopePositionProperty>
 	{
-		public override RopePositionProperty Serialize(GameObject instance)
-		{
-			var ropeInstance = instance.GetComponent<EditorRope.RopeInstance>();
-			return new RopePositionProperty()
-			{
-				StartPosition = ropeInstance.GetAnchor(0).GetAnchoredPosition(),
-				EndPosition = ropeInstance.GetAnchor(1).GetAnchoredPosition()
-			};
-		}
-
-		public override void Deserialize(RopePositionProperty property, GameObject target)
+		public virtual void WriteProperty(RopePositionProperty property, GameObject target)
 		{
 			var ropeInstance = target.GetComponent<EditorRope.RopeInstance>();
 
@@ -34,6 +24,19 @@ namespace MapsExt.Editor.Properties
 			ropeInstance.GetAnchor(1).transform.position = property.EndPosition;
 			ropeInstance.GetAnchor(1).UpdateAttachment();
 			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<RopeAnchorPositionHandler>();
+		}
+
+		public virtual RopePositionProperty ReadProperty(GameObject instance)
+		{
+			var ropeInstance
+				= instance.GetComponent<EditorRope.RopeInstance>()
+				?? throw new System.ArgumentException("GameObject does not have a rope instance", nameof(instance));
+
+			return new RopePositionProperty()
+			{
+				StartPosition = ropeInstance.GetAnchor(0).GetAnchoredPosition(),
+				EndPosition = ropeInstance.GetAnchor(1).GetAnchoredPosition()
+			};
 		}
 	}
 
@@ -84,7 +87,8 @@ namespace MapsExt.Editor.Properties
 
 		private void HandleInputChange(RopePositionProperty value)
 		{
-			this.Context.InspectorTarget.SetEditorMapObjectProperty(value);
+			this.Context.InspectorTarget.WriteProperty(value);
+			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

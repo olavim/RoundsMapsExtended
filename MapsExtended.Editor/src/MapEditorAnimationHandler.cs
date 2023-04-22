@@ -116,7 +116,7 @@ namespace MapsExt.Editor
 
 			for (int i = 0; i < firstFrame.ComponentValues.Count; i++)
 			{
-				baseObject.SetEditorMapObjectProperty(firstFrame.ComponentValues[i]);
+				baseObject.WriteProperty(firstFrame.ComponentValues[i]);
 			}
 
 			baseObject.SetActive(true);
@@ -216,7 +216,7 @@ namespace MapsExt.Editor
 			this._curtain.SetActive(true);
 			this.RefreshParticles();
 
-			var animatableProperties = this.Animation.SerializeEditorMapObject().GetProperties<ILinearProperty>();
+			var animatableProperties = this.Animation.SerializeMapObject().GetProperties<ILinearProperty>();
 
 			if (this.Animation.Keyframes.Count == 0)
 			{
@@ -235,7 +235,7 @@ namespace MapsExt.Editor
 
 			if (this.Animation.Keyframes.Count == 0)
 			{
-				var animatableProperties = this.Animation.SerializeEditorMapObject().GetProperties<ILinearProperty>();
+				var animatableProperties = this.Animation.SerializeMapObject().GetProperties<ILinearProperty>();
 
 				this.Animation.PlayOnAwake = false;
 				this.Animation.Initialize(new AnimationKeyframe(animatableProperties));
@@ -332,7 +332,7 @@ namespace MapsExt.Editor
 
 		private void SpawnKeyframeMapObject(AnimationKeyframe frame, Action<GameObject> cb)
 		{
-			var frameData = this.Animation.SerializeEditorMapObject();
+			var frameData = this.Animation.SerializeMapObject();
 			frameData.mapObjectId = $"{frameData.mapObjectId}:keyframeMapObject";
 			frameData.active = true;
 			frameData.SetProperty(new AnimationProperty());
@@ -346,7 +346,7 @@ namespace MapsExt.Editor
 
 				for (int i = 0; i < this.Animation.Keyframes[0].ComponentValues.Count; i++)
 				{
-					instance.SetEditorMapObjectProperty(frame.ComponentValues[i]);
+					instance.WriteProperty(frame.ComponentValues[i]);
 				}
 
 				cb(instance);
@@ -360,7 +360,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			var animatableProperties = this.KeyframeMapObject.SerializeEditorMapObject().GetProperties<ILinearProperty>();
+			var animatableProperties = this.KeyframeMapObject.SerializeMapObject().GetProperties<ILinearProperty>();
 			this.Keyframe.ComponentValues = animatableProperties.ToList();
 
 			if (this.KeyframeIndex == 0)
@@ -378,7 +378,7 @@ namespace MapsExt.Editor
 
 			for (int i = 0; i < this.Animation.Keyframes[0].ComponentValues.Count; i++)
 			{
-				this.Animation.SetEditorMapObjectProperty(this.Animation.Keyframes[0].ComponentValues[i]);
+				this.Animation.WriteProperty(this.Animation.Keyframes[0].ComponentValues[i]);
 			}
 		}
 	}

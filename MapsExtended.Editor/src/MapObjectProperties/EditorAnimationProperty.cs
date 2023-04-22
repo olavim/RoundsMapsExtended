@@ -1,5 +1,6 @@
 using MapsExt.Editor.UI;
 using MapsExt.Properties;
+using System.Collections.Generic;
 using System.Linq;
 using UnboundLib;
 using UnityEngine;
@@ -7,9 +8,26 @@ using UnityEngine;
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(AnimationProperty))]
-	public class EditorAnimationPropertySerializer : AnimationPropertySerializer
+	public class EditorAnimationPropertySerializer : IPropertyReader<AnimationProperty>, IPropertyWriter<AnimationProperty>
 	{
-		public override void Deserialize(AnimationProperty property, GameObject target)
+		public virtual AnimationProperty ReadProperty(GameObject instance)
+		{
+			var keyframes = new List<AnimationKeyframe>();
+			var anim = instance.GetComponent<MapObjectAnimation>();
+
+			if (anim != null)
+			{
+				keyframes.AddRange(anim.Keyframes);
+				if (keyframes.Count > 0)
+				{
+					keyframes[0] = new AnimationKeyframe(instance.ReadProperties<ILinearProperty>());
+				}
+			}
+
+			return new AnimationProperty(keyframes);
+		}
+
+		public virtual void WriteProperty(AnimationProperty property, GameObject target)
 		{
 			if (property.Keyframes.Length > 0)
 			{

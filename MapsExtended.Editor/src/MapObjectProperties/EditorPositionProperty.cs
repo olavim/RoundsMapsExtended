@@ -7,12 +7,17 @@ using UnityEngine;
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(PositionProperty))]
-	public class EditorPositionPropertySerializer : PositionPropertySerializer
+	public class EditorPositionPropertySerializer : PositionPropertySerializer, IPropertyReader<PositionProperty>
 	{
-		public override void Deserialize(PositionProperty property, GameObject target)
+		public override void WriteProperty(PositionProperty property, GameObject target)
 		{
-			base.Deserialize(property, target);
+			base.WriteProperty(property, target);
 			target.GetOrAddComponent<PositionHandler>();
+		}
+
+		public virtual PositionProperty ReadProperty(GameObject instance)
+		{
+			return instance.transform.position;
 		}
 	}
 
@@ -21,11 +26,11 @@ namespace MapsExt.Editor.Properties
 	{
 		public PositionElement() : base("Position") { }
 
-		protected override Vector2 GetValue() => this.Context.InspectorTarget.GetEditorMapObjectProperty<PositionProperty>();
+		protected override Vector2 GetValue() => this.Context.InspectorTarget.ReadProperty<PositionProperty>();
 
 		protected override void OnChange(Vector2 value)
 		{
-			this.Context.InspectorTarget.SetEditorMapObjectProperty<PositionProperty>(value);
+			this.Context.InspectorTarget.WriteProperty<PositionProperty>(value);
 			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}

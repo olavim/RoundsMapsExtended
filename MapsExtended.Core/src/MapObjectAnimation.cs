@@ -142,8 +142,9 @@ namespace MapsExt
 			for (int i = 0; i < startFrame.ComponentValues.Count; i++)
 			{
 				var startValue = startFrame.ComponentValues[i];
-				var endValue = endFrame.ComponentValues[i];
-				this.gameObject.SetMapObjectProperty(startValue.Lerp(endValue, curveValue));
+				var endValue = endFrame.GetComponentValue(startValue.GetType());
+				var nextValue = startValue.Lerp(endValue, curveValue);
+				MapsExtended.PropertyManager.Write(nextValue, this.gameObject);
 			}
 		}
 

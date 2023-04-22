@@ -1,4 +1,3 @@
-using MapsExt.Editor.ActionHandlers;
 using MapsExt.Editor.UI;
 using MapsExt.Properties;
 using UnboundLib;
@@ -7,12 +6,17 @@ using UnityEngine;
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(RotationProperty))]
-	public class EditorRotationPropertySerializer : RotationPropertySerializer
+	public class EditorRotationPropertySerializer : RotationPropertySerializer, IPropertyReader<RotationProperty>
 	{
-		public override void Deserialize(RotationProperty property, GameObject target)
+		public override void WriteProperty(RotationProperty property, GameObject target)
 		{
-			base.Deserialize(property, target);
+			base.WriteProperty(property, target);
 			target.GetOrAddComponent<ActionHandlers.RotationHandler>();
+		}
+
+		public virtual RotationProperty ReadProperty(GameObject instance)
+		{
+			return instance.GetComponent<RotationPropertyInstance>().Rotation;
 		}
 	}
 
@@ -25,7 +29,7 @@ namespace MapsExt.Editor.Properties
 		{
 			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
 			{
-				this.Context.InspectorTarget.SetEditorMapObjectProperty<RotationProperty>(EditorUtils.Snap(angle, 5));
+				this.Context.InspectorTarget.WriteProperty<RotationProperty>(EditorUtils.Snap(angle, 5));
 			}
 
 			if (changeType == ChangeType.ChangeEnd)
@@ -35,6 +39,6 @@ namespace MapsExt.Editor.Properties
 			}
 		}
 
-		protected override float GetValue() => this.Context.InspectorTarget.GetEditorMapObjectProperty<RotationProperty>();
+		protected override float GetValue() => this.Context.InspectorTarget.ReadProperty<RotationProperty>();
 	}
 }

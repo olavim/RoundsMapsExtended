@@ -66,28 +66,29 @@ namespace MapsExt.Editor.Tests
 				this.AnimationHandler.AddKeyframe();
 			}
 
-			this.animationMapObject.GetEditorMapObjectProperty<T>().Should().Be(prop1);
+			this.animationMapObject.ReadProperty<T>().Should().Be(prop1);
 
 			for (int i = 0; i < keyframeCount; i++)
 			{
 				this.AnimationHandler.SetKeyframe(i);
 				var nextProp = KeyframeProperty(i);
 				this.GetKeyframeValue<T>(i).Should().Be(prop1);
-				this.AnimationHandler.KeyframeMapObject.SetEditorMapObjectProperty(nextProp);
-				this.AnimationHandler.KeyframeMapObject.GetEditorMapObjectProperty<T>().Should().Be(nextProp);
+				this.AnimationHandler.KeyframeMapObject.WriteProperty(nextProp);
+				this.AnimationHandler.KeyframeMapObject.ReadProperty<T>().Should().Be(nextProp);
 				yield return null;
 				this.GetKeyframeValue<T>(i).Should().Be(nextProp);
 			}
 
-			this.animationMapObject.GetEditorMapObjectProperty<T>().Should().Be(KeyframeProperty(0));
+			this.animationMapObject.ReadProperty<T>().Should().Be(KeyframeProperty(0));
 
 			this.AnimationHandler.ToggleAnimation(this.animationMapObject);
 
-			this.animationMapObject.GetEditorMapObjectProperty<T>().Should().Be(KeyframeProperty(0));
-			this.animationMapObject.SetEditorMapObjectProperty(prop2);
+			this.animationMapObject.ReadProperty<T>().Should().Be(KeyframeProperty(0));
+			this.animationMapObject.WriteProperty(prop2);
+			this.GetKeyframeValue<T>(0).Should().Be(prop2);
 			yield return null;
 
-			for (int i = 0; i < keyframeCount; i++)
+			for (int i = 1; i < keyframeCount; i++)
 			{
 				this.GetKeyframeValue<T>(i).Should().Be(KeyframeProperty(i));
 			}
@@ -99,7 +100,7 @@ namespace MapsExt.Editor.Tests
 			{
 				this.AnimationHandler.DeleteKeyframe(1);
 			}
-			this.AnimationHandler.KeyframeMapObject.SetEditorMapObjectProperty(prop1);
+			this.AnimationHandler.KeyframeMapObject.WriteProperty(prop1);
 		}
 
 		[Test]
@@ -127,7 +128,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.MoveSelectedWithMouse(delta);
 
 			var exceptedPosition = new PositionProperty(1, 1);
-			this.Editor.ActiveObject.GetEditorMapObjectProperty<PositionProperty>().Should().Be(exceptedPosition);
+			this.Editor.ActiveObject.ReadProperty<PositionProperty>().Should().Be(exceptedPosition);
 			this.GetKeyframeValue<PositionProperty>(0).Should().Be(exceptedPosition);
 		}
 
@@ -156,7 +157,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.ResizeSelectedWithMouse(delta, AnchorPosition.MiddleRight);
 
 			var expectedScale = new ScaleProperty(3, 2);
-			this.Editor.ActiveObject.GetEditorMapObjectProperty<ScaleProperty>().Should().Be(expectedScale);
+			this.Editor.ActiveObject.ReadProperty<ScaleProperty>().Should().Be(expectedScale);
 			this.GetKeyframeValue<ScaleProperty>(0).Should().Be(expectedScale);
 		}
 
@@ -183,7 +184,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.RotateSelectedWithMouse(45);
 
 			var expectedRotation = new RotationProperty(45);
-			this.Editor.ActiveObject.GetEditorMapObjectProperty<RotationProperty>().Should().Be(expectedRotation);
+			this.Editor.ActiveObject.ReadProperty<RotationProperty>().Should().Be(expectedRotation);
 			this.GetKeyframeValue<RotationProperty>(0).Should().Be(expectedRotation);
 		}
 
@@ -195,7 +196,7 @@ namespace MapsExt.Editor.Tests
 
 		private T GetKeyframeValue<T>(int keyframeIndex) where T : IProperty
 		{
-			return this.animation.Keyframes[keyframeIndex].GetComponentValue<T>();
+			return this.animationMapObject.ReadProperty<AnimationProperty>().Keyframes[keyframeIndex].GetComponentValue<T>();
 		}
 	}
 }

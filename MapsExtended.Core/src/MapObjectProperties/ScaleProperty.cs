@@ -32,14 +32,9 @@ namespace MapsExt.Properties
 	}
 
 	[PropertySerializer(typeof(ScaleProperty))]
-	public class ScalePropertySerializer : PropertySerializer<ScaleProperty>
+	public class ScalePropertySerializer : IPropertyWriter<ScaleProperty>
 	{
-		public override ScaleProperty Serialize(GameObject instance)
-		{
-			return instance.transform.localScale;
-		}
-
-		public override void Deserialize(ScaleProperty property, GameObject target)
+		public virtual void WriteProperty(ScaleProperty property, GameObject target)
 		{
 			target.transform.localScale = property;
 		}

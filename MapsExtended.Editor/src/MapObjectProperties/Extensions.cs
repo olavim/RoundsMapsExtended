@@ -1,46 +1,38 @@
-using MapsExt.MapObjects;
 using MapsExt.Properties;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MapsExt.Editor.Properties
 {
 	public static class PropertyExtensions
 	{
-		public static T GetEditorMapObjectProperty<T>(this GameObject mapObject) where T : IProperty
+		public static IProperty ReadProperty(this GameObject mapObject, Type propertyType)
 		{
-			return (T) mapObject.GetEditorMapObjectProperty(typeof(T));
+			return MapsExtendedEditor.PropertyManager.Read(mapObject, propertyType);
 		}
 
-		public static IProperty GetEditorMapObjectProperty(this GameObject mapObject, Type propertyType)
+		public static T ReadProperty<T>(this GameObject mapObject) where T : IProperty
 		{
-			var dataType = mapObject.GetComponent<MapObjectInstance>().DataType;
-
-			if (MapsExtendedEditor.PropertyManager.GetSerializableMember(dataType, propertyType) == null)
-			{
-				return default;
-			}
-
-			return MapsExtendedEditor.PropertyManager.GetSerializer(propertyType)?.Serialize(mapObject);
+			return (T) mapObject.ReadProperty(typeof(T));
 		}
 
-		public static void SetEditorMapObjectProperty<T>(this GameObject mapObject, T prop) where T : IProperty
+		public static IEnumerable<IProperty> ReadProperties(this GameObject mapObject, Type propertyType)
 		{
-			var dataType = mapObject.GetComponent<MapObjectInstance>().DataType;
-
-			if (MapsExtendedEditor.PropertyManager.GetSerializableMember(dataType, prop.GetType()) == null)
-			{
-				throw new ArgumentException($"{dataType.Name} does not have property {prop.GetType().Name}");
-			}
-
-			MapsExtendedEditor.PropertyManager.GetSerializer(prop.GetType()).Deserialize(prop, mapObject);
+			return MapsExtendedEditor.PropertyManager.ReadAll(mapObject, propertyType);
 		}
 
-		public static bool TrySetEditorMapObjectProperty<T>(this GameObject mapObject, T prop) where T : IProperty
+		public static IEnumerable<T> ReadProperties<T>(this GameObject mapObject) where T : IProperty
+		{
+			return mapObject.ReadProperties(typeof(T)).Cast<T>();
+		}
+
+		public static bool TryWriteProperty<T>(this GameObject mapObject, T prop) where T : IProperty
 		{
 			try
 			{
-				mapObject.SetEditorMapObjectProperty(prop);
+				mapObject.WriteProperty(prop);
 				return true;
 			}
 			catch
@@ -49,24 +41,29 @@ namespace MapsExt.Editor.Properties
 			}
 		}
 
-		public static T GetEditorMapObjectProperty<T>(this Component comp) where T : IProperty
+		public static void WriteProperty<T>(this GameObject mapObject, T prop) where T : IProperty
 		{
-			return comp.gameObject.GetEditorMapObjectProperty<T>();
+			MapsExtendedEditor.PropertyManager.Write(prop, mapObject);
 		}
 
-		public static IProperty GetEditorMapObjectProperty(this Component comp, Type propertyType)
+		public static T ReadProperty<T>(this Component comp) where T : IProperty
 		{
-			return comp.gameObject.GetEditorMapObjectProperty(propertyType);
+			return comp.gameObject.ReadProperty<T>();
 		}
 
-		public static void SetEditorMapObjectProperty<T>(this Component comp, T prop) where T : IProperty
+		public static IProperty ReadProperty(this Component comp, Type propertyType)
 		{
-			comp.gameObject.SetEditorMapObjectProperty(prop);
+			return comp.gameObject.ReadProperty(propertyType);
 		}
 
-		public static bool TrySetEditorMapObjectProperty<T>(this Component comp, T prop) where T : IProperty
+		public static void WriteProperty<T>(this Component comp, T prop) where T : IProperty
 		{
-			return comp.gameObject.TrySetEditorMapObjectProperty(prop);
+			comp.gameObject.WriteProperty(prop);
+		}
+
+		public static bool TryWriteProperty<T>(this Component comp, T prop) where T : IProperty
+		{
+			return comp.gameObject.TryWriteProperty(prop);
 		}
 	}
 }
