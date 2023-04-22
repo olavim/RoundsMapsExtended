@@ -1,6 +1,6 @@
 & dotnet build --no-restore
 
-[xml]$config = Get-Content "Config.props"
+[xml]$config = Get-Content "$PSScriptRoot\Config.props"
 $roundsDir = $config.Project.PropertyGroup.RoundsDir
 $bepinexDir = $config.Project.PropertyGroup.BepInExDir
 

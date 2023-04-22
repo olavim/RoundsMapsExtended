@@ -30,7 +30,7 @@
 			<ErrorTextRoundsDir>The configured ROUNDS directory does not exist. Please configure `RoundsDir` to a valid directory in Config.props.</ErrorTextRoundsDir>
 			<ErrorTextBepInExDir>The configured BepInEx directory does not exist. Please configure `BepInExDir` to a valid directory in Config.props.</ErrorTextBepInExDir>
 		</PropertyGroup>
-		<Error Condition="!Exists('$(SolutionDir)Config.props')" Text="$([System.String]::Format('$(ErrorTextConfig)', '$(SolutionDir)Config.props'))" />
+		<Error Condition="!Exists('$(MSBuildThisFileDirectory)Config.props')" Text="$([System.String]::Format('$(ErrorTextConfig)', '$(MSBuildThisFileDirectory)Config.props'))" />
 		<Error Condition="!Exists('$(RoundsDir)')" Text="$([System.String]::Format('$(ErrorTextRoundsDir)'))" />
 		<Error Condition="!Exists('$(BepInExDir)')" Text="$([System.String]::Format('$(ErrorTextBepInExDir)'))" />
 	</Target>
@@ -39,12 +39,12 @@
 		<ItemGroup>
 			<_Files Include="$(TargetDir)*.*" />
 		</ItemGroup>
-		<Exec Command="$(SolutionDir)tools\pdb2mdb.exe $(TargetPath)" Condition="'$(OS)' == 'Windows_NT' and '$(TargetPath)' != ''" />
+		<Exec Command="$(MSBuildThisFileDirectory)tools\pdb2mdb.exe $(TargetPath)" Condition="'$(OS)' == 'Windows_NT' and '$(TargetPath)' != ''" />
 		<RemoveDir Directories="$(BepInExDir)\plugins\$(MSBuildProjectName)" />
 		<Copy SourceFiles="@(_Files)" DestinationFolder="$(BepInExDir)\plugins\$(MSBuildProjectName)" />
 	</Target>
 
 	<Target Name="PublishPackages" Condition="'$(OS)' == 'Windows_NT' and '$(IsPublishable)' == 'true'" AfterTargets="Publish">
-		<Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)tools\publish.ps1&quot; -Version &quot;$(Version)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -SolutionPath &quot;$(SolutionDir.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot;" />
+		<Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(MSBuildThisFileDirectory)tools\publish.ps1&quot; -Version &quot;$(Version)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -SolutionPath &quot;$(MSBuildThisFileDirectory.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot;" />
 	</Target>
 </Project>
