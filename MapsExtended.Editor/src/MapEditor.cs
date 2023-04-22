@@ -401,8 +401,8 @@ namespace MapsExt.Editor
 		{
 			if (this._selectionRect.width > 2 && this._selectionRect.height > 2)
 			{
-				var list = EditorUtils.GetContainedActionHandlers(UIUtils.GUIToWorldRect(this._selectionRect));
 				this.ClearSelected();
+				var list = EditorUtils.GetContainedActionHandlers(UIUtils.GUIToWorldRect(this._selectionRect));
 
 				// When editing animation, don't allow selecting other map objects
 				if (this.AnimationHandler.Animation != null && list.Any(obj => obj.gameObject == this.AnimationHandler.KeyframeMapObject))

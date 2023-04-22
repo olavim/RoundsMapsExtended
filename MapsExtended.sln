@@ -19,8 +19,6 @@ Project("{5CB4441B-9C84-4FFA-BA39-0290BBC79373}") = "MapsExtended.Editor", "Maps
 EndProject
 Project("{9E79501E-3BFC-414E-9251-50ADC8F351CB}") = "MapsExtended.Editor.Tests", "MapsExtended.Editor\test\MapsExtended.Editor.Tests.csproj", "{B99CEB60-F65C-472C-8226-0FC90C6715D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapsExtended.Analyzer", "MapsExtended.Analyzer\MapsExtended.Analyzer.csproj", "{0E140F22-0397-4584-9A0C-DC0E4C45226E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,10 +41,6 @@ Global
 		{6B1482A8-5D37-4737-A27F-D89E3C20CA65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B1482A8-5D37-4737-A27F-D89E3C20CA65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B1482A8-5D37-4737-A27F-D89E3C20CA65}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E140F22-0397-4584-9A0C-DC0E4C45226E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E140F22-0397-4584-9A0C-DC0E4C45226E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E140F22-0397-4584-9A0C-DC0E4C45226E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E140F22-0397-4584-9A0C-DC0E4C45226E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
