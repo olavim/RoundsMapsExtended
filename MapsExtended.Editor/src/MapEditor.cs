@@ -119,7 +119,7 @@ namespace MapsExt.Editor
 
 			foreach (var mapObject in this.Content.GetComponentsInChildren<MapObjectInstance>(true))
 			{
-				var data = mapObject.SerializeMapObject();
+				var data = mapObject.ReadMapObject();
 
 				if (!data.active && mapObject.gameObject == this.AnimationHandler.Animation?.gameObject)
 				{
@@ -141,7 +141,7 @@ namespace MapsExt.Editor
 
 			foreach (var instance in mapObjectInstances)
 			{
-				this._clipboardMapObjects.Add(instance.SerializeMapObject());
+				this._clipboardMapObjects.Add(instance.ReadMapObject());
 			}
 		}
 
@@ -201,7 +201,7 @@ namespace MapsExt.Editor
 				if (dict.ContainsKey(data.mapObjectId))
 				{
 					// This map object already exists in the scene, so we just recover its state
-					data.DeserializeMapObject(dict[data.mapObjectId]);
+					data.WriteMapObject(dict[data.mapObjectId]);
 
 					// Mark a map object as "handled" by removing it from the dictionary
 					dict.Remove(data.mapObjectId);

@@ -41,7 +41,7 @@ namespace MapsExt.Editor
 						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(EditorMapObjectDeserializer)) ??
 						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
 
-					var serializer = new EditorMapObjectSpecSerializer(serializerAction, deserializerAction);
+					var serializer = new MapObjectSpecSerializer(deserializerAction, serializerAction);
 					MapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
 
 					this._mapObjectAttributes.Add((attr.dataType, attr.label, attr.category));

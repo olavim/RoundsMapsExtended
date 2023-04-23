@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace MapsExt.Editor.Properties
+namespace MapsExt
 {
 	public static class PropertyExtensions
 	{
 		public static IProperty ReadProperty(this GameObject mapObject, Type propertyType)
 		{
-			return MapsExtendedEditor.PropertyManager.Read(mapObject, propertyType);
+			return PropertyManager.Current.Read(mapObject, propertyType);
 		}
 
 		public static T ReadProperty<T>(this GameObject mapObject) where T : IProperty
@@ -20,7 +20,7 @@ namespace MapsExt.Editor.Properties
 
 		public static IEnumerable<IProperty> ReadProperties(this GameObject mapObject, Type propertyType)
 		{
-			return MapsExtendedEditor.PropertyManager.ReadAll(mapObject, propertyType);
+			return PropertyManager.Current.ReadAll(mapObject, propertyType);
 		}
 
 		public static IEnumerable<T> ReadProperties<T>(this GameObject mapObject) where T : IProperty
@@ -43,7 +43,7 @@ namespace MapsExt.Editor.Properties
 
 		public static void WriteProperty<T>(this GameObject mapObject, T prop) where T : IProperty
 		{
-			MapsExtendedEditor.PropertyManager.Write(prop, mapObject);
+			PropertyManager.Current.Write(prop, mapObject);
 		}
 
 		public static T ReadProperty<T>(this Component comp) where T : IProperty

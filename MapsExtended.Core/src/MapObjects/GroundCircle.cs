@@ -7,7 +7,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(GroundCircleData))]
 	public class GroundCircle : IMapObject
 	{
-		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
+		public virtual GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Ground Circle");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

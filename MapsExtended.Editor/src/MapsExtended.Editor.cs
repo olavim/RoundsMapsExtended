@@ -31,7 +31,7 @@ namespace MapsExt.Editor
 		public const int MapObjectAnimationLayer = 30;
 		public const int MapObjectUILayer = 31;
 
-		public static EditorPropertyManager PropertyManager => s_instance._propertyManager;
+		public static PropertyManager PropertyManager => s_instance._propertyManager;
 		public static EditorMapObjectManager MapObjectManager => s_instance._mapObjectManager;
 
 		internal static Dictionary<Type, Type> PropertyInspectorElements => s_instance._propertyInspectorElements;
@@ -42,7 +42,7 @@ namespace MapsExt.Editor
 
 		private readonly List<(Type, string, string)> _mapObjectAttributes = new();
 		private readonly Dictionary<Type, Type> _propertyInspectorElements = new();
-		private readonly EditorPropertyManager _propertyManager = new();
+		private readonly PropertyManager _propertyManager = new();
 		private EditorMapObjectManager _mapObjectManager;
 		private bool _editorActive;
 		private bool _editorClosing;
@@ -108,6 +108,9 @@ namespace MapsExt.Editor
 			{
 				yield return null;
 			}
+
+			MapsExt.PropertyManager.Current = s_instance._propertyManager;
+			MapsExt.MapObjectManager.Current = s_instance._mapObjectManager;
 		}
 
 		public static IEnumerator CloseEditorCoroutine()
@@ -150,10 +153,8 @@ namespace MapsExt.Editor
 					var propertyType = attr.PropertyType;
 
 					var instance = Activator.CreateInstance(propertySerializerType);
-					var writer = new PropertyWriterProxy(instance, propertyType);
-					var reader = new PropertyReaderProxy(instance, propertyType);
-					this._propertyManager.RegisterWriter(propertyType, writer);
-					this._propertyManager.RegisterReader(propertyType, reader);
+					var serializer = new LazyPropertySerializer(instance, propertyType);
+					this._propertyManager.RegisterProperty(propertyType, serializer);
 				}
 				catch (Exception ex)
 				{
@@ -168,7 +169,7 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjects(Assembly assembly)
 		{
-			var serializer = new EditorPropertyCompositeSerializer(this._propertyManager);
+			var serializer = new PropertyCompositeSerializer(this._propertyManager);
 			var types = assembly.GetTypes();
 
 			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))

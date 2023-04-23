@@ -8,7 +8,7 @@ using UnityEngine;
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(AnimationProperty))]
-	public class EditorAnimationPropertySerializer : IPropertyReader<AnimationProperty>, IPropertyWriter<AnimationProperty>
+	public class EditorAnimationPropertySerializer : IPropertySerializer<AnimationProperty>
 	{
 		public virtual AnimationProperty ReadProperty(GameObject instance)
 		{

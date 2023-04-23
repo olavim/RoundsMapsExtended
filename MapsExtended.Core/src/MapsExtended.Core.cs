@@ -36,13 +36,13 @@ namespace MapsExt
 
 		private static MapsExtended s_instance;
 
-		public static MapObjectManager MapObjectManager => s_instance._mapObjectManager;
+		public static NetworkedMapObjectManager MapObjectManager => s_instance._mapObjectManager;
 		public static PropertyManager PropertyManager => s_instance._propertyManager;
 		public static IEnumerable<CustomMap> LoadedMaps => s_instance._maps;
 
 		private readonly Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new();
 		private readonly PropertyManager _propertyManager = new();
-		private MapObjectManager _mapObjectManager;
+		private NetworkedMapObjectManager _mapObjectManager;
 		private List<CustomMap> _maps;
 
 		private void Awake()
@@ -59,14 +59,14 @@ namespace MapsExt
 
 			var mapObjectManagerGo = new GameObject("Root Map Object Manager");
 			DontDestroyOnLoad(mapObjectManagerGo);
-			this._mapObjectManager = mapObjectManagerGo.AddComponent<MapObjectManager>();
+			this._mapObjectManager = mapObjectManagerGo.AddComponent<NetworkedMapObjectManager>();
 			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
 			SceneManager.sceneLoaded += (_, mode) =>
 			{
 				if (mode == LoadSceneMode.Single)
 				{
-					this.UpdateMapFiles();
+					this.OnInit();
 				}
 			};
 		}
@@ -79,6 +79,13 @@ namespace MapsExt
 				this.RegisterMapObjects(asm);
 			}
 
+			this.OnInit();
+		}
+
+		private void OnInit()
+		{
+			MapsExt.PropertyManager.Current = s_instance._propertyManager;
+			MapsExt.MapObjectManager.Current = s_instance._mapObjectManager;
 			this.UpdateMapFiles();
 		}
 
@@ -99,8 +106,8 @@ namespace MapsExt
 					var attr = propertySerializerType.GetCustomAttribute<PropertySerializerAttribute>();
 					var propertyType = attr.PropertyType;
 					var instance = Activator.CreateInstance(propertySerializerType);
-					var writer = new PropertyWriterProxy(instance, propertyType);
-					this._propertyManager.RegisterWriter(propertyType, writer);
+					var serializer = new LazyPropertySerializer(instance, propertyType);
+					this._propertyManager.RegisterProperty(propertyType, serializer);
 				}
 				catch (Exception ex)
 				{
@@ -187,18 +194,18 @@ namespace MapsExt
 			}
 		}
 
-		public static void LoadMap<T>(GameObject container, string mapFilePath, MapObjectManager<T> mapObjectManager, Action onLoad = null) where T : IMapObjectSerializer
+		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
 			var mapData = MapLoader.LoadPath(mapFilePath);
 			MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
 		}
 
-		public static void LoadMap<T>(GameObject container, CustomMap mapData, MapObjectManager<T> mapObjectManager, Action onLoad = null) where T : IMapObjectSerializer
+		public static void LoadMap(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
 			s_instance.StartCoroutine(MapsExtended.LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
 		}
 
-		private static IEnumerator LoadMapCoroutine<T>(GameObject container, CustomMap mapData, MapObjectManager<T> mapObjectManager, Action onLoad = null) where T : IMapObjectSerializer
+		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
 			GameObjectUtils.DestroyChildrenImmediateSafe(container);
 
@@ -487,11 +494,11 @@ namespace MapsExt
 	{
 		public static void Prefix(PlayerManager __instance)
 		{
-			__instance.GetExtraData().movingPlayer = new bool[__instance.players.Count];
+			__instance.GetExtraData().PlayersBeingMoved = new bool[__instance.players.Count];
 
 			for (int i = 0; i < __instance.players.Count; i++)
 			{
-				__instance.GetExtraData().movingPlayer[i] = true;
+				__instance.GetExtraData().PlayersBeingMoved[i] = true;
 			}
 		}
 	}
@@ -507,7 +514,7 @@ namespace MapsExt
 			}
 
 			int index = __instance.players.FindIndex(p => p.data.playerVel == player);
-			__instance.GetExtraData().movingPlayer[index] = false;
+			__instance.GetExtraData().PlayersBeingMoved[index] = false;
 		}
 	}
 }

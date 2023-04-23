@@ -94,7 +94,7 @@ namespace MapsExt.Editor.MapObjects
 			}
 		}
 
-		public override GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
+		public override GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Editor Rope");
 
 		public override void OnInstantiate(GameObject instance)
 		{

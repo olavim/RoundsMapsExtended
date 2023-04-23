@@ -1,5 +1,4 @@
 ﻿using MapsExt.MapObjects;
-using MapsExt.Properties;
 using System;
 using UnboundLib;
 using UnityEngine;
@@ -15,7 +14,7 @@ namespace MapsExt
 			this._propertyManager = propertyManager;
 		}
 
-		public void Deserialize(MapObjectData data, GameObject target)
+		public void WriteMapObject(MapObjectData data, GameObject target)
 		{
 			try
 			{
@@ -27,7 +26,28 @@ namespace MapsExt
 			}
 			catch (Exception ex)
 			{
-				throw new MapObjectSerializationException($"Could not deserialize {data.GetType()} into {target.name}", ex);
+				throw new MapObjectSerializationException($"Could not write {data.GetType()} into {target.name}", ex);
+			}
+		}
+
+		public MapObjectData ReadMapObject(MapObjectInstance mapObjectInstance)
+		{
+			try
+			{
+				var data = (MapObjectData) Activator.CreateInstance(mapObjectInstance.DataType);
+				data.mapObjectId = mapObjectInstance.MapObjectId;
+				data.active = mapObjectInstance.gameObject.activeSelf;
+
+				foreach (var prop in this._propertyManager.ReadAll(mapObjectInstance.gameObject))
+				{
+					data.SetProperty(prop);
+				}
+
+				return data;
+			}
+			catch (Exception ex)
+			{
+				throw new MapObjectSerializationException($"Could not read {mapObjectInstance.gameObject.name}", ex);
 			}
 		}
 	}

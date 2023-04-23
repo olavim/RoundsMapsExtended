@@ -11,35 +11,33 @@ namespace MapsExt
 {
 	public class PropertyManager
 	{
-		private readonly Dictionary<Type, IPropertyWriter<IProperty>> _writers = new();
+		public static PropertyManager Current { get; set; }
 
-		public void RegisterWriter(Type propertyType, IPropertyWriter<IProperty> writer)
+		private readonly Dictionary<Type, IPropertySerializer<IProperty>> _serializers = new();
+
+		public void RegisterProperty(Type propertyType, IPropertySerializer<IProperty> serializer)
 		{
-			if (this._writers.ContainsKey(propertyType))
+			if (this._serializers.ContainsKey(propertyType))
 			{
-				throw new ArgumentException($"Property writer for {propertyType.Name} is already registered", nameof(propertyType));
+				throw new ArgumentException($"Property {propertyType.Name} is already registered", nameof(propertyType));
 			}
 
-			this._writers[propertyType] = writer;
+			this._serializers[propertyType] = serializer;
 		}
 
 		public void Write(IProperty property, GameObject target)
 		{
 			var propertyType = property.GetType();
-			var dataType = target.GetComponent<MapObjectInstance>()?.DataType;
-			if (dataType == null)
-			{
-				throw new ArgumentException("Target is not a map object", nameof(target));
-			}
+			var dataType = (target.GetComponent<MapObjectInstance>()?.DataType) ?? throw new ArgumentException("Target is not a map object", nameof(target));
 
-			if (!this._writers.ContainsKey(propertyType))
+			if (!this._serializers.ContainsKey(propertyType))
 			{
-				throw new ArgumentException($"No property writer registered for {propertyType.Name}", nameof(property));
+				throw new ArgumentException($"Property {propertyType.Name} is not registered");
 			}
 
 			if (dataType.HasFieldOrProperty(propertyType))
 			{
-				this._writers[propertyType].WriteProperty(property, target);
+				this._serializers[propertyType].WriteProperty(property, target);
 			}
 		}
 
@@ -52,13 +50,41 @@ namespace MapsExt
 			}
 		}
 
+		public IProperty Read(GameObject instance, Type propertyType)
+		{
+			if (!this._serializers.ContainsKey(propertyType))
+			{
+				throw new ArgumentException($"Property {propertyType.Name} is not registered");
+			}
+
+			var dataType = instance.GetComponent<MapObjectInstance>()?.DataType ?? throw new ArgumentException("Not a map object", nameof(instance));
+
+			if (!dataType.HasFieldOrProperty(propertyType))
+			{
+				return null;
+			}
+
+			return this._serializers[propertyType].ReadProperty(instance);
+		}
+
+		public IEnumerable<IProperty> ReadAll(GameObject instance, Type propertyType)
+		{
+			return this._serializers.Keys.Where(k => propertyType.IsAssignableFrom(k)).Select(k => this._serializers[k].ReadProperty(instance));
+		}
+
+		public IEnumerable<IProperty> ReadAll(GameObject instance)
+		{
+			var dataType = instance.GetComponent<MapObjectInstance>()?.DataType ?? throw new ArgumentException("Not a map object", nameof(instance));
+			return this.GetRegisteredMembers(dataType).Select(m => this.Read(instance.gameObject, m.GetReturnType()));
+		}
+
 		private IEnumerable<MemberInfo> GetRegisteredMembers(Type dataType)
 		{
 			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
 			var list = new List<MemberInfo>();
-			list.AddRange(dataType.GetProperties(flags).Where(p => p.GetReturnType() != null && this._writers.ContainsKey(p.GetReturnType())));
-			list.AddRange(dataType.GetFields(flags).Where(p => p.GetReturnType() != null && this._writers.ContainsKey(p.GetReturnType())));
+			list.AddRange(dataType.GetProperties(flags).Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType())));
+			list.AddRange(dataType.GetFields(flags).Where(p => p.GetReturnType() != null && this._serializers.ContainsKey(p.GetReturnType())));
 			return list;
 		}
 	}

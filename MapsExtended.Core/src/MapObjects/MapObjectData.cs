@@ -20,15 +20,12 @@ namespace MapsExt.MapObjects
 				set => this._member.SetMemberValue(this._instance, value);
 			}
 
+			public Type Type => this._member.GetReturnType();
+
 			public PropertyMember(MapObjectData instance, MemberInfo member)
 			{
 				this._instance = instance;
 				this._member = member;
-			}
-
-			public bool IsAssignableTo(Type type)
-			{
-				return type.IsAssignableFrom(this._member.GetReturnType());
 			}
 		}
 
@@ -56,7 +53,7 @@ namespace MapsExt.MapObjects
 
 		public IProperty GetProperty(Type propertyType)
 		{
-			return this._propertyMembers.Find(m => m.IsAssignableTo(propertyType))?.Value;
+			return this._propertyMembers.Find(m => propertyType.IsAssignableFrom(m.Type))?.Value;
 		}
 
 		public TProp[] GetProperties<TProp>() where TProp : IProperty
@@ -66,17 +63,17 @@ namespace MapsExt.MapObjects
 
 		public IProperty[] GetProperties(Type propertyType)
 		{
-			return this._propertyMembers.Where(m => m.IsAssignableTo(propertyType)).Select(m => m.Value).ToArray();
+			return this._propertyMembers.Where(m => propertyType.IsAssignableFrom(m.Type)).Select(m => m.Value).ToArray();
 		}
 
 		public void SetProperty<TProp>(TProp property) where TProp : IProperty
 		{
-			this._propertyMembers.Find(m => m.IsAssignableTo(typeof(TProp))).Value = property;
+			this._propertyMembers.Find(m => property.GetType() == m.Type).Value = property;
 		}
 
 		public bool TrySetProperty<TProp>(TProp property) where TProp : IProperty
 		{
-			var member = this._propertyMembers.Find(m => m.IsAssignableTo(typeof(TProp)));
+			var member = this._propertyMembers.Find(m => property.GetType() == m.Type);
 			if (member == null)
 			{
 				return false;

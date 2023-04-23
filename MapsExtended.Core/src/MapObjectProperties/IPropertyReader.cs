@@ -1,7 +1,6 @@
-using MapsExt.Properties;
 using UnityEngine;
 
-namespace MapsExt.Editor.Properties
+namespace MapsExt.Properties
 {
 	public interface IPropertyReader<T> where T : IProperty
 	{

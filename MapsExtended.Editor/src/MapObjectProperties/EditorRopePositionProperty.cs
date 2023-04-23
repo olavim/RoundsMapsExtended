@@ -9,7 +9,7 @@ using UnboundLib;
 namespace MapsExt.Editor.Properties
 {
 	[EditorPropertySerializer(typeof(RopePositionProperty))]
-	public class EditorRopePositionPropertySerializer : IPropertyReader<RopePositionProperty>, IPropertyWriter<RopePositionProperty>
+	public class EditorRopePositionPropertySerializer : IPropertySerializer<RopePositionProperty>
 	{
 		public virtual void WriteProperty(RopePositionProperty property, GameObject target)
 		{

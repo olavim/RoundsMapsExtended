@@ -23,7 +23,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(RopeData))]
 	public class Rope : IMapObject
 	{
-		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
+		public virtual GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

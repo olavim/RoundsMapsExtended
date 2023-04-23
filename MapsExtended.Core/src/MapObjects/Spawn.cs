@@ -30,7 +30,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(SpawnData))]
 	public class Spawn : IMapObject
 	{
-		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
+		public virtual GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

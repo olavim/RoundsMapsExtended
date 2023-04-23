@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnboundLib;
-using UnboundLib.Networking;
-using Jotunn.Utils;
 using MapsExt.MapObjects;
-using Photon.Pun;
 
 namespace MapsExt
 {
-	public abstract class MapObjectManager<TSerializer> : MonoBehaviour where TSerializer : IMapObjectSerializer
+	public abstract class MapObjectManager : MonoBehaviour
 	{
-		private readonly Dictionary<Type, TSerializer> _dataSerializers = new();
+		public static MapObjectManager Current { get; set; }
+
+		private readonly Dictionary<Type, IMapObjectSerializer> _serializers = new();
 		private readonly Dictionary<Type, IMapObject> _mapObjects = new();
 
-		public void RegisterMapObject(Type dataType, IMapObject mapObject, TSerializer serializer)
+		public virtual void RegisterMapObject(Type dataType, IMapObject mapObject, IMapObjectSerializer serializer)
 		{
 			if (mapObject.Prefab == null)
 			{
@@ -28,21 +25,7 @@ namespace MapsExt
 			}
 
 			this._mapObjects[dataType] = mapObject;
-
-			if (mapObject.Prefab.GetComponent<PhotonMapObject>())
-			{
-				PhotonNetwork.PrefabPool.RegisterPrefab(this.GetInstanceName(dataType), mapObject.Prefab);
-
-				// PhotonMapObject has a hard-coded prefab name prefix / resource location
-				PhotonNetwork.PrefabPool.RegisterPrefab("4 Map Objects/" + this.GetInstanceName(dataType), mapObject.Prefab);
-			}
-
-			this._dataSerializers.Add(dataType, serializer);
-		}
-
-		protected TSerializer GetSerializer(Type dataType)
-		{
-			return this._dataSerializers.GetValueOrDefault(dataType, default);
+			this._serializers[dataType] = serializer;
 		}
 
 		protected IMapObject GetMapObject(Type dataType)
@@ -50,10 +33,36 @@ namespace MapsExt
 			return this._mapObjects[dataType];
 		}
 
-		public void Deserialize(MapObjectData data, GameObject target)
+		protected IMapObjectSerializer GetSerializer(Type dataType)
 		{
-			var serializer = this.GetSerializer(data.GetType()) ?? throw new ArgumentException($"Map object type not registered: {data.GetType()}");
-			serializer.Deserialize(data, target);
+			return this._serializers.GetValueOrDefault(dataType) ?? throw new ArgumentException($"Map object type not registered: {dataType}");
+		}
+
+		public void WriteMapObject(MapObjectData data, GameObject target)
+		{
+			this.GetSerializer(data.GetType()).WriteMapObject(data, target);
+		}
+
+		public MapObjectData ReadMapObject(GameObject go)
+		{
+			return this.ReadMapObject(go.GetComponent<MapObjectInstance>());
+		}
+
+		public MapObjectData ReadMapObject(MapObjectInstance mapObjectInstance)
+		{
+			if (mapObjectInstance == null)
+			{
+				throw new ArgumentNullException(nameof(mapObjectInstance));
+			}
+
+			if (mapObjectInstance.DataType == null)
+			{
+				throw new ArgumentException($"Cannot read map object ({mapObjectInstance.gameObject.name}): null DataType");
+			}
+
+			var dataType = mapObjectInstance.DataType;
+			var serializer = this.GetSerializer(dataType);
+			return serializer.ReadMapObject(mapObjectInstance);
 		}
 
 		public void Instantiate<TData>(Transform parent, Action<GameObject> onInstantiate = null) where TData : MapObjectData
@@ -67,139 +76,6 @@ namespace MapsExt
 			this.Instantiate(data, parent, onInstantiate);
 		}
 
-		protected abstract string GetInstanceName(Type dataType);
 		public abstract void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null);
-	}
-
-	public class MapObjectManager : MapObjectManager<IMapObjectSerializer>
-	{
-		private static AssetBundle s_mapObjectBundle;
-		private static readonly Dictionary<string, TargetSyncedStore<int>> s_syncStores = new();
-
-		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
-		{
-			return s_mapObjectBundle.LoadAsset<TObj>(name);
-		}
-
-		[UnboundRPC]
-		public static void RPC_SyncInstantiation(string networkID, int instantiationID, int viewID)
-		{
-			s_syncStores[networkID].Set(instantiationID, viewID);
-		}
-
-		private string _networkID;
-
-		protected virtual void Awake()
-		{
-			if (s_mapObjectBundle == null)
-			{
-				s_mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(MapObjectManager).Assembly);
-			}
-		}
-
-		public void SetNetworkID(string id)
-		{
-			if (this._networkID != null)
-			{
-				s_syncStores.Remove(this._networkID);
-			}
-
-			this._networkID = id;
-			s_syncStores.Add(id, new TargetSyncedStore<int>());
-		}
-
-		protected override string GetInstanceName(Type type)
-		{
-			return $"{this._networkID}/{type.FullName}";
-		}
-
-		public override void Instantiate(MapObjectData data, Transform parent, Action<GameObject> onInstantiate = null)
-		{
-			var mapObject = this.GetMapObject(data.GetType());
-			var prefab = mapObject.Prefab;
-
-			var syncStore = s_syncStores[this._networkID];
-			int instantiationID = syncStore.Allocate(parent);
-
-			bool isMapObjectNetworked = prefab.GetComponent<PhotonMapObject>() != null;
-			bool isMapSpawned = MapManager.instance.currentMap?.Map.wasSpawned == true;
-
-			GameObject instance;
-
-			if (!isMapSpawned || !isMapObjectNetworked)
-			{
-				instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
-
-				if (isMapObjectNetworked)
-				{
-					/* PhotonMapObjects (networked map objects like movable boxes) are first instantiated client-side, which is what we
-					 * see during the map transition animation. After the transition is done, the client-side instance is removed and a
-					 * networked (photon instantiated) version is spawned in its place. This means we need to do weird shit to get the
-					 * "actual" map object instance, since the instance we get from `GameObject.Instantiate` above is in this case not
-					 * the instance we care about.
-					 * 
-					 * Communicating the photon instantiated map object to other clients is an additional hurdle. The solution here uses
-					 * a dynamically generated "instantiation ID", which is basically how many times this `Instantiate` method has been
-					 * called for the provided `parent` (map) in succession. The master client later communicates the view ID of the
-					 * instantiated map object to other clients with the instantiation ID. Clients can then find the instantiated
-					 * map object with the view ID and reply to the caller of this `Instantiate` with the onInstantiate callback.
-					 */
-					if (PhotonNetwork.IsMasterClient)
-					{
-						MapsExtended.AddPhotonInstantiateListener(instance.GetComponent<PhotonMapObject>(), networkInstance =>
-						{
-							mapObject.OnInstantiate(networkInstance);
-							this.Deserialize(data, networkInstance);
-
-							onInstantiate?.Invoke(networkInstance);
-
-							int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
-
-							// Communicate the photon instantiated map object to other clients
-							NetworkingManager.RPC_Others(typeof(MapObjectManager<>), nameof(RPC_SyncInstantiation), this._networkID, instantiationID, viewID);
-						});
-					}
-					else
-					{
-						// Call onInstantiate once the master client has communicated the photon instantiated map object
-						this.StartCoroutine(this.SyncInstantiation(parent, instantiationID, data, onInstantiate));
-					}
-				}
-			}
-			else
-			{
-				/* We don't need to care about the photon instantiation dance (see above comment) when instantiating PhotonMapObjects
-				 * after the map transition has already been done.
-				 *
-				 * The "lateInstantiated" flag is checked in a PhotonMapObject patch to initialize some required properties.
-				 */
-				instance = PhotonNetwork.Instantiate(this.GetInstanceName(data.GetType()), Vector3.zero, Quaternion.identity, 0, new object[] { "lateInstantiated" });
-				instance.transform.SetParent(parent);
-			}
-
-			instance.name = this.GetInstanceName(data.GetType());
-
-			mapObject.OnInstantiate(instance);
-			this.Deserialize(data, instance);
-
-			// The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
-			onInstantiate?.Invoke(instance);
-		}
-
-		private IEnumerator SyncInstantiation(object target, int instantiationID, MapObjectData data, Action<GameObject> onInstantiate)
-		{
-			var syncStore = s_syncStores[this._networkID];
-			yield return syncStore.WaitForValue(target, instantiationID);
-
-			if (syncStore.TargetEquals(target))
-			{
-				int viewID = syncStore.Get(instantiationID);
-				var networkInstance = PhotonNetwork.GetPhotonView(viewID).gameObject;
-
-				this.Deserialize(data, networkInstance);
-
-				onInstantiate?.Invoke(networkInstance);
-			}
-		}
 	}
 }
