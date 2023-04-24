@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
 using UnboundLib.Networking;
-using Jotunn.Utils;
 using MapsExt.MapObjects;
 using Photon.Pun;
 
@@ -12,13 +11,7 @@ namespace MapsExt
 {
 	public sealed class NetworkedMapObjectManager : MapObjectManager
 	{
-		private static AssetBundle s_mapObjectBundle;
 		private static readonly Dictionary<string, TargetSyncedStore<int>> s_syncStores = new();
-
-		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
-		{
-			return s_mapObjectBundle.LoadAsset<TObj>(name);
-		}
 
 		[UnboundRPC]
 		public static void RPC_SyncInstantiation(string networkID, int instantiationID, int viewID)
@@ -27,14 +20,6 @@ namespace MapsExt
 		}
 
 		private string _networkID;
-
-		private void Awake()
-		{
-			if (s_mapObjectBundle == null)
-			{
-				s_mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(NetworkedMapObjectManager).Assembly);
-			}
-		}
 
 		public override void RegisterMapObject(Type dataType, IMapObject mapObject, IMapObjectSerializer serializer)
 		{

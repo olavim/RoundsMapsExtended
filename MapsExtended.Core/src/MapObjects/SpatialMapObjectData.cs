@@ -9,10 +9,10 @@ namespace MapsExt.MapObjects
 	/// </summary>
 	public abstract class SpatialMapObjectData : MapObjectData
 	{
-		private PositionProperty _position;
-		private ScaleProperty _scale;
-		private RotationProperty _rotation;
-		private AnimationKeyframe[] _keyframes;
+		[SerializeField] private PositionProperty _position = new();
+		[SerializeField] private ScaleProperty _scale = new();
+		[SerializeField] private RotationProperty _rotation = new();
+		[SerializeField] private AnimationKeyframe[] _keyframes = new AnimationKeyframe[0];
 
 		public PositionProperty Position { get => this._position; set => this._position = value; }
 		public ScaleProperty Scale { get => this._scale; set => this._scale = value; }
@@ -21,14 +21,6 @@ namespace MapsExt.MapObjects
 		{
 			get => new(this._keyframes);
 			set => this._keyframes = value.Keyframes;
-		}
-
-		protected SpatialMapObjectData()
-		{
-			this.Position = new();
-			this.Scale = new();
-			this.Rotation = new();
-			this.Animation = new();
 		}
 	}
 }

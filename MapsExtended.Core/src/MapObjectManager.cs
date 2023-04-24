@@ -2,15 +2,30 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using MapsExt.MapObjects;
+using Jotunn.Utils;
 
 namespace MapsExt
 {
 	public abstract class MapObjectManager : MonoBehaviour
 	{
 		public static MapObjectManager Current { get; set; }
+		private static AssetBundle s_mapObjectBundle;
+
+		public static TObj LoadCustomAsset<TObj>(string name) where TObj : UnityEngine.Object
+		{
+			return s_mapObjectBundle.LoadAsset<TObj>(name);
+		}
 
 		private readonly Dictionary<Type, IMapObjectSerializer> _serializers = new();
 		private readonly Dictionary<Type, IMapObject> _mapObjects = new();
+
+		protected virtual void Awake()
+		{
+			if (s_mapObjectBundle == null)
+			{
+				s_mapObjectBundle = AssetUtils.LoadAssetBundleFromResources("mapobjects", typeof(NetworkedMapObjectManager).Assembly);
+			}
+		}
 
 		public virtual void RegisterMapObject(Type dataType, IMapObject mapObject, IMapObjectSerializer serializer)
 		{

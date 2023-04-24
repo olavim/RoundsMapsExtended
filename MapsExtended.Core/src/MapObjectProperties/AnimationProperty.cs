@@ -7,7 +7,7 @@ namespace MapsExt.Properties
 {
 	public class AnimationProperty : IProperty
 	{
-		private readonly AnimationKeyframe[] _keyframes;
+		[SerializeField] private readonly AnimationKeyframe[] _keyframes;
 
 		public AnimationKeyframe[] Keyframes => this._keyframes;
 

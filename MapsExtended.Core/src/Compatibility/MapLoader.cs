@@ -90,7 +90,7 @@ namespace MapsExt.Compatibility
 					depth--;
 				}
 
-				if (key == "version" && depth == 0)
+				if (key == "_version" && depth == 0)
 				{
 					return value.Trim('"');
 				}

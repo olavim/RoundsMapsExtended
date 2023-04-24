@@ -5,7 +5,7 @@ namespace MapsExt.Properties
 {
 	public class RotationProperty : ValueProperty<float>, ILinearProperty<RotationProperty>
 	{
-		private readonly float _angle;
+		[SerializeField] private readonly float _angle;
 
 		public override float Value => this._angle;
 

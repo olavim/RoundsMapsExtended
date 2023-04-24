@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MapsExt.MapObjects
 {
-	public abstract class MapObjectData
+	public abstract class MapObjectData : ISerializationCallbackReceiver
 	{
 		private class PropertyMember
 		{
@@ -29,22 +31,41 @@ namespace MapsExt.MapObjects
 			}
 		}
 
-		public string mapObjectId = Guid.NewGuid().ToString();
-		public bool active = true;
+		private List<PropertyMember> _propertyMembers;
 
-		[NonSerialized]
-		private readonly List<PropertyMember> _propertyMembers;
+		[SerializeField] private string _mapObjectId = Guid.NewGuid().ToString();
+
+		[SerializeField]
+		[FormerlySerializedAs("active")]
+		private bool _active = true;
+
+		public string MapObjectId { get => this._mapObjectId; set => this._mapObjectId = value; }
+		public bool Active { get => this._active; set => this._active = value; }
 
 		protected MapObjectData()
 		{
-			this._propertyMembers = new List<PropertyMember>();
+			this.InitMembers();
+		}
 
+		private void InitMembers()
+		{
 			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 			var props = this.GetType().GetProperties(flags).Where(p => p.GetReturnType() != null && typeof(IProperty).IsAssignableFrom(p.GetReturnType()));
 			var fields = this.GetType().GetFields(flags).Where(p => p.GetReturnType() != null && typeof(IProperty).IsAssignableFrom(p.GetReturnType()));
+			this._propertyMembers = new();
 			this._propertyMembers.AddRange(props.Select(member => new PropertyMember(this, member)));
 			this._propertyMembers.AddRange(fields.Select(member => new PropertyMember(this, member)));
 		}
+
+		void ISerializationCallbackReceiver.OnAfterDeserialize() => this.OnAfterDeserialize();
+		void ISerializationCallbackReceiver.OnBeforeSerialize() => this.OnBeforeSerialize();
+
+		protected virtual void OnAfterDeserialize()
+		{
+			this.InitMembers();
+		}
+
+		protected virtual void OnBeforeSerialize() { }
 
 		public TProp GetProperty<TProp>() where TProp : IProperty
 		{
@@ -53,7 +74,7 @@ namespace MapsExt.MapObjects
 
 		public IProperty GetProperty(Type propertyType)
 		{
-			return this._propertyMembers.Find(m => propertyType.IsAssignableFrom(m.Type))?.Value;
+			return this._propertyMembers.Find(m => m.Type == propertyType)?.Value;
 		}
 
 		public TProp[] GetProperties<TProp>() where TProp : IProperty
@@ -85,7 +106,7 @@ namespace MapsExt.MapObjects
 
 		public override string ToString()
 		{
-			return $"MapObject ({this.GetType()})\nid: {this.mapObjectId}";
+			return $"MapObject ({this.GetType()})\nid: {this.MapObjectId}";
 		}
 	}
 }

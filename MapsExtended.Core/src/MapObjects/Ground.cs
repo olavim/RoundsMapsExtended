@@ -7,7 +7,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(GroundData))]
 	public class Ground : IMapObject
 	{
-		public virtual GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Ground");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ground");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

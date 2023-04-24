@@ -5,8 +5,8 @@ namespace MapsExt.Properties
 {
 	public class SpawnIDProperty : IProperty, IEquatable<SpawnIDProperty>
 	{
-		private int _id;
-		private int _teamId;
+		[SerializeField] private int _id;
+		[SerializeField] private int _teamId;
 
 		public int Id { get => this._id; set => this._id = value; }
 		public int TeamId { get => this._teamId; set => this._teamId = value; }

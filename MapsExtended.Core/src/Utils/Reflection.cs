@@ -8,7 +8,7 @@ namespace MapsExt
 {
 	public static class ReflectionUtils
 	{
-		static TDelegate ConvertMethod<TDelegate>(object instance, MethodInfo methodInfo) where TDelegate : Delegate
+		public static TDelegate ConvertMethod<TDelegate>(object instance, MethodInfo methodInfo) where TDelegate : Delegate
 		{
 			var requestedMethodInfo = typeof(TDelegate).GetMethod("Invoke");
 			var requestedParameterTypes = requestedMethodInfo.GetParameters().Select(p => p.ParameterType).ToList();
@@ -44,12 +44,6 @@ namespace MapsExt
 			return lambda.Compile();
 		}
 
-		static TDelegate ConvertDelegate<TDelegate>(Delegate del) where TDelegate : Delegate
-		{
-			var delegates = del.GetInvocationList().Select(inv => ConvertMethod<TDelegate>(inv.Target, inv.Method)).ToArray();
-			return (TDelegate) Delegate.Combine(delegates);
-		}
-
 		/// <summary>
 		/// Finds and converts a static method from 'type', with the specified attribute of 'attributeType', to TDelegate.
 		/// If such a method is not found, also looks for attributed static properties and converts their values to TDelegate.
@@ -57,6 +51,7 @@ namespace MapsExt
 		/// <typeparam name="TDelegate">Type to convert the attributed method to.</typeparam>
 		/// <param name="type">Type from where methods are searched from.</param>
 		/// <param name="attributeType">Type of the attribute to look for.</param>
+		[Obsolete("Deprecated")]
 		public static TDelegate GetAttributedMethod<TDelegate>(Type type, Type attributeType) where TDelegate : Delegate
 		{
 			var deserializerMethod = Array.Find(
@@ -79,33 +74,27 @@ namespace MapsExt
 			return null;
 		}
 
+		[Obsolete("Deprecated")]
 		public static T GetAttributedProperty<T>(Type type, Type attributeType) where T : class
 		{
 			var prop = Array.Find(
 				type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
 				m => m.GetCustomAttribute(attributeType) != null
 			);
-			return prop?.GetValue(null) as T;
+			try
+			{
+				return prop?.GetValue(null) as T;
+			}
+			catch (TargetInvocationException ex)
+			{
+				throw new Exception($"Could not get value of property {prop?.Name} from {type.Name}", ex.GetBaseException());
+			}
 		}
 
-		public static IEnumerable<Type> GetParentTypes(this Type type)
+		private static TDelegate ConvertDelegate<TDelegate>(Delegate del) where TDelegate : Delegate
 		{
-			if (type == null)
-			{
-				yield break;
-			}
-
-			foreach (var i in type.GetInterfaces())
-			{
-				yield return i;
-			}
-
-			var currentBaseType = type.BaseType;
-			while (currentBaseType != null)
-			{
-				yield return currentBaseType;
-				currentBaseType = currentBaseType.BaseType;
-			}
+			var delegates = del.GetInvocationList().Select(inv => ConvertMethod<TDelegate>(inv.Target, inv.Method)).ToArray();
+			return (TDelegate) Delegate.Combine(delegates);
 		}
 	}
 }

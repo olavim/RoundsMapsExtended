@@ -333,8 +333,8 @@ namespace MapsExt.Editor
 		private void SpawnKeyframeMapObject(AnimationKeyframe frame, Action<GameObject> cb)
 		{
 			var frameData = this.Animation.ReadMapObject();
-			frameData.mapObjectId = $"{frameData.mapObjectId}:keyframeMapObject";
-			frameData.active = true;
+			frameData.MapObjectId = $"{frameData.MapObjectId}:keyframeMapObject";
+			frameData.Active = true;
 			frameData.SetProperty(new AnimationProperty());
 
 			MapsExtendedEditor.MapObjectManager.Instantiate(frameData, this.transform, instance =>

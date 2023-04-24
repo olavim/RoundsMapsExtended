@@ -7,7 +7,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(BallData))]
 	public class Ball : IMapObject
 	{
-		public virtual GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Ball");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Ball");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

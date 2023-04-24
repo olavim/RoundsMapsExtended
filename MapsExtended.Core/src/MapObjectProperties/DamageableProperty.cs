@@ -5,7 +5,7 @@ namespace MapsExt.Properties
 {
 	public class DamageableProperty : ValueProperty<bool>
 	{
-		private readonly bool _value;
+		[SerializeField] private readonly bool _value;
 
 		public override bool Value => this._value;
 

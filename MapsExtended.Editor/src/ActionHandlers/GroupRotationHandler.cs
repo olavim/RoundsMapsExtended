@@ -30,7 +30,7 @@ namespace MapsExt.Editor.ActionHandlers
 			foreach (var obj in this._gameObjects)
 			{
 				float newAngle = (this.GetValue() + this._localRotations[obj]) % 360;
-				obj.TryWriteProperty<RotationProperty>(EditorUtils.Snap(newAngle, 1f));
+				obj.GetComponent<RotationHandler>()?.SetValue(EditorUtils.Snap(newAngle, 1f));
 			}
 		}
 

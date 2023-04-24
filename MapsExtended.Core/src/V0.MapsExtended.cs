@@ -44,7 +44,7 @@ namespace MapsExt
 					UnityEngine.Debug.LogError($"Could not register legacy map object {type.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					UnityEngine.Debug.LogException(ex);
 #endif
 				}
 			}

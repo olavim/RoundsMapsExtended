@@ -42,16 +42,15 @@ namespace MapsExt.Editor
 						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
 
 					var serializer = new MapObjectSpecSerializer(deserializerAction, serializerAction);
-					MapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
-
+					this._mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);
 					this._mapObjectAttributes.Add((attr.dataType, attr.label, attr.category));
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register editor map object {type.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register legacy editor map object {type.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					UnityEngine.Debug.LogException(ex);
 #endif
 				}
 			}

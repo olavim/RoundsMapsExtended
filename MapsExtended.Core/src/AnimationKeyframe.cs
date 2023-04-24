@@ -2,6 +2,7 @@ using MapsExt.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace MapsExt
 {
@@ -15,11 +16,10 @@ namespace MapsExt
 
 	public class AnimationKeyframe
 	{
-		private List<ILinearProperty> _componentValues;
-		private float _duration;
-		private CurveType _curveType;
+		[SerializeField] private List<ILinearProperty> _componentValues;
+		[SerializeField] private float _duration;
+		[SerializeField] private CurveType _curveType;
 
-		[NonSerialized]
 		private BezierCurve _curve;
 
 		public List<ILinearProperty> ComponentValues { get => this._componentValues; set => this._componentValues = value; }

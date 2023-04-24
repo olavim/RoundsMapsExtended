@@ -4,6 +4,7 @@
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
 		<IsPublishable>false</IsPublishable>
+		<AssemblyName>MapsExtended.Tests</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>

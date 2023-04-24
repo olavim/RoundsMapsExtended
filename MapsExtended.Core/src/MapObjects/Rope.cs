@@ -5,8 +5,8 @@ namespace MapsExt.MapObjects
 {
 	public class RopeData : MapObjectData
 	{
-		private Vector2 _pos1;
-		private Vector2 _pos2;
+		[SerializeField] private Vector2 _pos1;
+		[SerializeField] private Vector2 _pos2;
 
 		public RopePositionProperty Position
 		{
@@ -23,7 +23,7 @@ namespace MapsExt.MapObjects
 	[MapObject(typeof(RopeData))]
 	public class Rope : IMapObject
 	{
-		public virtual GameObject Prefab => NetworkedMapObjectManager.LoadCustomAsset<GameObject>("Rope");
+		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Rope");
 
 		public virtual void OnInstantiate(GameObject instance) { }
 	}

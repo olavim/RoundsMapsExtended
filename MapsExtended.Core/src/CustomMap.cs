@@ -1,15 +1,14 @@
 ﻿using MapsExt.MapObjects;
-using System;
+using UnityEngine;
 
 namespace MapsExt
 {
-	[Serializable]
 	public class CustomMap
 	{
-		private readonly string _id;
-		private readonly string _name;
-		private readonly string _version;
-		private readonly MapObjectData[] _mapObjects;
+		[SerializeField] private readonly string _id;
+		[SerializeField] private readonly string _name;
+		[SerializeField] private readonly string _version;
+		[SerializeField] private readonly MapObjectData[] _mapObjects;
 
 		public string Id => this._id;
 		public string Name => this._name;

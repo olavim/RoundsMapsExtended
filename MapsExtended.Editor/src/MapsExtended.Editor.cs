@@ -200,10 +200,10 @@ namespace MapsExt.Editor
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register EditorMapObject {mapObjectType.Name}: {ex.Message}");
+					UnityEngine.Debug.LogError($"Could not register editor map object {mapObjectType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					UnityEngine.Debug.LogException(ex);
 #endif
 				}
 			}
@@ -248,8 +248,6 @@ namespace MapsExt.Editor
 #endif
 				}
 			}
-
-			this.RegisterV0MapObjects(assembly);
 		}
 
 		private static void OnEditorLevelLoad(Scene scene, LoadSceneMode mode)

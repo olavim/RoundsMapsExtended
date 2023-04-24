@@ -4,8 +4,8 @@ namespace MapsExt.Properties
 {
 	public class ScaleProperty : ValueProperty<Vector2>, ILinearProperty<ScaleProperty>
 	{
-		private readonly float _x;
-		private readonly float _y;
+		[SerializeField] private readonly float _x;
+		[SerializeField] private readonly float _y;
 
 		public override Vector2 Value => new(this._x, this._y);
 

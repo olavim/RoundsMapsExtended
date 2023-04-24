@@ -19,9 +19,9 @@ namespace MapsExt
 			try
 			{
 				var mapObjectInstance = target.GetOrAddComponent<MapObjectInstance>();
-				mapObjectInstance.MapObjectId = data.mapObjectId ?? Guid.NewGuid().ToString();
+				mapObjectInstance.MapObjectId = data.MapObjectId ?? Guid.NewGuid().ToString();
 				mapObjectInstance.DataType = data.GetType();
-				target.SetActive(data.active);
+				target.SetActive(data.Active);
 				this._propertyManager.Write(data, target);
 			}
 			catch (Exception ex)
@@ -35,8 +35,8 @@ namespace MapsExt
 			try
 			{
 				var data = (MapObjectData) Activator.CreateInstance(mapObjectInstance.DataType);
-				data.mapObjectId = mapObjectInstance.MapObjectId;
-				data.active = mapObjectInstance.gameObject.activeSelf;
+				data.MapObjectId = mapObjectInstance.MapObjectId;
+				data.Active = mapObjectInstance.gameObject.activeSelf;
 
 				foreach (var prop in this._propertyManager.ReadAll(mapObjectInstance.gameObject))
 				{

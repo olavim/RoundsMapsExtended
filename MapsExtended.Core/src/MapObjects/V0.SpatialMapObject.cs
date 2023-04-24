@@ -1,4 +1,6 @@
+using MapsExt.Properties;
 using System;
+using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.MapObjects
@@ -18,11 +20,13 @@ namespace MapsExt.MapObjects
 		{
 			target.position = instance.transform.position;
 			target.scale = instance.transform.localScale;
-			target.rotation = instance.transform.rotation;
+			target.rotation = (Quaternion) instance.GetComponent<RotationPropertyInstance>().Rotation;
 		}
 
 		public static void Deserialize(SpatialMapObject data, GameObject target)
 		{
+			target.GetOrAddComponent<RotationPropertyInstance>().Rotation = data.rotation.eulerAngles.z;
+
 			target.transform.position = data.position;
 			target.transform.localScale = data.scale;
 			target.transform.rotation = data.rotation;

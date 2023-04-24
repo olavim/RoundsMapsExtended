@@ -10,7 +10,6 @@ using MapsExt.Editor.ActionHandlers;
 using System;
 using System.Collections;
 using System.Reflection;
-using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -100,6 +99,24 @@ namespace MapsExt.Editor
 			this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 		}
 
+		public void LoadMap(string mapFilePath)
+		{
+			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.MapObjectManager);
+
+			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
+			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");
+
+			this.CurrentMapName = mapFilePath.StartsWith(personalFolder) ? mapName : null;
+
+			this.ExecuteAfterFrames(1, () =>
+			{
+				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
+				this.ResetSpawnLabels();
+				this.ClearSelected();
+				this.RefreshHandlers();
+			});
+		}
+
 		public void SaveMap(string filename)
 		{
 			var bytes = SerializationUtility.SerializeValue(this.GetMapData(filename), DataFormat.JSON);
@@ -121,9 +138,9 @@ namespace MapsExt.Editor
 			{
 				var data = mapObject.ReadMapObject();
 
-				if (!data.active && mapObject.gameObject == this.AnimationHandler.Animation?.gameObject)
+				if (!data.Active && mapObject.gameObject == this.AnimationHandler.Animation?.gameObject)
 				{
-					data.active = true;
+					data.Active = true;
 				}
 
 				mapObjects.Add(data);
@@ -198,13 +215,13 @@ namespace MapsExt.Editor
 
 			foreach (var data in state.MapObjects)
 			{
-				if (dict.ContainsKey(data.mapObjectId))
+				if (dict.ContainsKey(data.MapObjectId))
 				{
 					// This map object already exists in the scene, so we just recover its state
-					data.WriteMapObject(dict[data.mapObjectId]);
+					data.WriteMapObject(dict[data.MapObjectId]);
 
 					// Mark a map object as "handled" by removing it from the dictionary
-					dict.Remove(data.mapObjectId);
+					dict.Remove(data.MapObjectId);
 				}
 				else
 				{
@@ -371,24 +388,6 @@ namespace MapsExt.Editor
 			this.Content.SetActive(true);
 			this.SimulatedContent.SetActive(false);
 			this.AnimationHandler.enabled = true;
-		}
-
-		public void LoadMap(string mapFilePath)
-		{
-			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.MapObjectManager);
-
-			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
-			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");
-
-			this.CurrentMapName = mapFilePath.StartsWith(personalFolder) ? mapName : null;
-
-			this.ExecuteAfterFrames(1, () =>
-			{
-				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
-				this.ResetSpawnLabels();
-				this.ClearSelected();
-				this.RefreshHandlers();
-			});
 		}
 
 		public void OnSelectionStart()

@@ -9,7 +9,6 @@ using Surity;
 using UnityEngine;
 using MapsExt.MapObjects;
 using System.Linq;
-using MapsExt.Editor.Properties;
 
 namespace MapsExt.Editor.Tests
 {

@@ -17,6 +17,7 @@ using MapsExt.MapObjects;
 using MapsExt.Properties;
 using UnboundLib.Utils;
 using MapsExt.Compatibility;
+using Sirenix.Serialization;
 
 namespace MapsExt
 {
@@ -155,7 +156,7 @@ namespace MapsExt
 					UnityEngine.Debug.LogError($"Could not register map object {mapObjectType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					UnityEngine.Debug.LogException(ex);
 #endif
 				}
 			}

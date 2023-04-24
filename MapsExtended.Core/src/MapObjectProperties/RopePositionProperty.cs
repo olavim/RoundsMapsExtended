@@ -6,8 +6,8 @@ namespace MapsExt.Properties
 {
 	public class RopePositionProperty : IProperty, IEquatable<RopePositionProperty>
 	{
-		private Vector2 _pos1;
-		private Vector2 _pos2;
+		[SerializeField] private Vector2 _pos1;
+		[SerializeField] private Vector2 _pos2;
 
 		public Vector2 StartPosition { get => this._pos1; set => this._pos1 = value; }
 		public Vector2 EndPosition { get => this._pos2; set => this._pos2 = value; }
