@@ -125,7 +125,9 @@ namespace MapsExt.Compatibility
 
 		public override CustomMap Load(Stream stream)
 		{
+#pragma warning disable CS0618
 			object map = SerializationUtility.DeserializeValue<V0.CustomMap>(stream, DataFormat.JSON, this.context);
+#pragma warning restore CS0618
 
 			while (map is IUpgradable upgradeable)
 			{

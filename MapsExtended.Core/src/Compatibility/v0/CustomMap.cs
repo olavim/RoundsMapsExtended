@@ -5,14 +5,13 @@ using System.Collections.Generic;
 
 namespace MapsExt.Compatibility.V0
 {
-	internal class CustomMap : IUpgradable
+	[Obsolete("Deprecated")]
+	public class CustomMap : IUpgradable
 	{
 		public string id;
 		public string name;
 
-#pragma warning disable CS0618
 		public List<MapsExt.MapObjects.MapObject> mapObjects;
-#pragma warning restore CS0618
 
 		public object Upgrade()
 		{

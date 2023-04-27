@@ -12,7 +12,9 @@ namespace MapsExt.Compatibility.V0.MapObjects
 				return typeName;
 			}
 
-			return typeName.Replace("MapsExt.", "MapsExt.Compatibility.V0.");
+			typeName = typeName.Replace("MapsExt.CustomMap", "MapsExt.Compatibility.V0.CustomMap");
+			typeName = typeName.Replace("MapsExt.MapObjects", "MapsExt.Compatibility.V0.MapObjects");
+			return typeName;
 		}
 
 		public override bool ContainsType(string typeName)
