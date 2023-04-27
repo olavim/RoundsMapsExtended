@@ -1,3 +1,4 @@
+& dotnet tool restore
 & dotnet build
 
 [xml]$config = Get-Content "$PSScriptRoot\Config.props"
@@ -9,4 +10,4 @@ $bepinexDir = $config.Project.PropertyGroup.BepInExDir
 	--compact-stacktraces `
 	-- `
 	--doorstop-enable true `
-	--doorstop-target "$bepinexDir\core\BepInEx.Preloader.dll"
+	--doorstop-target-assembly "$bepinexDir\core\BepInEx.Preloader.dll"

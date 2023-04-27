@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnboundLib;
 using Photon.Pun;
-using MapsExt.Properties;
 using System.Linq;
 
 namespace MapsExt
@@ -89,7 +88,7 @@ namespace MapsExt
 
 		protected virtual void Update()
 		{
-			if (!this.IsPlaying || !this._mapEntered || PlayerManager.instance.GetExtraData().PlayersBeingMoved?.Any() == true)
+			if (!this.IsPlaying || !this._mapEntered || PlayerManager.instance.GetExtraData().IsAnyPlayerBeingMoved)
 			{
 				return;
 			}

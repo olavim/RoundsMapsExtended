@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace MapsExt
 
 		internal class ExtraPlayerManagerData
 		{
+			public bool IsAnyPlayerBeingMoved => this.PlayersBeingMoved?.Any(p => p) ?? false;
 			public bool[] PlayersBeingMoved { get; set; } = new bool[0];
 		}
 

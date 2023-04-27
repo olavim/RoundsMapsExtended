@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "buildAndRun",
+			"type": "shell",
+			"command": "./../start.ps1"
+		},
+		{
+			"label": "buildAndDebug",
+			"type": "shell",
+			"command": "./../debug.ps1"
+		}
+	]
+}
