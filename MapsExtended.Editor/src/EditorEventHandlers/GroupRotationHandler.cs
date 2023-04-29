@@ -1,12 +1,12 @@
-using MapsExt.Editor.Properties;
 using MapsExt.Properties;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-namespace MapsExt.Editor.ActionHandlers
+namespace MapsExt.Editor.Events
 {
-	[GroupActionHandler(typeof(PositionHandler))]
-	public class GroupRotationHandler : RotationHandler, IGroupMapObjectActionHandler
+	[GroupEventHandler(typeof(PositionHandler))]
+	public class GroupRotationHandler : RotationHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
 
@@ -34,13 +34,22 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public void Initialize(IEnumerable<GameObject> gameObjects)
-		{
-			this._gameObjects = gameObjects;
+		protected override bool ShouldHandleEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects) => true;
 
-			foreach (var obj in this._gameObjects)
+		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		{
+			base.HandleAcceptedEditorEvent(evt, subjects);
+
+			if (evt is SelectEvent)
 			{
-				this._localRotations[obj] = obj.GetComponent<RotationHandler>()?.GetValue() ?? new();
+				this.OnSelect();
+
+				this._gameObjects = this.Editor.SelectedObjects.ToList();
+
+				foreach (var obj in this._gameObjects)
+				{
+					this._localRotations[obj] = obj.GetComponent<RotationHandler>()?.GetValue() ?? new();
+				}
 			}
 		}
 	}

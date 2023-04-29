@@ -1,10 +1,11 @@
 using MapsExt.Properties;
+using System.Collections.Generic;
 using UnboundLib;
 using UnityEngine;
 
-namespace MapsExt.Editor.ActionHandlers
+namespace MapsExt.Editor.Events
 {
-	public class PositionHandler : ActionHandler
+	public class PositionHandler : EditorEventHandler
 	{
 		private static Vector2 KeyCodeToNudge(KeyCode key)
 		{
@@ -36,8 +37,9 @@ namespace MapsExt.Editor.ActionHandlers
 		private Vector2Int _prevCell;
 		private Vector2 _offset;
 
-		protected virtual void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
 			this.gameObject.GetOrAddComponent<SelectionHandler>();
 		}
 
@@ -64,7 +66,54 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnPointerDown()
+		private void DragMapObjects()
+		{
+			var mousePos = EditorInput.MousePosition;
+			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
+			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
+			var mouseDelta = mouseWorldPos - this._prevMouse;
+			var cellDelta = mouseCell - this._prevCell;
+
+			var delta = mouseDelta;
+
+			if (this.Editor.SnapToGrid)
+			{
+				var objectCell = (Vector2Int) this.Editor.Grid.WorldToCell(this.GetValue());
+				var snappedPosition = (Vector2) this.Editor.Grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
+
+				delta = snappedPosition + this._offset - (Vector2) this.GetValue();
+			}
+
+			if (delta != Vector2.zero)
+			{
+				this.SetValue((Vector2) this.GetValue() + delta);
+			}
+
+			this._prevMouse += mouseDelta;
+			this._prevCell = mouseCell;
+		}
+
+		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		{
+			UnityEngine.Debug.Log($"PositionHandler: {evt.GetType().Name}");
+			switch (evt)
+			{
+				case KeyDownEvent keyDownEvent:
+					this.OnKeyDown(keyDownEvent.Key);
+					break;
+				case PointerDownEvent:
+					this.OnPointerDown();
+					break;
+				case PointerUpEvent:
+					this.OnPointerUp();
+					break;
+				case PasteEvent:
+					this.OnPaste();
+					break;
+			}
+		}
+
+		protected virtual void OnPointerDown()
 		{
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
@@ -102,14 +151,13 @@ namespace MapsExt.Editor.ActionHandlers
 			this._prevCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 		}
 
-		public override void OnPointerUp()
+		protected virtual void OnPointerUp()
 		{
 			if (this._isDragging)
 			{
 				bool moved = this._prevPosition != this.GetValue().Value;
 				this.SetValue(this.GetValue().Value.Round(4));
 				this._isDragging = false;
-				this.Editor.RefreshHandlers();
 
 				if (moved)
 				{
@@ -118,7 +166,7 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnKeyDown(KeyCode key)
+		protected virtual void OnKeyDown(KeyCode key)
 		{
 			Vector2 nudge = PositionHandler.KeyCodeToNudge(key);
 
@@ -134,36 +182,9 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnPaste()
+		protected virtual void OnPaste()
 		{
 			this.Move(new(1, -1));
-		}
-
-		private void DragMapObjects()
-		{
-			var mousePos = EditorInput.MousePosition;
-			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
-			var mouseDelta = mouseWorldPos - this._prevMouse;
-			var cellDelta = mouseCell - this._prevCell;
-
-			var delta = mouseDelta;
-
-			if (this.Editor.SnapToGrid)
-			{
-				var objectCell = (Vector2Int) this.Editor.Grid.WorldToCell(this.GetValue());
-				var snappedPosition = (Vector2) this.Editor.Grid.CellToWorld((Vector3Int) (objectCell + cellDelta));
-
-				delta = snappedPosition + this._offset - (Vector2) this.GetValue();
-			}
-
-			if (delta != Vector2.zero)
-			{
-				this.SetValue((Vector2) this.GetValue() + delta);
-			}
-
-			this._prevMouse += mouseDelta;
-			this._prevCell = mouseCell;
 		}
 	}
 }

@@ -3,7 +3,7 @@ using MapsExt.Editor.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using MapsExt.Editor.MapObjects;
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 using UnboundLib;
 
 namespace MapsExt.Editor.Properties
@@ -40,7 +40,7 @@ namespace MapsExt.Editor.Properties
 		}
 	}
 
-	[PropertyInspector(typeof(RopePositionProperty))]
+	[InspectorElement(typeof(RopePositionProperty))]
 	public class RopePositionElement : InspectorElement
 	{
 		private Vector2Input _input1;
@@ -88,7 +88,6 @@ namespace MapsExt.Editor.Properties
 		private void HandleInputChange(RopePositionProperty value)
 		{
 			this.Context.InspectorTarget.WriteProperty(value);
-			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

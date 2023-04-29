@@ -1,4 +1,4 @@
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 using MapsExt.Editor.UI;
 using MapsExt.Properties;
 using UnboundLib;
@@ -21,7 +21,7 @@ namespace MapsExt.Editor.Properties
 		}
 	}
 
-	[PropertyInspector(typeof(ScaleProperty))]
+	[InspectorElement(typeof(ScaleProperty))]
 	public class ScaleElement : Vector2Element
 	{
 		public ScaleElement() : base("Size") { }
@@ -31,7 +31,6 @@ namespace MapsExt.Editor.Properties
 		protected override void OnChange(Vector2 value)
 		{
 			this.Context.InspectorTarget.WriteProperty<ScaleProperty>(value);
-			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

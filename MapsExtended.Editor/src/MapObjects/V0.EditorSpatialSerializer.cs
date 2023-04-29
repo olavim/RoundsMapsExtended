@@ -2,7 +2,7 @@ using UnityEngine;
 using MapsExt.MapObjects;
 using System;
 using UnboundLib;
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 
 namespace MapsExt.Editor.MapObjects
 {
@@ -16,7 +16,7 @@ namespace MapsExt.Editor.MapObjects
 			target.GetOrAddComponent<SelectionHandler>();
 			target.GetOrAddComponent<PositionHandler>();
 			target.GetOrAddComponent<SizeHandler>();
-			target.GetOrAddComponent<ActionHandlers.RotationHandler>();
+			target.GetOrAddComponent<Events.RotationHandler>();
 
 			GameObjectUtils.DisableRigidbody(target);
 			if (target.GetComponent<Damagable>())

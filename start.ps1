@@ -1,4 +1,7 @@
 & dotnet build
+if (-not $?) {
+	throw 'Build failed'
+}
 
 [xml]$config = Get-Content "$PSScriptRoot\Config.props"
 $roundsDir = $config.Project.PropertyGroup.RoundsDir

@@ -1,13 +1,13 @@
 using System;
 
-namespace MapsExt.Editor.ActionHandlers
+namespace MapsExt.Editor.Events
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-	public sealed class GroupActionHandlerAttribute : Attribute
+	public sealed class GroupEventHandlerAttribute : Attribute
 	{
 		public Type[] RequiredHandlerTypes { get; }
 
-		public GroupActionHandlerAttribute(params Type[] requiredHandlers)
+		public GroupEventHandlerAttribute(params Type[] requiredHandlers)
 		{
 			this.RequiredHandlerTypes = requiredHandlers;
 		}

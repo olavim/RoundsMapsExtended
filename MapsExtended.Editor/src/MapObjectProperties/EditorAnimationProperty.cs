@@ -43,7 +43,7 @@ namespace MapsExt.Editor.Properties
 		}
 	}
 
-	[PropertyInspector(typeof(AnimationProperty))]
+	[InspectorElement(typeof(AnimationProperty))]
 	public class AnimationButtonElement : ButtonElement
 	{
 		public override void OnUpdate()

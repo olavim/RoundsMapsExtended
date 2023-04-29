@@ -16,6 +16,7 @@ using MapsExt.Editor.Properties;
 using System.Collections;
 using UnityEngine.EventSystems;
 using MapsExt.Editor.UI;
+using MapsExt.Editor.Events;
 
 namespace MapsExt.Editor
 {
@@ -34,14 +35,17 @@ namespace MapsExt.Editor
 		public static PropertyManager PropertyManager => s_instance._propertyManager;
 		public static EditorMapObjectManager MapObjectManager => s_instance._mapObjectManager;
 
+
 		internal static Dictionary<Type, Type> PropertyInspectorElements => s_instance._propertyInspectorElements;
 		internal static List<(Type, string, string)> MapObjectAttributes => s_instance._mapObjectAttributes;
+		internal static Dictionary<Type, Type[]> GroupEditorEventHandlers => s_instance._groupEventHandlers;
 		internal static bool IsEditorActive => s_instance._editorActive;
 
 		private static MapsExtendedEditor s_instance;
 
 		private readonly List<(Type, string, string)> _mapObjectAttributes = new();
 		private readonly Dictionary<Type, Type> _propertyInspectorElements = new();
+		private readonly Dictionary<Type, Type[]> _groupEventHandlers = new();
 		private readonly PropertyManager _propertyManager = new();
 		private EditorMapObjectManager _mapObjectManager;
 		private bool _editorActive;
@@ -79,6 +83,7 @@ namespace MapsExt.Editor
 				this.RegisterMapObjectProperties(asm);
 				this.RegisterMapObjects(asm);
 				this.RegisterPropertyInspectors(asm);
+				this.RegisterGroupEditorEventHandlers(asm);
 			}
 
 			Unbound.RegisterMenu("Map Editor", OpenEditor, (_) => { }, null, false);
@@ -215,11 +220,11 @@ namespace MapsExt.Editor
 		{
 			var types = assembly.GetTypes();
 
-			foreach (var elementType in types.Where(t => t.GetCustomAttribute<PropertyInspectorAttribute>() != null))
+			foreach (var elementType in types.Where(t => t.GetCustomAttribute<InspectorElementAttribute>() != null))
 			{
 				try
 				{
-					var attr = elementType.GetCustomAttribute<PropertyInspectorAttribute>();
+					var attr = elementType.GetCustomAttribute<InspectorElementAttribute>();
 					var propertyType = attr.PropertyType;
 
 					if (!typeof(IProperty).IsAssignableFrom(propertyType))
@@ -247,6 +252,14 @@ namespace MapsExt.Editor
 					UnityEngine.Debug.LogError(ex.StackTrace);
 #endif
 				}
+			}
+		}
+
+		private void RegisterGroupEditorEventHandlers(Assembly asm)
+		{
+			foreach (var type in asm.GetTypes().Where(t => t.GetCustomAttribute<GroupEventHandlerAttribute>() != null))
+			{
+				this._groupEventHandlers[type] = type.GetCustomAttribute<GroupEventHandlerAttribute>().RequiredHandlerTypes;
 			}
 		}
 

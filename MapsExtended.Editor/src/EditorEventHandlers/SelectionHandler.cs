@@ -1,10 +1,11 @@
 ﻿using MapsExt.Editor.UI;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MapsExt.Editor.ActionHandlers
+namespace MapsExt.Editor.Events
 {
-	public class SelectionHandler : ActionHandler
+	public class SelectionHandler : EditorEventHandler
 	{
 		private bool _isSelected;
 
@@ -36,13 +37,27 @@ namespace MapsExt.Editor.ActionHandlers
 			return bounds;
 		}
 
-		public override void OnSelect(bool inGroup)
+		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
 		{
-			if (inGroup)
+			switch (evt)
 			{
-				return;
+				case SelectEvent:
+					this.OnSelect();
+					break;
+				case DeselectEvent:
+					this.OnDeselect();
+					break;
+				case PointerDownEvent:
+					this.OnPointerDown();
+					break;
+				case PointerUpEvent:
+					this.OnPointerUp();
+					break;
 			}
+		}
 
+		protected virtual void OnSelect()
+		{
 			this.Content = new GameObject("SelectionHandler Content");
 			this.Content.transform.SetParent(this.transform);
 			this.Content.transform.localScale = Vector3.one;
@@ -65,7 +80,7 @@ namespace MapsExt.Editor.ActionHandlers
 			this._isSelected = true;
 		}
 
-		public override void OnDeselect()
+		protected virtual void OnDeselect()
 		{
 			if (this._isSelected)
 			{
@@ -74,7 +89,7 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnPointerDown()
+		protected virtual void OnPointerDown()
 		{
 			if (this._isSelected)
 			{
@@ -82,7 +97,7 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnPointerUp()
+		protected virtual void OnPointerUp()
 		{
 			if (this._isSelected)
 			{

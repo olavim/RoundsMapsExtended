@@ -14,7 +14,7 @@ namespace MapsExt.Editor.Properties
 		}
 	}
 
-	[PropertyInspector(typeof(DamageableProperty))]
+	[InspectorElement(typeof(DamageableProperty))]
 	public class DamageableElement : BooleanElement
 	{
 		public DamageableElement() : base("Damageable by Environment") { }

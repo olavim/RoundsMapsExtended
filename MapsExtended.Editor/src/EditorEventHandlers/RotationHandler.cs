@@ -1,20 +1,23 @@
 ﻿using MapsExt.Properties;
+using System.Collections.Generic;
 using UnboundLib;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 
-namespace MapsExt.Editor.ActionHandlers
+namespace MapsExt.Editor.Events
 {
-	public class RotationHandler : ActionHandler
+	public class RotationHandler : EditorEventHandler
 	{
 		public GameObject Content { get; private set; }
 
 		private bool _isRotating;
 		private RotationProperty _prevRotation;
 
-		protected virtual void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
+
 			this.gameObject.GetOrAddComponent<SelectionHandler>();
 
 			this.Content = new GameObject("Rotate Interaction Content");
@@ -36,14 +39,6 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnPointerUp()
-		{
-			if (this._isRotating)
-			{
-				this.OnRotateEnd();
-			}
-		}
-
 		public virtual void SetValue(RotationProperty rotation)
 		{
 			this.GetComponent<RotationPropertyInstance>().Rotation = rotation;
@@ -55,19 +50,6 @@ namespace MapsExt.Editor.ActionHandlers
 			return this.GetComponent<RotationPropertyInstance>().Rotation;
 		}
 
-		public override void OnSelect(bool inGroup)
-		{
-			if (!inGroup)
-			{
-				this.AddRotationHandle();
-			}
-		}
-
-		public override void OnDeselect()
-		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
-		}
-
 		private void OnRotateStart()
 		{
 			this._isRotating = true;
@@ -77,7 +59,6 @@ namespace MapsExt.Editor.ActionHandlers
 		private void OnRotateEnd()
 		{
 			this._isRotating = false;
-			this.Editor.RefreshHandlers();
 
 			if (this.GetValue() != this._prevRotation)
 			{
@@ -150,6 +131,40 @@ namespace MapsExt.Editor.ActionHandlers
 
 			go.transform.SetParent(this.Content.transform);
 			go.transform.localScale = Vector3.one;
+		}
+
+		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		{
+			switch (evt)
+			{
+				case SelectEvent:
+					this.OnSelect();
+					break;
+				case DeselectEvent:
+					this.OnDeselect();
+					break;
+				case PointerUpEvent:
+					this.OnPointerUp();
+					break;
+			}
+		}
+
+		protected virtual void OnPointerUp()
+		{
+			if (this._isRotating)
+			{
+				this.OnRotateEnd();
+			}
+		}
+
+		protected virtual void OnSelect()
+		{
+			this.AddRotationHandle();
+		}
+
+		protected virtual void OnDeselect()
+		{
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 	}
 }

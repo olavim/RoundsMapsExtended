@@ -119,6 +119,9 @@ namespace MapsExt.Editor.Tests
 
 			yield return this.Utils.MoveSelectedWithMouse(new(5, 5));
 
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+			this.Editor.ClearSelected();
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}
@@ -136,6 +139,9 @@ namespace MapsExt.Editor.Tests
 
 			yield return this.Utils.RotateSelectedWithMouse(45);
 
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+			this.Editor.ClearSelected();
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}
@@ -153,6 +159,9 @@ namespace MapsExt.Editor.Tests
 
 			yield return this.Utils.ResizeSelectedWithMouse(new(2, 0), AnchorPosition.MiddleRight);
 
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+			this.Editor.ClearSelected();
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}
@@ -171,6 +180,9 @@ namespace MapsExt.Editor.Tests
 			var element = (PositionElement) this.Inspector.GetElement<PositionProperty>();
 			element.Value = new(5, 5);
 
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+			this.Editor.ClearSelected();
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}
@@ -189,6 +201,9 @@ namespace MapsExt.Editor.Tests
 			var element = (RotationElement) this.Inspector.GetElement<RotationProperty>();
 			element.Value = 45;
 
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+			this.Editor.ClearSelected();
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}
@@ -207,6 +222,9 @@ namespace MapsExt.Editor.Tests
 			var element = (ScaleElement) this.Inspector.GetElement<ScaleProperty>();
 			element.Value = new(8, 2);
 
+			rope.GetAnchor(0).IsAttached.Should().BeFalse();
+			rope.GetAnchor(1).IsAttached.Should().BeFalse();
+			this.Editor.ClearSelected();
 			rope.GetAnchor(0).IsAttached.Should().BeTrue();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 		}

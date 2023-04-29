@@ -11,7 +11,7 @@ namespace MapsExt.Editor.Properties
 		public override void WriteProperty(RotationProperty property, GameObject target)
 		{
 			base.WriteProperty(property, target);
-			target.GetOrAddComponent<ActionHandlers.RotationHandler>();
+			target.GetOrAddComponent<Events.RotationHandler>();
 		}
 
 		public virtual RotationProperty ReadProperty(GameObject instance)
@@ -20,10 +20,10 @@ namespace MapsExt.Editor.Properties
 		}
 	}
 
-	[PropertyInspector(typeof(RotationProperty))]
+	[InspectorElement(typeof(RotationProperty))]
 	public class RotationElement : FloatElement
 	{
-		public RotationElement() : base("Rotation") { }
+		public RotationElement() : base("Rotation", 0, 360) { }
 
 		protected override void OnChange(float angle, ChangeType changeType)
 		{
@@ -34,7 +34,6 @@ namespace MapsExt.Editor.Properties
 
 			if (changeType == ChangeType.ChangeEnd)
 			{
-				this.Context.Editor.RefreshHandlers();
 				this.Context.Editor.TakeSnaphot();
 			}
 		}

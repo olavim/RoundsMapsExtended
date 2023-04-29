@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using FluentAssertions;
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 using MapsExt.MapObjects;
 using UnityEngine;
 using UnityEngine.UI;
@@ -131,7 +131,7 @@ namespace MapsExt.Editor.Tests
 			yield return null;
 
 			this.Editor.SelectedObjects.Count.Should().Be(2);
-			this.Editor.ActiveObject.GetComponent<IGroupMapObjectActionHandler>().Should().NotBeNull();
+			this.Editor.ActiveObject.GetComponent<GroupSelectionHandler>().Should().NotBeNull();
 		}
 
 		[Test]

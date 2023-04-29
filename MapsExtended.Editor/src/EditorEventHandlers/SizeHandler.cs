@@ -1,12 +1,13 @@
-using MapsExt.Editor.Properties;
 using MapsExt.Properties;
+using System.Collections.Generic;
+using System.Linq;
 using UnboundLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MapsExt.Editor.ActionHandlers
+namespace MapsExt.Editor.Events
 {
-	public class SizeHandler : ActionHandler
+	public class SizeHandler : EditorEventHandler
 	{
 		private bool _isResizing;
 		private int _resizeDirection;
@@ -16,8 +17,10 @@ namespace MapsExt.Editor.ActionHandlers
 
 		public GameObject Content { get; private set; }
 
-		protected virtual void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
+
 			this.gameObject.GetOrAddComponent<SelectionHandler>();
 
 			this.Content = new GameObject("Resize Interaction Content");
@@ -36,14 +39,6 @@ namespace MapsExt.Editor.ActionHandlers
 			if (this._isResizing)
 			{
 				this.ResizeMapObjects();
-			}
-		}
-
-		public override void OnPointerUp()
-		{
-			if (this._isResizing)
-			{
-				this.OnResizeEnd();
 			}
 		}
 
@@ -113,26 +108,6 @@ namespace MapsExt.Editor.ActionHandlers
 			}
 		}
 
-		public override void OnSelect(bool inGroup)
-		{
-			if (!inGroup)
-			{
-				this.AddResizeHandle(AnchorPosition.TopLeft);
-				this.AddResizeHandle(AnchorPosition.TopRight);
-				this.AddResizeHandle(AnchorPosition.BottomLeft);
-				this.AddResizeHandle(AnchorPosition.BottomRight);
-				this.AddResizeHandle(AnchorPosition.MiddleLeft);
-				this.AddResizeHandle(AnchorPosition.MiddleRight);
-				this.AddResizeHandle(AnchorPosition.BottomMiddle);
-				this.AddResizeHandle(AnchorPosition.TopMiddle);
-			}
-		}
-
-		public override void OnDeselect()
-		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
-		}
-
 		private void OnResizeStart(int resizeDirection)
 		{
 			var mousePos = EditorInput.MousePosition;
@@ -150,7 +125,6 @@ namespace MapsExt.Editor.ActionHandlers
 		private void OnResizeEnd()
 		{
 			this._isResizing = false;
-			this.Editor.RefreshHandlers();
 
 			if (this._prevScale != this.GetValue().Value)
 			{
@@ -222,6 +196,47 @@ namespace MapsExt.Editor.ActionHandlers
 
 			go.transform.SetParent(this.Content.transform);
 			go.transform.localScale = Vector3.one;
+		}
+
+		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		{
+			switch (evt)
+			{
+				case SelectEvent:
+					this.OnSelect();
+					break;
+				case DeselectEvent:
+					this.OnDeselect();
+					break;
+				case PointerUpEvent:
+					this.OnPointerUp();
+					break;
+			}
+		}
+
+		protected virtual void OnPointerUp()
+		{
+			if (this._isResizing)
+			{
+				this.OnResizeEnd();
+			}
+		}
+
+		protected virtual void OnSelect()
+		{
+			this.AddResizeHandle(AnchorPosition.TopLeft);
+			this.AddResizeHandle(AnchorPosition.TopRight);
+			this.AddResizeHandle(AnchorPosition.BottomLeft);
+			this.AddResizeHandle(AnchorPosition.BottomRight);
+			this.AddResizeHandle(AnchorPosition.MiddleLeft);
+			this.AddResizeHandle(AnchorPosition.MiddleRight);
+			this.AddResizeHandle(AnchorPosition.BottomMiddle);
+			this.AddResizeHandle(AnchorPosition.TopMiddle);
+		}
+
+		protected virtual void OnDeselect()
+		{
+			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 	}
 }

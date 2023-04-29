@@ -3,11 +3,11 @@ using System;
 namespace MapsExt.Editor.UI
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-	public sealed class PropertyInspectorAttribute : Attribute
+	public sealed class InspectorElementAttribute : Attribute
 	{
 		public Type PropertyType { get; }
 
-		public PropertyInspectorAttribute(Type propertyType)
+		public InspectorElementAttribute(Type propertyType)
 		{
 			PropertyType = propertyType;
 		}

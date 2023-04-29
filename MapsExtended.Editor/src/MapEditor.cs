@@ -6,10 +6,9 @@ using Sirenix.Serialization;
 using UnboundLib;
 using UnboundLib.GameModes;
 using MapsExt.MapObjects;
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 using System;
 using System.Collections;
-using System.Reflection;
 
 namespace MapsExt.Editor
 {
@@ -19,7 +18,6 @@ namespace MapsExt.Editor
 		[SerializeField] private GameObject _simulatedContent;
 		[SerializeField] private MapEditorAnimationHandler _animationHandler;
 		[SerializeField] private Grid _grid;
-		private readonly Dictionary<Type, Type[]> _groupActionHandlers = new();
 		private StateHistory<CustomMap> _stateHistory;
 		private bool _isCreatingSelection;
 		private Vector3 _selectionStartPosition;
@@ -35,6 +33,8 @@ namespace MapsExt.Editor
 
 		public GameObject ActiveObject { get; set; }
 		public RangeObservableCollection<GameObject> SelectedObjects { get; } = new RangeObservableCollection<GameObject>();
+
+		public event EventHandler<IEditorEvent> EditorEvent;
 
 		public IEnumerable<GameObject> SelectedMapObjects => this.SelectedObjects
 			.Where(x => x != null)
@@ -73,11 +73,6 @@ namespace MapsExt.Editor
 			this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 
 			this.gameObject.AddComponent<MapEditorInputHandler>();
-
-			foreach (var type in typeof(MapsExtendedEditor).Assembly.GetTypes().Where(t => t.GetCustomAttribute<GroupActionHandlerAttribute>() != null))
-			{
-				this._groupActionHandlers[type] = type.GetCustomAttribute<GroupActionHandlerAttribute>().RequiredHandlerTypes;
-			}
 		}
 
 		protected virtual void Start()
@@ -113,7 +108,6 @@ namespace MapsExt.Editor
 				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
 				this.ResetSpawnLabels();
 				this.ClearSelected();
-				this.RefreshHandlers();
 			});
 		}
 
@@ -160,6 +154,8 @@ namespace MapsExt.Editor
 			{
 				this._clipboardMapObjects.Add(instance.ReadMapObject());
 			}
+
+			this.EditorEvent?.Invoke(this, new CopyEvent());
 		}
 
 		public IEnumerator OnPaste()
@@ -169,30 +165,28 @@ namespace MapsExt.Editor
 				yield break;
 			}
 
-			int waiting = this._clipboardMapObjects.Count;
 			this.ClearSelected();
+
+			var pastedMapObjects = new List<GameObject>();
 
 			foreach (var mapObject in this._clipboardMapObjects)
 			{
-				MapsExtendedEditor.MapObjectManager.Instantiate(mapObject, this.Content.transform, obj =>
-				{
-					foreach (var handler in obj.GetComponentsInChildren<ActionHandler>())
-					{
-						handler.OnPaste();
-					}
-
-					this.AddSelected(obj);
-					waiting--;
-				});
+				MapsExtendedEditor.MapObjectManager.Instantiate(mapObject, this.Content.transform, obj => pastedMapObjects.Add(obj));
 			}
 
-			while (waiting > 0)
+			while (pastedMapObjects.Count < this._clipboardMapObjects.Count)
 			{
 				yield return null;
 			}
 
+			var pastedObjects = pastedMapObjects
+				.SelectMany(obj => obj.GetComponentsInChildren<EditorEventHandler>())
+				.Select(obj => obj.gameObject)
+				.Distinct();
+
+			this.AddSelected(pastedObjects);
+			this.EditorEvent?.Invoke(this, new PasteEvent());
 			this.ResetSpawnLabels();
-			this.RefreshHandlers();
 			this.TakeSnaphot();
 		}
 
@@ -264,13 +258,12 @@ namespace MapsExt.Editor
 			MapsExtendedEditor.MapObjectManager.Instantiate(mapObjectDataType, this.Content.transform, obj =>
 			{
 				var objectsWithHandlers = obj
-					.GetComponentsInChildren<ActionHandler>()
+					.GetComponentsInChildren<EditorEventHandler>()
 					.Select(h => h.gameObject)
 					.Distinct();
 
 				this.AddSelected(objectsWithHandlers);
 				this.ResetSpawnLabels();
-				this.RefreshHandlers();
 				this.TakeSnaphot();
 			});
 		}
@@ -313,8 +306,6 @@ namespace MapsExt.Editor
 
 			this.ResetSpawnLabels();
 			this.ClearSelected();
-			this.RefreshHandlers();
-
 			this.TakeSnaphot();
 		}
 
@@ -401,16 +392,16 @@ namespace MapsExt.Editor
 			if (this._selectionRect.width > 2 && this._selectionRect.height > 2)
 			{
 				this.ClearSelected();
-				var list = EditorUtils.GetContainedActionHandlers(UIUtils.GUIToWorldRect(this._selectionRect));
+				var list = EditorUtils.GetContainedEventHandlers(UIUtils.GUIToWorldRect(this._selectionRect));
 
 				// When editing animation, don't allow selecting other map objects
-				if (this.AnimationHandler.Animation != null && list.Any(obj => obj.gameObject == this.AnimationHandler.KeyframeMapObject))
+				if (this.AnimationHandler.Animation != null && list.Any(h => ((Component) h).gameObject == this.AnimationHandler.KeyframeMapObject))
 				{
 					this.AddSelected(this.AnimationHandler.KeyframeMapObject);
 				}
 				else if (this.AnimationHandler.Animation == null)
 				{
-					this.AddSelected(list.Select(h => h.gameObject).Distinct());
+					this.AddSelected(list.Select(h => ((Component) h).gameObject).Distinct());
 				}
 			}
 
@@ -418,7 +409,7 @@ namespace MapsExt.Editor
 			this._selectionRect = Rect.zero;
 		}
 
-		public void OnClickActionHandlers(List<ActionHandler> handlers)
+		public void OnClickEventHandlers(List<EditorEventHandler> handlers)
 		{
 			var objects = handlers.Select(h => h.gameObject).Distinct().ToList();
 			objects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
@@ -468,10 +459,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
-			{
-				handler.OnPointerDown();
-			}
+			this.EditorEvent?.Invoke(this, new PointerDownEvent());
 		}
 
 		public void OnPointerUp()
@@ -481,10 +469,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
-			{
-				handler.OnPointerUp();
-			}
+			this.EditorEvent?.Invoke(this, new PointerUpEvent());
 		}
 
 		public void OnKeyDown(KeyCode key)
@@ -494,10 +479,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
-			{
-				handler.OnKeyDown(key);
-			}
+			this.EditorEvent?.Invoke(this, new KeyDownEvent(key));
 		}
 
 		public bool IsSelected(GameObject obj)
@@ -524,21 +506,7 @@ namespace MapsExt.Editor
 
 		public void ClearSelected()
 		{
-			if (this.SelectedObjects.Count >= 1)
-			{
-				foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
-				{
-					handler.OnDeselect();
-				}
-
-				if (this.SelectedObjects.Count > 1)
-				{
-					foreach (var handler in this.SelectedObjects.SelectMany(obj => obj.GetComponentsInChildren<ActionHandler>()))
-					{
-						handler.OnDeselect();
-					}
-				}
-			}
+			this.EditorEvent?.Invoke(this, new DeselectEvent());
 
 			if (this._dummyGroup != null)
 			{
@@ -570,17 +538,16 @@ namespace MapsExt.Editor
 
 				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
 
-				/* Find valid group action handlers.
-				 * A group action handler is valid if all selected map objects have
-				 * all action handlers that are required by the group action handler.
+				/* Find valid group event handlers.
+				 * A group event handler is valid if all selected map objects have
+				 * all event handlers that are required by the group event handler.
 				 */
-				foreach (var type in this._groupActionHandlers.Keys)
+				foreach (var type in MapsExtendedEditor.GroupEditorEventHandlers.Keys)
 				{
-					var requiredTypes = this._groupActionHandlers[type];
+					var requiredTypes = MapsExtendedEditor.GroupEditorEventHandlers[type];
 					if (list.All(obj => requiredTypes.All(t => obj.GetComponent(t) != null)))
 					{
-						var handler = (IGroupMapObjectActionHandler) this._dummyGroup.AddComponent(type);
-						handler.Initialize(list);
+						this._dummyGroup.AddComponent(type);
 					}
 				}
 
@@ -593,22 +560,7 @@ namespace MapsExt.Editor
 			}
 
 			this.SelectedObjects.AddRange(list);
-
-			if (this.SelectedObjects.Count >= 1)
-			{
-				foreach (var handler in this.ActiveObject.GetComponents<ActionHandler>())
-				{
-					handler.OnSelect(false);
-				}
-
-				if (this.SelectedObjects.Count > 1)
-				{
-					foreach (var handler in this.SelectedObjects.SelectMany(obj => obj.GetComponentsInChildren<ActionHandler>()))
-					{
-						handler.OnSelect(true);
-					}
-				}
-			}
+			this.EditorEvent?.Invoke(this, new SelectEvent());
 		}
 
 		public void SelectAll()
@@ -638,14 +590,6 @@ namespace MapsExt.Editor
 				spawns[i].ID = i;
 				spawns[i].TEAMID = i;
 				spawns[i].gameObject.name = $"SPAWN POINT {i}";
-			}
-		}
-
-		public void RefreshHandlers()
-		{
-			foreach (var handler in this.Content.GetComponentsInChildren<ActionHandler>())
-			{
-				handler.OnRefresh();
 			}
 		}
 

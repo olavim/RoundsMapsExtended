@@ -1,4 +1,4 @@
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 using MapsExt.Editor.UI;
 using MapsExt.Properties;
 using UnboundLib;
@@ -21,7 +21,7 @@ namespace MapsExt.Editor.Properties
 		}
 	}
 
-	[PropertyInspector(typeof(PositionProperty))]
+	[InspectorElement(typeof(PositionProperty))]
 	public class PositionElement : Vector2Element
 	{
 		public PositionElement() : base("Position") { }
@@ -31,7 +31,6 @@ namespace MapsExt.Editor.Properties
 		protected override void OnChange(Vector2 value)
 		{
 			this.Context.InspectorTarget.WriteProperty<PositionProperty>(value);
-			this.Context.Editor.RefreshHandlers();
 			this.Context.Editor.TakeSnaphot();
 		}
 	}

@@ -1,24 +1,24 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using MapsExt.Editor.ActionHandlers;
+using MapsExt.Editor.Events;
 using MapsExt.MapObjects;
 
 namespace MapsExt.Editor
 {
 	public static class EditorUtils
 	{
-		public static List<ActionHandler> GetActionHandlersAt(Vector2 position)
+		public static List<EditorEventHandler> GetEventHandlersAt(Vector2 position)
 		{
 			var mouseWorldPos = MainCam.instance.cam.ScreenToWorldPoint(new Vector2(position.x, position.y));
 			var colliders = Physics2D.OverlapPointAll(mouseWorldPos);
-			return colliders.Where(c => c.GetComponentInParent<MapObjectInstance>()).SelectMany(c => c.GetComponentsInChildren<ActionHandler>()).ToList();
+			return colliders.Where(c => c.GetComponentInParent<MapObjectInstance>()).SelectMany(c => c.GetComponentsInChildren<EditorEventHandler>()).ToList();
 		}
 
-		public static List<ActionHandler> GetContainedActionHandlers(Rect rect)
+		public static List<EditorEventHandler> GetContainedEventHandlers(Rect rect)
 		{
 			var colliders = Physics2D.OverlapAreaAll(rect.min, rect.max);
-			return colliders.SelectMany(c => c.GetComponentsInChildren<ActionHandler>()).ToList();
+			return colliders.SelectMany(c => c.GetComponentsInChildren<EditorEventHandler>()).ToList();
 		}
 
 		public static Vector2 SnapToGrid(Vector2 pos, float gridSize)

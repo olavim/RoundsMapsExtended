@@ -57,14 +57,15 @@ namespace MapsExt.MapObjects
 			this._propertyMembers.AddRange(fields.Select(member => new PropertyMember(this, member)));
 		}
 
-		void ISerializationCallbackReceiver.OnAfterDeserialize() => this.OnAfterDeserialize();
-		void ISerializationCallbackReceiver.OnBeforeSerialize() => this.OnBeforeSerialize();
-
-		protected virtual void OnAfterDeserialize()
+		void ISerializationCallbackReceiver.OnAfterDeserialize()
 		{
 			this.InitMembers();
+			this.OnAfterDeserialize();
 		}
 
+		void ISerializationCallbackReceiver.OnBeforeSerialize() => this.OnBeforeSerialize();
+
+		protected virtual void OnAfterDeserialize() { }
 		protected virtual void OnBeforeSerialize() { }
 
 		public TProp GetProperty<TProp>() where TProp : IProperty
