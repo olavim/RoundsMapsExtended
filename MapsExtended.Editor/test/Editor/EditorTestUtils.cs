@@ -39,21 +39,9 @@ namespace MapsExt.Editor.Tests
 
 			IEnumerator Run()
 			{
-				bool spawned = false;
-
-				void OnChange(object sender, NotifyCollectionChangedEventArgs e)
-				{
-					if (this.editor.SelectedObjects.Count > 0)
-					{
-						this.editor.SelectedObjects.CollectionChanged -= OnChange;
-						spawned = true;
-					}
-				}
-
-				this.editor.SelectedObjects.CollectionChanged += OnChange;
 				this.editor.CreateMapObject(type);
 
-				while (!spawned)
+				while (this.editor.ActiveObject == null)
 				{
 					yield return null;
 				}
@@ -84,7 +72,7 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator MoveSelectedWithMouse(Vector2 delta)
 		{
-			var go = this.editor.SelectedObjects[0];
+			var go = this.editor.SelectedObjects.First();
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 

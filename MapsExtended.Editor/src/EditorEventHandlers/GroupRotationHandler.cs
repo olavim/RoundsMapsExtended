@@ -34,11 +34,11 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected override bool ShouldHandleEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects) => true;
+		protected override bool ShouldHandleEvent(IEditorEvent evt) => true;
 
-		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		protected override void HandleEvent(IEditorEvent evt)
 		{
-			base.HandleAcceptedEditorEvent(evt, subjects);
+			base.HandleEvent(evt);
 
 			if (evt is SelectEvent)
 			{

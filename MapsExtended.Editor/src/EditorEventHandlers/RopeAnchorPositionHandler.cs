@@ -1,5 +1,4 @@
 ﻿using MapsExt.Properties;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MapsExt.Editor.Events
@@ -14,9 +13,24 @@ namespace MapsExt.Editor.Events
 			return this.GetComponent<MapObjectAnchor>().GetAnchoredPosition();
 		}
 
-		protected override void HandleEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		protected override bool ShouldHandleEvent(IEditorEvent evt) => true;
+
+		protected override void HandleEvent(IEditorEvent evt)
 		{
-			base.HandleEditorEvent(evt, subjects);
+			if (base.ShouldHandleEvent(evt))
+			{
+				base.HandleEvent(evt);
+
+				switch (evt)
+				{
+					case SelectEvent:
+						this.OnSelect();
+						break;
+					case DeselectEvent:
+						this.OnDeselect();
+						break;
+				}
+			}
 
 			if (!this._isSelected && evt is DeselectEvent)
 			{
@@ -24,19 +38,15 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		protected virtual void HandleGlobalEvent(IEditorEvent evt)
 		{
-			UnityEngine.Debug.Log($"RopeAnchorPositionHandler: {this.ShouldHandleEvent(evt, subjects)}");
-			base.HandleAcceptedEditorEvent(evt, subjects);
-
-			switch (evt)
+			if (evt is SelectEvent)
 			{
-				case SelectEvent:
-					this.OnSelect();
-					break;
-				case DeselectEvent:
-					this.OnDeselect();
-					break;
+				this.OnSelect();
+			}
+			else if (evt is DeselectEvent)
+			{
+				this.OnDeselect();
 			}
 		}
 

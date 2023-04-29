@@ -9,6 +9,7 @@ using MapsExt.MapObjects;
 using MapsExt.Editor.Events;
 using System;
 using System.Collections;
+using Sirenix.Utilities;
 
 namespace MapsExt.Editor
 {
@@ -32,29 +33,11 @@ namespace MapsExt.Editor
 		public Grid Grid { get => this._grid; set => this._grid = value; }
 
 		public GameObject ActiveObject { get; set; }
-		public RangeObservableCollection<GameObject> SelectedObjects { get; } = new RangeObservableCollection<GameObject>();
+		public GameObject ActiveMapObject { get; set; }
+		public HashSet<GameObject> SelectedObjects { get; } = new();
+		public HashSet<GameObject> SelectedMapObjects { get; } = new();
 
 		public event EventHandler<IEditorEvent> EditorEvent;
-
-		public IEnumerable<GameObject> SelectedMapObjects => this.SelectedObjects
-			.Where(x => x != null)
-			.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject)
-			.Where(x => x != null)
-			.Distinct();
-
-		public GameObject ActiveMapObject
-		{
-			get
-			{
-				if (this.ActiveObject?.GetComponentInParent<MapObjectInstance>() is MapObjectInstance instance)
-				{
-					return instance.gameObject;
-				}
-
-				var selected = this.SelectedMapObjects.ToList();
-				return selected.Count == 1 ? selected[0] : null;
-			}
-		}
 
 		public IEnumerable<GameObject> MapObjects => this.Content.GetComponentsInChildren<MapObjectInstance>(true).Select(x => x.gameObject);
 
@@ -454,31 +437,16 @@ namespace MapsExt.Editor
 
 		public void OnPointerDown()
 		{
-			if (this.ActiveObject == null)
-			{
-				return;
-			}
-
 			this.EditorEvent?.Invoke(this, new PointerDownEvent());
 		}
 
 		public void OnPointerUp()
 		{
-			if (this.ActiveObject == null)
-			{
-				return;
-			}
-
 			this.EditorEvent?.Invoke(this, new PointerUpEvent());
 		}
 
 		public void OnKeyDown(KeyCode key)
 		{
-			if (this.ActiveObject == null)
-			{
-				return;
-			}
-
 			this.EditorEvent?.Invoke(this, new KeyDownEvent(key));
 		}
 
@@ -514,7 +482,9 @@ namespace MapsExt.Editor
 			}
 
 			this.SelectedObjects.Clear();
+			this.SelectedMapObjects.Clear();
 			this.ActiveObject = null;
+			this.ActiveMapObject = null;
 		}
 
 		public void AddSelected(GameObject obj)
@@ -559,7 +529,14 @@ namespace MapsExt.Editor
 				this.ActiveObject = list.FirstOrDefault();
 			}
 
-			this.SelectedObjects.AddRange(list);
+			this.SelectedObjects.UnionWith(list);
+			this.SelectedMapObjects.UnionWith(list.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject).Where(x => x != null));
+
+			if (this.SelectedMapObjects.Count == 1)
+			{
+				this.ActiveMapObject = this.SelectedMapObjects.First();
+			}
+
 			this.EditorEvent?.Invoke(this, new SelectEvent());
 		}
 

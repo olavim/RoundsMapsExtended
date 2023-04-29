@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MapsExt.Editor.Events
@@ -6,9 +5,9 @@ namespace MapsExt.Editor.Events
 	[GroupEventHandler(typeof(SelectionHandler))]
 	public class GroupSizeHandler : EditorEventHandler
 	{
-		protected override bool ShouldHandleEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects) => true;
+		protected override bool ShouldHandleEvent(IEditorEvent evt) => true;
 
-		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		protected override void HandleEvent(IEditorEvent evt)
 		{
 			if (evt is SelectEvent)
 			{

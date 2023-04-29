@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace MapsExt.Editor.Events
@@ -28,24 +26,14 @@ namespace MapsExt.Editor.Events
 
 		private void OnEditorEvent(object sender, IEditorEvent evt)
 		{
-			var subjects = new HashSet<EditorEventHandler>(this.Editor.SelectedObjects.SelectMany(obj => obj.GetComponents<EditorEventHandler>()));
-			this.HandleEditorEvent(evt, subjects);
-		}
-
-		protected virtual void HandleEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
-		{
-			if (this.ShouldHandleEvent(evt, subjects))
+			if (this.ShouldHandleEvent(evt))
 			{
-				this.HandleAcceptedEditorEvent(evt, subjects);
+				this.HandleEvent(evt);
 			}
 		}
 
-		protected abstract void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects);
-
-		protected virtual bool ShouldHandleEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
-		{
-			return subjects.Contains(this) && this.Editor.SelectedObjects.Count == 1;
-		}
+		protected abstract void HandleEvent(IEditorEvent evt);
+		protected abstract bool ShouldHandleEvent(IEditorEvent evt);
 
 		public bool Equals(EditorEventHandler other) => this._guid == other._guid;
 		public override bool Equals(object other) => other is EditorEventHandler handler && this.Equals(handler);

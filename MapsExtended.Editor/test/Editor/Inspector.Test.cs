@@ -99,7 +99,7 @@ namespace MapsExt.Editor.Tests
 		{
 			yield return this.Utils.SpawnMapObject<RopeData>();
 
-			this.Inspector.Target.Should().BeSameAs(this.Editor.SelectedObjects[0].GetComponentInParent<MapObjectInstance>().gameObject);
+			this.Inspector.Target.Should().BeSameAs(this.Editor.ActiveMapObject);
 
 			var element = (RopePositionElement) this.Inspector.GetElement<RopePositionProperty>();
 

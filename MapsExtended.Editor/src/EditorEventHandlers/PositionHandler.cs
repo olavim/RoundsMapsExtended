@@ -1,5 +1,4 @@
 using MapsExt.Properties;
-using System.Collections.Generic;
 using UnboundLib;
 using UnityEngine;
 
@@ -93,9 +92,13 @@ namespace MapsExt.Editor.Events
 			this._prevCell = mouseCell;
 		}
 
-		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		protected override bool ShouldHandleEvent(IEditorEvent evt)
 		{
-			UnityEngine.Debug.Log($"PositionHandler: {evt.GetType().Name}");
+			return this.Editor.IsSelected(this.gameObject);
+		}
+
+		protected override void HandleEvent(IEditorEvent evt)
+		{
 			switch (evt)
 			{
 				case KeyDownEvent keyDownEvent:

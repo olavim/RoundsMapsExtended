@@ -1,5 +1,4 @@
 ﻿using MapsExt.Properties;
-using System.Collections.Generic;
 using UnboundLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -133,7 +132,12 @@ namespace MapsExt.Editor.Events
 			go.transform.localScale = Vector3.one;
 		}
 
-		protected override void HandleAcceptedEditorEvent(IEditorEvent evt, ISet<EditorEventHandler> subjects)
+		protected override bool ShouldHandleEvent(IEditorEvent evt)
+		{
+			return this.Editor.IsSelected(this.gameObject);
+		}
+
+		protected override void HandleEvent(IEditorEvent evt)
 		{
 			switch (evt)
 			{

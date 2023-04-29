@@ -152,24 +152,11 @@ namespace MapsExt.Editor.Tests
 
 		private IEnumerator SpawnFromMapObjectWindow(string objectName, string category = null)
 		{
-			bool collectionChanged = false;
-
-			void OnEditorSelectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-			{
-				if (this.Editor.ActiveObject != null)
-				{
-					this.Editor.SelectedObjects.CollectionChanged -= OnEditorSelectionChanged;
-					collectionChanged = true;
-				}
-			}
-
-			this.Editor.SelectedObjects.CollectionChanged += OnEditorSelectionChanged;
-
 			var btn = this.GetMapObjectWindowButton(objectName, category);
 			btn.Should().NotBeNull();
 			btn.onClick.Invoke();
 
-			while (!collectionChanged)
+			while (this.Editor.ActiveObject == null)
 			{
 				yield return null;
 			}
