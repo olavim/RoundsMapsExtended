@@ -132,7 +132,6 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this.Editor.ActiveObject = this.KeyframeMapObject;
 			this.Refresh();
 		}
 
@@ -206,7 +205,7 @@ namespace MapsExt.Editor
 				this.Animation.gameObject.SetActive(true);
 				this._curtain.SetActive(false);
 				this.Animation = null;
-				this.SetKeyframe(0);
+				this.SetKeyframe(-1);
 				this.RefreshParticles();
 				return;
 			}
@@ -301,10 +300,12 @@ namespace MapsExt.Editor
 					this.KeyframeMapObject = instance;
 					this.Editor.ClearSelected();
 					this.Editor.AddSelected(instance);
+					this.Editor.OverrideActiveMapObject(instance);
 				});
 			}
 			else
 			{
+				this.Editor.OverrideActiveMapObject(null);
 				this.Editor.ClearSelected();
 			}
 

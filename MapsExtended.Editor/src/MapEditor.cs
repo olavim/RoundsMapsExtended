@@ -9,7 +9,6 @@ using MapsExt.MapObjects;
 using MapsExt.Editor.Events;
 using System;
 using System.Collections;
-using Sirenix.Utilities;
 
 namespace MapsExt.Editor
 {
@@ -26,14 +25,30 @@ namespace MapsExt.Editor
 		private List<MapObjectData> _clipboardMapObjects;
 		private GameObject _tempSpawn;
 		private GameObject _dummyGroup;
+		private GameObject _activeObject;
+		private GameObject _activeMapObjectOverride;
+
+		/// <summary>
+		/// The currently active object. Can be the selected object or the container of multiple selected objects.
+		/// </summary>
+		/// <remarks>
+		/// The active object has at least one <see cref="EditorEventHandler"/> component.
+		/// </remarks>
+		public GameObject ActiveObject => this._activeObject;
+
+		/// <summary>
+		/// Returns <see cref="ActiveObject"/> or the first of its parents that has a <see cref="MapObjectInstance"/> component,
+		/// unless overridden with <see cref="OverrideActiveMapObject"/>.
+		/// </summary>
+		public GameObject ActiveMapObject =>
+			this._activeMapObjectOverride ??
+			(this.SelectedMapObjects.Count == 1 ? this.SelectedMapObjects.First() : null);
 
 		public GameObject Content { get => this._content; set => this._content = value; }
 		public GameObject SimulatedContent { get => this._simulatedContent; set => this._simulatedContent = value; }
 		public MapEditorAnimationHandler AnimationHandler { get => this._animationHandler; set => this._animationHandler = value; }
 		public Grid Grid { get => this._grid; set => this._grid = value; }
 
-		public GameObject ActiveObject { get; set; }
-		public GameObject ActiveMapObject { get; set; }
 		public HashSet<GameObject> SelectedObjects { get; } = new();
 		public HashSet<GameObject> SelectedMapObjects { get; } = new();
 
@@ -483,8 +498,7 @@ namespace MapsExt.Editor
 
 			this.SelectedObjects.Clear();
 			this.SelectedMapObjects.Clear();
-			this.ActiveObject = null;
-			this.ActiveMapObject = null;
+			this._activeObject = null;
 		}
 
 		public void AddSelected(GameObject obj)
@@ -522,20 +536,15 @@ namespace MapsExt.Editor
 				}
 
 				this._dummyGroup.SetActive(true);
-				this.ActiveObject = this._dummyGroup;
+				this._activeObject = this._dummyGroup;
 			}
 			else
 			{
-				this.ActiveObject = list.FirstOrDefault();
+				this._activeObject = list.FirstOrDefault();
 			}
 
 			this.SelectedObjects.UnionWith(list);
 			this.SelectedMapObjects.UnionWith(list.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject).Where(x => x != null));
-
-			if (this.SelectedMapObjects.Count == 1)
-			{
-				this.ActiveMapObject = this.SelectedMapObjects.First();
-			}
 
 			this.EditorEvent?.Invoke(this, new SelectEvent());
 		}
@@ -559,7 +568,7 @@ namespace MapsExt.Editor
 			this.AddSelected(list);
 		}
 
-		public void ResetSpawnLabels()
+		private void ResetSpawnLabels()
 		{
 			var spawns = this.Content.GetComponentsInChildren<SpawnPoint>().ToList();
 			for (int i = 0; i < spawns.Count; i++)
@@ -573,6 +582,21 @@ namespace MapsExt.Editor
 		public void TakeSnaphot()
 		{
 			this._stateHistory.AddState(this.GetMapData());
+		}
+
+		/// <summary>
+		/// Overrides <see cref="ActiveMapObject"/>. When overriden, a map object doesn't have to be selected to be active.
+		/// Set to null to remove the override.
+		/// </summary>
+		/// <param name="obj">Object to override <see cref="ActiveMapObject"/> or null to remove the override</param>
+		public void OverrideActiveMapObject(GameObject obj)
+		{
+			if (obj != null && obj.GetComponentInParent<MapObjectInstance>() == null)
+			{
+				throw new ArgumentException("Object must be null or have a MapObjectInstance component.");
+			}
+
+			this._activeMapObjectOverride = obj;
 		}
 	}
 }
