@@ -43,8 +43,8 @@ namespace MapsExt.Editor.Tests
 			var dmg1 = this.Editor.ActiveMapObject.ReadProperty<DamageableProperty>();
 			var rpos1 = this.Editor.ActiveMapObject.ReadProperty<RopePositionProperty>();
 
-			this.Editor.OnCopy();
-			yield return this.Editor.OnPaste();
+			this.Editor.CopySelected();
+			yield return this.Editor.Paste();
 
 			this.Editor.ActiveMapObject.Should().NotBeSameAs(obj);
 
@@ -105,8 +105,8 @@ namespace MapsExt.Editor.Tests
 			this.Editor.SelectAll();
 			int originalSelectedCount = this.Editor.SelectedMapObjects.Count();
 
-			this.Editor.OnCopy();
-			yield return this.Editor.OnPaste();
+			this.Editor.CopySelected();
+			yield return this.Editor.Paste();
 
 			var selectedMapObjects = this.Editor.SelectedMapObjects.ToList();
 
@@ -147,8 +147,8 @@ namespace MapsExt.Editor.Tests
 			);
 			this.Editor.ActiveMapObject.WriteProperty(anim1);
 
-			this.Editor.OnCopy();
-			yield return this.Editor.OnPaste();
+			this.Editor.CopySelected();
+			yield return this.Editor.Paste();
 
 			var anim2 = this.Editor.ActiveMapObject.ReadProperty<AnimationProperty>();
 			anim2.Keyframes.Length.Should().Be(anim1.Keyframes.Length);

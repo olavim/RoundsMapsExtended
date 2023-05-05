@@ -55,7 +55,7 @@ namespace MapsExt.Editor.Tests
 		{
 			this.Editor.AnimationHandler.SetAnimation(null);
 			this.Editor.SelectAll();
-			this.Editor.OnDeleteSelectedMapObjects();
+			this.Editor.DeleteSelectedMapObjects();
 			this.Editor.ClearHistory();
 		}
 	}

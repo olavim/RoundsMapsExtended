@@ -125,7 +125,7 @@ namespace MapsExt.Editor
 			{
 				if (simulated)
 				{
-					this.Editor.OnStartSimulation();
+					this.Editor.StartSimulation();
 					for (int i = 0; i < this._windows.Length; i++)
 					{
 						this._windowWasOpen[i] = this._windows[i].gameObject.activeSelf;
@@ -134,7 +134,7 @@ namespace MapsExt.Editor
 				}
 				else
 				{
-					this.Editor.OnStopSimulation();
+					this.Editor.StopSimulation();
 					for (int i = 0; i < this._windows.Length; i++)
 					{
 						this._windows[i].gameObject.SetActive(this._windowWasOpen[i]);
@@ -291,21 +291,21 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void OnClickOpen()
+		private void OnClickOpen()
 		{
-			FileDialog.OpenDialog((Action<string>) (file =>
+			FileDialog.OpenDialog(file =>
 			{
 				this.AnimationWindow.Close();
 				this.Editor.LoadMap(file);
-			}));
+			});
 		}
 
-		public void OnClickSaveAs()
+		private void OnClickSaveAs()
 		{
 			FileDialog.SaveDialog(filename => this.Editor.SaveMap(filename));
 		}
 
-		public void OnClickSave()
+		private void OnClickSave()
 		{
 			if (this.Editor.CurrentMapName?.Length > 0)
 			{
@@ -317,44 +317,44 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void OnClickOpenMapFolder()
+		private void OnClickOpenMapFolder()
 		{
 			Application.OpenURL($"file://{BepInEx.Paths.GameRootPath}/maps");
 		}
 
-		public void OnClickUndo()
+		private void OnClickUndo()
 		{
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			this.AnimationWindow.Refresh();
 		}
 
-		public void OnClickRedo()
+		private void OnClickRedo()
 		{
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			this.AnimationWindow.Refresh();
 		}
 
-		public void OnClickCopy()
+		private void OnClickCopy()
 		{
-			this.Editor.OnCopy();
+			this.Editor.CopySelected();
 		}
 
-		public void OnClickPaste()
+		private void OnClickPaste()
 		{
-			this.StartCoroutine(this.Editor.OnPaste());
+			this.StartCoroutine(this.Editor.Paste());
 		}
 
-		public void OpenMapObjectWindow()
+		private void OpenMapObjectWindow()
 		{
 			this.MapObjectWindow.gameObject.SetActive(true);
 		}
 
-		public void OpenInspectorWindow()
+		private void OpenInspectorWindow()
 		{
 			this.InspectorWindow.gameObject.SetActive(true);
 		}
 
-		public void OnGUI()
+		private void OnGUI()
 		{
 			if (!this.Editor.IsSimulating)
 			{

@@ -56,12 +56,12 @@ namespace MapsExt.Editor
 
 			if (EditorInput.GetKeyDown(KeyCode.LeftShift))
 			{
-				this._editor.OnToggleSnapToGrid(false);
+				this._editor.ToggleSnapToGrid(false);
 			}
 
 			if (EditorInput.GetKeyUp(KeyCode.LeftShift))
 			{
-				this._editor.OnToggleSnapToGrid(true);
+				this._editor.ToggleSnapToGrid(true);
 			}
 
 			if (EditorInput.GetKeyDown(KeyCode.Delete))
@@ -89,11 +89,11 @@ namespace MapsExt.Editor
 
 			if (direction > 0)
 			{
-				this._editor.OnZoomIn();
+				this._editor.ZoomIn();
 			}
 			else
 			{
-				this._editor.OnZoomOut();
+				this._editor.ZoomOut();
 			}
 		}
 
@@ -104,7 +104,7 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			this._editor.OnDeleteSelectedMapObjects();
+			this._editor.DeleteSelectedMapObjects();
 		}
 
 		private void HandleMouseDown()
@@ -119,17 +119,17 @@ namespace MapsExt.Editor
 			this._mouseDownPosition = EditorInput.MousePosition;
 
 			var list = EditorUtils.GetEventHandlersAt(this._mouseDownPosition)
-				.Select(h => ((Component) h).gameObject)
+				.Select(h => h.gameObject)
 				.Distinct();
 
-			if (list.Any(this._editor.IsSelected))
+			if (list.Any(this._editor.SelectedObjects.Contains))
 			{
 				this._editor.OnPointerDown();
 			}
 			else
 			{
 				this._isSelecting = true;
-				this._editor.OnSelectionStart();
+				this._editor.StartSelection();
 			}
 		}
 
@@ -156,7 +156,7 @@ namespace MapsExt.Editor
 			if (this._isSelecting)
 			{
 				this._isSelecting = false;
-				this._editor.OnSelectionEnd();
+				this._editor.EndSelection();
 			}
 		}
 

@@ -141,7 +141,7 @@ namespace MapsExt.Editor
 			return new CustomMap(Guid.NewGuid().ToString(), name, MapsExtended.ModVersion, mapObjects.ToArray());
 		}
 
-		public void OnCopy()
+		public void CopySelected()
 		{
 			this._clipboardMapObjects = new List<MapObjectData>();
 			var mapObjectInstances = this.SelectedObjects
@@ -156,7 +156,7 @@ namespace MapsExt.Editor
 			this.EditorEvent?.Invoke(this, new CopyEvent());
 		}
 
-		public IEnumerator OnPaste()
+		public IEnumerator Paste()
 		{
 			if (this._clipboardMapObjects == null || this._clipboardMapObjects.Count == 0)
 			{
@@ -188,13 +188,13 @@ namespace MapsExt.Editor
 			this.TakeSnaphot();
 		}
 
-		public void OnUndo()
+		public void Undo()
 		{
 			this._stateHistory.Undo();
 			this.LoadState(this._stateHistory.CurrentState);
 		}
 
-		public void OnRedo()
+		public void Redo()
 		{
 			this._stateHistory.Redo();
 			this.LoadState(this._stateHistory.CurrentState);
@@ -266,26 +266,26 @@ namespace MapsExt.Editor
 			});
 		}
 
-		public void OnZoomIn()
+		public void ZoomIn()
 		{
 			var map = this.gameObject.GetComponent<Map>();
 			float newSize = map.size - 2f;
 			map.size = Mathf.Max(2f, newSize);
 		}
 
-		public void OnZoomOut()
+		public void ZoomOut()
 		{
 			var map = this.gameObject.GetComponent<Map>();
 			float newSize = map.size + 2f;
 			map.size = Mathf.Min(50f, newSize);
 		}
 
-		public void OnToggleSnapToGrid(bool enabled)
+		public void ToggleSnapToGrid(bool enabled)
 		{
 			this.SnapToGrid = enabled;
 		}
 
-		public void OnDeleteSelectedMapObjects()
+		public void DeleteSelectedMapObjects()
 		{
 			if (this.AnimationHandler.Animation != null)
 			{
@@ -307,7 +307,7 @@ namespace MapsExt.Editor
 			this.TakeSnaphot();
 		}
 
-		public void OnStartSimulation()
+		public void StartSimulation()
 		{
 			this.ClearSelected();
 			this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
@@ -356,7 +356,7 @@ namespace MapsExt.Editor
 			});
 		}
 
-		public void OnStopSimulation()
+		public void StopSimulation()
 		{
 			var gm = (GM_Test) GameModeManager.CurrentHandler.GameMode;
 			gm.gameObject.GetComponentInChildren<CurveAnimation>(true).enabled = true;
@@ -379,13 +379,13 @@ namespace MapsExt.Editor
 			this.AnimationHandler.enabled = true;
 		}
 
-		public void OnSelectionStart()
+		public void StartSelection()
 		{
 			this._selectionStartPosition = EditorInput.MousePosition;
 			this._isCreatingSelection = true;
 		}
 
-		public void OnSelectionEnd()
+		public void EndSelection()
 		{
 			if (this._selectionRect.width > 2 && this._selectionRect.height > 2)
 			{
@@ -407,7 +407,12 @@ namespace MapsExt.Editor
 			this._selectionRect = Rect.zero;
 		}
 
-		public void OnClickEventHandlers(List<EditorEventHandler> handlers)
+		public Rect GetSelection()
+		{
+			return this._selectionRect;
+		}
+
+		internal void OnClickEventHandlers(List<EditorEventHandler> handlers)
 		{
 			var objects = handlers.Select(h => h.gameObject).Distinct().ToList();
 			objects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
@@ -424,7 +429,7 @@ namespace MapsExt.Editor
 
 				if (this.SelectedObjects.Count == 1)
 				{
-					int currentIndex = objects.FindIndex(this.IsSelected);
+					int currentIndex = objects.FindIndex(this.SelectedObjects.Contains);
 					if (currentIndex != -1)
 					{
 						selectedObject = objects[(currentIndex + 1) % objects.Count];
@@ -433,7 +438,7 @@ namespace MapsExt.Editor
 			}
 
 			int previouslySelectedCount = this.SelectedObjects.Count;
-			bool clickedMapObjectIsSelected = this.IsSelected(selectedObject);
+			bool clickedObjectIsSelected = this.SelectedObjects.Contains(selectedObject);
 			this.ClearSelected();
 
 			if (selectedObject == null)
@@ -441,8 +446,8 @@ namespace MapsExt.Editor
 				return;
 			}
 
-			bool changeMultiSelectionToSingle = clickedMapObjectIsSelected && previouslySelectedCount > 1;
-			bool selectUnselected = !clickedMapObjectIsSelected;
+			bool changeMultiSelectionToSingle = clickedObjectIsSelected && previouslySelectedCount > 1;
+			bool selectUnselected = !clickedObjectIsSelected;
 
 			if (changeMultiSelectionToSingle || selectUnselected)
 			{
@@ -450,29 +455,24 @@ namespace MapsExt.Editor
 			}
 		}
 
-		public void OnPointerDown()
+		internal void OnPointerDown()
 		{
 			this.EditorEvent?.Invoke(this, new PointerDownEvent());
 		}
 
-		public void OnPointerUp()
+		internal void OnPointerUp()
 		{
 			this.EditorEvent?.Invoke(this, new PointerUpEvent());
 		}
 
-		public void OnKeyDown(KeyCode key)
+		internal void OnKeyDown(KeyCode key)
 		{
 			this.EditorEvent?.Invoke(this, new KeyDownEvent(key));
 		}
 
-		public bool IsSelected(GameObject obj)
+		internal void OnKeyUp(KeyCode key)
 		{
-			return this.SelectedObjects.Contains(obj);
-		}
-
-		public Rect GetSelection()
-		{
-			return this._selectionRect;
+			this.EditorEvent?.Invoke(this, new KeyUpEvent(key));
 		}
 
 		private void UpdateSelection()

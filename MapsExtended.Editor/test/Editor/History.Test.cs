@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using MapsExt.Editor.Events;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.Properties;
 using MapsExt.MapObjects;
@@ -21,10 +22,10 @@ namespace MapsExt.Editor.Tests
 			var go = this.Editor.ActiveObject;
 			var id = go.GetComponent<MapObjectInstance>().MapObjectId;
 
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			this.Editor.Content.transform.childCount.Should().Be(0);
 			this.Editor.ActiveObject.Should().BeNull();
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			this.Editor.Content.transform.childCount.Should().Be(1);
 			this.Editor.ActiveObject.Should().BeNull();
 
@@ -44,9 +45,9 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.MoveSelectedWithMouse(pos2);
 			go.ReadProperty<PositionProperty>().Should().Be(pos2);
 
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			go.ReadProperty<PositionProperty>().Should().Be(pos1);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			go.ReadProperty<PositionProperty>().Should().Be(pos2);
 		}
 
@@ -62,9 +63,9 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.ResizeSelectedWithMouse(size2 - size1, AnchorPosition.MiddleRight);
 			go.ReadProperty<ScaleProperty>().Should().Be(size2);
 
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			go.ReadProperty<ScaleProperty>().Should().Be(size1);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			go.ReadProperty<ScaleProperty>().Should().Be(size2);
 		}
 
@@ -80,9 +81,9 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.RotateSelectedWithMouse(rot2 - rot1);
 			go.ReadProperty<RotationProperty>().Should().Be(rot2);
 
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			go.ReadProperty<RotationProperty>().Should().Be(rot1);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			go.ReadProperty<RotationProperty>().Should().Be(rot2);
 		}
 
@@ -95,12 +96,14 @@ namespace MapsExt.Editor.Tests
 			var pos1 = go.ReadProperty<PositionProperty>();
 			var pos2 = new PositionProperty(0.25f, 0);
 
-			this.Editor.OnKeyDown(KeyCode.RightArrow);
+			this.InputSource.SetKey(KeyCode.RightArrow);
+			yield return null;
+			this.InputSource.SetKey(KeyCode.RightArrow, false);
 			go.ReadProperty<PositionProperty>().Should().Be(pos2);
 
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			go.ReadProperty<PositionProperty>().Should().Be(pos1);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			go.ReadProperty<PositionProperty>().Should().Be(pos2);
 		}
 
@@ -134,7 +137,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.RotateSelectedWithMouse(45);
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
-			this.Editor.OnDeleteSelectedMapObjects();
+			this.Editor.DeleteSelectedMapObjects();
 			yield return null;
 
 			this.Editor.ActiveObject.Should().BeNull();
@@ -142,38 +145,38 @@ namespace MapsExt.Editor.Tests
 
 			var iter = ListIterator.From(list);
 
-			this.Editor.OnUndo(); // Undo delete
+			this.Editor.Undo(); // Undo delete
 			this.Editor.Content.transform.childCount.Should().Be(2);
 
 			rope.GetAnchor(0).GetAnchoredPosition().Should().BeApproximately(iter.MoveLast().Current);
-			this.Editor.OnUndo(); // Undo rotate
+			this.Editor.Undo(); // Undo rotate
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.Editor.OnUndo(); // Undo resize
+			this.Editor.Undo(); // Undo resize
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.Editor.OnUndo(); // Undo move
+			this.Editor.Undo(); // Undo move
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.Editor.OnUndo(); // Undo rope position
+			this.Editor.Undo(); // Undo rope position
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MovePrevious().Current);
-			this.Editor.OnUndo(); // Undo spawn rope
-			this.Editor.OnUndo(); // Undo spawn box
+			this.Editor.Undo(); // Undo spawn rope
+			this.Editor.Undo(); // Undo spawn box
 			this.Editor.Content.transform.childCount.Should().Be(0);
 
-			this.Editor.OnRedo(); // Redo spawn box
-			this.Editor.OnRedo(); // Redo spawn rope
+			this.Editor.Redo(); // Redo spawn box
+			this.Editor.Redo(); // Redo spawn rope
 			this.Editor.Content.transform.childCount.Should().Be(2);
 			rope = this.Editor.Content.transform.GetChild(1).GetComponentInParent<EditorRope.RopeInstance>();
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.Current);
 
-			this.Editor.OnRedo(); // Redo rope position
+			this.Editor.Redo(); // Redo rope position
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
 
-			this.Editor.OnRedo(); // Redo move
+			this.Editor.Redo(); // Redo move
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
-			this.Editor.OnRedo(); // Redo resize
+			this.Editor.Redo(); // Redo resize
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
-			this.Editor.OnRedo(); // Redo rotate
+			this.Editor.Redo(); // Redo rotate
 			rope.GetAnchor(0).GetAnchoredPosition().Should().Be(iter.MoveNext().Current);
-			this.Editor.OnRedo(); // Redo Delete
+			this.Editor.Redo(); // Redo Delete
 			this.Editor.ActiveObject.Should().BeNull();
 			this.Editor.Content.transform.childCount.Should().Be(1);
 		}
@@ -191,9 +194,9 @@ namespace MapsExt.Editor.Tests
 			element.Value.Should().Be(val1.Value);
 			element.Value = val2.Value;
 			element.Value.Should().Be(val2.Value);
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			element.Value.Should().Be(val1.Value);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			element.Value.Should().Be(val2.Value);
 		}
 
@@ -210,9 +213,9 @@ namespace MapsExt.Editor.Tests
 			element.Value.Should().Be(val1.Value);
 			element.Value = val2.Value;
 			element.Value.Should().Be(val2.Value);
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			element.Value.Should().Be(val1.Value);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			element.Value.Should().Be(val2.Value);
 		}
 
@@ -229,9 +232,9 @@ namespace MapsExt.Editor.Tests
 			element.Value.Should().Be(val1.Value);
 			element.Value = val2.Value;
 			element.Value.Should().Be(val2.Value);
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			element.Value.Should().Be(val1.Value);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			element.Value.Should().Be(val2.Value);
 		}
 
@@ -248,9 +251,9 @@ namespace MapsExt.Editor.Tests
 			element.Value.Should().Be(val1.Value);
 			element.Value = val2.Value;
 			element.Value.Should().Be(val2.Value);
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			element.Value.Should().Be(val1.Value);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			element.Value.Should().Be(val2.Value);
 		}
 
@@ -267,9 +270,9 @@ namespace MapsExt.Editor.Tests
 			element.Value.Should().Be(val1);
 			element.Value = val2;
 			element.Value.Should().Be(val2);
-			this.Editor.OnUndo();
+			this.Editor.Undo();
 			element.Value.Should().Be(val1);
-			this.Editor.OnRedo();
+			this.Editor.Redo();
 			element.Value.Should().Be(val2);
 		}
 	}

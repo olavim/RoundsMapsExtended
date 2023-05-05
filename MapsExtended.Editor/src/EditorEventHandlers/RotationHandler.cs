@@ -134,7 +134,7 @@ namespace MapsExt.Editor.Events
 
 		protected override bool ShouldHandleEvent(IEditorEvent evt)
 		{
-			return this.Editor.IsSelected(this.gameObject);
+			return this.Editor.SelectedObjects.Contains(this.gameObject);
 		}
 
 		protected override void HandleEvent(IEditorEvent evt)
