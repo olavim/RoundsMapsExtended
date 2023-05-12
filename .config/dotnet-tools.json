@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "surity.cli": {
+      "version": "2.1.2",
+      "commands": [
+        "surity"
+      ]
+    }
+  }
+}

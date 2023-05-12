@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\RoundsReferences.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<IsPublishable>false</IsPublishable>
+		<AssemblyName>MapsExtended.Tests</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Serialization\Fixtures\*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="6.10.0" />
+		<PackageReference Include="Surity.BepInEx" Version="2.1.2" />
+		<ProjectReference Include="..\src\MapsExtended.Core.csproj" Private="false" IncludeAssets="compile" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="BepInEx">
+			<HintPath>$(BepInExDir)\core\BepInEx.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+</Project>

@@ -349,4 +349,9 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+nuget.config
 Config.props
+logs/
+.bepinex/
+notes
+ExamplePlugin/

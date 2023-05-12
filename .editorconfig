@@ -63,7 +63,7 @@ dotnet_style_prefer_simplified_interpolation = true
 dotnet_style_readonly_field = true
 
 # Parameter preferences
-dotnet_code_quality_unused_parameters = all
+dotnet_code_quality_unused_parameters = non_public
 
 # Suppression preferences
 dotnet_remove_unnecessary_suppression_exclusions = none
@@ -215,3 +215,12 @@ dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix = 
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+# Roslynator rules
+
+roslynator_suppress_unity_script_methods = true
+dotnet_diagnostic.IDE0051.severity = none
+dotnet_diagnostic.IDE0002.severity = none
+dotnet_diagnostic.IDE0003.severity = none
+dotnet_diagnostic.RCS1163.severity = none
+dotnet_diagnostic.RCS1085.severity = none

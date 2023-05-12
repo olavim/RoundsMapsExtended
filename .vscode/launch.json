@@ -1,0 +1,12 @@
+{
+	"configurations": [
+		{
+			"name": "Debug (Mono)",
+			"type": "unity",
+			"request": "launch",
+			"preLaunchTask": "buildAndDebug",
+			"address": "localhost",
+			"port": 55555
+		}
+	]
+}

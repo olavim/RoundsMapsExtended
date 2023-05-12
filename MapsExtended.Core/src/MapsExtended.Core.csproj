@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\RoundsReferences.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<AssemblyName>MapsExtended</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="..\..\assets\mapbase" />
+		<EmbeddedResource Include="..\..\assets\mapobjects" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="UnboundLib" Version="3.2.8" IncludeAssets="compile" />
+		<PackageReference Include="ThisAssembly.Project" Version="1.0.0" />
+		<ProjectProperty Include="Version" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="0Harmony">
+			<HintPath>$(BepInExDir)\core\0Harmony.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="BepInEx">
+			<HintPath>$(BepInExDir)\core\BepInEx.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "MapsExtended.Core": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "D:\\Steam\\steamapps\\common\\ROUNDS Debug\\Rounds.exe",
+      "commandLineArgs": "-- --doorstop-enable true --doorstop-target-assembly \"C:\\Users\\Olavi\\source\\repos\\MapEditor\\.bepinex\\core\\BepInEx.Preloader.dll\" --doorstop-mono-debug-enabled true --doorstop-mono-debug-address \"127.0.0.1:56000\" --doorstop-mono-debug-suspend true",
+      "authenticationMode": "None",
+      "nativeDebugging": false
+    }
+  }
+}
