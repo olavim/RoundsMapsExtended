@@ -90,7 +90,7 @@ namespace MapsExt.Editor.Events
 
 			var aligner = go.AddComponent<UI.UIAligner>();
 			aligner.ReferenceGameObject = this.gameObject;
-			aligner.Position = AnchorPosition.TopMiddle;
+			aligner.Position = Direction2D.North;
 			aligner.Padding = 1.6f;
 
 			var scaler = go.AddComponent<UI.UIScaler>();

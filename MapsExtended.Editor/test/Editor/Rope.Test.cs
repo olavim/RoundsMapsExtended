@@ -157,7 +157,7 @@ namespace MapsExt.Editor.Tests
 			rope.GetAnchor(0).IsAttached.Should().BeFalse();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();
 
-			yield return this.Utils.ResizeSelectedWithMouse(new(2, 0), AnchorPosition.MiddleRight);
+			yield return this.Utils.ResizeSelectedWithMouse(new(2, 0), Direction2D.East);
 
 			rope.GetAnchor(0).IsAttached.Should().BeFalse();
 			rope.GetAnchor(1).IsAttached.Should().BeFalse();

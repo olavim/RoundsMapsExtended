@@ -8,7 +8,7 @@ namespace MapsExt.Editor.Events
 	public class SizeHandler : EditorEventHandler
 	{
 		private bool _isResizing;
-		private int _resizeDirection;
+		private Direction2D _resizeDirection;
 		private Vector2 _prevMouse;
 		private Vector2 _prevScale;
 		private Vector2Int _prevCell;
@@ -40,15 +40,15 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected void Resize(ScaleProperty delta, int resizeDirection = 0)
+		protected void Resize(ScaleProperty delta, Direction2D resizeDirection = null)
 		{
 			var newScale = this.GetValue().Value + delta.Value;
-			this.SetValue(newScale, resizeDirection);
+			this.SetValue(newScale, resizeDirection ?? Direction2D.Middle);
 		}
 
 		public void SetValue(ScaleProperty size)
 		{
-			this.SetValue(size, 0);
+			this.SetValue(size, Direction2D.Middle);
 		}
 
 		public virtual ScaleProperty GetValue()
@@ -56,16 +56,15 @@ namespace MapsExt.Editor.Events
 			return new ScaleProperty(this.transform.localScale);
 		}
 
-		public virtual void SetValue(ScaleProperty size, int resizeDirection)
+		public virtual void SetValue(ScaleProperty size, Direction2D resizeDirection)
 		{
 			var delta = size.Value - (Vector2) this.transform.localScale;
 			float gridSize = this.Editor.GridSize;
 			bool snapToGrid = this.Editor.SnapToGrid;
 
-			var directionMulti = AnchorPosition.directionMultipliers[resizeDirection];
-			var scaleMulti = AnchorPosition.sizeMultipliers[resizeDirection];
-			var scaleDelta = Vector2.Scale(delta, scaleMulti);
-
+			var scaleDelta = resizeDirection == Direction2D.Middle
+				? delta
+				: resizeDirection * delta;
 			var currentScale = this.GetValue().Value;
 			var currentRotation = this.transform.rotation;
 
@@ -101,12 +100,12 @@ namespace MapsExt.Editor.Events
 			var posHandler = this.GetComponent<PositionHandler>();
 			if (posHandler != null)
 			{
-				var positionDelta = (PositionProperty) (currentRotation * Vector2.Scale(scaleDelta, directionMulti));
+				var positionDelta = (PositionProperty) (currentRotation * (resizeDirection * scaleDelta));
 				posHandler.Move(positionDelta * 0.5f);
 			}
 		}
 
-		private void OnResizeStart(int resizeDirection)
+		private void OnResizeStart(Direction2D resizeDirection)
 		{
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
@@ -150,7 +149,7 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected void AddResizeHandle(int direction)
+		protected void AddResizeHandle(Direction2D direction)
 		{
 			var go = new GameObject("Resize Handle " + direction);
 			go.AddComponent<Image>();
@@ -227,14 +226,14 @@ namespace MapsExt.Editor.Events
 
 		protected virtual void OnSelect()
 		{
-			this.AddResizeHandle(AnchorPosition.TopLeft);
-			this.AddResizeHandle(AnchorPosition.TopRight);
-			this.AddResizeHandle(AnchorPosition.BottomLeft);
-			this.AddResizeHandle(AnchorPosition.BottomRight);
-			this.AddResizeHandle(AnchorPosition.MiddleLeft);
-			this.AddResizeHandle(AnchorPosition.MiddleRight);
-			this.AddResizeHandle(AnchorPosition.BottomMiddle);
-			this.AddResizeHandle(AnchorPosition.TopMiddle);
+			this.AddResizeHandle(Direction2D.North);
+			this.AddResizeHandle(Direction2D.South);
+			this.AddResizeHandle(Direction2D.East);
+			this.AddResizeHandle(Direction2D.West);
+			this.AddResizeHandle(Direction2D.NorthEast);
+			this.AddResizeHandle(Direction2D.NorthWest);
+			this.AddResizeHandle(Direction2D.SouthEast);
+			this.AddResizeHandle(Direction2D.SouthWest);
 		}
 
 		protected virtual void OnDeselect()

@@ -60,7 +60,7 @@ namespace MapsExt.Editor.Tests
 			var size1 = go.ReadProperty<ScaleProperty>();
 			var size2 = new ScaleProperty(4, 2);
 
-			yield return this.Utils.ResizeSelectedWithMouse(size2 - size1, AnchorPosition.MiddleRight);
+			yield return this.Utils.ResizeSelectedWithMouse(size2 - size1, Direction2D.East);
 			go.ReadProperty<ScaleProperty>().Should().Be(size2);
 
 			this.Editor.Undo();
@@ -131,7 +131,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.MoveSelectedWithMouse(new Vector3(1, 0, 0));
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
-			yield return this.Utils.ResizeSelectedWithMouse(new Vector3(4, 2, 0), AnchorPosition.MiddleRight);
+			yield return this.Utils.ResizeSelectedWithMouse(new Vector3(4, 2, 0), Direction2D.East);
 			list.Add(rope.GetAnchor(0).GetAnchoredPosition());
 
 			yield return this.Utils.RotateSelectedWithMouse(45);

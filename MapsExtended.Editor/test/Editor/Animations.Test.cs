@@ -154,7 +154,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_ResizeKeyframeWithMouse()
 		{
 			var delta = new ScaleProperty(1, 1);
-			yield return this.Utils.ResizeSelectedWithMouse(delta, AnchorPosition.MiddleRight);
+			yield return this.Utils.ResizeSelectedWithMouse(delta, Direction2D.East);
 
 			var expectedScale = new ScaleProperty(3, 2);
 			this.Editor.ActiveObject.ReadProperty<ScaleProperty>().Should().Be(expectedScale);

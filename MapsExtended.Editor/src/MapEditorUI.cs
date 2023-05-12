@@ -7,45 +7,6 @@ using System.Linq;
 
 namespace MapsExt.Editor
 {
-	public static class AnchorPosition
-	{
-		public static readonly Dictionary<int, Vector2> directionMultipliers = new()
-		{
-			{ AnchorPosition.Middle, new(0, 0) },
-			{ AnchorPosition.TopLeft, new(-1f, 1f) },
-			{ AnchorPosition.TopMiddle, new(0, 1f) },
-			{ AnchorPosition.TopRight, new(1f, 1f) },
-			{ AnchorPosition.MiddleRight, new(1f, 0) },
-			{ AnchorPosition.BottomRight, new(1f, -1f) },
-			{ AnchorPosition.BottomMiddle, new(0, -1f) },
-			{ AnchorPosition.BottomLeft, new(-1f, -1f) },
-			{ AnchorPosition.MiddleLeft, new(-1f, 0) }
-		};
-
-		public static readonly Dictionary<int, Vector2> sizeMultipliers = new()
-		{
-			{ AnchorPosition.Middle, new(1f, 1f) },
-			{ AnchorPosition.TopLeft, new(-1f, 1f) },
-			{ AnchorPosition.TopMiddle, new(0, 1f) },
-			{ AnchorPosition.TopRight, new(1f, 1f) },
-			{ AnchorPosition.MiddleRight, new(1f, 0) },
-			{ AnchorPosition.BottomRight, new(1f, -1f) },
-			{ AnchorPosition.BottomMiddle, new(0, -1f) },
-			{ AnchorPosition.BottomLeft, new(-1f, -1f) },
-			{ AnchorPosition.MiddleLeft, new(-1f, 0) }
-		};
-
-		public const int Middle = 0;
-		public const int TopLeft = 1;
-		public const int TopMiddle = 2;
-		public const int TopRight = 3;
-		public const int MiddleRight = 4;
-		public const int BottomRight = 5;
-		public const int BottomMiddle = 6;
-		public const int BottomLeft = 7;
-		public const int MiddleLeft = 8;
-	}
-
 	public class MapEditorUI : MonoBehaviour
 	{
 		[SerializeField] private MapEditor _editor;

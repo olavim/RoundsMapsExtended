@@ -76,11 +76,11 @@ namespace MapsExt.Editor.Tests
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 
-		public IEnumerator ResizeSelectedWithMouse(Vector2 delta, int anchorPosition)
+		public IEnumerator ResizeSelectedWithMouse(Vector2 delta, Direction2D anchorPosition)
 		{
-			if (anchorPosition == 0)
+			if (anchorPosition == Direction2D.Middle)
 			{
-				throw new ArgumentException("anchorPosition cannot be 0");
+				throw new ArgumentException("anchorPosition cannot be Direction2D.Middle");
 			}
 
 			IEnumerator DoResizeSelectedWithMouse()

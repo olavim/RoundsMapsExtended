@@ -76,7 +76,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.SpawnFromMapObjectWindow(label, category);
 			var obj = this.Editor.ActiveObject;
 			obj.ReadProperty<ScaleProperty>().Should().Be(new ScaleProperty());
-			yield return this.Utils.ResizeSelectedWithMouse(Vector3.one, AnchorPosition.TopRight);
+			yield return this.Utils.ResizeSelectedWithMouse(Vector3.one, Direction2D.NorthEast);
 			obj.ReadProperty<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
 		}
 
