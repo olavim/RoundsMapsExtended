@@ -182,6 +182,22 @@ namespace MapsExt.Editor.Tests
 		}
 
 		[Test]
+		public IEnumerator Test_V0Box_MoveWithMouse()
+		{
+			yield return this.Utils.SpawnMapObject<V0Box>();
+			var go = this.Editor.ActiveObject;
+			((Vector2) go.transform.position).Should().Be(new(0, 0));
+
+			yield return this.Utils.MoveSelectedWithMouse(new(1, 1));
+			((Vector2) go.transform.position).Should().Be(new(1, 1));
+
+			this.Editor.Undo();
+			((Vector2) go.transform.position).Should().Be(new(0, 0));
+			this.Editor.Redo();
+			((Vector2) go.transform.position).Should().Be(new(1, 1));
+		}
+
+		[Test]
 		public IEnumerator Test_Inspector_Position()
 		{
 			yield return this.Utils.SpawnMapObject<BoxData>();

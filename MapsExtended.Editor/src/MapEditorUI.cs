@@ -51,12 +51,14 @@ namespace MapsExt.Editor
 
 			foreach (var (type, label, category) in MapsExtendedEditor.MapObjectAttributes)
 			{
-				if (!mapObjects.ContainsKey(category))
+				string categoryNotNull = category ?? "";
+
+				if (!mapObjects.ContainsKey(categoryNotNull))
 				{
-					mapObjects.Add(category, new List<(string, Type)>());
+					mapObjects.Add(categoryNotNull, new List<(string, Type)>());
 				}
 
-				mapObjects[category].Add((label, type));
+				mapObjects[categoryNotNull].Add((label, type));
 			}
 
 			foreach (var category in mapObjects.Keys.Where(k => k != ""))

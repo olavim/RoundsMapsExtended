@@ -22,6 +22,7 @@ namespace MapsExt
 			try
 			{
 				var c = target.GetOrAddComponent<MapObjectInstance>();
+				c.MapObjectId = data.MapObjectId ?? Guid.NewGuid().ToString();
 				c.DataType = data.GetType();
 				target.SetActive(data.Active);
 				this.Writer((MapObject) data, target);
@@ -37,6 +38,7 @@ namespace MapsExt
 			try
 			{
 				var data = (MapObject) Activator.CreateInstance(mapObjectInstance.DataType);
+				data.MapObjectId = mapObjectInstance.MapObjectId;
 				data.Active = mapObjectInstance.gameObject.activeSelf;
 				this.Reader(mapObjectInstance.gameObject, data);
 				return data;
