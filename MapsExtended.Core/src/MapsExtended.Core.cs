@@ -98,8 +98,17 @@ namespace MapsExt
 
 		private void RegisterMapObjectProperties(Assembly assembly)
 		{
-			var types = assembly.GetTypes();
-			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<PropertySerializerAttribute>() != null))
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
+
+			foreach (var propertySerializerType in types.Where(t => Attribute.IsDefined(t, typeof(PropertySerializerAttribute))))
 			{
 				try
 				{
@@ -123,9 +132,18 @@ namespace MapsExt
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var serializer = new PropertyCompositeSerializer(this._propertyManager);
-			var types = assembly.GetTypes();
 
-			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<MapObjectAttribute>() != null))
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
+
+			foreach (var mapObjectType in types.Where(t => Attribute.IsDefined(t, typeof(MapObjectAttribute))))
 			{
 				try
 				{

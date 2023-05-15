@@ -149,8 +149,17 @@ namespace MapsExt.Editor
 
 		private void RegisterMapObjectProperties(Assembly assembly)
 		{
-			var types = assembly.GetTypes();
-			foreach (var propertySerializerType in types.Where(t => t.GetCustomAttribute<EditorPropertySerializerAttribute>() != null))
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
+
+			foreach (var propertySerializerType in types.Where(t => Attribute.IsDefined(t, typeof(EditorPropertySerializerAttribute))))
 			{
 				try
 				{
@@ -175,9 +184,18 @@ namespace MapsExt.Editor
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var serializer = new PropertyCompositeSerializer(this._propertyManager);
-			var types = assembly.GetTypes();
 
-			foreach (var mapObjectType in types.Where(t => t.GetCustomAttribute<EditorMapObjectAttribute>() != null))
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
+
+			foreach (var mapObjectType in types.Where(t => Attribute.IsDefined(t, typeof(EditorMapObjectAttribute))))
 			{
 				try
 				{
@@ -218,9 +236,17 @@ namespace MapsExt.Editor
 
 		private void RegisterPropertyInspectors(Assembly assembly)
 		{
-			var types = assembly.GetTypes();
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
 
-			foreach (var elementType in types.Where(t => t.GetCustomAttribute<InspectorElementAttribute>() != null))
+			foreach (var elementType in types.Where(t => Attribute.IsDefined(t, typeof(InspectorElementAttribute))))
 			{
 				try
 				{
@@ -255,9 +281,19 @@ namespace MapsExt.Editor
 			}
 		}
 
-		private void RegisterGroupEditorEventHandlers(Assembly asm)
+		private void RegisterGroupEditorEventHandlers(Assembly assembly)
 		{
-			foreach (var type in asm.GetTypes().Where(t => t.GetCustomAttribute<GroupEventHandlerAttribute>() != null))
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
+
+			foreach (var type in types.Where(t => Attribute.IsDefined(t, typeof(GroupEventHandlerAttribute))))
 			{
 				this._groupEventHandlers[type] = type.GetCustomAttribute<GroupEventHandlerAttribute>().RequiredHandlerTypes;
 			}

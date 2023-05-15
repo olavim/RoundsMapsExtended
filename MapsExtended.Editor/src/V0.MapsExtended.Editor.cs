@@ -25,8 +25,17 @@ namespace MapsExt.Editor
 
 		private void RegisterV0MapObjects(Assembly assembly)
 		{
-			var types = assembly.GetTypes();
-			foreach (var type in types.Where(t => t.GetCustomAttribute<EditorMapObjectSpec>() != null))
+			Type[] types;
+			try
+			{
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				types = e.Types.Where(t => t != null).ToArray();
+			}
+
+			foreach (var type in types.Where(t => Attribute.IsDefined(t, typeof(EditorMapObjectSpec))))
 			{
 				try
 				{
