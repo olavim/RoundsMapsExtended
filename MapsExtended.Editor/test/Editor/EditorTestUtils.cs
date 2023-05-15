@@ -41,7 +41,7 @@ namespace MapsExt.Editor.Tests
 			{
 				this.editor.CreateMapObject(type);
 
-				while (this.editor.ActiveObject == null)
+				while (this.editor.ActiveMapObjectPart == null)
 				{
 					yield return null;
 				}
@@ -72,7 +72,7 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator MoveSelectedWithMouse(Vector2 delta)
 		{
-			var go = this.editor.SelectedObjects.First();
+			var go = this.editor.SelectedMapObjectParts.First();
 			yield return this.DragMouse(go.transform.position, delta);
 		}
 
@@ -85,7 +85,7 @@ namespace MapsExt.Editor.Tests
 
 			IEnumerator DoResizeSelectedWithMouse()
 			{
-				var resizeInteractionContent = this.editor.ActiveObject.GetComponent<SizeHandler>().Content;
+				var resizeInteractionContent = this.editor.ActiveMapObjectPart.GetComponent<SizeHandler>().Content;
 				var resizeHandle = resizeInteractionContent.transform.Find("Resize Handle " + anchorPosition).gameObject;
 				yield return this.DragMouse(resizeHandle.transform.position, delta);
 			}
@@ -95,7 +95,7 @@ namespace MapsExt.Editor.Tests
 
 		public IEnumerator RotateSelectedWithMouse(float degrees)
 		{
-			var go = this.editor.ActiveObject;
+			var go = this.editor.ActiveMapObjectPart;
 			var resizeInteractionContent = go.GetComponent<Events.RotationHandler>().Content;
 			var handle = resizeInteractionContent.transform.Find("Rotation Handle").gameObject;
 

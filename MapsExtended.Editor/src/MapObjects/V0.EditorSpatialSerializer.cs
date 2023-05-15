@@ -13,7 +13,6 @@ namespace MapsExt.Editor.MapObjects
 
 		public static void Deserialize(SpatialMapObject data, GameObject target)
 		{
-			target.GetOrAddComponent<SelectionHandler>();
 			target.GetOrAddComponent<PositionHandler>();
 			target.GetOrAddComponent<SizeHandler>();
 			target.GetOrAddComponent<Events.RotationHandler>();

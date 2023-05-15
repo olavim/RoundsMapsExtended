@@ -34,8 +34,6 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected override bool ShouldHandleEvent(IEditorEvent evt) => true;
-
 		protected override void HandleEvent(IEditorEvent evt)
 		{
 			base.HandleEvent(evt);
@@ -44,7 +42,7 @@ namespace MapsExt.Editor.Events
 			{
 				this.OnSelect();
 
-				this._gameObjects = this.Editor.SelectedObjects.ToList();
+				this._gameObjects = this.Editor.SelectedMapObjectParts.ToList();
 
 				foreach (var obj in this._gameObjects)
 				{

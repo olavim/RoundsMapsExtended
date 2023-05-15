@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using MapsExt.MapObjects;
+using MapsExt.Editor.MapObjects;
+using System.Linq;
 
 namespace MapsExt.Editor
 {
@@ -21,6 +23,11 @@ namespace MapsExt.Editor
 
 			mapObject.OnInstantiate(instance);
 			this.WriteMapObject(data, instance);
+
+			if (instance.GetComponentsInChildren<MapObjectPart>().Count() == 0)
+			{
+				instance.AddComponent<MapObjectPart>();
+			}
 
 			onInstantiate?.Invoke(instance);
 		}

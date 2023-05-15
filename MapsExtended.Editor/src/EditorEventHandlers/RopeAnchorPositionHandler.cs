@@ -1,9 +1,7 @@
 ﻿using MapsExt.Properties;
-using UnityEngine;
 
 namespace MapsExt.Editor.Events
 {
-	[RequireComponent(typeof(SelectionHandler))]
 	public class RopeAnchorPositionHandler : PositionHandler
 	{
 		private bool _isSelected;

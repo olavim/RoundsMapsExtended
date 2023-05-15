@@ -15,7 +15,7 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_EditorActiveObjectIsInspectorTarget()
 		{
 			yield return this.Utils.SpawnMapObject<BoxData>();
-			this.Editor.ActiveObject.Should().BeSameAs(this.Inspector.Target);
+			this.Editor.ActiveMapObjectPart.Should().BeSameAs(this.Inspector.Target);
 		}
 
 		[Test]

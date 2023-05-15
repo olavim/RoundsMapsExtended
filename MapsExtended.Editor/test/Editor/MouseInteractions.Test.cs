@@ -26,7 +26,7 @@ namespace MapsExt.Editor.Tests
 
 			this.Editor.Content.transform.childCount.Should().Be(1);
 
-			var box = this.Editor.ActiveObject;
+			var box = this.Editor.ActiveMapObjectPart;
 			box.GetComponent<MapObjectInstance>().DataType.Should().Be(typeof(BoxData));
 			box.ReadProperty<PositionProperty>().Should().Be(new PositionProperty());
 		}
@@ -64,7 +64,7 @@ namespace MapsExt.Editor.Tests
 		private IEnumerator Test_SpawnAndMove(string label, string category = null)
 		{
 			yield return this.SpawnFromMapObjectWindow(label, category);
-			var obj = this.Editor.ActiveObject;
+			var obj = this.Editor.ActiveMapObjectPart;
 			var delta = new PositionProperty(-5, 0);
 			obj.ReadProperty<PositionProperty>().Should().Be(new PositionProperty());
 			yield return this.Utils.MoveSelectedWithMouse(delta);
@@ -74,7 +74,7 @@ namespace MapsExt.Editor.Tests
 		private IEnumerator Test_SpawnAndResize(string label, string category = null)
 		{
 			yield return this.SpawnFromMapObjectWindow(label, category);
-			var obj = this.Editor.ActiveObject;
+			var obj = this.Editor.ActiveMapObjectPart;
 			obj.ReadProperty<ScaleProperty>().Should().Be(new ScaleProperty());
 			yield return this.Utils.ResizeSelectedWithMouse(Vector3.one, Direction2D.NorthEast);
 			obj.ReadProperty<ScaleProperty>().Should().Be(new ScaleProperty(3, 3));
@@ -83,7 +83,7 @@ namespace MapsExt.Editor.Tests
 		private IEnumerator Test_SpawnAndRotate(string label, string category = null)
 		{
 			yield return this.SpawnFromMapObjectWindow(label, category);
-			var obj = this.Editor.ActiveObject;
+			var obj = this.Editor.ActiveMapObjectPart;
 			obj.ReadProperty<RotationProperty>().Should().Be(new RotationProperty());
 			yield return this.Utils.RotateSelectedWithMouse(45);
 			obj.ReadProperty<RotationProperty>().Should().Be(new RotationProperty(45));
@@ -94,7 +94,7 @@ namespace MapsExt.Editor.Tests
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
 
-			var box = this.Editor.ActiveObject;
+			var box = this.Editor.ActiveMapObjectPart;
 			var delta = new PositionProperty(-5.2f, 0);
 			yield return this.Utils.MoveSelectedWithMouse(delta);
 			box.ReadProperty<PositionProperty>().Should().Be(new PositionProperty(-5.25f, 0));
@@ -104,17 +104,17 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_SelectUnderlyingBox()
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box1 = this.Editor.ActiveObject;
+			var box1 = this.Editor.ActiveMapObjectPart;
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box2 = this.Editor.ActiveObject;
+			var box2 = this.Editor.ActiveMapObjectPart;
 
 			this.InputSource.SetMousePosition(MainCam.instance.cam.WorldToScreenPoint(box1.transform.position));
 			this.InputSource.SetMouseButtonDown(0);
 			this.InputSource.SetMouseButtonUp(0);
 			yield return null;
 
-			this.Editor.ActiveObject.Should().BeSameAs(box1);
-			this.Editor.ActiveObject.Should().NotBeSameAs(box2);
+			this.Editor.ActiveMapObjectPart.Should().BeSameAs(box1);
+			this.Editor.ActiveMapObjectPart.Should().NotBeSameAs(box2);
 		}
 
 		[Test]
@@ -130,17 +130,17 @@ namespace MapsExt.Editor.Tests
 			this.InputSource.SetMouseButtonUp(0);
 			yield return null;
 
-			this.Editor.SelectedObjects.Count.Should().Be(2);
-			this.Editor.ActiveObject.GetComponent<GroupSelectionHandler>().Should().NotBeNull();
+			this.Editor.SelectedMapObjectParts.Count.Should().Be(2);
+			this.Editor.ActiveMapObjectPart.GetComponent<GroupMapObjectPartHandler>().Should().NotBeNull();
 		}
 
 		[Test]
 		public IEnumerator Test_MoveGroup()
 		{
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box1 = this.Editor.ActiveObject;
+			var box1 = this.Editor.ActiveMapObjectPart;
 			yield return this.SpawnFromMapObjectWindow("Box");
-			var box2 = this.Editor.ActiveObject;
+			var box2 = this.Editor.ActiveMapObjectPart;
 
 			this.Editor.SelectAll();
 
@@ -156,7 +156,7 @@ namespace MapsExt.Editor.Tests
 			btn.Should().NotBeNull();
 			btn.onClick.Invoke();
 
-			while (this.Editor.ActiveObject == null)
+			while (this.Editor.ActiveMapObjectPart == null)
 			{
 				yield return null;
 			}

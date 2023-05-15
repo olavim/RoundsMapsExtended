@@ -33,7 +33,11 @@ namespace MapsExt.Editor.Events
 		}
 
 		protected abstract void HandleEvent(IEditorEvent evt);
-		protected abstract bool ShouldHandleEvent(IEditorEvent evt);
+
+		protected virtual bool ShouldHandleEvent(IEditorEvent evt)
+		{
+			return this.Editor.ActiveMapObjectPart == this.gameObject;
+		}
 
 		public bool Equals(EditorEventHandler other) => this._guid == other._guid;
 		public override bool Equals(object other) => other is EditorEventHandler handler && this.Equals(handler);

@@ -1,5 +1,4 @@
 ﻿using MapsExt.Properties;
-using UnboundLib;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
@@ -16,8 +15,6 @@ namespace MapsExt.Editor.Events
 		protected override void Awake()
 		{
 			base.Awake();
-
-			this.gameObject.GetOrAddComponent<SelectionHandler>();
 
 			this.Content = new GameObject("Rotate Interaction Content");
 			this.Content.transform.SetParent(this.transform);
@@ -130,11 +127,6 @@ namespace MapsExt.Editor.Events
 
 			go.transform.SetParent(this.Content.transform);
 			go.transform.localScale = Vector3.one;
-		}
-
-		protected override bool ShouldHandleEvent(IEditorEvent evt)
-		{
-			return this.Editor.SelectedObjects.Contains(this.gameObject);
 		}
 
 		protected override void HandleEvent(IEditorEvent evt)

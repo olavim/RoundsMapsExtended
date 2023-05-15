@@ -29,8 +29,8 @@ namespace MapsExt.Editor.Tests
 			this.Editor.Content.transform.GetChild(0).gameObject.Should().BeSameAs(this.animationMapObject);
 			this.animationMapObject.Should().BeSameAs(this.animation.gameObject);
 			this.animationMapObject.GetComponent<MapObjectAnimation>().Should().BeSameAs(this.animation);
-			this.Editor.ActiveObject.Should().NotBeSameAs(this.animationMapObject);
-			this.Editor.ActiveObject.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
+			this.Editor.ActiveMapObjectPart.Should().NotBeSameAs(this.animationMapObject);
+			this.Editor.ActiveMapObjectPart.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
 		}
 
 		[Test]
@@ -39,7 +39,7 @@ namespace MapsExt.Editor.Tests
 			this.AnimationHandler.AddKeyframe();
 			this.animation.Keyframes.Count.Should().Be(2);
 			this.animationMapObject.Should().NotBeSameAs(this.AnimationHandler.KeyframeMapObject);
-			this.Editor.ActiveObject.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
+			this.Editor.ActiveMapObjectPart.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
 		}
 
 		[Test]
@@ -54,9 +54,9 @@ namespace MapsExt.Editor.Tests
 		public void Test_ToggleAnimation()
 		{
 			this.AnimationHandler.ToggleAnimation(this.animationMapObject);
-			this.Editor.ActiveObject.Should().BeNull();
+			this.Editor.ActiveMapObjectPart.Should().BeNull();
 			this.AnimationHandler.ToggleAnimation(this.animationMapObject);
-			this.Editor.ActiveObject.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
+			this.Editor.ActiveMapObjectPart.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
 		}
 
 		private IEnumerator GeneratePropertyTests<T>(int keyframeCount, T prop1, T prop2, Func<int, T> KeyframeProperty) where T : IProperty
@@ -128,7 +128,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.MoveSelectedWithMouse(delta);
 
 			var exceptedPosition = new PositionProperty(1, 1);
-			this.Editor.ActiveObject.ReadProperty<PositionProperty>().Should().Be(exceptedPosition);
+			this.Editor.ActiveMapObjectPart.ReadProperty<PositionProperty>().Should().Be(exceptedPosition);
 			this.GetKeyframeValue<PositionProperty>(0).Should().Be(exceptedPosition);
 		}
 
@@ -157,7 +157,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.ResizeSelectedWithMouse(delta, Direction2D.East);
 
 			var expectedScale = new ScaleProperty(3, 2);
-			this.Editor.ActiveObject.ReadProperty<ScaleProperty>().Should().Be(expectedScale);
+			this.Editor.ActiveMapObjectPart.ReadProperty<ScaleProperty>().Should().Be(expectedScale);
 			this.GetKeyframeValue<ScaleProperty>(0).Should().Be(expectedScale);
 		}
 
@@ -184,14 +184,14 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.RotateSelectedWithMouse(45);
 
 			var expectedRotation = new RotationProperty(45);
-			this.Editor.ActiveObject.ReadProperty<RotationProperty>().Should().Be(expectedRotation);
+			this.Editor.ActiveMapObjectPart.ReadProperty<RotationProperty>().Should().Be(expectedRotation);
 			this.GetKeyframeValue<RotationProperty>(0).Should().Be(expectedRotation);
 		}
 
 		private IEnumerator SpawnWithAnimation<T>() where T : MapObjectData
 		{
 			yield return this.Utils.SpawnMapObject<T>();
-			this.Editor.AnimationHandler.AddAnimation(this.Editor.ActiveObject);
+			this.Editor.AnimationHandler.AddAnimation(this.Editor.ActiveMapObjectPart);
 		}
 
 		private T GetKeyframeValue<T>(int keyframeIndex) where T : IProperty

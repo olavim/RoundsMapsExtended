@@ -1,44 +1,29 @@
-﻿using MapsExt.Editor.UI;
+﻿using MapsExt.Editor.MapObjects;
+using MapsExt.Editor.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MapsExt.Editor.Events
 {
-	public class SelectionHandler : EditorEventHandler
+	public class MapObjectPartHandler : EditorEventHandler
 	{
 		private bool _isSelected;
 
 		public GameObject Content { get; private set; }
 
-		protected virtual void Start()
+		protected override void Awake()
 		{
-			var colliders = this.GetComponentsInChildren<Collider2D>();
-			if (colliders.Length == 0)
-			{
-				throw new System.Exception($"No colliders found on {this.gameObject.name}");
-			}
-		}
+			base.Awake();
 
-		public Bounds GetBounds()
-		{
-			if (this.GetComponent<Collider2D>())
+			if (this.GetComponent<MapObjectPart>() == null)
 			{
-				return this.GetComponent<Collider2D>().bounds;
+				throw new System.Exception($"No {nameof(MapObjectPart)} found on {this.gameObject.name}");
 			}
-
-			var colliders = this.GetComponentsInChildren<Collider2D>();
-			var bounds = colliders[0].bounds;
-			for (var i = 1; i < colliders.Length; i++)
-			{
-				bounds.Encapsulate(colliders[i].bounds);
-			}
-
-			return bounds;
 		}
 
 		protected override bool ShouldHandleEvent(IEditorEvent evt)
 		{
-			return this.Editor.SelectedObjects.Contains(this.gameObject);
+			return this.Editor.SelectedMapObjectParts.Contains(this.gameObject);
 		}
 
 		protected override void HandleEvent(IEditorEvent evt)
@@ -75,7 +60,7 @@ namespace MapsExt.Editor.Events
 
 			var scaler = this.Content.AddComponent<UIScaler>();
 			scaler.ReferenceGameObject = this.gameObject;
-			scaler.Padding = 0.6f;
+			scaler.Padding = this.Editor.ActiveMapObjectPart == this.gameObject ? 0.6f : 0.2f;
 
 			var image = this.Content.AddComponent<Image>();
 			image.color = new Color32(255, 255, 255, 5);

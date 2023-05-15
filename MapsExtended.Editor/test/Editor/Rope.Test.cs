@@ -28,7 +28,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<RopeData>();
 			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 			yield return this.Utils.SpawnMapObject<BoxData>();
-			var boxGo = this.Editor.ActiveObject;
+			var boxGo = this.Editor.ActiveMapObjectPart;
 
 			rope.WriteProperty(new RopePositionProperty(new(0, 0), new(0, 5)));
 
@@ -47,9 +47,9 @@ namespace MapsExt.Editor.Tests
 		public IEnumerator Test_AnchorMovesWithAttachedObject_MoveGroup()
 		{
 			yield return this.Utils.SpawnMapObject<BoxData>();
-			var box1 = this.Editor.ActiveObject;
+			var box1 = this.Editor.ActiveMapObjectPart;
 			yield return this.Utils.SpawnMapObject<BoxData>();
-			var box2 = this.Editor.ActiveObject;
+			var box2 = this.Editor.ActiveMapObjectPart;
 
 			box2.WriteProperty(new PositionProperty(4, 2));
 
@@ -75,7 +75,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<RopeData>();
 			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 			yield return this.Utils.SpawnMapObject<BoxData>();
-			var boxGo = this.Editor.ActiveObject;
+			var boxGo = this.Editor.ActiveMapObjectPart;
 
 			rope.WriteProperty(new RopePositionProperty(new(0, 0.25f), new(0, 5)));
 
@@ -93,7 +93,7 @@ namespace MapsExt.Editor.Tests
 			yield return this.Utils.SpawnMapObject<RopeData>();
 			var rope = this.Editor.ActiveMapObject.GetComponent<EditorRope.RopeInstance>();
 			yield return this.Utils.SpawnMapObject<BoxData>();
-			var boxGo = this.Editor.ActiveObject;
+			var boxGo = this.Editor.ActiveMapObjectPart;
 
 			rope.WriteProperty(new RopePositionProperty(new(-0.25f, 0), new(0, 5)));
 

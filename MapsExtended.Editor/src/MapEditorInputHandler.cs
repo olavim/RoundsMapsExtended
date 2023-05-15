@@ -118,11 +118,11 @@ namespace MapsExt.Editor
 			this._mouseDownSince = Time.time * 1000;
 			this._mouseDownPosition = EditorInput.MousePosition;
 
-			var list = EditorUtils.GetEventHandlersAt(this._mouseDownPosition)
+			var list = EditorUtils.GetMapObjectPartsAt(this._mouseDownPosition)
 				.Select(h => h.gameObject)
 				.Distinct();
 
-			if (list.Any(this._editor.SelectedObjects.Contains))
+			if (list.Any(this._editor.SelectedMapObjectParts.Contains))
 			{
 				this._editor.OnPointerDown();
 			}
@@ -150,7 +150,7 @@ namespace MapsExt.Editor
 
 			if (mouseDelta.magnitude <= ClickPositionEpsilon && mouseUpTime - this._mouseDownSince <= ClickTimeMsEpsilon)
 			{
-				this._editor.OnClickEventHandlers(EditorUtils.GetEventHandlersAt(newMousePosition));
+				this._editor.OnClickMapObjectParts(EditorUtils.GetMapObjectPartsAt(newMousePosition));
 			}
 
 			if (this._isSelecting)

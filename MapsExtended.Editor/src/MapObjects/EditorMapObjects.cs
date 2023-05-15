@@ -99,7 +99,9 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInstantiate(GameObject instance)
 		{
 			base.OnInstantiate(instance);
-			instance.GetOrAddComponent<RopeInstance>();
+			var ropeInstance = instance.GetOrAddComponent<RopeInstance>();
+			ropeInstance.GetAnchor(0).gameObject.GetOrAddComponent<MapObjectPart>();
+			ropeInstance.GetAnchor(1).gameObject.GetOrAddComponent<MapObjectPart>();
 			instance.GetOrAddComponent<Visualizers.RopeVisualizer>();
 		}
 	}

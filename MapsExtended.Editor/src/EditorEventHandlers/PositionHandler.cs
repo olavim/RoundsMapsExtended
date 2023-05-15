@@ -1,5 +1,4 @@
 using MapsExt.Properties;
-using UnboundLib;
 using UnityEngine;
 
 namespace MapsExt.Editor.Events
@@ -36,12 +35,6 @@ namespace MapsExt.Editor.Events
 		private Vector2Int _prevCell;
 		private Vector2 _offset;
 
-		protected override void Awake()
-		{
-			base.Awake();
-			this.gameObject.GetOrAddComponent<SelectionHandler>();
-		}
-
 		public void Move(PositionProperty delta)
 		{
 			this.SetValue(this.GetValue() + delta);
@@ -69,8 +62,14 @@ namespace MapsExt.Editor.Events
 		{
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
-			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 			var mouseDelta = mouseWorldPos - this._prevMouse;
+
+			if (mouseDelta.Round(4) == Vector2.zero)
+			{
+				return;
+			}
+
+			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
 			var cellDelta = mouseCell - this._prevCell;
 
 			var delta = mouseDelta;
@@ -90,11 +89,6 @@ namespace MapsExt.Editor.Events
 
 			this._prevMouse += mouseDelta;
 			this._prevCell = mouseCell;
-		}
-
-		protected override bool ShouldHandleEvent(IEditorEvent evt)
-		{
-			return this.Editor.SelectedObjects.Contains(this.gameObject);
 		}
 
 		protected override void HandleEvent(IEditorEvent evt)

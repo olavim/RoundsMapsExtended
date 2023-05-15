@@ -1,17 +1,21 @@
+using MapsExt.Editor.MapObjects;
 using System.Linq;
 
 namespace MapsExt.Editor.Events
 {
-	[GroupEventHandler(typeof(SelectionHandler))]
+	[GroupEventHandler(typeof(MapObjectPartHandler))]
 	public class GroupSizeHandler : EditorEventHandler
 	{
-		protected override bool ShouldHandleEvent(IEditorEvent evt) => true;
+		protected override bool ShouldHandleEvent(IEditorEvent evt)
+		{
+			return this.Editor.ActiveMapObjectPart == this.gameObject;
+		}
 
 		protected override void HandleEvent(IEditorEvent evt)
 		{
 			if (evt is SelectEvent)
 			{
-				var boundsArr = this.Editor.SelectedObjects.Select(obj => obj.GetComponent<SelectionHandler>().GetBounds()).ToArray();
+				var boundsArr = this.Editor.SelectedMapObjectParts.Select(obj => obj.GetComponent<MapObjectPart>().Collider.bounds).ToArray();
 				var bounds = boundsArr[0];
 				for (var i = 1; i < boundsArr.Length; i++)
 				{

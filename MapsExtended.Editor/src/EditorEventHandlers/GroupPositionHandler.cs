@@ -1,3 +1,4 @@
+using MapsExt.Editor.MapObjects;
 using MapsExt.Properties;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,7 +6,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.Events
 {
-	[GroupEventHandler(typeof(PositionHandler), typeof(SelectionHandler))]
+	[GroupEventHandler(typeof(PositionHandler))]
 	public class GroupPositionHandler : PositionHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
@@ -26,17 +27,15 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected override bool ShouldHandleEvent(IEditorEvent evt) => true;
-
 		protected override void HandleEvent(IEditorEvent evt)
 		{
 			base.HandleEvent(evt);
 
 			if (evt is SelectEvent)
 			{
-				this._gameObjects = this.Editor.SelectedObjects.ToList();
+				this._gameObjects = this.Editor.SelectedMapObjectParts.ToList();
 
-				var boundsArr = this._gameObjects.Select(obj => obj.GetComponent<SelectionHandler>().GetBounds()).ToArray();
+				var boundsArr = this._gameObjects.Select(obj => obj.GetComponent<MapObjectPart>().Collider.bounds).ToArray();
 				var bounds = boundsArr[0];
 				for (var i = 1; i < boundsArr.Length; i++)
 				{

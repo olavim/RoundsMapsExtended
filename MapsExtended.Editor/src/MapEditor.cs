@@ -9,6 +9,7 @@ using MapsExt.MapObjects;
 using MapsExt.Editor.Events;
 using System;
 using System.Collections;
+using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -25,19 +26,16 @@ namespace MapsExt.Editor
 		private List<MapObjectData> _clipboardMapObjects;
 		private GameObject _tempSpawn;
 		private GameObject _dummyGroup;
-		private GameObject _activeObject;
+		private GameObject _activeMapObjectPart;
 		private GameObject _activeMapObjectOverride;
 
 		/// <summary>
-		/// The currently active object. Can be the selected object or the container of multiple selected objects.
+		/// The currently active map object part. Can be the selected map object part or the container of multiple selected map object parts.
 		/// </summary>
-		/// <remarks>
-		/// The active object has at least one <see cref="EditorEventHandler"/> component.
-		/// </remarks>
-		public GameObject ActiveObject => this._activeObject;
+		public GameObject ActiveMapObjectPart => this._activeMapObjectPart;
 
 		/// <summary>
-		/// Returns <see cref="ActiveObject"/> or the first of its parents that has a <see cref="MapObjectInstance"/> component,
+		/// Returns <see cref="ActiveMapObjectPart"/> or the first of its parent game objects that has a <see cref="MapObjectInstance"/> component,
 		/// unless overridden with <see cref="OverrideActiveMapObject"/>.
 		/// </summary>
 		public GameObject ActiveMapObject =>
@@ -49,7 +47,7 @@ namespace MapsExt.Editor
 		public MapEditorAnimationHandler AnimationHandler { get => this._animationHandler; set => this._animationHandler = value; }
 		public Grid Grid { get => this._grid; set => this._grid = value; }
 
-		public HashSet<GameObject> SelectedObjects { get; } = new();
+		public HashSet<GameObject> SelectedMapObjectParts { get; } = new();
 		public HashSet<GameObject> SelectedMapObjects { get; } = new();
 
 		public event EventHandler<IEditorEvent> EditorEvent;
@@ -144,7 +142,7 @@ namespace MapsExt.Editor
 		public void CopySelected()
 		{
 			this._clipboardMapObjects = new List<MapObjectData>();
-			var mapObjectInstances = this.SelectedObjects
+			var mapObjectInstances = this.SelectedMapObjectParts
 				.Select(obj => obj.GetComponent<MapObjectInstance>() ?? obj.GetComponentInParent<MapObjectInstance>())
 				.Distinct();
 
@@ -177,10 +175,7 @@ namespace MapsExt.Editor
 				yield return null;
 			}
 
-			var pastedObjects = pastedMapObjects
-				.SelectMany(obj => obj.GetComponentsInChildren<EditorEventHandler>())
-				.Select(obj => obj.gameObject)
-				.Distinct();
+			var pastedObjects = pastedMapObjects.SelectMany(obj => obj.GetComponentsInChildren<MapObjectPart>()).Select(obj => obj.gameObject);
 
 			this.AddSelected(pastedObjects);
 			this.EditorEvent?.Invoke(this, new PasteEvent());
@@ -221,7 +216,7 @@ namespace MapsExt.Editor
 				}
 			}
 
-			var remainingSelected = this.SelectedObjects.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().MapObjectId)).ToList();
+			var remainingSelected = this.SelectedMapObjectParts.Where(obj => !dict.ContainsKey(obj.GetComponentInParent<MapObjectInstance>().MapObjectId)).ToList();
 
 			// Destroy map objects remaining in the dictionary since they don't exist in the new state
 			foreach (var id in dict.Keys)
@@ -255,10 +250,7 @@ namespace MapsExt.Editor
 
 			MapsExtendedEditor.MapObjectManager.Instantiate(mapObjectDataType, this.Content.transform, obj =>
 			{
-				var objectsWithHandlers = obj
-					.GetComponentsInChildren<EditorEventHandler>()
-					.Select(h => h.gameObject)
-					.Distinct();
+				var objectsWithHandlers = obj.GetComponentsInChildren<MapObjectPart>().Select(h => h.gameObject);
 
 				this.AddSelected(objectsWithHandlers);
 				this.ResetSpawnLabels();
@@ -292,7 +284,7 @@ namespace MapsExt.Editor
 				throw new Exception("Cannot delete map objects while animating a map object.");
 			}
 
-			foreach (var instance in this.SelectedObjects.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
+			foreach (var instance in this.SelectedMapObjectParts.Select(obj => obj.GetComponentInParent<MapObjectInstance>().gameObject).Distinct().ToArray())
 			{
 				if (instance == this.AnimationHandler.Animation?.gameObject)
 				{
@@ -390,16 +382,16 @@ namespace MapsExt.Editor
 			if (this._selectionRect.width > 2 && this._selectionRect.height > 2)
 			{
 				this.ClearSelected();
-				var list = EditorUtils.GetContainedEventHandlers(UIUtils.GUIToWorldRect(this._selectionRect));
+				var parts = EditorUtils.GetContainedMapObjectParts(UIUtils.GUIToWorldRect(this._selectionRect));
 
 				// When editing animation, don't allow selecting other map objects
-				if (this.AnimationHandler.Animation != null && list.Any(h => ((Component) h).gameObject == this.AnimationHandler.KeyframeMapObject))
+				if (this.AnimationHandler.Animation != null && parts.Any(p => p.gameObject == this.AnimationHandler.KeyframeMapObject))
 				{
 					this.AddSelected(this.AnimationHandler.KeyframeMapObject);
 				}
 				else if (this.AnimationHandler.Animation == null)
 				{
-					this.AddSelected(list.Select(h => ((Component) h).gameObject).Distinct());
+					this.AddSelected(parts.Select(p => p.gameObject));
 				}
 			}
 
@@ -412,33 +404,33 @@ namespace MapsExt.Editor
 			return this._selectionRect;
 		}
 
-		internal void OnClickEventHandlers(List<EditorEventHandler> handlers)
+		internal void OnClickMapObjectParts(List<MapObjectPart> parts)
 		{
-			var objects = handlers.Select(h => h.gameObject).Distinct().ToList();
-			objects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
+			var gameObjects = parts.Where(p => p.GetComponentInParent<MapObjectInstance>() != null).Select(p => p.gameObject).ToList();
+			gameObjects.Sort((a, b) => a.GetInstanceID() - b.GetInstanceID());
 			GameObject selectedObject = null;
 
 			// When editing animation, don't allow selecting other map objects
-			if (this.AnimationHandler.Animation != null && objects.Any(obj => obj == this.AnimationHandler.KeyframeMapObject))
+			if (this.AnimationHandler.Animation != null && gameObjects.Any(obj => obj == this.AnimationHandler.KeyframeMapObject))
 			{
 				selectedObject = this.AnimationHandler.KeyframeMapObject;
 			}
-			else if (this.AnimationHandler.Animation == null && objects.Count > 0)
+			else if (this.AnimationHandler.Animation == null && gameObjects.Count > 0)
 			{
-				selectedObject = objects[0];
+				selectedObject = gameObjects[0];
 
-				if (this.SelectedObjects.Count == 1)
+				if (this.SelectedMapObjectParts.Count == 1)
 				{
-					int currentIndex = objects.FindIndex(this.SelectedObjects.Contains);
+					int currentIndex = gameObjects.FindIndex(this.SelectedMapObjectParts.Contains);
 					if (currentIndex != -1)
 					{
-						selectedObject = objects[(currentIndex + 1) % objects.Count];
+						selectedObject = gameObjects[(currentIndex + 1) % gameObjects.Count];
 					}
 				}
 			}
 
-			int previouslySelectedCount = this.SelectedObjects.Count;
-			bool clickedObjectIsSelected = this.SelectedObjects.Contains(selectedObject);
+			int previouslySelectedCount = this.SelectedMapObjectParts.Count;
+			bool clickedObjectIsSelected = this.SelectedMapObjectParts.Contains(selectedObject);
 			this.ClearSelected();
 
 			if (selectedObject == null)
@@ -496,9 +488,9 @@ namespace MapsExt.Editor
 				GameObjectUtils.DestroyImmediateSafe(this._dummyGroup);
 			}
 
-			this.SelectedObjects.Clear();
+			this.SelectedMapObjectParts.Clear();
 			this.SelectedMapObjects.Clear();
-			this._activeObject = null;
+			this._activeMapObjectPart = null;
 		}
 
 		public void AddSelected(GameObject obj)
@@ -519,6 +511,7 @@ namespace MapsExt.Editor
 				this._dummyGroup = new GameObject("Group");
 				this._dummyGroup.transform.SetParent(this.Content.transform);
 				this._dummyGroup.SetActive(false);
+				this._dummyGroup.AddComponent<MapObjectPart>();
 
 				var validGroupHandlerTypes = new List<Tuple<Type, Type>>();
 
@@ -536,14 +529,14 @@ namespace MapsExt.Editor
 				}
 
 				this._dummyGroup.SetActive(true);
-				this._activeObject = this._dummyGroup;
+				this._activeMapObjectPart = this._dummyGroup;
 			}
 			else
 			{
-				this._activeObject = list.FirstOrDefault();
+				this._activeMapObjectPart = list.FirstOrDefault();
 			}
 
-			this.SelectedObjects.UnionWith(list);
+			this.SelectedMapObjectParts.UnionWith(list);
 			this.SelectedMapObjects.UnionWith(list.Select(x => x.GetComponentInParent<MapObjectInstance>()?.gameObject).Where(x => x != null));
 
 			this.EditorEvent?.Invoke(this, new SelectEvent());

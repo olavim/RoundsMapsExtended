@@ -118,7 +118,7 @@ namespace MapsExt.Editor.UI
 		{
 			if (this.Editor.AnimationHandler.Animation == null)
 			{
-				var anim = this.Editor.ActiveObject.GetComponent<MapObjectAnimation>();
+				var anim = this.Editor.ActiveMapObjectPart.GetComponent<MapObjectAnimation>();
 
 				if (anim)
 				{
@@ -126,7 +126,7 @@ namespace MapsExt.Editor.UI
 				}
 				else
 				{
-					this.Editor.AnimationHandler.AddAnimation(this.Editor.ActiveObject);
+					this.Editor.AnimationHandler.AddAnimation(this.Editor.ActiveMapObjectPart);
 				}
 			}
 
