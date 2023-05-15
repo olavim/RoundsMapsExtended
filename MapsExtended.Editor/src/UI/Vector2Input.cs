@@ -25,6 +25,8 @@ namespace MapsExt.Editor.UI
 			}
 		}
 
+		public bool IsFocused => this.XInput.isFocused || this.YInput.isFocused;
+
 		protected virtual void Start()
 		{
 			this.XInput.onValueChanged.AddListener(this.UpdateXValue);

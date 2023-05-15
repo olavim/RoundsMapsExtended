@@ -36,7 +36,10 @@ namespace MapsExt.Editor.UI
 
 		public override void OnUpdate()
 		{
-			this._input.SetWithoutEvent(this.Value);
+			if (!this._input.Input.isFocused)
+			{
+				this._input.SetWithoutEvent(this.Value);
+			}
 		}
 
 		protected abstract float GetValue();

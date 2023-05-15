@@ -129,6 +129,11 @@ namespace MapsExt.Editor.Events
 			go.transform.localScale = Vector3.one;
 		}
 
+		protected override bool ShouldHandleEvent(IEditorEvent evt)
+		{
+			return this.Editor.ActiveMapObjectPart == this.gameObject;
+		}
+
 		protected override void HandleEvent(IEditorEvent evt)
 		{
 			switch (evt)

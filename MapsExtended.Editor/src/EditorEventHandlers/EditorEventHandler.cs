@@ -36,7 +36,7 @@ namespace MapsExt.Editor.Events
 
 		protected virtual bool ShouldHandleEvent(IEditorEvent evt)
 		{
-			return this.Editor.ActiveMapObjectPart == this.gameObject;
+			return this.Editor.SelectedMapObjectParts.Contains(this.gameObject) || this.Editor.ActiveMapObjectPart == this.gameObject;
 		}
 
 		public bool Equals(EditorEventHandler other) => this._guid == other._guid;

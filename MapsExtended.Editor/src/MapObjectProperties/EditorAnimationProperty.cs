@@ -17,7 +17,7 @@ namespace MapsExt.Editor.Properties
 
 			if (anim != null)
 			{
-				keyframes.AddRange(anim.Keyframes);
+				keyframes.AddRange(anim.Keyframes.Select(k => new AnimationKeyframe(k)));
 				if (keyframes.Count > 0)
 				{
 					keyframes[0] = new AnimationKeyframe(instance.ReadProperties<ILinearProperty>());

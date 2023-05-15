@@ -29,7 +29,10 @@ namespace MapsExt.Editor.UI
 
 		public override void OnUpdate()
 		{
-			this._input.Input.SetWithoutEvent(this.Value);
+			if (!this._input.Input.IsFocused)
+			{
+				this._input.Input.SetWithoutEvent(this.Value);
+			}
 		}
 
 		protected abstract Vector2 GetValue();

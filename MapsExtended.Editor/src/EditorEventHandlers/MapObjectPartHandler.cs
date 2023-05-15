@@ -21,11 +21,6 @@ namespace MapsExt.Editor.Events
 			}
 		}
 
-		protected override bool ShouldHandleEvent(IEditorEvent evt)
-		{
-			return this.Editor.SelectedMapObjectParts.Contains(this.gameObject);
-		}
-
 		protected override void HandleEvent(IEditorEvent evt)
 		{
 			switch (evt)

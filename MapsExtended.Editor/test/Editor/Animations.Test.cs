@@ -54,7 +54,7 @@ namespace MapsExt.Editor.Tests
 		public void Test_ToggleAnimation()
 		{
 			this.AnimationHandler.ToggleAnimation(this.animationMapObject);
-			this.Editor.ActiveMapObjectPart.Should().BeNull();
+			this.Editor.ActiveMapObjectPart.Should().BeSameAs(this.animation.gameObject);
 			this.AnimationHandler.ToggleAnimation(this.animationMapObject);
 			this.Editor.ActiveMapObjectPart.Should().BeSameAs(this.AnimationHandler.KeyframeMapObject);
 		}

@@ -91,6 +91,11 @@ namespace MapsExt.Editor.Events
 			this._prevCell = mouseCell;
 		}
 
+		protected override bool ShouldHandleEvent(IEditorEvent evt)
+		{
+			return this.Editor.ActiveMapObjectPart == this.gameObject;
+		}
+
 		protected override void HandleEvent(IEditorEvent evt)
 		{
 			switch (evt)

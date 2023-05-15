@@ -8,8 +8,6 @@ using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnboundLib;
 using Sirenix.Utilities;
-using MapsExt.Editor.Properties;
-using MapsExt.Editor.MapObjects;
 
 namespace MapsExt.Editor
 {
@@ -204,6 +202,9 @@ namespace MapsExt.Editor
 			{
 				this.Animation.gameObject.SetActive(true);
 				this._curtain.SetActive(false);
+				this.Editor.OverrideActiveMapObject(null);
+				this.Editor.ClearSelected();
+				this.Editor.AddSelected(this.Animation.gameObject);
 				this.Animation = null;
 				this.SetKeyframe(-1);
 				this.RefreshParticles();
@@ -211,6 +212,7 @@ namespace MapsExt.Editor
 			}
 
 			this.Animation = newAnimation;
+			this.Editor.ClearSelected();
 			this.Animation.gameObject.SetActive(false);
 			this._curtain.SetActive(true);
 			this.RefreshParticles();
@@ -302,11 +304,6 @@ namespace MapsExt.Editor
 					this.Editor.AddSelected(instance);
 					this.Editor.OverrideActiveMapObject(instance);
 				});
-			}
-			else
-			{
-				this.Editor.OverrideActiveMapObject(null);
-				this.Editor.ClearSelected();
 			}
 
 			this.UpdateTraceLine();
