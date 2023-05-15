@@ -40,4 +40,4 @@ Folders:
 
 ## Custom map objects
 
-See [the wiki](https://github.com/olavim/RoundsMapsExtended/wiki/Modding-quickstart) for a basic guide on how to add custom map objects in MapsExtended.
+See [the wiki](https://github.com/olavim/RoundsMapsExtended/wiki) for a guide on how to add custom map objects (and more) in MapsExtended.
