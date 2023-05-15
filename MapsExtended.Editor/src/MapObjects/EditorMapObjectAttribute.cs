@@ -7,7 +7,7 @@ namespace MapsExt.Editor.MapObjects
 	{
 		public Type DataType { get; }
 		public string Label { get; }
-		public string Category { get; init; }
+		public string Category { get; set; }
 
 		public EditorMapObjectAttribute(Type dataType, string label)
 		{
