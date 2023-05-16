@@ -21,11 +21,11 @@ namespace MapsExt.Editor.UI
 
 		protected override GameObject GetInstance()
 		{
-			var instance = GameObject.Instantiate(Assets.InspectorBooleanPrefab);
-			var elem = instance.GetComponent<InspectorBoolean>();
-			elem.Label.text = this._name;
+			var instance = GameObject.Instantiate(Assets.InspectorToggleInputPrefab);
+			var inspectorInput = instance.GetComponent<InspectorToggleInput>();
+			inspectorInput.Label.text = this._name;
 
-			this._toggle = elem.Input;
+			this._toggle = inspectorInput.Input;
 			this._toggle.onValueChanged.AddListener(this.OnChange);
 
 			return instance;

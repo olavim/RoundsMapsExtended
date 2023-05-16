@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace MapsExt.Editor.UI
 {
-	public class InspectorQuaternion : MonoBehaviour
+	public class InspectorToggleInput : MonoBehaviour
 	{
 		[SerializeField] private Text _label;
-		[SerializeField] private TextSliderInput _input;
+		[SerializeField] private Toggle _input;
 
 		public Text Label { get => this._label; set => this._label = value; }
-		public TextSliderInput Input { get => this._input; set => this._input = value; }
+		public Toggle Input { get => this._input; set => this._input = value; }
 	}
 }

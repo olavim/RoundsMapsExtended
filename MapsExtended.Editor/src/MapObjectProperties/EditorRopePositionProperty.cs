@@ -63,14 +63,14 @@ namespace MapsExt.Editor.Properties
 			layoutGroup.childControlHeight = true;
 			layoutGroup.childForceExpandWidth = true;
 
-			var pos1Instance = GameObject.Instantiate(Assets.InspectorVector2Prefab, instance.transform);
-			var input1 = pos1Instance.GetComponent<InspectorVector2>();
+			var pos1Instance = GameObject.Instantiate(Assets.InspectorVector2InputPrefab, instance.transform);
+			var input1 = pos1Instance.GetComponent<InspectorVector2Input>();
 			input1.Label.text = "Anchor Position 1";
 			this._input1 = input1.Input;
 			this._input1.OnChanged += value => this.HandleInputChange(new(value, this.Value.EndPosition));
 
-			var pos2Instance = GameObject.Instantiate(Assets.InspectorVector2Prefab, instance.transform);
-			var input2 = pos2Instance.GetComponent<InspectorVector2>();
+			var pos2Instance = GameObject.Instantiate(Assets.InspectorVector2InputPrefab, instance.transform);
+			var input2 = pos2Instance.GetComponent<InspectorVector2Input>();
 			input2.Label.text = "Anchor Position 2";
 			this._input2 = input2.Input;
 			this._input2.OnChanged += value => this.HandleInputChange(new(this.Value.StartPosition, value));

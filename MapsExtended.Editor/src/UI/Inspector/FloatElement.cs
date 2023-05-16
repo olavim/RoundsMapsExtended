@@ -24,10 +24,10 @@ namespace MapsExt.Editor.UI
 
 		protected override GameObject GetInstance()
 		{
-			var instance = GameObject.Instantiate(Assets.InspectorQuaternionPrefab);
-			var quaternionInput = instance.GetComponent<InspectorQuaternion>();
-			quaternionInput.Label.text = this._name;
-			this._input = quaternionInput.Input;
+			var instance = GameObject.Instantiate(Assets.InspectorSliderInputPrefab);
+			var inspectorInput = instance.GetComponent<InspectorSliderInput>();
+			inspectorInput.Label.text = this._name;
+			this._input = inspectorInput.Input;
 			this._input.Slider.minValue = this._min;
 			this._input.Slider.maxValue = this._max;
 			this._input.OnChanged += this.OnChange;

@@ -10,7 +10,6 @@ namespace MapsExt.Editor.UI
 		[SerializeField] private Slider _slider;
 		[SerializeField] private InputField _input;
 		private float _inputValue;
-		private float _maxSliderValue;
 		private float _valueOnSliderMouseDown;
 
 		public Slider Slider { get => this._slider; set => this._slider = value; }
@@ -28,7 +27,6 @@ namespace MapsExt.Editor.UI
 		{
 			this.Slider.onValueChanged.AddListener(this.UpdateValueSlider);
 			this.Input.onValueChanged.AddListener(this.UpdateValueTextInput);
-			this._maxSliderValue = this.Slider.maxValue;
 		}
 
 		protected virtual void Start()
@@ -63,13 +61,8 @@ namespace MapsExt.Editor.UI
 
 		private void UpdateValueSlider(float origValue)
 		{
-			float value = Mathf.Min(this._maxSliderValue, origValue);
-			value = (float) Math.Round(value * 10f) / 10f;
-
-			if (this.Slider.maxValue > this._maxSliderValue)
-			{
-				this.Slider.maxValue = this._maxSliderValue;
-			}
+			float value = (float) Math.Round(origValue * 10f) / 10f;
+			value = Mathf.Clamp(origValue, this.Slider.minValue, this.Slider.maxValue);
 
 			if (value != origValue)
 			{
@@ -95,12 +88,12 @@ namespace MapsExt.Editor.UI
 
 			if (valueStr?.Length == 0)
 			{
-				this._inputValue = 1f;
+				this._inputValue = 0;
 			}
 			else if (float.TryParse(valueStr, out float value))
 			{
+				value = Mathf.Clamp(value, this.Slider.minValue, this.Slider.maxValue);
 				this.Slider.onValueChanged.RemoveListener(this.UpdateValueSlider);
-				this.Slider.maxValue = (value > this._maxSliderValue) ? value : this._maxSliderValue;
 				this.Slider.value = value;
 				this.Slider.onValueChanged.AddListener(this.UpdateValueSlider);
 

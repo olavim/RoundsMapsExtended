@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace MapsExt.Editor.UI
 {
-	public class InspectorVector2 : MonoBehaviour
+	public class InspectorSliderInput : MonoBehaviour
 	{
 		[SerializeField] private Text _label;
-		[SerializeField] private Vector2Input _input;
+		[SerializeField] private TextSliderInput _input;
 
 		public Text Label { get => this._label; set => this._label = value; }
-		public Vector2Input Input { get => this._input; set => this._input = value; }
+		public TextSliderInput Input { get => this._input; set => this._input = value; }
 	}
 }

@@ -5,7 +5,7 @@ namespace MapsExt.Editor.UI
 	public abstract class Vector2Element : InspectorElement
 	{
 		private readonly string _name;
-		private InspectorVector2 _input;
+		private Vector2Input _input;
 
 		public Vector2 Value
 		{
@@ -20,18 +20,19 @@ namespace MapsExt.Editor.UI
 
 		protected override GameObject GetInstance()
 		{
-			var instance = GameObject.Instantiate(Assets.InspectorVector2Prefab);
-			this._input = instance.GetComponent<InspectorVector2>();
-			this._input.Label.text = this._name;
-			this._input.Input.OnChanged += this.OnChange;
+			var instance = GameObject.Instantiate(Assets.InspectorVector2InputPrefab);
+			var inspectorInput = instance.GetComponent<InspectorVector2Input>();
+			inspectorInput.Label.text = this._name;
+			this._input = inspectorInput.Input;
+			this._input.OnChanged += this.OnChange;
 			return instance;
 		}
 
 		public override void OnUpdate()
 		{
-			if (!this._input.Input.IsFocused)
+			if (!this._input.IsFocused)
 			{
-				this._input.Input.SetWithoutEvent(this.Value);
+				this._input.SetWithoutEvent(this.Value);
 			}
 		}
 

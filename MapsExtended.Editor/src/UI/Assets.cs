@@ -11,10 +11,9 @@ namespace MapsExt.Editor.UI
 		public static GameObject SaveDialogPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/save dialog.prefab");
 		public static GameObject KeyframeSettingsPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/keyframe settings.prefab");
 		public static GameObject FoldoutPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/foldout.prefab");
-		public static GameObject InspectorDividerPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectordivider.prefab");
-		public static GameObject InspectorVector2Prefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectorvector2.prefab");
-		public static GameObject InspectorQuaternionPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectorquaternion.prefab");
-		public static GameObject InspectorBooleanPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectorboolean.prefab");
+		public static GameObject InspectorVector2InputPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectorvector2input.prefab");
+		public static GameObject InspectorSliderInputPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectorsliderinput.prefab");
+		public static GameObject InspectorToggleInputPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectortoggleinput.prefab");
 		public static GameObject InspectorButtonPrefab => s_bundle.LoadAsset<GameObject>("assets/_mapsextendededitor/inspectorbutton.prefab");
 
 		static Assets()
