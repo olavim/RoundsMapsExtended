@@ -28,13 +28,16 @@ In the above example, you should change `"<version>"` with the latest version of
 
 ## Development
 
-Before building the project, copy and rename `Config.props.dist` to `Config.props` and change the `RoundsFolder` property inside it to match your ROUNDS installation path.
+Before building the project, copy and rename `Config.props.dist` to `Config.props` and change the properties inside it to match your configuration.
 
 ### Project structure
 
 The mod has been split into two separate BepInEx plugins. The **MapsExtended** plugin consists of the core logic for loading custom maps. The **Editor** plugin adds the actual map editor to the game. Splitting the mod into two plugins allows for custom map mods to only depend on the core plugin: the editor is not needed if all you want to do is to play custom maps.
 
 Folders:
-- **MapsExtended**: The core plugin C# project
-- **Editor**: The editor plugin C# project
-- **Editor.UI**: Some Unity assets have been created for the editor, and this project includes scripts used in those assets.
+- **MapsExtended.Core**: The core plugin C# project
+- **MapsExtended.Editor**: The editor plugin C# project
+
+## Custom map objects
+
+See [the wiki](https://github.com/olavim/RoundsMapsExtended/wiki) for a guide on how to add custom map objects (and more) in MapsExtended.
