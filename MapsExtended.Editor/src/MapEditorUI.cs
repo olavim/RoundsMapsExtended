@@ -40,6 +40,7 @@ namespace MapsExt.Editor
 			this.Toolbar.EditMenu.AddItem(new MenuItemBuilder().Label("Paste").Action(this.OnClickPaste).KeyBinding(NamedKeyCode.V, NamedKeyCode.Ctrl));
 			this.Toolbar.EditMenu.AddItem(new MenuItemBuilder().Label("Undo").Action(this.OnClickUndo).KeyBinding(NamedKeyCode.Z, NamedKeyCode.Ctrl));
 			this.Toolbar.EditMenu.AddItem(new MenuItemBuilder().Label("Redo").Action(this.OnClickRedo).KeyBinding(NamedKeyCode.Z, NamedKeyCode.Ctrl, NamedKeyCode.Shift));
+			this.Toolbar.EditMenu.AddItem(new MenuItemBuilder().Label("Reset Camera Position").Action(this.OnClickResetCameraPosition));
 
 			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow));
 			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Inspector").Action(this.OpenInspectorWindow));
@@ -305,6 +306,14 @@ namespace MapsExt.Editor
 		private void OnClickPaste()
 		{
 			this.StartCoroutine(this.Editor.Paste());
+		}
+
+		private void OnClickResetCameraPosition()
+		{
+			foreach (var cam in GameObject.FindObjectsOfType<Camera>())
+			{
+				cam.transform.position = new Vector3(0, 0, cam.transform.position.z);
+			}
 		}
 
 		private void OpenMapObjectWindow()

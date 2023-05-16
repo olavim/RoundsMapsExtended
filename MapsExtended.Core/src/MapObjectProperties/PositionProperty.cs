@@ -9,7 +9,11 @@ namespace MapsExt.Properties
 
 		public override Vector2 Value => new(this._x, this._y);
 
-		public PositionProperty() : this(0, 0) { }
+		public PositionProperty()
+		{
+			this._x = MainCam.instance.cam.transform.position.x;
+			this._y = MainCam.instance.cam.transform.position.y;
+		}
 
 		public PositionProperty(Vector2 value) : this(value.x, value.y) { }
 

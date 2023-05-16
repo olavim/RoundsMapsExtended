@@ -12,8 +12,11 @@ namespace MapsExt.Editor
 		private MapEditor _editor;
 		private float _mouseDownSince;
 		private Vector2 _mouseDownPosition;
+		private Vector2 _originalViewportPosition;
 		private bool _isSelecting;
 		private bool _isMouseDown;
+		private bool _isMiddleMouseDown;
+		private Camera[] _cameras;
 
 		protected virtual void Awake()
 		{
@@ -52,6 +55,21 @@ namespace MapsExt.Editor
 			if (EditorInput.GetMouseButtonUp(0))
 			{
 				this.HandleMouseUp();
+			}
+
+			if (EditorInput.GetMouseButtonDown(2))
+			{
+				this.HandleMiddleMouseDown();
+			}
+
+			if (EditorInput.GetMouseButtonUp(2))
+			{
+				this.HandleMiddleMouseUp();
+			}
+
+			if (this._isMiddleMouseDown)
+			{
+				this.MoveViewport();
 			}
 
 			if (EditorInput.GetKeyDown(KeyCode.LeftShift))
@@ -157,6 +175,35 @@ namespace MapsExt.Editor
 			{
 				this._isSelecting = false;
 				this._editor.EndSelection();
+			}
+		}
+
+		private void HandleMiddleMouseDown()
+		{
+			if (EventSystem.current.IsPointerOverGameObject())
+			{
+				return;
+			}
+
+			this._isMiddleMouseDown = true;
+			this._mouseDownPosition = EditorInput.MousePosition;
+			this._originalViewportPosition = MainCam.instance.cam.transform.position;
+			this._cameras = GameObject.FindObjectsOfType<Camera>();
+		}
+
+		private void HandleMiddleMouseUp()
+		{
+			this._isMiddleMouseDown = false;
+		}
+
+		private void MoveViewport()
+		{
+			var viewportDelta = (Vector2) (MainCam.instance.cam.ScreenToWorldPoint(this._mouseDownPosition) - MainCam.instance.cam.ScreenToWorldPoint(EditorInput.MousePosition));
+			var newPos = this._originalViewportPosition + viewportDelta;
+
+			foreach (var cam in this._cameras)
+			{
+				cam.transform.position = new Vector3(newPos.x, newPos.y, cam.transform.position.z);
 			}
 		}
 

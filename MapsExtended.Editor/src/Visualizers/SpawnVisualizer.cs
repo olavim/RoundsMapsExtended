@@ -62,7 +62,7 @@ namespace MapsExt.Visualizers
 			pointCanvasGo.transform.SetParent(canvasGo.transform);
 
 			this._positionIndicator = pointCanvasGo.AddComponent<Image>();
-			this._positionIndicator.rectTransform.sizeDelta = UIUtils.WorldToScreenRect(new Rect(0, 0, 0.5f, 0.5f)).size;
+			this._positionIndicator.rectTransform.sizeDelta = Vector2.one * 10f;
 		}
 
 		protected virtual void OnDisable()
@@ -77,7 +77,7 @@ namespace MapsExt.Visualizers
 			var spawnObj = this.gameObject.GetComponent<SpawnPoint>();
 			this._label.text = $"Spawn {spawnObj.ID}";
 
-			var screenPos = MainCam.instance.cam.WorldToScreenPoint(this.transform.position) - MainCam.instance.cam.WorldToScreenPoint(Vector3.zero);
+			var screenPos = MainCam.instance.cam.WorldToScreenPoint(this.transform.position) - MainCam.instance.cam.WorldToScreenPoint(MainCam.instance.cam.transform.position);
 			this._positionIndicator.rectTransform.anchoredPosition = screenPos;
 			this._label.rectTransform.anchoredPosition = screenPos + new Vector3(0, 50f, 0);
 			this._labelBg.rectTransform.anchoredPosition = screenPos + new Vector3(0, 50f, 0);

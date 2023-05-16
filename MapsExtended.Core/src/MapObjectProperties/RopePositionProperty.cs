@@ -12,12 +12,17 @@ namespace MapsExt.Properties
 		public Vector2 StartPosition { get => this._pos1; set => this._pos1 = value; }
 		public Vector2 EndPosition { get => this._pos2; set => this._pos2 = value; }
 
-		public RopePositionProperty() : this(Vector2.up, Vector2.down) { }
+		public RopePositionProperty()
+		{
+			var pos = (Vector2) MainCam.instance.cam.transform.position;
+			this._pos1 = pos + Vector2.up;
+			this._pos2 = pos + Vector2.down;
+		}
 
 		public RopePositionProperty(Vector2 startPosition, Vector2 endPosition)
 		{
-			this.StartPosition = startPosition;
-			this.EndPosition = endPosition;
+			this._pos1 = startPosition;
+			this._pos2 = endPosition;
 		}
 
 		public bool Equals(RopePositionProperty other) =>
