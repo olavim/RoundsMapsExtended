@@ -6,27 +6,34 @@ using UnityEngine;
 
 namespace MapsExt
 {
-	public class CustomMap : IUpgradable<CustomMap>
+	public class CustomMap : ISerializationCallbackReceiver
 	{
 		[SerializeField] private readonly string _id;
 		[SerializeField] private readonly string _name;
 		[SerializeField] private readonly string _version;
-		[SerializeField] private readonly object[] _mapObjects;
+		[SerializeField] private object[] _mapObjects;
+
+		private MapObjectData[] _typedMapObjects;
 
 		public string Id => this._id;
 		public string Name => this._name;
 		public string Version => this._version;
-		public MapObjectData[] MapObjects => this._mapObjects.Select(x => (MapObjectData) x).ToArray();
+		public MapObjectData[] MapObjects => this._typedMapObjects;
 
 		public CustomMap(string id, string name, string version, MapObjectData[] mapObjects)
 		{
 			this._id = id;
 			this._name = name;
-			this._mapObjects = mapObjects;
+			this._typedMapObjects = mapObjects;
 			this._version = version;
 		}
 
-		public CustomMap Upgrade()
+		void ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			this._mapObjects = this._typedMapObjects.Cast<object>().ToArray();
+		}
+
+		void ISerializationCallbackReceiver.OnAfterDeserialize()
 		{
 			if (this._mapObjects == null)
 			{
@@ -51,7 +58,7 @@ namespace MapsExt
 				}
 			}
 
-			return new CustomMap(this.Id, this.Name, this.Version, list.ToArray());
+			this._typedMapObjects = list.ToArray();
 		}
 	}
 }

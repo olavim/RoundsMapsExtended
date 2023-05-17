@@ -4,13 +4,12 @@ using MapsExt.MapObjects;
 using MapsExt.Properties;
 using Sirenix.Serialization;
 using Surity;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 namespace MapsExt.Tests
 {
-	[TestClass(Only = true)]
+	[TestClass]
 	public class OldVersionSerializationTests
 	{
 		private static readonly SerializationConfig serializationConfig = new()
@@ -95,11 +94,10 @@ namespace MapsExt.Tests
 		public void Test_LoadV0MapWithCustomMapObjects()
 		{
 #pragma warning disable CS0618
-			var map1 = new Compatibility.V0.CustomMap
-			{
-				id = "test",
-				name = "test",
-				mapObjects = new object[]
+			var map1 = new Compatibility.V0.CustomMap(
+				"test",
+				"test",
+				new object[]
 				{
 					new V0Box() {
 						Active = true,
@@ -108,7 +106,7 @@ namespace MapsExt.Tests
 						rotation = Quaternion.Euler(0, 0, 45)
 					}
 				}
-			};
+			);
 #pragma warning restore CS0618
 
 			var bytes = SerializationUtility.SerializeValue(map1, DataFormat.JSON, new() { Config = serializationConfig });

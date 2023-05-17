@@ -140,7 +140,7 @@ namespace MapsExt.Compatibility
 
 		public override CustomMap Load(Stream stream)
 		{
-			return SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, this.context).Upgrade();
+			return SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, this.context);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #pragma warning disable CS0649
 
@@ -11,6 +12,13 @@ namespace MapsExt.Compatibility.V0
 		public string id;
 		public string name;
 		public object[] mapObjects;
+
+		public CustomMap(string id, string name, object[] mapObjects)
+		{
+			this.id = id;
+			this.name = name;
+			this.mapObjects = mapObjects.Cast<object>().ToArray();
+		}
 
 		public MapsExt.CustomMap Upgrade()
 		{
