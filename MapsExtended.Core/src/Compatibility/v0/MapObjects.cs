@@ -8,9 +8,9 @@ using UnityEngine;
 namespace MapsExt.Compatibility.V0.MapObjects
 {
 	[Obsolete("Deprecated")]
-	internal abstract class MapObject : MapsExt.MapObjects.MapObject, IUpgradable
+	internal abstract class MapObject : MapsExt.MapObjects.MapObject, IUpgradable<MapObjectData>
 	{
-		public abstract object Upgrade();
+		public abstract MapObjectData Upgrade();
 
 		public T Populate<T>(T data) where T : MapObjectData
 		{
@@ -39,49 +39,49 @@ namespace MapsExt.Compatibility.V0.MapObjects
 	[Obsolete("Deprecated")]
 	internal class Ball : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new BallData());
+		public override MapObjectData Upgrade() => this.Populate(new BallData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class Box : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new BoxData());
+		public override MapObjectData Upgrade() => this.Populate(new BoxData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class BoxBackground : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new BoxBackgroundData());
+		public override MapObjectData Upgrade() => this.Populate(new BoxBackgroundData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class BoxDestructible : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new BoxDestructibleData());
+		public override MapObjectData Upgrade() => this.Populate(new BoxDestructibleData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class Ground : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new GroundData());
+		public override MapObjectData Upgrade() => this.Populate(new GroundData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class GroundCircle : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new GroundCircleData());
+		public override MapObjectData Upgrade() => this.Populate(new GroundCircleData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class Saw : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new SawData());
+		public override MapObjectData Upgrade() => this.Populate(new SawData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class SawDynamic : SpatialMapObject
 	{
-		public override object Upgrade() => this.Populate(new SawDynamicData());
+		public override MapObjectData Upgrade() => this.Populate(new SawDynamicData());
 	}
 
 	[Obsolete("Deprecated")]
@@ -90,7 +90,7 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public Vector3 startPosition = Vector3.up;
 		public Vector3 endPosition = Vector3.down;
 
-		public override object Upgrade()
+		public override MapObjectData Upgrade()
 		{
 			var data = this.Populate(new RopeData());
 			data.Position = new RopePositionProperty
@@ -109,7 +109,7 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public int teamID;
 		public Vector3 position;
 
-		public override object Upgrade()
+		public override MapObjectData Upgrade()
 		{
 			var data = this.Populate(new SpawnData());
 			data.Id = new SpawnIDProperty

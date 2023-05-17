@@ -126,15 +126,8 @@ namespace MapsExt.Compatibility
 		public override CustomMap Load(Stream stream)
 		{
 #pragma warning disable CS0618
-			object map = SerializationUtility.DeserializeValue<V0.CustomMap>(stream, DataFormat.JSON, this.context);
+			return SerializationUtility.DeserializeValue<V0.CustomMap>(stream, DataFormat.JSON, this.context).Upgrade();
 #pragma warning restore CS0618
-
-			while (map is IUpgradable upgradeable)
-			{
-				map = upgradeable.Upgrade();
-			}
-
-			return (CustomMap) map;
 		}
 	}
 
@@ -144,7 +137,7 @@ namespace MapsExt.Compatibility
 
 		public override CustomMap Load(Stream stream)
 		{
-			return SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, this.context);
+			return SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, this.context).Upgrade();
 		}
 	}
 }

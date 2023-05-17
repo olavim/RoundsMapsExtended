@@ -6,14 +6,14 @@ using System.Collections.Generic;
 namespace MapsExt.Compatibility.V0
 {
 	[Obsolete("Deprecated")]
-	public class CustomMap : IUpgradable
+	public class CustomMap : IUpgradable<MapsExt.CustomMap>
 	{
 		public string id;
 		public string name;
 
 		public List<MapsExt.MapObjects.MapObject> mapObjects;
 
-		public object Upgrade()
+		public MapsExt.CustomMap Upgrade()
 		{
 			if (this.mapObjects == null)
 			{
@@ -24,9 +24,9 @@ namespace MapsExt.Compatibility.V0
 
 			foreach (var mapObject in this.mapObjects)
 			{
-				if (mapObject is IUpgradable upgradeable)
+				if (mapObject is IUpgradable<MapsExt.MapObjects.MapObjectData> upgradeable)
 				{
-					list.Add((MapsExt.MapObjects.MapObjectData) upgradeable.Upgrade());
+					list.Add(upgradeable.Upgrade());
 				}
 				else if (mapObject is MapsExt.MapObjects.MapObjectData data)
 				{

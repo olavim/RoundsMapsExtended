@@ -1,7 +1,7 @@
 namespace MapsExt.Compatibility
 {
-	public interface IUpgradable
+	public interface IUpgradable<T>
 	{
-		object Upgrade();
+		T Upgrade();
 	}
 }
