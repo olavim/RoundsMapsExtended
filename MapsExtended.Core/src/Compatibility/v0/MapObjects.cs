@@ -8,13 +8,15 @@ using UnityEngine;
 namespace MapsExt.Compatibility.V0.MapObjects
 {
 	[Obsolete("Deprecated")]
-	internal abstract class MapObject : MapsExt.MapObjects.MapObject, IUpgradable<MapObjectData>
+	internal abstract class MapObject : IUpgradable<MapObjectData>
 	{
+		public bool active;
+
 		public abstract MapObjectData Upgrade();
 
 		public T Populate<T>(T data) where T : MapObjectData
 		{
-			data.Active = this.Active;
+			data.Active = this.active;
 			return data;
 		}
 	}

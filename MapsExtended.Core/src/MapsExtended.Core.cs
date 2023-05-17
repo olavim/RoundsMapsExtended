@@ -205,7 +205,20 @@ namespace MapsExt
 
 			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
 
-			var personalMaps = personalMapPaths.Select(path => MapLoader.LoadPath(path));
+			var personalMaps = new List<CustomMap>();
+
+			foreach (var path in personalMapPaths)
+			{
+				try
+				{
+					personalMaps.Add(MapLoader.LoadPath(path));
+				}
+				catch (Exception)
+				{
+					Logger.LogError($"Could not load personal map {path}");
+				}
+			}
+
 			var pluginMaps = new Dictionary<string, List<CustomMap>>();
 
 			foreach (var path in pluginMapPaths)
@@ -224,7 +237,14 @@ namespace MapsExt
 					pluginMaps[packName] = new List<CustomMap>();
 				}
 
-				pluginMaps[packName].Add(MapLoader.LoadPath(path));
+				try
+				{
+					pluginMaps[packName].Add(MapLoader.LoadPath(path));
+				}
+				catch (Exception)
+				{
+					Logger.LogError($"Could not load plugin map {path}");
+				}
 			}
 
 			this._maps = new List<CustomMap>();

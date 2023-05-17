@@ -8,10 +8,10 @@ namespace MapsExt
 	[Obsolete("Deprecated")]
 	public class MapObjectSpecSerializer : IMapObjectSerializer
 	{
-		protected DeserializerAction<MapObject> Writer { get; }
-		protected SerializerAction<MapObject> Reader { get; }
+		protected DeserializerAction<MapObjectData> Writer { get; }
+		protected SerializerAction<MapObjectData> Reader { get; }
 
-		public MapObjectSpecSerializer(DeserializerAction<MapObject> deserializer, SerializerAction<MapObject> serializer)
+		public MapObjectSpecSerializer(DeserializerAction<MapObjectData> deserializer, SerializerAction<MapObjectData> serializer)
 		{
 			this.Writer = deserializer ?? throw new ArgumentException("Deserializer cannot be null");
 			this.Reader = serializer ?? throw new ArgumentException("Serializer cannot be null");
@@ -25,7 +25,7 @@ namespace MapsExt
 				c.MapObjectId = data.MapObjectId ?? Guid.NewGuid().ToString();
 				c.DataType = data.GetType();
 				target.SetActive(data.Active);
-				this.Writer((MapObject) data, target);
+				this.Writer((MapObjectData) data, target);
 			}
 			catch (Exception ex)
 			{
@@ -37,7 +37,7 @@ namespace MapsExt
 		{
 			try
 			{
-				var data = (MapObject) Activator.CreateInstance(mapObjectInstance.DataType);
+				var data = (MapObjectData) Activator.CreateInstance(mapObjectInstance.DataType);
 				data.MapObjectId = mapObjectInstance.MapObjectId;
 				data.Active = mapObjectInstance.gameObject.activeSelf;
 				this.Reader(mapObjectInstance.gameObject, data);

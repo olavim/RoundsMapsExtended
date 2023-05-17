@@ -1,4 +1,5 @@
 ﻿using MapsExt.Properties;
+using Sirenix.Serialization;
 using Sirenix.Utilities;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Serialization;
+
+[assembly: BindTypeNameToType("MapsExt.MapObjects.MapObject", typeof(MapsExt.MapObjects.MapObjectData))]
 
 namespace MapsExt.MapObjects
 {

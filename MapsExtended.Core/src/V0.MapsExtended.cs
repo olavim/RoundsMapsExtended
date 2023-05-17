@@ -41,8 +41,8 @@ namespace MapsExt
 				{
 					var attr = type.GetCustomAttribute<MapObjectSpec>();
 					var prefab = ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(MapObjectPrefab));
-					var deserializerAction = ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
-					var serializerAction = ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(MapObjectSerializer));
+					var deserializerAction = ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObjectData>>(type, typeof(MapObjectDeserializer));
+					var serializerAction = ReflectionUtils.GetAttributedMethod<SerializerAction<MapObjectData>>(type, typeof(MapObjectSerializer));
 
 					var serializer = new MapObjectSpecSerializer(deserializerAction, serializerAction);
 

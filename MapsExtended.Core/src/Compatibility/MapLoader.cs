@@ -103,7 +103,7 @@ namespace MapsExt.Compatibility
 
 		protected MapLoader(DeserializationContext context = null)
 		{
-			this.context = context ?? new DeserializationContext();
+			this.context = context ?? new();
 		}
 
 		public virtual CustomMap LoadResource(string resourceName)
@@ -133,7 +133,10 @@ namespace MapsExt.Compatibility
 
 	public class V1MapLoader : MapLoader
 	{
-		public V1MapLoader(DeserializationContext context = null) : base(context) { }
+		public V1MapLoader(DeserializationContext context = null) : base(context)
+		{
+			this.context.Binder = new V1.MapObjects.V1MapObjectBinder();
+		}
 
 		public override CustomMap Load(Stream stream)
 		{

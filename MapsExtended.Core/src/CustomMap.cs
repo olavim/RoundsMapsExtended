@@ -1,6 +1,7 @@
 ﻿using MapsExt.Compatibility;
 using MapsExt.MapObjects;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MapsExt
@@ -10,12 +11,12 @@ namespace MapsExt
 		[SerializeField] private readonly string _id;
 		[SerializeField] private readonly string _name;
 		[SerializeField] private readonly string _version;
-		[SerializeField] private readonly MapObjectData[] _mapObjects;
+		[SerializeField] private readonly object[] _mapObjects;
 
 		public string Id => this._id;
 		public string Name => this._name;
 		public string Version => this._version;
-		public MapObjectData[] MapObjects => this._mapObjects;
+		public MapObjectData[] MapObjects => this._mapObjects.Select(x => (MapObjectData) x).ToArray();
 
 		public CustomMap(string id, string name, string version, MapObjectData[] mapObjects)
 		{
@@ -27,14 +28,14 @@ namespace MapsExt
 
 		public CustomMap Upgrade()
 		{
-			if (this.MapObjects == null)
+			if (this._mapObjects == null)
 			{
 				throw new System.Exception($"Could not load map: {this.Name ?? "<unnamed>"} ({this.Id})");
 			}
 
 			var list = new List<MapObjectData>();
 
-			foreach (var mapObject in this.MapObjects)
+			foreach (var mapObject in this._mapObjects)
 			{
 				if (mapObject is IUpgradable<MapObjectData> upgradeable)
 				{
@@ -46,7 +47,7 @@ namespace MapsExt
 				}
 				else
 				{
-					UnityEngine.Debug.LogError($"Could not load map object {mapObject}");
+					throw new System.Exception($"Could not load map: {this.Name ?? "<unnamed>"} ({this.Id}) (map object index: {list.Count})");
 				}
 			}
 

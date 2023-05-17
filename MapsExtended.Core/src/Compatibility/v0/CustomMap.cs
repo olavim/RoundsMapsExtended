@@ -10,8 +10,7 @@ namespace MapsExt.Compatibility.V0
 	{
 		public string id;
 		public string name;
-
-		public List<MapsExt.MapObjects.MapObject> mapObjects;
+		public object[] mapObjects;
 
 		public MapsExt.CustomMap Upgrade()
 		{
@@ -34,7 +33,7 @@ namespace MapsExt.Compatibility.V0
 				}
 				else
 				{
-					UnityEngine.Debug.LogError($"Could not load map object {mapObject}");
+					throw new Exception($"Could not load map: {this.name ?? "<unnamed>"} ({this.id})");
 				}
 			}
 

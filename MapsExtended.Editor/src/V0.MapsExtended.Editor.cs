@@ -44,11 +44,11 @@ namespace MapsExt.Editor
 						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(EditorMapObjectPrefab)) ??
 						ReflectionUtils.GetAttributedProperty<GameObject>(type, typeof(MapObjectPrefab));
 					var serializerAction =
-						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(EditorMapObjectSerializer)) ??
-						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObject>>(type, typeof(MapObjectSerializer));
+						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObjectData>>(type, typeof(EditorMapObjectSerializer)) ??
+						ReflectionUtils.GetAttributedMethod<SerializerAction<MapObjectData>>(type, typeof(MapObjectSerializer));
 					var deserializerAction =
-						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(EditorMapObjectDeserializer)) ??
-						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObject>>(type, typeof(MapObjectDeserializer));
+						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObjectData>>(type, typeof(EditorMapObjectDeserializer)) ??
+						ReflectionUtils.GetAttributedMethod<DeserializerAction<MapObjectData>>(type, typeof(MapObjectDeserializer));
 
 					var serializer = new MapObjectSpecSerializer(deserializerAction, serializerAction);
 					this._mapObjectManager.RegisterMapObject(attr.dataType, new VirtualMapObject(prefab), serializer);

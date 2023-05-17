@@ -6,7 +6,7 @@ using UnityEngine;
 namespace MapsExt.MapObjects
 {
 	[Obsolete("Deprecated")]
-	public class SpatialMapObject : MapObject
+	public class SpatialMapObject : MapObjectData
 	{
 		public Vector3 position = Vector3.zero;
 		public Vector3 scale = Vector3.one * 2;

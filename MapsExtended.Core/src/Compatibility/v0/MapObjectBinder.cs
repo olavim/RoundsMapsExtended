@@ -7,9 +7,9 @@ namespace MapsExt.Compatibility.V0.MapObjects
 	{
 		private static string GetV0TypeName(string typeName)
 		{
-			if (typeName.Contains("MapsExt.MapObjects.MapObject"))
+			if (typeName == "System.Collections.Generic.List`1[[MapsExt.MapObjects.MapObject, MapsExtended]], mscorlib")
 			{
-				return typeName;
+				return "System.Object[], mscorlib";
 			}
 
 			typeName = typeName.Replace("MapsExt.CustomMap", "MapsExt.Compatibility.V0.CustomMap");

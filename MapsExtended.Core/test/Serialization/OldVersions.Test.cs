@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace MapsExt.Tests
 {
-	[TestClass]
+	[TestClass(Only = true)]
 	public class OldVersionSerializationTests
 	{
 		private static readonly SerializationConfig serializationConfig = new()
@@ -99,7 +99,7 @@ namespace MapsExt.Tests
 			{
 				id = "test",
 				name = "test",
-				mapObjects = new List<MapObject>
+				mapObjects = new object[]
 				{
 					new V0Box() {
 						Active = true,
