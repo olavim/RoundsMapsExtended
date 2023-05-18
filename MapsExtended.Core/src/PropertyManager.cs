@@ -69,13 +69,17 @@ namespace MapsExt
 
 		public IEnumerable<IProperty> ReadAll(GameObject instance, Type propertyType)
 		{
-			return this._serializers.Keys.Where(k => propertyType.IsAssignableFrom(k)).Select(k => this._serializers[k].ReadProperty(instance));
+			var dataType = instance.GetComponent<MapObjectInstance>()?.DataType ?? throw new ArgumentException("Not a map object", nameof(instance));
+			return this.GetRegisteredMembers(dataType)
+				.Where(m => propertyType.IsAssignableFrom(m.GetReturnType()))
+				.Select(m => this.Read(instance.gameObject, m.GetReturnType()));
 		}
 
 		public IEnumerable<IProperty> ReadAll(GameObject instance)
 		{
 			var dataType = instance.GetComponent<MapObjectInstance>()?.DataType ?? throw new ArgumentException("Not a map object", nameof(instance));
-			return this.GetRegisteredMembers(dataType).Select(m => this.Read(instance.gameObject, m.GetReturnType()));
+			return this.GetRegisteredMembers(dataType)
+				.Select(m => this.Read(instance.gameObject, m.GetReturnType()));
 		}
 
 		private IEnumerable<MemberInfo> GetRegisteredMembers(Type dataType)

@@ -2,13 +2,14 @@
 	<Import Project="Config.props" Condition="Exists('Config.props')" />
 
 	<PropertyGroup>
-		<Version>1.2.2</Version>
+		<Version>1.2.3</Version>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
 		<RootNamespace>MapsExt</RootNamespace>
 		<Authors>olavim</Authors>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<BaseOutputPath>build\bin</BaseOutputPath>
 		<BaseIntermediateOutputPath>build\obj</BaseIntermediateOutputPath>
+		<PublishDir>build\publish</PublishDir>
 		<LangVersion>9.0</LangVersion>
 	</PropertyGroup>
 
