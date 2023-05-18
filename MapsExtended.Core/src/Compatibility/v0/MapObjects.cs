@@ -8,11 +8,9 @@ using UnityEngine;
 namespace MapsExt.Compatibility.V0.MapObjects
 {
 	[Obsolete("Deprecated")]
-	internal abstract class MapObject : IUpgradable<MapObjectData>
+	internal abstract class MapObject
 	{
 		public bool active;
-
-		public abstract MapObjectData Upgrade();
 
 		public T Populate<T>(T data) where T : MapObjectData
 		{
@@ -41,49 +39,49 @@ namespace MapsExt.Compatibility.V0.MapObjects
 	[Obsolete("Deprecated")]
 	internal class Ball : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new BallData());
+		public static implicit operator BallData(Ball data) => data.Populate(new BallData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class Box : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new BoxData());
+		public static implicit operator BoxData(Box data) => data.Populate(new BoxData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class BoxBackground : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new BoxBackgroundData());
+		public static implicit operator BoxBackgroundData(BoxBackground data) => data.Populate(new BoxBackgroundData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class BoxDestructible : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new BoxDestructibleData());
+		public static implicit operator BoxDestructibleData(BoxDestructible data) => data.Populate(new BoxDestructibleData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class Ground : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new GroundData());
+		public static implicit operator GroundData(Ground data) => data.Populate(new GroundData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class GroundCircle : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new GroundCircleData());
+		public static implicit operator GroundCircleData(GroundCircle data) => data.Populate(new GroundCircleData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class Saw : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new SawData());
+		public static implicit operator SawData(Saw data) => data.Populate(new SawData());
 	}
 
 	[Obsolete("Deprecated")]
 	internal class SawDynamic : SpatialMapObject
 	{
-		public override MapObjectData Upgrade() => this.Populate(new SawDynamicData());
+		public static implicit operator SawDynamicData(SawDynamic data) => data.Populate(new SawDynamicData());
 	}
 
 	[Obsolete("Deprecated")]
@@ -92,13 +90,13 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public Vector3 startPosition = Vector3.up;
 		public Vector3 endPosition = Vector3.down;
 
-		public override MapObjectData Upgrade()
+		public static implicit operator RopeData(Rope rope)
 		{
-			var data = this.Populate(new RopeData());
+			var data = rope.Populate(new RopeData());
 			data.Position = new RopePositionProperty
 			{
-				StartPosition = this.startPosition,
-				EndPosition = this.endPosition
+				StartPosition = rope.startPosition,
+				EndPosition = rope.endPosition
 			};
 			return data;
 		}
@@ -111,15 +109,15 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		public int teamID;
 		public Vector3 position;
 
-		public override MapObjectData Upgrade()
+		public static implicit operator SpawnData(Spawn spawn)
 		{
-			var data = this.Populate(new SpawnData());
+			var data = spawn.Populate(new SpawnData());
 			data.Id = new SpawnIDProperty
 			{
-				Id = this.id,
-				TeamId = this.teamID
+				Id = spawn.id,
+				TeamId = spawn.teamID
 			};
-			data.Position = this.position;
+			data.Position = spawn.position;
 			return data;
 		}
 	}

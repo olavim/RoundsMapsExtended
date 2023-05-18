@@ -7,9 +7,9 @@ namespace MapsExt.Compatibility.V1.MapObjects
 	{
 		private static string GetV1TypeName(string typeName)
 		{
-			if (typeName == "MapsExt.MapObjects.MapObjectData[], MapsExtended")
+			if (typeName == "System.Object[], mscorlib")
 			{
-				return "System.Object[], mscorlib";
+				return "MapsExt.MapObjects.MapObjectData[], MapsExtended";
 			}
 
 			return typeName;

@@ -9,7 +9,7 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		{
 			if (typeName == "System.Collections.Generic.List`1[[MapsExt.MapObjects.MapObject, MapsExtended]], mscorlib")
 			{
-				return "System.Object[], mscorlib";
+				return "MapsExt.MapObjects.MapObjectData[], MapsExtended";
 			}
 
 			typeName = typeName.Replace("MapsExt.CustomMap", "MapsExt.Compatibility.V0.CustomMap");

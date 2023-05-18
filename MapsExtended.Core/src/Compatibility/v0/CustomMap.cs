@@ -11,13 +11,13 @@ namespace MapsExt.Compatibility.V0
 	{
 		public string id;
 		public string name;
-		public object[] mapObjects;
+		public MapsExt.MapObjects.MapObjectData[] mapObjects;
 
-		public CustomMap(string id, string name, object[] mapObjects)
+		public CustomMap(string id, string name, MapsExt.MapObjects.MapObjectData[] mapObjects)
 		{
 			this.id = id;
 			this.name = name;
-			this.mapObjects = mapObjects.Cast<object>().ToArray();
+			this.mapObjects = mapObjects.ToArray();
 		}
 
 		public MapsExt.CustomMap Upgrade()

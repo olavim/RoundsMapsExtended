@@ -97,7 +97,7 @@ namespace MapsExt.Tests
 			var map1 = new Compatibility.V0.CustomMap(
 				"test",
 				"test",
-				new object[]
+				new MapObjectData[]
 				{
 					new V0Box() {
 						Active = true,
