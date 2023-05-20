@@ -58,16 +58,11 @@ namespace MapsExt
 			var syncStore = s_syncStores[this._networkID];
 			int instantiationID = syncStore.Allocate(parent);
 
-			bool isMapObjectNetworked = prefab.GetComponent<PhotonMapObject>() != null;
-			bool isMapSpawned = MapManager.instance.currentMap?.Map.wasSpawned == true;
+			var instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
 
-			GameObject instance;
-
-			if (!isMapSpawned || !isMapObjectNetworked)
+			if (prefab.GetComponent<PhotonMapObject>() != null)
 			{
-				instance = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, parent);
-
-				if (isMapObjectNetworked)
+				if (PhotonNetwork.IsMasterClient)
 				{
 					/* PhotonMapObjects (networked map objects like movable boxes) are first instantiated client-side, which is what we
 					 * see during the map transition animation. After the transition is done, the client-side instance is removed and a
@@ -81,37 +76,24 @@ namespace MapsExt
 					 * instantiated map object to other clients with the instantiation ID. Clients can then find the instantiated
 					 * map object with the view ID and reply to the caller of this `Instantiate` with the onInstantiate callback.
 					 */
-					if (PhotonNetwork.IsMasterClient)
+					MapsExtended.AddPhotonInstantiateListener(instance.GetComponent<PhotonMapObject>(), networkInstance =>
 					{
-						MapsExtended.AddPhotonInstantiateListener(instance.GetComponent<PhotonMapObject>(), networkInstance =>
-						{
-							mapObject.OnInstantiate(networkInstance);
-							this.WriteMapObject(data, networkInstance);
+						mapObject.OnInstantiate(networkInstance);
+						this.WriteMapObject(data, networkInstance);
 
-							onInstantiate?.Invoke(networkInstance);
+						onInstantiate?.Invoke(networkInstance);
 
-							int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
+						int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
 
-							// Communicate the photon instantiated map object to other clients
-							NetworkingManager.RPC_Others(typeof(NetworkedMapObjectManager), nameof(RPC_SyncInstantiation), this._networkID, instantiationID, viewID);
-						});
-					}
-					else
-					{
-						// Call onInstantiate once the master client has communicated the photon instantiated map object
-						this.StartCoroutine(this.SyncInstantiation(parent, instantiationID, data, onInstantiate));
-					}
+						// Communicate the photon instantiated map object to other clients
+						NetworkingManager.RPC_Others(typeof(NetworkedMapObjectManager), nameof(RPC_SyncInstantiation), this._networkID, instantiationID, viewID);
+					});
 				}
-			}
-			else
-			{
-				/* We don't need to care about the photon instantiation dance (see above comment) when instantiating PhotonMapObjects
-				 * after the map transition has already been done.
-				 *
-				 * The "lateInstantiated" flag is checked in a PhotonMapObject patch to initialize some required properties.
-				 */
-				instance = PhotonNetwork.Instantiate(this.GetInstanceName(data.GetType()), Vector3.zero, Quaternion.identity, 0, new object[] { "lateInstantiated" });
-				instance.transform.SetParent(parent);
+				else
+				{
+					// Call onInstantiate once the master client has communicated the photon instantiated map object
+					this.StartCoroutine(this.SyncInstantiation(parent, instantiationID, data, onInstantiate));
+				}
 			}
 
 			instance.name = this.GetInstanceName(data.GetType());

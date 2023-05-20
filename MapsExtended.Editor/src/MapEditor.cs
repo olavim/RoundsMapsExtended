@@ -28,6 +28,7 @@ namespace MapsExt.Editor
 		private GameObject _dummyGroup;
 		private GameObject _activeMapObjectPart;
 		private GameObject _activeMapObjectOverride;
+		private MapWrapper _mapWrapper;
 
 		/// <summary>
 		/// The currently active map object part. Can be the selected map object part or the container of multiple selected map object parts.
@@ -67,7 +68,6 @@ namespace MapsExt.Editor
 		protected virtual void Awake()
 		{
 			this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
-
 			this.gameObject.AddComponent<MapEditorInputHandler>();
 		}
 
@@ -75,6 +75,7 @@ namespace MapsExt.Editor
 		{
 			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.MapObjectAnimationLayer);
 			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.MapObjectUILayer);
+			this._mapWrapper = MapManager.instance.currentMap;
 		}
 
 		protected virtual void Update()
@@ -324,6 +325,17 @@ namespace MapsExt.Editor
 
 		private void DoStartSimulation()
 		{
+			var simulatedMap = this.SimulatedContent.GetOrAddComponent<Map>();
+			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
+			simulatedMap.size = this.gameObject.GetComponent<Map>().size;
+			simulatedMap.wasSpawned = true;
+			simulatedMap.hasEntered = true;
+			simulatedMap.SetFieldValue("missingObjects", 0);
+			simulatedMap.SetFieldValue("hasCalledReady", true);
+			simulatedMap.SetFieldValue("levelID", MapManager.instance.currentLevelID);
+			simulatedMap.mapIsReadyEarlyAction = null;
+			simulatedMap.mapIsReadyAction = null;
+
 			MapsExtended.LoadMap(this.SimulatedContent, this.GetMapData(), MapsExtended.MapObjectManager, () =>
 			{
 				this.Content.SetActive(false);
@@ -338,12 +350,15 @@ namespace MapsExt.Editor
 
 				this.ExecuteAfterFrames(1, () =>
 				{
-					this.gameObject.GetComponent<Map>().allRigs = this.SimulatedContent.GetComponentsInChildren<Rigidbody2D>();
+					simulatedMap.mapIsReadyEarlyAction?.Invoke();
+					simulatedMap.allRigs = this.SimulatedContent.GetComponentsInChildren<Rigidbody2D>();
 
-					foreach (var rope in this.SimulatedContent.GetComponentsInChildren<MapObjet_Rope>())
-					{
-						rope.Go();
-					}
+					// foreach (var rope in this.SimulatedContent.GetComponentsInChildren<MapObjet_Rope>())
+					// {
+					// 	rope.Go();
+					// }
+
+					this.ExecuteAfterFrames(1, () => simulatedMap.mapIsReadyAction?.Invoke());
 				});
 			});
 		}
@@ -368,6 +383,7 @@ namespace MapsExt.Editor
 
 			this.Content.SetActive(true);
 			this.SimulatedContent.SetActive(false);
+			MapManager.instance.currentMap = this._mapWrapper;
 			this.AnimationHandler.enabled = true;
 		}
 
