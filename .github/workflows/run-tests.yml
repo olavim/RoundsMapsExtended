@@ -49,7 +49,7 @@ jobs:
           7z x $temp/bepinex.zip -o"$temp/BepInExRaw"
           mv "$temp/BepInExRaw/BepInExPack_ROUNDS/*" "./rounds_install"
 
-          7z x $temp/mmhook.zip -o"./rounds_install/BepInEx/plugins/mmhook"<
+          7z x $temp/mmhook.zip -o"./rounds_install/BepInEx/plugins/mmhook"
           7z x $temp/unboundlib.zip -o"./rounds_install/BepInEx/plugins/unboundlib"
 
   run-tests:
@@ -74,9 +74,11 @@ jobs:
 
       - name: Create Config.props
         run: |
-          echo "<?xml version=""1.0"" encoding=""utf-8""?><Project ToolsVersion=""Current"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003""><PropertyGroup><RoundsDir>./rounds_install</RoundsDir><BepInExDir>./rounds_install/BepInEx</BepInExDir></PropertyGroup></Project>" > Config.props
+          echo "<?xml version=""1.0"" encoding=""utf-8""?><Project ToolsVersion=""Current"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003""><PropertyGroup><RoundsDir>$env:GITHUB_WORKSPACE/rounds_install</RoundsDir><BepInExDir>$env:GITHUB_WORKSPACE/rounds_install/BepInEx</BepInExDir></PropertyGroup></Project>" > Config.props
           
+          $env:GITHUB_WORKSPACE
           (Get-Location).Path
+
           ls
           ls rounds_install
           ls rounds_install/Rounds_Data
