@@ -31,17 +31,40 @@ jobs:
         run: |
           steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir ~/ROUNDS_INSTALL +app_update 1557740 validate +exit
 
+      - uses: suisei-cn/actions-download-file@v1.4.0
+        id: download-bepinex
+        name: Download BepInEx
+        with:
+          url: "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/"
+          target: ~/
+          filename: bepinex.zip
+          retry-times: 3
+
+      - uses: suisei-cn/actions-download-file@v1.4.0
+        id: download-mmhook
+        name: Download MMHook
+        with:
+          url: "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/"
+          target: ~/
+          filename: mmhook.zip
+          retry-times: 3
+
+      - uses: suisei-cn/actions-download-file@v1.4.0
+        id: download-unboundlib
+        name: Download UnboundLib
+        with:
+          url: "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/"
+          target: ~/
+          filename: unboundlib.zip
+          retry-times: 3
+
       - name: Prepare MapsExtended dependencies
         run: |
-          wget -O bepinex.zip "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/"
-          unzip bepinex.zip -d ~/BepInExRaw
+          unzip ~/bepinex.zip -d ~/BepInExRaw
           mv ~/BepInExRaw/BepInExPack_ROUNDS/* ~/ROUNDS_INSTALL/
 
-          wget -O mmhook.zip "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/"
-          unzip mmhook.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
-
-          wget -O unboundlib.zip "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/"
-          unzip mmhook.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
+          unzip ~/mmhook.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
+          unzip ~/unboundlib.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
 
       - name: Create Config.props
         run: |
