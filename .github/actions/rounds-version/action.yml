@@ -1,11 +1,11 @@
-name: 'Cache Rounds'
-description: Cache Rounds installation'
+name: 'ROUNDS version'
+description: Get ROUNDS version'
 inputs:
   path:
     required: true
 outputs:
-  cache-hit:
-    value: ${{ steps.cache-rounds.outputs.cache-hit }}
+  version:
+    value: ${{ steps.rounds-version.outputs.version }}
 runs:
   using: "composite"
   steps:
@@ -16,10 +16,3 @@ runs:
         $version = (Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""1557740""".depots.branches.public.buildid'
         echo "version=$version" >> "$GITHUB_OUTPUT"
         echo $version
-
-    - name: Cache ROUNDS
-      id: cache-rounds
-      uses: actions/cache@v2
-      with:
-        path: ${{ inputs.path }}
-        key: ROUNDS-${{ steps.rounds-version.outputs.version }}

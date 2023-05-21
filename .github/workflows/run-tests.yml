@@ -11,11 +11,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get ROUNDS version
+        id: rounds-version
+        uses: ./.github/actions/rounds-version
+
       - name: Cache ROUNDS
         id: cache-rounds
-        uses: ./.github/actions/cache-rounds
+        uses: actions/cache@v2
         with:
           path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
+          key: ROUNDS-${{ steps.rounds-version.outputs.version }}
 
       - name: Install SteamCMD
         if: steps.cache-rounds.outputs.cache-hit != 'true'
@@ -53,10 +58,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore Rounds cache
-        uses: ./.github/actions/cache-rounds
+      - name: Get ROUNDS version
+        id: rounds-version
+        uses: ./.github/actions/rounds-version
+
+      - name: Restore ROUNDS cache
+        id: cache-rounds
+        uses: actions/cache@v2
         with:
           path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
+          key: ROUNDS-${{ steps.rounds-version.outputs.version }}
 
       - name: Create Config.props
         run: |
