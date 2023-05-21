@@ -11,7 +11,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache Rounds
+      - name: Cache ROUNDS
         id: cache-rounds
         uses: ./.github/actions/cache-rounds
 
@@ -22,22 +22,20 @@ jobs:
       - name: Install ROUNDS
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir $HOME/ROUNDS_INSTALL +app_update 1557740 validate +exit
+          steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir $GITHUB_WORKSPACE/rounds_install +app_update 1557740 validate +exit
 
       - name: Prepare MapsExtended dependencies
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/" -OutFile $HOME/bepinex.zip
-          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/" -OutFile $HOME/mmhook.zip
-          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/" -OutFile $HOME/unboundlib.zip
+          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/" -OutFile $GITHUB_WORKSPACE/temp/bepinex.zip
+          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/" -OutFile $GITHUB_WORKSPACE/temp/mmhook.zip
+          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/" -OutFile $GITHUB_WORKSPACE/temp/unboundlib.zip
 
-          7z x $HOME/bepinex.zip -o$HOME/BepInExRaw
-          ls $HOME
-          ls $HOME/BepInExRaw
-          mv $HOME/BepInExRaw/BepInExPack_ROUNDS/* $HOME/ROUNDS_INSTALL/
+          7z x $GITHUB_WORKSPACE/temp/bepinex.zip -o$GITHUB_WORKSPACE/temp/BepInExRaw
+          mv $GITHUB_WORKSPACE/temp/BepInExRaw/BepInExPack_ROUNDS/* $GITHUB_WORKSPACE/rounds_install/
 
-          7z x $HOME/mmhook.zip -o$HOME/ROUNDS_INSTALL/BepInEx/plugins/mmhook
-          7z x $HOME/unboundlib.zip -o$HOME/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
+          7z x $GITHUB_WORKSPACE/temp/mmhook.zip -o$GITHUB_WORKSPACE/rounds_install/BepInEx/plugins/mmhook
+          7z x $GITHUB_WORKSPACE/temp/unboundlib.zip -o$GITHUB_WORKSPACE/rounds_install/BepInEx/plugins/unboundlib/
 
   run-tests:
     runs-on: windows-latest
@@ -53,7 +51,7 @@ jobs:
 
       - name: Create Config.props
         run: |
-          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"Current\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"><PropertyGroup><RoundsDir>$HOME/ROUNDS_INSTALL</RoundsDir><BepInExDir>$HOME/ROUNDS_INSTALL/BepInEx</BepInExDir></PropertyGroup></Project>" > Config.props
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"Current\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"><PropertyGroup><RoundsDir>$GITHUB_WORKSPACE/rounds_install</RoundsDir><BepInExDir>$GITHUB_WORKSPACE/ROUNDS_INSTALL/BepInEx</BepInExDir></PropertyGroup></Project>" > Config.props
       
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
@@ -65,4 +63,4 @@ jobs:
           dotnet restore
           dotnet tool restore
           dotnet build
-          dotnet surity "$HOME\ROUNDS_INSTALL\Rounds.exe" --filter-stacktraces "FluentAssertions.* | Surity.*" --compact-stacktraces
+          dotnet surity "$GITHUB_WORKSPACE\rounds_install\Rounds.exe" --filter-stacktraces "FluentAssertions.* | Surity.*" --compact-stacktraces
