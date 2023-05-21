@@ -9,7 +9,7 @@ runs:
     - name: Get ROUNDS version id
       id: rounds-version
       shell: pwsh
-      run: echo "::set-output name=version::$((Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""""1557740""""".depots.branches.public.buildid')"
+      run: echo "version=$((Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""""1557740""""".depots.branches.public.buildid')" >> $GITHUB_OUTPUT
 
     - name: Cache ROUNDS
       id: cache-rounds

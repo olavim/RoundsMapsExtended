@@ -24,41 +24,13 @@ jobs:
         run: |
           steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir $HOME/ROUNDS_INSTALL +app_update 1557740 validate +exit
 
-      - uses: suisei-cn/actions-download-file@v1.4.0
-        id: download-bepinex
-        name: Download BepInEx
-        if: steps.cache-rounds.outputs.cache-hit != 'true'
-        with:
-          url: "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/"
-          filename: bepinex.zip
-          target: $HOME
-          retry-times: 3
-
-      - uses: suisei-cn/actions-download-file@v1.4.0
-        id: download-mmhook
-        name: Download MMHook
-        if: steps.cache-rounds.outputs.cache-hit != 'true'
-        with:
-          url: "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/"
-          filename: mmhook.zip
-          target: $HOME
-          retry-times: 3
-
-      - uses: suisei-cn/actions-download-file@v1.4.0
-        id: download-unboundlib
-        name: Download UnboundLib
-        if: steps.cache-rounds.outputs.cache-hit != 'true'
-        with:
-          url: "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/"
-          filename: unboundlib.zip
-          target: $HOME
-          retry-times: 3
-
       - name: Prepare MapsExtended dependencies
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          ls $HOME
-          ls $HOME/BepInExRaw
+          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/" -OutFile $HOME/bepinex.zip
+          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/" -OutFile $HOME/mmhook.zip
+          Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/" -OutFile $HOME/unboundlib.zip
+
           unzip $HOME/bepinex.zip -d $HOME/BepInExRaw
           mv $HOME/BepInExRaw/BepInExPack_ROUNDS/* $HOME/ROUNDS_INSTALL/
 
