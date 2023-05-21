@@ -3,7 +3,7 @@ name: Run tests
 on: push
 
 jobs:
-  build_release:
+  run_tests:
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -34,6 +34,7 @@ jobs:
       - uses: suisei-cn/actions-download-file@v1.4.0
         id: download-bepinex
         name: Download BepInEx
+        if: steps.cacherounds.outputs.cache-hit != 'true'
         with:
           url: "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/"
           target: ~/
@@ -43,6 +44,7 @@ jobs:
       - uses: suisei-cn/actions-download-file@v1.4.0
         id: download-mmhook
         name: Download MMHook
+        if: steps.cacherounds.outputs.cache-hit != 'true'
         with:
           url: "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/"
           target: ~/
@@ -52,6 +54,7 @@ jobs:
       - uses: suisei-cn/actions-download-file@v1.4.0
         id: download-unboundlib
         name: Download UnboundLib
+        if: steps.cacherounds.outputs.cache-hit != 'true'
         with:
           url: "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/"
           target: ~/
@@ -59,12 +62,13 @@ jobs:
           retry-times: 3
 
       - name: Prepare MapsExtended dependencies
+        if: steps.cacherounds.outputs.cache-hit != 'true'
         run: |
-          7z x ~/bepinex.zip -o ~/BepInExRaw
+          7z x ~/bepinex.zip -o~/BepInExRaw
           mv ~/BepInExRaw/BepInExPack_ROUNDS/* ~/ROUNDS_INSTALL/
 
-          7z x ~/mmhook.zip -o ~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
-          7z x ~/unboundlib.zip -o ~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
+          7z x ~/mmhook.zip -o~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
+          7z x ~/unboundlib.zip -o~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
 
       - name: Create Config.props
         run: |
