@@ -60,11 +60,11 @@ jobs:
 
       - name: Prepare MapsExtended dependencies
         run: |
-          unzip ~/bepinex.zip -d ~/BepInExRaw
+          7z x ~/bepinex.zip -o ~/BepInExRaw
           mv ~/BepInExRaw/BepInExPack_ROUNDS/* ~/ROUNDS_INSTALL/
 
-          unzip ~/mmhook.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
-          unzip ~/unboundlib.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
+          7z x ~/mmhook.zip -o ~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
+          7z x ~/unboundlib.zip -o ~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
 
       - name: Create Config.props
         run: |
