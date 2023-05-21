@@ -32,6 +32,8 @@ jobs:
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/" -OutFile $HOME/unboundlib.zip
 
           7z x $HOME/bepinex.zip -o$HOME/BepInExRaw
+          ls $HOME
+          ls $HOME/BepInExRaw
           mv $HOME/BepInExRaw/BepInExPack_ROUNDS/* $HOME/ROUNDS_INSTALL/
 
           7z x $HOME/mmhook.zip -o$HOME/ROUNDS_INSTALL/BepInEx/plugins/mmhook
