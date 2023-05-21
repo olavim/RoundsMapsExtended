@@ -31,11 +31,11 @@ jobs:
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/" -OutFile $HOME/mmhook.zip
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/" -OutFile $HOME/unboundlib.zip
 
-          unzip $HOME/bepinex.zip -d $HOME/BepInExRaw
+          7z x $HOME/bepinex.zip -o$HOME/BepInExRaw
           mv $HOME/BepInExRaw/BepInExPack_ROUNDS/* $HOME/ROUNDS_INSTALL/
 
-          unzip $HOME/mmhook.zip -d $HOME/ROUNDS_INSTALL/BepInEx/plugins/mmhook
-          unzip $HOME/unboundlib.zip -d $HOME/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
+          7z x $HOME/mmhook.zip -o$HOME/ROUNDS_INSTALL/BepInEx/plugins/mmhook
+          7z x $HOME/unboundlib.zip -o$HOME/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
 
   run-tests:
     runs-on: windows-latest
