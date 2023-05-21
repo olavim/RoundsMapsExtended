@@ -15,5 +15,5 @@ runs:
       id: cache-rounds
       uses: actions/cache@v2
       with:
-        path: $GITHUB_WORKSPACE/rounds_install
+        path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
         key: ROUNDS-${{ steps.rounds-version.outputs.version }}
