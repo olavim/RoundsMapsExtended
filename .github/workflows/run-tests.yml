@@ -30,16 +30,15 @@ jobs:
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
           steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir "$env:GITHUB_WORKSPACE\rounds_install" +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +app_update 1557740 validate +exit
+          
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\rounds_install\Rounds_Data\Managed"))
+          {
+              throw [System.IO.FileNotFoundException] "ROUNDS installation not found."
+          }
 
       - name: Prepare MapsExtended dependencies
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          $env:GITHUB_WORKSPACE
-          (Get-Location).Path
-          ls
-          ls rounds_install
-          ls rounds_install\Rounds_Data
-
           $temp = "./temp"
           New-Item -Path "$temp" -ItemType Directory
 

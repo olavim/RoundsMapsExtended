@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "surity.cli": {
-      "version": "2.1.2",
+      "version": "2.1.4",
       "commands": [
         "surity"
       ]
