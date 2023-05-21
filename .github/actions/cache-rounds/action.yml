@@ -1,16 +1,18 @@
 name: 'Cache Rounds'
 description: Cache Rounds installation'
+outputs:
+  cache-hit: ${{ steps.cache-rounds.outputs.cache-hit }}
 runs:
   using: "composite"
   steps:
     - name: Get ROUNDS version id
-      id: roundsversion
+      id: rounds-version
       shell: pwsh
-      run: echo "::set-output name=roundsversion::$((Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""""1557740""""".depots.branches.public.buildid')"
+      run: echo "::set-output name=version::$((Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""""1557740""""".depots.branches.public.buildid')"
 
     - name: Cache ROUNDS
-      id: cacherounds
+      id: cache-rounds
       uses: actions/cache@v2
       with:
         path: ~/ROUNDS_INSTALL
-        key: ROUNDS-${{ steps.roundsversion.outputs.roundsversion }}
+        key: ROUNDS-${{ steps.rounds-version.outputs.version }}

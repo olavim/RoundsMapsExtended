@@ -12,58 +12,55 @@ jobs:
           fetch-depth: 0
 
       - name: Cache Rounds
+        id: cache-rounds
         uses: ./.github/actions/cache-rounds
 
       - name: Install SteamCMD
-        if: steps.cacherounds.outputs.cache-hit != 'true'
+        if: steps.cache-rounds.outputs.cache-hit != 'true'
         uses: CyberAndrii/setup-steamcmd@v1
 
       - name: Install ROUNDS
-        if: steps.cacherounds.outputs.cache-hit != 'true'
+        if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir ~/ROUNDS_INSTALL +app_update 1557740 validate +exit
+          steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir ./ROUNDS_INSTALL +app_update 1557740 validate +exit
 
       - uses: suisei-cn/actions-download-file@v1.4.0
         id: download-bepinex
         name: Download BepInEx
-        if: steps.cacherounds.outputs.cache-hit != 'true'
+        if: steps.cache-rounds.outputs.cache-hit != 'true'
         with:
           url: "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/"
-          target: ~/
           filename: bepinex.zip
           retry-times: 3
 
       - uses: suisei-cn/actions-download-file@v1.4.0
         id: download-mmhook
         name: Download MMHook
-        if: steps.cacherounds.outputs.cache-hit != 'true'
+        if: steps.cache-rounds.outputs.cache-hit != 'true'
         with:
           url: "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/"
-          target: ~/
           filename: mmhook.zip
           retry-times: 3
 
       - uses: suisei-cn/actions-download-file@v1.4.0
         id: download-unboundlib
         name: Download UnboundLib
-        if: steps.cacherounds.outputs.cache-hit != 'true'
+        if: steps.cache-rounds.outputs.cache-hit != 'true'
         with:
           url: "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/"
-          target: ~/
           filename: unboundlib.zip
           retry-times: 3
 
       - name: Prepare MapsExtended dependencies
-        if: steps.cacherounds.outputs.cache-hit != 'true'
+        if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          unzip ~/bepinex.zip -d ~/BepInExRaw
-          ls ~/
-          ls ~/BepInExRaw
-          ls ~/BepInExRaw/BepInExPack_ROUNDS
-          mv ~/BepInExRaw/BepInExPack_ROUNDS/* ~/ROUNDS_INSTALL/
+          ls ./
+          ls ./BepInExRaw
+          unzip bepinex.zip -d BepInExRaw
+          mv BepInExRaw/BepInExPack_ROUNDS/* ROUNDS_INSTALL/
 
-          unzip ~/mmhook.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/mmhook
-          unzip ~/unboundlib.zip -d ~/ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
+          unzip mmhook.zip -d ROUNDS_INSTALL/BepInEx/plugins/mmhook
+          unzip unboundlib.zip -d ROUNDS_INSTALL/BepInEx/plugins/unboundlib/
 
   run-tests:
     runs-on: windows-latest
