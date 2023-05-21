@@ -1,0 +1,14 @@
+name: 'ROUNDS version'
+description: Get ROUNDS version'
+outputs:
+  version:
+    value: ${{ steps.rounds-version.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get ROUNDS version id
+      id: rounds-version
+      shell: pwsh
+      run: |
+        $version = (Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""1557740""".depots.branches.public.buildid'
+        echo "version=$version" >> "$env:GITHUB_OUTPUT"
