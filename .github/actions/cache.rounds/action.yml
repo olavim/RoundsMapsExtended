@@ -1,0 +1,15 @@
+name: 'Cache Rounds'
+description: Cache Rounds installation'
+runs:
+  using: "composite"
+  steps:
+    - name: Get ROUNDS version id
+      id: roundsversion
+      run: echo "::set-output name=roundsversion::$((Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""""1557740""""".depots.branches.public.buildid')"
+
+    - name: Cache ROUNDS
+      id: cacherounds
+      uses: actions/cache@v2
+      with:
+        path: ~/ROUNDS_INSTALL
+        key: ROUNDS-${{ steps.roundsversion.outputs.roundsversion }}
