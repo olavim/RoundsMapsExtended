@@ -1,7 +1,8 @@
 name: 'Cache Rounds'
 description: Cache Rounds installation'
 outputs:
-  cache-hit: ${{ steps.cache-rounds.outputs.cache-hit }}
+  cache-hit:
+    value: ${{ steps.cache-rounds.outputs.cache-hit }}
 runs:
   using: "composite"
   steps:
