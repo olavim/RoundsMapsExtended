@@ -72,7 +72,7 @@ namespace MapsExt.MapObjects
 			var renderer = this.GetComponent<SpriteRenderer>();
 			if (renderer && renderer.color.a >= 0.5f)
 			{
-				renderer.transform.position = new Vector3(renderer.transform.position.x, renderer.transform.position.y, -3f);
+				renderer.transform.position = new Vector3(renderer.transform.position.x, renderer.transform.position.y, 0);
 				if (renderer.gameObject.tag != "NoMask")
 				{
 					renderer.color = new Color(0.21568628f, 0.21568628f, 0.21568628f);
