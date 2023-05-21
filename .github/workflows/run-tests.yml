@@ -27,6 +27,8 @@ jobs:
       - name: Prepare MapsExtended dependencies
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
+          New-Item -Path "$GITHUB_WORKSPACE/temp" -ItemType Directory
+
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/" -OutFile $GITHUB_WORKSPACE/temp/bepinex.zip
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/MMHook/1.0.0/" -OutFile $GITHUB_WORKSPACE/temp/mmhook.zip
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/willis81808/UnboundLib/3.2.10/" -OutFile $GITHUB_WORKSPACE/temp/unboundlib.zip
