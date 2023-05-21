@@ -22,12 +22,12 @@ jobs:
       - name: Install ROUNDS
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir "./rounds_install" +app_update 1557740 validate +exit
+          steamcmd +@sSteamCmdForcePlatformType windows +login ${{ secrets.STEAM_USERNAME }} ${{ secrets.STEAM_PASSWORD }} +force_install_dir "$env:GITHUB_WORKSPACE/rounds_install" +app_update 1557740 validate +exit
 
       - name: Prepare MapsExtended dependencies
         if: steps.cache-rounds.outputs.cache-hit != 'true'
         run: |
-          $temp = "./temp"
+          $temp = "$env:GITHUB_WORKSPACE/temp"
           New-Item -Path "$temp" -ItemType Directory
 
           Invoke-WebRequest -Uri "https://thunderstore.io/package/download/BepInEx/BepInExPack_ROUNDS/5.4.1900/" -OutFile "$temp/bepinex.zip"
@@ -37,10 +37,10 @@ jobs:
           7z x $temp/bepinex.zip -o"$temp/BepInExRaw"
           ls $temp
           ls $temp/BepInExRaw
-          mv "$temp/BepInExRaw/BepInExPack_ROUNDS/*" "./rounds_install"
+          mv "$temp/BepInExRaw/BepInExPack_ROUNDS/*" "$env:GITHUB_WORKSPACE/rounds_install"
 
-          7z x $temp/mmhook.zip -o"./rounds_install/BepInEx/plugins/mmhook"<
-          7z x $temp/unboundlib.zip -o"./rounds_install/BepInEx/plugins/unboundlib"
+          7z x $temp/mmhook.zip -o"$env:GITHUB_WORKSPACE/rounds_install/BepInEx/plugins/mmhook"<
+          7z x $temp/unboundlib.zip -o"$env:GITHUB_WORKSPACE/rounds_install/BepInEx/plugins/unboundlib"
 
   run-tests:
     runs-on: windows-latest
@@ -73,4 +73,4 @@ jobs:
           dotnet restore
           dotnet tool restore
           dotnet build
-          dotnet surity "./rounds_install/Rounds.exe" --filter-stacktraces "FluentAssertions.* | Surity.*" --compact-stacktraces
+          dotnet surity "$env:GITHUB_WORKSPACE/rounds_install/Rounds.exe" --filter-stacktraces "FluentAssertions.* | Surity.*" --compact-stacktraces

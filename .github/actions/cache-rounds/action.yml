@@ -9,11 +9,14 @@ runs:
     - name: Get ROUNDS version id
       id: rounds-version
       shell: pwsh
-      run: echo "version=$((Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""""1557740""""".depots.branches.public.buildid')" >> $GITHUB_OUTPUT
+      run: |
+        $version = (Invoke-WebRequest -URI https://api.steamcmd.net/v1/info/1557740).Content | jq -r '.data."""1557740""".depots.branches.public.buildid'
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo $version
 
     - name: Cache ROUNDS
       id: cache-rounds
       uses: actions/cache@v2
       with:
-        path: ./rounds_install
+        path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
         key: ROUNDS-${{ steps.rounds-version.outputs.version }}
