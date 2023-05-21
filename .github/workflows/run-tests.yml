@@ -14,6 +14,8 @@ jobs:
       - name: Cache ROUNDS
         id: cache-rounds
         uses: ./.github/actions/cache-rounds
+        with:
+          path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
 
       - name: Install SteamCMD
         if: steps.cache-rounds.outputs.cache-hit != 'true'
@@ -53,6 +55,8 @@ jobs:
 
       - name: Restore Rounds cache
         uses: ./.github/actions/cache-rounds
+        with:
+          path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
 
       - name: Create Config.props
         run: |

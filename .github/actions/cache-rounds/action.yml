@@ -1,5 +1,8 @@
 name: 'Cache Rounds'
 description: Cache Rounds installation'
+inputs:
+  path:
+    required: true
 outputs:
   cache-hit:
     value: ${{ steps.cache-rounds.outputs.cache-hit }}
@@ -18,5 +21,5 @@ runs:
       id: cache-rounds
       uses: actions/cache@v2
       with:
-        path: ${{ env:GITHUB_WORKSPACE }}/rounds_install
+        path: ${{ inputs.path }}
         key: ROUNDS-${{ steps.rounds-version.outputs.version }}
