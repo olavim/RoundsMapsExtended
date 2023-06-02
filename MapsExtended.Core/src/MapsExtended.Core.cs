@@ -38,7 +38,15 @@ namespace MapsExt
 
 		public static NetworkedMapObjectManager MapObjectManager => s_instance._mapObjectManager;
 		public static PropertyManager PropertyManager => s_instance._propertyManager;
-		public static IEnumerable<CustomMap> LoadedMaps => s_instance._maps;
+
+#pragma warning disable CS0618
+		public static IEnumerable<CustomMap> LoadedMaps => s_instance._maps.Concat(s_instance.maps);
+#pragma warning restore CS0618
+
+#pragma warning disable IDE1006
+		[Obsolete("Use LoadedMaps instead")]
+		public List<CustomMap> maps = new();
+#pragma warning restore IDE1006
 
 		private readonly Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new();
 		private readonly PropertyManager _propertyManager = new();
@@ -95,6 +103,9 @@ namespace MapsExt
 			UnityEngine.Debug.developerConsoleVisible = false;
 		}
 #endif
+
+		[Obsolete("Map objects are registered automatically")]
+		public void RegisterMapObjects() { }
 
 		private void RegisterMapObjectProperties(Assembly assembly)
 		{
@@ -289,6 +300,12 @@ namespace MapsExt
 				listener(instance);
 				s_instance._photonInstantiationListeners.Remove(mapObject);
 			}
+		}
+
+		[Obsolete("Use MapLoader.LoadPath instead")]
+		private static CustomMap LoadMapData(string path)
+		{
+			return MapLoader.LoadPath(path);
 		}
 
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
