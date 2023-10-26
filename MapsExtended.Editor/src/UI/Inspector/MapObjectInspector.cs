@@ -8,7 +8,6 @@ using MapsExt.Properties;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
-using UnboundLib;
 
 namespace MapsExt.Editor.UI
 {
