@@ -303,7 +303,6 @@ namespace MapsExt.Editor
 		public void StartSimulation()
 		{
 			this.ClearSelected();
-			this.gameObject.GetComponent<Map>().SetFieldValue("spawnPoints", null);
 			this.AnimationHandler.enabled = false;
 			this.IsSimulating = true;
 			this._isCreatingSelection = false;
@@ -326,6 +325,8 @@ namespace MapsExt.Editor
 		private void DoStartSimulation()
 		{
 			var simulatedMap = this.SimulatedContent.GetOrAddComponent<Map>();
+			simulatedMap.SetFieldValue("spawnPoints", null);
+			
 			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
 			simulatedMap.size = this.gameObject.GetComponent<Map>().size;
 			simulatedMap.wasSpawned = true;
