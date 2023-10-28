@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using MapsExt.Editor.Events;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Editor.Properties;
 using MapsExt.MapObjects;
@@ -31,6 +30,35 @@ namespace MapsExt.Editor.Tests
 
 			var instance = this.Editor.Content.transform.GetChild(0).GetComponent<MapObjectInstance>();
 			instance.MapObjectId.Should().Be(id);
+		}
+
+		[Test]
+		public IEnumerator Test_CopyPaste()
+		{
+			yield return this.Utils.SpawnMapObject<BoxData>();
+
+			this.Editor.CopySelected();
+			yield return this.Editor.Paste();
+
+			this.Editor.Content.transform.childCount.Should().Be(2);
+
+			var go = this.Editor.ActiveMapObjectPart;
+			var pos1 = go.ReadProperty<PositionProperty>();
+			var pos2 = new PositionProperty(10, 0);
+
+			yield return this.Utils.MoveSelectedWithMouse(pos2);
+			go.ReadProperty<PositionProperty>().Should().Be(pos1 + pos2);
+
+			this.Editor.Undo();
+			go.ReadProperty<PositionProperty>().Should().Be(pos1);
+			this.Editor.Redo();
+			go.ReadProperty<PositionProperty>().Should().Be(pos1 + pos2);
+
+			this.Editor.Undo();
+			this.Editor.Undo();
+			this.Editor.Content.transform.childCount.Should().Be(1);
+			this.Editor.Redo();
+			this.Editor.Content.transform.childCount.Should().Be(2);
 		}
 
 		[Test]

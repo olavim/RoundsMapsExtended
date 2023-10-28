@@ -108,6 +108,19 @@ namespace MapsExt.Editor
 			});
 		}
 
+		public void LoadMap(CustomMap map)
+		{
+			MapsExtended.LoadMap(this.Content, map, MapsExtendedEditor.MapObjectManager);
+			this.CurrentMapName = map.Name;
+
+			this.ExecuteAfterFrames(1, () =>
+			{
+				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
+				this.ResetSpawnLabels();
+				this.ClearSelected();
+			});
+		}
+
 		public void SaveMap(string filename)
 		{
 			var bytes = SerializationUtility.SerializeValue(this.GetMapData(filename), DataFormat.JSON);
@@ -149,7 +162,9 @@ namespace MapsExt.Editor
 
 			foreach (var instance in mapObjectInstances)
 			{
-				this._clipboardMapObjects.Add(instance.ReadMapObject());
+				var data = instance.ReadMapObject();
+				data.MapObjectId = Guid.NewGuid().ToString();
+				this._clipboardMapObjects.Add(data);
 			}
 
 			this.EditorEvent?.Invoke(this, new CopyEvent());

@@ -1,0 +1,74 @@
+{
+    "$id": 0,
+    "$type": "0|MapsExt.CustomMap, MapsExtended",
+    "_id": "88c93bc2-731e-4c0e-abce-3820e4be8bf9",
+    "_name": "1.2.7.ids",
+    "_version": "1.2.7",
+    "_mapObjects": {
+        "$id": 1,
+        "$type": "1|MapsExt.MapObjects.MapObjectData[], MapsExtended",
+        "$rlength": 2,
+        "$rcontent": [
+            {
+                "$id": 2,
+                "$type": "2|MapsExt.MapObjects.GroundData, MapsExtended",
+                "_mapObjectId": "a2d410a2-32d3-4c4d-a38e-7353368fc849",
+                "_active": true,
+                "_position": {
+                    "$id": 3,
+                    "$type": "3|MapsExt.Properties.PositionProperty, MapsExtended",
+                    "_x": -2,
+                    "_y": 0
+                },
+                "_scale": {
+                    "$id": 4,
+                    "$type": "4|MapsExt.Properties.ScaleProperty, MapsExtended",
+                    "_x": 2,
+                    "_y": 2
+                },
+                "_rotation": {
+                    "$id": 5,
+                    "$type": "5|MapsExt.Properties.RotationProperty, MapsExtended",
+                    "_angle": 0
+                },
+                "_keyframes": {
+                    "$id": 6,
+                    "$type": "6|MapsExt.AnimationKeyframe[], MapsExtended",
+                    "$rlength": 0,
+                    "$rcontent": [
+                    ]
+                }
+            },
+            {
+                "$id": 7,
+                "$type": 2,
+                "_mapObjectId": "a2d410a2-32d3-4c4d-a38e-7353368fc849",
+                "_active": true,
+                "_position": {
+                    "$id": 8,
+                    "$type": 3,
+                    "_x": 2,
+                    "_y": 0
+                },
+                "_scale": {
+                    "$id": 9,
+                    "$type": 4,
+                    "_x": 2,
+                    "_y": 2
+                },
+                "_rotation": {
+                    "$id": 10,
+                    "$type": 5,
+                    "_angle": 0
+                },
+                "_keyframes": {
+                    "$id": 11,
+                    "$type": 6,
+                    "$rlength": 0,
+                    "$rcontent": [
+                    ]
+                }
+            }
+        ]
+    }
+}

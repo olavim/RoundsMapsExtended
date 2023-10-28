@@ -7,6 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Editor\Fixtures\*" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="6.10.0" />
 		<PackageReference Include="Surity.BepInEx" Version="2.2.0" />
 		<ProjectReference Include="..\src\MapsExtended.Editor.csproj" Private="false" IncludeAssets="compile" />

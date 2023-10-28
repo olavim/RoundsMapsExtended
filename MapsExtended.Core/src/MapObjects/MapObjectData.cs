@@ -36,13 +36,11 @@ namespace MapsExt.MapObjects
 
 		private List<PropertyMember> _propertyMembers;
 
-		[SerializeField] private string _mapObjectId = Guid.NewGuid().ToString();
-
 		[SerializeField]
 		[FormerlySerializedAs("active")]
 		private bool _active = true;
 
-		public string MapObjectId { get => this._mapObjectId; set => this._mapObjectId = value; }
+		public string MapObjectId { get; set; }
 		public bool Active { get => this._active; set => this._active = value; }
 
 		protected MapObjectData()
@@ -52,6 +50,8 @@ namespace MapsExt.MapObjects
 
 		private void InitMembers()
 		{
+			this.MapObjectId = Guid.NewGuid().ToString();
+
 			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 			var props = this.GetType().GetProperties(flags).Where(p => p.GetReturnType() != null && typeof(IProperty).IsAssignableFrom(p.GetReturnType()));
 			var fields = this.GetType().GetFields(flags).Where(p => p.GetReturnType() != null && typeof(IProperty).IsAssignableFrom(p.GetReturnType()));
