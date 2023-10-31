@@ -56,12 +56,12 @@ namespace MapsExt
 		private void Awake()
 		{
 #pragma warning disable CS0618
-			MapsExtended.instance = this;
+			instance = this;
 #pragma warning restore CS0618
 
 			s_instance = this;
 
-			new Harmony(MapsExtended.ModId).PatchAll();
+			new Harmony(ModId).PatchAll();
 
 			AssetUtils.LoadAssetBundleFromResources("mapbase", typeof(MapsExtended).Assembly);
 
@@ -92,7 +92,7 @@ namespace MapsExt
 
 		private void OnInit()
 		{
-			MapsExt.PropertyManager.Current = s_instance._propertyManager;
+			PropertyManager.Current = s_instance._propertyManager;
 			MapsExt.MapObjectManager.Current = s_instance._mapObjectManager;
 			this.UpdateMapFiles();
 		}
@@ -209,9 +209,9 @@ namespace MapsExt
 				allLevels.Remove(level);
 			}
 
-			var pluginMapPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
+			var pluginMapPaths = Directory.GetFiles(Paths.PluginPath, "*.map", SearchOption.AllDirectories);
 
-			var personalMapsFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
+			var personalMapsFolder = Path.Combine(Paths.GameRootPath, "maps");
 			Directory.CreateDirectory(personalMapsFolder);
 
 			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
@@ -226,7 +226,7 @@ namespace MapsExt
 				}
 				catch (Exception)
 				{
-					Logger.LogError($"Could not load personal map {path}");
+					this.Logger.LogError($"Could not load personal map {path}");
 				}
 			}
 
@@ -254,7 +254,7 @@ namespace MapsExt
 				}
 				catch (Exception)
 				{
-					Logger.LogError($"Could not load plugin map {path}");
+					this.Logger.LogError($"Could not load plugin map {path}");
 				}
 			}
 
@@ -266,7 +266,7 @@ namespace MapsExt
 				this._maps.AddRange(m);
 			}
 
-			Logger.LogMessage($"Loaded {this._maps.Count} custom maps");
+			this.Logger.LogMessage($"Loaded {this._maps.Count} custom maps");
 
 			this.RegisterNamedMaps(personalMaps, "Personal");
 
@@ -311,12 +311,12 @@ namespace MapsExt
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
 			var mapData = MapLoader.LoadPath(mapFilePath);
-			MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
+			LoadMap(container, mapData, mapObjectManager, onLoad);
 		}
 
 		public static void LoadMap(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
-			s_instance.StartCoroutine(MapsExtended.LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
+			s_instance.StartCoroutine(LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
 		}
 
 		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
@@ -352,7 +352,7 @@ namespace MapsExt
 				MapManager.instance.currentMap.Map.wasSpawned = false;
 			}
 
-			SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
+			SceneManager.sceneLoaded -= OnLevelFinishedLoading;
 			Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).FirstOrDefault(m => m != null);
 			MapsExtended.LoadMap(map.gameObject, s_loadedMap, MapsExtended.MapObjectManager);
 		}
@@ -369,7 +369,7 @@ namespace MapsExt
 				s_loadedMapSceneName = sceneName;
 
 				sceneName = "NewMap";
-				SceneManager.sceneLoaded += MapManagerPatch.OnLevelFinishedLoading;
+				SceneManager.sceneLoaded += OnLevelFinishedLoading;
 			}
 		}
 
@@ -560,7 +560,7 @@ namespace MapsExt
 			var list = instructions.ToList();
 			var newInstructions = new List<CodeInstruction>();
 
-			var m_instantiate = UnboundLib.ExtensionMethods.GetMethodInfo(typeof(PhotonNetwork), nameof(PhotonNetwork.Instantiate));
+			var m_instantiate = ExtensionMethods.GetMethodInfo(typeof(PhotonNetwork), nameof(PhotonNetwork.Instantiate));
 
 			for (int i = 0; i < list.Count; i++)
 			{

@@ -17,7 +17,7 @@ namespace MapsExt.Editor.UI
 
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			this._offset = (Vector2) Target.transform.position - EditorInput.MousePosition;
+			this._offset = (Vector2) this.Target.transform.position - EditorInput.MousePosition;
 		}
 
 		public void OnDrag(PointerEventData data)

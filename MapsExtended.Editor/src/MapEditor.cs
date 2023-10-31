@@ -53,6 +53,8 @@ namespace MapsExt.Editor
 
 		public event EventHandler<IEditorEvent> EditorEvent;
 
+		public CustomMapSettings MapSettings { get; } = new();
+
 		public IEnumerable<GameObject> MapObjects => this.Content.GetComponentsInChildren<MapObjectInstance>(true).Select(x => x.gameObject);
 
 		public bool SnapToGrid { get; set; } = true;
@@ -150,7 +152,7 @@ namespace MapsExt.Editor
 				mapObjects.Add(data);
 			}
 
-			return new CustomMap(Guid.NewGuid().ToString(), name, MapsExtended.ModVersion, mapObjects.ToArray());
+			return new CustomMap(Guid.NewGuid().ToString(), name, MapsExtended.ModVersion, this.MapSettings, mapObjects.ToArray());
 		}
 
 		public void CopySelected()

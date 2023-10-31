@@ -34,7 +34,7 @@ namespace MapsExt.Tests
 			foreach (var type in types)
 			{
 				var dataType = type.GetCustomAttribute<MapObjectAttribute>().DataType;
-				yield return new TestInfo($"Gen_SerializeMapObjects > {dataType.Name}", () => Test_SerializeMapObject(dataType));
+				yield return new TestInfo($"Gen_SerializeMapObjects > {dataType.Name}", () => this.Test_SerializeMapObject(dataType));
 			}
 		}
 
