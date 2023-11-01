@@ -17,6 +17,7 @@ using MapsExt.Properties;
 using UnboundLib.Utils;
 using MapsExt.Compatibility;
 using UnboundLib.Utils.UI;
+using Sirenix.Utilities;
 
 namespace MapsExt
 {
@@ -34,13 +35,13 @@ namespace MapsExt
 		[Obsolete("Map objects are registered automatically")]
 		public Action<Assembly> RegisterMapObjectsAction;
 
-		private static MapsExtended s_instance;
+		internal static MapsExtended Instance { get; private set; }
 
-		public static NetworkedMapObjectManager MapObjectManager => s_instance._mapObjectManager;
-		public static PropertyManager PropertyManager => s_instance._propertyManager;
+		public static NetworkedMapObjectManager MapObjectManager => Instance._mapObjectManager;
+		public static PropertyManager PropertyManager => Instance._propertyManager;
 
 #pragma warning disable CS0618
-		public static IEnumerable<CustomMap> LoadedMaps => s_instance._maps.Concat(s_instance.maps);
+		public static IEnumerable<CustomMap> LoadedMaps => Instance._maps.Concat(Instance.maps);
 #pragma warning restore CS0618
 
 #pragma warning disable IDE1006
@@ -52,6 +53,7 @@ namespace MapsExt
 		private readonly PropertyManager _propertyManager = new();
 		private NetworkedMapObjectManager _mapObjectManager;
 		private List<CustomMap> _maps;
+		private Dictionary<Type, ICompatibilityPatch> _compatibilityPatches = new();
 
 		private void Awake()
 		{
@@ -59,7 +61,7 @@ namespace MapsExt
 			instance = this;
 #pragma warning restore CS0618
 
-			s_instance = this;
+			Instance = this;
 
 			new Harmony(ModId).PatchAll();
 
@@ -87,13 +89,14 @@ namespace MapsExt
 				this.RegisterMapObjects(asm);
 			}
 
+			this.ApplyCompatibilityPatches();
 			this.OnInit();
 		}
 
 		private void OnInit()
 		{
-			PropertyManager.Current = s_instance._propertyManager;
-			MapsExt.MapObjectManager.Current = s_instance._mapObjectManager;
+			PropertyManager.Current = Instance._propertyManager;
+			MapsExt.MapObjectManager.Current = Instance._mapObjectManager;
 			this.UpdateMapFiles();
 		}
 
@@ -104,20 +107,35 @@ namespace MapsExt
 		}
 #endif
 
+		private void ApplyCompatibilityPatches()
+		{
+			var types = ReflectionUtils.GetAssemblyTypes(Assembly.GetExecutingAssembly());
+
+			foreach (var patchType in types.Where(t => Attribute.IsDefined(t, typeof(CompatibilityPatchAttribute))))
+			{
+				if (!patchType.ImplementsOrInherits(typeof(ICompatibilityPatch)))
+				{
+					throw new Exception($"Compatibility patch {patchType} does not implement {typeof(ICompatibilityPatch).Name}");
+				}
+
+				var patch = (ICompatibilityPatch) Activator.CreateInstance(patchType);
+				this._compatibilityPatches.Add(patchType, patch);
+				this.ExecuteAfterFrames(1, () => patch.Apply());
+			}
+		}
+
+		public static T GetCompatibilityPatch<T>() where T : ICompatibilityPatch
+		{
+			return (T) (Instance._compatibilityPatches as IReadOnlyDictionary<Type, ICompatibilityPatch>).GetValueOrDefault(typeof(T), null)
+				?? throw new ArgumentException($"No compatibility patch of type {typeof(T)} loaded");
+		}
+
 		[Obsolete("Map objects are registered automatically")]
 		public void RegisterMapObjects() { }
 
 		private void RegisterMapObjectProperties(Assembly assembly)
 		{
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var propertySerializerType in types.Where(t => Attribute.IsDefined(t, typeof(PropertySerializerAttribute))))
 			{
@@ -143,16 +161,7 @@ namespace MapsExt
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var serializer = new PropertyCompositeSerializer(this._propertyManager);
-
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var mapObjectType in types.Where(t => Attribute.IsDefined(t, typeof(MapObjectAttribute))))
 			{
@@ -289,16 +298,16 @@ namespace MapsExt
 
 		internal static void AddPhotonInstantiateListener(PhotonMapObject mapObject, Action<GameObject> callback)
 		{
-			s_instance._photonInstantiationListeners.Add(mapObject, callback);
+			Instance._photonInstantiationListeners.Add(mapObject, callback);
 		}
 
 		internal static void OnPhotonInstantiate(GameObject instance, PhotonMapObject mapObject)
 		{
-			s_instance._photonInstantiationListeners.TryGetValue(mapObject, out Action<GameObject> listener);
+			Instance._photonInstantiationListeners.TryGetValue(mapObject, out Action<GameObject> listener);
 			if (listener != null)
 			{
 				listener(instance);
-				s_instance._photonInstantiationListeners.Remove(mapObject);
+				Instance._photonInstantiationListeners.Remove(mapObject);
 			}
 		}
 
@@ -316,7 +325,7 @@ namespace MapsExt
 
 		public static void LoadMap(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
-			s_instance.StartCoroutine(LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
+			Instance.StartCoroutine(LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
 		}
 
 		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)

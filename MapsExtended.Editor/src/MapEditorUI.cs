@@ -279,12 +279,12 @@ namespace MapsExt.Editor
 
 		protected virtual void OnChangeMapSize(Vector2 size)
 		{
-
+			this.Editor.MapSettings.MapSize = size;
 		}
 
 		protected virtual void OnChangeViewportSize(Vector2 size)
 		{
-
+			this.Editor.MapSettings.ViewportSize = size;
 		}
 
 		private void OnClickOpen()

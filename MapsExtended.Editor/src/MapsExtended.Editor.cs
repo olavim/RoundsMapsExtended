@@ -17,6 +17,8 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using MapsExt.Editor.UI;
 using MapsExt.Editor.Events;
+using MapsExt.Compatibility;
+using Sirenix.Utilities;
 
 namespace MapsExt.Editor
 {
@@ -46,6 +48,7 @@ namespace MapsExt.Editor
 		private readonly List<(Type, string, string)> _mapObjectAttributes = new();
 		private readonly Dictionary<Type, Type> _propertyInspectorElements = new();
 		private readonly Dictionary<Type, Type[]> _groupEventHandlers = new();
+		private Dictionary<Type, ICompatibilityPatch> _compatibilityPatches = new();
 		private readonly PropertyManager _propertyManager = new();
 		private EditorMapObjectManager _mapObjectManager;
 		private bool _editorActive;
@@ -55,7 +58,7 @@ namespace MapsExt.Editor
 		{
 			s_instance = this;
 
-			var harmony = new Harmony(MapsExtendedEditor.ModId);
+			var harmony = new Harmony(ModId);
 			harmony.PatchAll();
 
 			AssetUtils.LoadAssetBundleFromResources("mapeditor", typeof(MapsExtendedEditor).Assembly);
@@ -73,7 +76,7 @@ namespace MapsExt.Editor
 				}
 			};
 
-			Directory.CreateDirectory(Path.Combine(BepInEx.Paths.GameRootPath, "maps"));
+			Directory.CreateDirectory(Path.Combine(Paths.GameRootPath, "maps"));
 		}
 
 		private void Start()
@@ -86,6 +89,7 @@ namespace MapsExt.Editor
 				this.RegisterGroupEditorEventHandlers(asm);
 			}
 
+			this.ApplyCompatibilityPatches();
 			Unbound.RegisterMenu("Map Editor", OpenEditor, (_) => { }, null, false);
 		}
 
@@ -114,7 +118,7 @@ namespace MapsExt.Editor
 				yield return null;
 			}
 
-			MapsExt.PropertyManager.Current = s_instance._propertyManager;
+			PropertyManager.Current = s_instance._propertyManager;
 			MapsExt.MapObjectManager.Current = s_instance._mapObjectManager;
 		}
 
@@ -147,17 +151,32 @@ namespace MapsExt.Editor
 			GameObject.Find("Game").GetComponent<SetOfflineMode>().SetOnline();
 		}
 
+		private void ApplyCompatibilityPatches()
+		{
+			var types = ReflectionUtils.GetAssemblyTypes(Assembly.GetExecutingAssembly());
+
+			foreach (var patchType in types.Where(t => Attribute.IsDefined(t, typeof(CompatibilityPatchAttribute))))
+			{
+				if (!patchType.ImplementsOrInherits(typeof(ICompatibilityPatch)))
+				{
+					throw new Exception($"Compatibility patch {patchType} does not implement {typeof(ICompatibilityPatch).Name}");
+				}
+
+				var patch = (ICompatibilityPatch) Activator.CreateInstance(patchType);
+				this._compatibilityPatches.Add(patchType, patch);
+				this.ExecuteAfterFrames(1, () => patch.Apply());
+			}
+		}
+
+		public static T GetCompatibilityPatch<T>() where T : ICompatibilityPatch
+		{
+			return (T) (s_instance._compatibilityPatches as IReadOnlyDictionary<Type, ICompatibilityPatch>).GetValueOrDefault(typeof(T), null)
+				?? throw new ArgumentException($"No compatibility patch of type {typeof(T)} loaded");
+		}
+
 		private void RegisterMapObjectProperties(Assembly assembly)
 		{
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var propertySerializerType in types.Where(t => Attribute.IsDefined(t, typeof(EditorPropertySerializerAttribute))))
 			{
@@ -184,16 +203,7 @@ namespace MapsExt.Editor
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var serializer = new PropertyCompositeSerializer(this._propertyManager);
-
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var mapObjectType in types.Where(t => Attribute.IsDefined(t, typeof(EditorMapObjectAttribute))))
 			{
@@ -236,15 +246,7 @@ namespace MapsExt.Editor
 
 		private void RegisterPropertyInspectors(Assembly assembly)
 		{
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var elementType in types.Where(t => Attribute.IsDefined(t, typeof(InspectorElementAttribute))))
 			{
@@ -283,15 +285,7 @@ namespace MapsExt.Editor
 
 		private void RegisterGroupEditorEventHandlers(Assembly assembly)
 		{
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var type in types.Where(t => Attribute.IsDefined(t, typeof(GroupEventHandlerAttribute))))
 			{

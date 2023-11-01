@@ -4,13 +4,16 @@ namespace MapsExt
 {
 	public class CustomMapSettings
 	{
-		[SerializeField] private readonly Vector2 _mapSize;
-		[SerializeField] private readonly Vector2 _viewportSize;
+		public static readonly Vector2 DefaultMapSize = new(1920, 1080);
+		public static readonly Vector2 DefaultViewportSize = new(1920, 1080);
 
-		public Vector2 MapSize => this._mapSize;
-		public Vector2 ViewportSize => this._viewportSize;
+		[SerializeField] private Vector2 _mapSize;
+		[SerializeField] private Vector2 _viewportSize;
 
-		public CustomMapSettings() : this(new Vector2(1920, 1080), new Vector2(1920, 1080)) { }
+		public Vector2 MapSize { get => this._mapSize; set => this._mapSize = value; }
+		public Vector2 ViewportSize { get => this._viewportSize; set => this._viewportSize = value; }
+
+		public CustomMapSettings() : this(DefaultMapSize, DefaultViewportSize) { }
 
 		public CustomMapSettings(Vector2 mapSize, Vector2 viewportSize)
 		{

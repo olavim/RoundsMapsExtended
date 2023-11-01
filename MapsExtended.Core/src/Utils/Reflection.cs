@@ -96,5 +96,17 @@ namespace MapsExt
 			var delegates = del.GetInvocationList().Select(inv => ConvertMethod<TDelegate>(inv.Target, inv.Method)).ToArray();
 			return (TDelegate) Delegate.Combine(delegates);
 		}
+
+		public static Type[] GetAssemblyTypes(Assembly assembly)
+		{
+			try
+			{
+				return assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				return e.Types.Where(t => t != null).ToArray();
+			}
+		}
 	}
 }

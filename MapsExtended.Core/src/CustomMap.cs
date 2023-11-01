@@ -19,6 +19,7 @@ namespace MapsExt
 		public string Id => this._id;
 		public string Name => this._name;
 		public string Version => this._version;
+		public CustomMapSettings Settings => this._settings;
 		public MapObjectData[] MapObjects => this._mapObjects;
 
 		public CustomMap(string id, string name, string version, CustomMapSettings settings, MapObjectData[] mapObjects)

@@ -328,7 +328,7 @@ namespace MapsExt.Editor
 			{
 				MapsExtendedEditor.MapObjectManager.Instantiate<SpawnData>(this.Content.transform, instance =>
 				{
-					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
+					Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this._tempSpawn = instance;
 					this.ExecuteAfterFrames(1, this.DoStartSimulation);
 				});
