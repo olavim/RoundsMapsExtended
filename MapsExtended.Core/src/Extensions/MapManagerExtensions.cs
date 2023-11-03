@@ -1,22 +1,26 @@
-using System.Linq;
-using UnityEngine.SceneManagement;
+using System.Runtime.CompilerServices;
 
 namespace MapsExt
 {
 	public static class MapManagerExtensions
 	{
-		public static bool TryGetCurrentCustomMap(this MapManager mgr, out CustomMap customMap)
+		private class MapManagerExtraData
 		{
-			string sceneName = SceneManager.GetActiveScene().name;
-			if (sceneName.StartsWith("MapsExtended:"))
-			{
-				string id = sceneName.Split(':')[1];
-				customMap = MapsExtended.LoadedMaps.First(m => m.Id == id);
-				return true;
-			}
+			public CustomMap CurrentCustomMap { get; set; }
+		}
 
-			customMap = null;
-			return false;
+		private static readonly ConditionalWeakTable<MapManager, MapManagerExtraData> s_extraData = new();
+
+		public static void SetCurrentCustomMap(this MapManager mgr, CustomMap customMap)
+		{
+			var data = s_extraData.GetOrCreateValue(mgr);
+			data.CurrentCustomMap = customMap;
+		}
+
+		public static CustomMap GetCurrentCustomMap(this MapManager mgr)
+		{
+			var data = s_extraData.GetOrCreateValue(mgr);
+			return data.CurrentCustomMap;
 		}
 	}
 }

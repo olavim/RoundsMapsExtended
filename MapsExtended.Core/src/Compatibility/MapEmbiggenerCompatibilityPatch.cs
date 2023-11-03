@@ -34,7 +34,11 @@ namespace MapsExt.Compatibility
 			this._outOfBoundsUtilsType = this._assembly?.GetType("MapEmbiggener.OutOfBoundsUtils");
 			this._outOfBoundsParticlesType = this._assembly?.GetType("MapEmbiggener.UI.OutOfBoundsParticles");
 
-			this.AddDisableCase((scene) => MapManager.instance.TryGetCurrentCustomMap(out var map) && !this.MapHasDefaultSizes(map));
+			this.AddDisableCase((scene) =>
+			{
+				var customMap = MapManager.instance.GetCurrentCustomMap();
+				return customMap != null && !this.MapHasDefaultSizes(customMap);
+			});
 
 			SceneManager.sceneLoaded += this.OnSceneLoad;
 		}
@@ -63,7 +67,7 @@ namespace MapsExt.Compatibility
 
 		private bool MapHasDefaultSizes(CustomMap map)
 		{
-			return map.Settings.MapSize == CustomMapSettings.DefaultMapSize && map.Settings.ViewportSize == CustomMapSettings.DefaultViewportSize;
+			return map.Settings.MapSize == CustomMapSettings.DefaultMapSize && map.Settings.ViewportHeight == CustomMapSettings.DefaultViewportHeight;
 		}
 
 		private void ExecuteAfterInit(Action action)

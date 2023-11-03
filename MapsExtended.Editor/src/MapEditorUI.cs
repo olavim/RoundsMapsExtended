@@ -200,13 +200,14 @@ namespace MapsExt.Editor
 			mapSettingsMapSizeInput.Input.Value = this.Editor.MapSettings.MapSize;
 			mapSettingsMapSizeInput.Input.OnChanged += this.OnChangeMapSize;
 
-			var mapSettingsViewportSizeObject = Instantiate(Assets.InspectorVector2InputPrefab, this.MapSettingsWindow.Content.transform);
-			var mapSettingsViewportSizeInput = mapSettingsViewportSizeObject.GetComponent<InspectorVector2Input>();
-			mapSettingsViewportSizeInput.Label.text = "Viewport Size";
-			mapSettingsViewportSizeInput.Input.MinX = 100;
-			mapSettingsViewportSizeInput.Input.MinY = 100;
-			mapSettingsViewportSizeInput.Input.Value = this.Editor.MapSettings.ViewportSize;
-			mapSettingsViewportSizeInput.Input.OnChanged += this.OnChangeViewportSize;
+			var mapSettingsViewportSizeObject = Instantiate(Assets.InspectorSliderInputPrefab, this.MapSettingsWindow.Content.transform);
+			var mapSettingsViewportSizeInput = mapSettingsViewportSizeObject.GetComponent<InspectorSliderInput>();
+			mapSettingsViewportSizeInput.Label.text = "Viewport Height";
+			mapSettingsViewportSizeInput.Input.Slider.minValue = 100;
+			mapSettingsViewportSizeInput.Input.Slider.maxValue = 10000;
+			mapSettingsViewportSizeInput.Input.Slider.wholeNumbers = true;
+			mapSettingsViewportSizeInput.Input.Value = this.Editor.MapSettings.ViewportHeight;
+			mapSettingsViewportSizeInput.Input.OnChanged += this.OnChangeViewportHeight;
 		}
 
 		protected virtual void Start()
@@ -282,9 +283,9 @@ namespace MapsExt.Editor
 			this.Editor.MapSettings.MapSize = size;
 		}
 
-		protected virtual void OnChangeViewportSize(Vector2 size)
+		protected virtual void OnChangeViewportHeight(float size, ChangeType changeType)
 		{
-			this.Editor.MapSettings.ViewportSize = size;
+			this.Editor.MapSettings.ViewportHeight = Mathf.RoundToInt(size);
 		}
 
 		private void OnClickOpen()

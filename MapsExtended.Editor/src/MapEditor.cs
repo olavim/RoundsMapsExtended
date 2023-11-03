@@ -343,9 +343,12 @@ namespace MapsExt.Editor
 		{
 			var simulatedMap = this.SimulatedContent.GetOrAddComponent<Map>();
 			simulatedMap.SetFieldValue("spawnPoints", null);
-			
-			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
-			simulatedMap.size = this.gameObject.GetComponent<Map>().size;
+
+			// var cam = MainCam.instance.cam;
+			// cam.transform.position = new Vector3(0, 0, cam.transform.position.z);
+			// var viewportDiff = this.MapSettings.ViewportSize - CustomMapSettings.DefaultViewportSize;
+			// var wp = cam.ScreenToWorldPoint(this.MapSettings.ViewportSize - viewportDiff * 0.5f) * (20f / cam.orthographicSize);
+			// simulatedMap.size = Mathf.Max(wp.y, wp.x / cam.aspect);
 			simulatedMap.wasSpawned = true;
 			simulatedMap.hasEntered = true;
 			simulatedMap.SetFieldValue("missingObjects", 0);
@@ -354,7 +357,12 @@ namespace MapsExt.Editor
 			simulatedMap.mapIsReadyEarlyAction = null;
 			simulatedMap.mapIsReadyAction = null;
 
-			MapsExtended.LoadMap(this.SimulatedContent, this.GetMapData(), MapsExtended.MapObjectManager, () =>
+			var mapData = this.GetMapData();
+
+			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
+			MapManager.instance.SetCurrentCustomMap(mapData);
+
+			MapsExtended.LoadMap(this.SimulatedContent, mapData, MapsExtended.MapObjectManager, () =>
 			{
 				this.Content.SetActive(false);
 				this.SimulatedContent.SetActive(true);
@@ -370,11 +378,6 @@ namespace MapsExt.Editor
 				{
 					simulatedMap.mapIsReadyEarlyAction?.Invoke();
 					simulatedMap.allRigs = this.SimulatedContent.GetComponentsInChildren<Rigidbody2D>();
-
-					// foreach (var rope in this.SimulatedContent.GetComponentsInChildren<MapObjet_Rope>())
-					// {
-					// 	rope.Go();
-					// }
 
 					this.ExecuteAfterFrames(1, () => simulatedMap.mapIsReadyAction?.Invoke());
 				});
@@ -402,6 +405,7 @@ namespace MapsExt.Editor
 			this.Content.SetActive(true);
 			this.SimulatedContent.SetActive(false);
 			MapManager.instance.currentMap = this._mapWrapper;
+			MapManager.instance.SetCurrentCustomMap(null);
 			this.AnimationHandler.enabled = true;
 		}
 

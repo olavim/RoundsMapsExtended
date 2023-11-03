@@ -79,6 +79,12 @@ namespace MapsExt
 					this.OnInit();
 				}
 			};
+
+			On.MainMenuHandler.Awake += (orig, self) =>
+			{
+				orig(self);
+				MainCam.instance.cam.GetComponentInParent<CameraZoomHandler>().gameObject.AddComponent<CameraHandler>();
+			};
 		}
 
 		private void Start()
@@ -377,8 +383,14 @@ namespace MapsExt
 				s_loadedMap = MapsExtended.LoadedMaps.First(m => m.Id == id);
 				s_loadedMapSceneName = sceneName;
 
+				MapManager.instance.SetCurrentCustomMap(s_loadedMap);
+
 				sceneName = "NewMap";
 				SceneManager.sceneLoaded += OnLevelFinishedLoading;
+			}
+			else
+			{
+				MapManager.instance.SetCurrentCustomMap(null);
 			}
 		}
 

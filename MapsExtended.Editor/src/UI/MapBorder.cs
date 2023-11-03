@@ -25,8 +25,11 @@ namespace MapsExt.UI
 		protected virtual void LateUpdate()
 		{
 			var mapSize = this._editor.MapSettings.MapSize;
-			var min = (MainCam.instance.cam.ScreenToWorldPoint(Vector2.zero) - MainCam.instance.cam.transform.position) * (20f / MainCam.instance.cam.orthographicSize) - new Vector3(0.05f, 0.05f);
-			var max = (MainCam.instance.cam.ScreenToWorldPoint(mapSize) - MainCam.instance.cam.transform.position) * (20f / MainCam.instance.cam.orthographicSize) + new Vector3(0.05f, 0.05f);
+			var mapSizeDiff = mapSize - CustomMapSettings.DefaultMapSize;
+			var screenMin = -mapSizeDiff * 0.5f;
+			var screenMax = mapSize - mapSizeDiff * 0.5f;
+			var min = (MainCam.instance.cam.ScreenToWorldPoint(screenMin) - MainCam.instance.cam.transform.position) * (20f / MainCam.instance.cam.orthographicSize) - new Vector3(0.05f, 0.05f);
+			var max = (MainCam.instance.cam.ScreenToWorldPoint(screenMax) - MainCam.instance.cam.transform.position) * (20f / MainCam.instance.cam.orthographicSize) + new Vector3(0.05f, 0.05f);
 
 			var positions = new Vector3[]
 				{
