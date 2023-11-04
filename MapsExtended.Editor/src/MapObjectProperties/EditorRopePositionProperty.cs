@@ -52,7 +52,7 @@ namespace MapsExt.Editor.Properties
 				this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>().GetAnchor(0).GetAnchoredPosition(),
 				this.Context.InspectorTarget.GetComponent<EditorRope.RopeInstance>().GetAnchor(1).GetAnchoredPosition()
 			);
-			set => this.HandleInputChange(value);
+			set => this.HandleInputChange(value, ChangeType.ChangeEnd);
 		}
 
 		protected override GameObject GetInstance()
@@ -67,13 +67,13 @@ namespace MapsExt.Editor.Properties
 			var input1 = pos1Instance.GetComponent<InspectorVector2Input>();
 			input1.Label.text = "Anchor Position 1";
 			this._input1 = input1.Input;
-			this._input1.OnChanged += value => this.HandleInputChange(new(value, this.Value.EndPosition));
+			this._input1.OnChanged += (value, changeType) => this.HandleInputChange(new(value, this.Value.EndPosition), changeType);
 
 			var pos2Instance = GameObject.Instantiate(Assets.InspectorVector2InputPrefab, instance.transform);
 			var input2 = pos2Instance.GetComponent<InspectorVector2Input>();
 			input2.Label.text = "Anchor Position 2";
 			this._input2 = input2.Input;
-			this._input2.OnChanged += value => this.HandleInputChange(new(this.Value.StartPosition, value));
+			this._input2.OnChanged += (value, changeType) => this.HandleInputChange(new(this.Value.StartPosition, value), changeType);
 
 			return instance;
 		}
@@ -85,10 +85,17 @@ namespace MapsExt.Editor.Properties
 			this._input2.SetWithoutEvent(val.EndPosition);
 		}
 
-		private void HandleInputChange(RopePositionProperty value)
+		private void HandleInputChange(RopePositionProperty value, ChangeType changeType)
 		{
-			this.Context.InspectorTarget.WriteProperty(value);
-			this.Context.Editor.TakeSnaphot();
+			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
+			{
+				this.Context.InspectorTarget.WriteProperty(value);
+			}
+
+			if (changeType == ChangeType.ChangeEnd)
+			{
+				this.Context.Editor.TakeSnaphot();
+			}
 		}
 	}
 }

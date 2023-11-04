@@ -18,6 +18,8 @@ namespace MapsExt
 
 		public CustomMapSettings() : this(DefaultMapSize, DefaultViewportHeight) { }
 
+		public CustomMapSettings(CustomMapSettings settings) : this(settings.MapSize, settings.ViewportHeight) { }
+
 		public CustomMapSettings(Vector2 mapSize, int viewportHeight)
 		{
 			this._mapSize = mapSize;

@@ -10,7 +10,7 @@ namespace MapsExt.Editor.UI
 		public Vector2 Value
 		{
 			get => this.GetValue();
-			set => this.OnChange(value);
+			set => this.OnChange(value, ChangeType.ChangeEnd);
 		}
 
 		protected Vector2Element(string name)
@@ -39,6 +39,6 @@ namespace MapsExt.Editor.UI
 		}
 
 		protected abstract Vector2 GetValue();
-		protected abstract void OnChange(Vector2 value);
+		protected abstract void OnChange(Vector2 value, ChangeType changeType);
 	}
 }

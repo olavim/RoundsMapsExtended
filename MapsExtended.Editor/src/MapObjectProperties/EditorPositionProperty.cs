@@ -28,10 +28,17 @@ namespace MapsExt.Editor.Properties
 
 		protected override Vector2 GetValue() => this.Context.InspectorTarget.ReadProperty<PositionProperty>();
 
-		protected override void OnChange(Vector2 value)
+		protected override void OnChange(Vector2 value, ChangeType changeType)
 		{
-			this.Context.InspectorTarget.WriteProperty<PositionProperty>(value);
-			this.Context.Editor.TakeSnaphot();
+			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
+			{
+				this.Context.InspectorTarget.WriteProperty<PositionProperty>(value);
+			}
+
+			if (changeType == ChangeType.ChangeEnd)
+			{
+				this.Context.Editor.TakeSnaphot();
+			}
 		}
 	}
 }

@@ -29,6 +29,7 @@ namespace MapsExt.Editor
 		private GameObject _activeMapObjectPart;
 		private GameObject _activeMapObjectOverride;
 		private MapWrapper _mapWrapper;
+		private CustomMapSettings _mapSettings = new();
 
 		/// <summary>
 		/// The currently active map object part. Can be the selected map object part or the container of multiple selected map object parts.
@@ -53,7 +54,10 @@ namespace MapsExt.Editor
 
 		public event EventHandler<IEditorEvent> EditorEvent;
 
-		public CustomMapSettings MapSettings { get; } = new();
+		/// <summary>
+		/// Returns a copy of the current map settings.
+		/// </summary>
+		public CustomMapSettings MapSettings => new(this._mapSettings);
 
 		public IEnumerable<GameObject> MapObjects => this.Content.GetComponentsInChildren<MapObjectInstance>(true).Select(x => x.gameObject);
 
@@ -250,6 +254,8 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 			this.AddSelected(remainingSelected);
 			this.AnimationHandler.Refresh();
+
+			this._mapSettings = new(state.Settings);
 		}
 
 		public bool CanUndo()
@@ -613,6 +619,16 @@ namespace MapsExt.Editor
 		public void TakeSnaphot()
 		{
 			this._stateHistory.AddState(this.GetMapData());
+		}
+
+		public void SetMapSize(Vector2 size)
+		{
+			this._mapSettings.MapSize = size;
+		}
+
+		public void SetViewportHeight(int height)
+		{
+			this._mapSettings.ViewportHeight = height;
 		}
 
 		/// <summary>
