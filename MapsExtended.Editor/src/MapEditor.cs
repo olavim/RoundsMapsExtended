@@ -10,6 +10,8 @@ using MapsExt.Editor.Events;
 using System;
 using System.Collections;
 using MapsExt.Editor.MapObjects;
+using MapsExt.Utils;
+using MapsExt.Editor.Utils;
 
 namespace MapsExt.Editor
 {

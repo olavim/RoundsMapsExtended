@@ -3,6 +3,7 @@ using MapsExt.MapObjects;
 using System;
 using UnboundLib;
 using MapsExt.Editor.Events;
+using MapsExt.Utils;
 
 namespace MapsExt.Editor.MapObjects
 {

@@ -20,6 +20,7 @@ using MapsExt.Editor.Events;
 using MapsExt.Compatibility;
 using Sirenix.Utilities;
 using UnboundLib.GameModes;
+using MapsExt.Utils;
 
 namespace MapsExt.Editor
 {

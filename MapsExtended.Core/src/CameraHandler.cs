@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MapsExt.Utils;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MapsExt
@@ -51,14 +52,14 @@ namespace MapsExt
 			float scale = 20f / cam.orthographicSize;
 
 			var mapSize = customMap.Settings.MapSize;
-			var mapSizeWorld = (cam.ScreenToWorldPoint(mapSize) - cam.ScreenToWorldPoint(Vector2.zero)) * scale;
+			var mapSizeWorld = ConversionUtils.ScreenToWorldUnits(mapSize);
 			var mapBounds = new Bounds(Vector2.zero, mapSizeWorld);
 
 			var viewportSize = new Vector2(customMap.Settings.ViewportHeight * cam.aspect, customMap.Settings.ViewportHeight);
-			var viewportSizeWorld = (cam.ScreenToWorldPoint(viewportSize) - cam.ScreenToWorldPoint(Vector2.zero)) * scale;
+			var viewportSizeWorld = ConversionUtils.ScreenToWorldUnits(viewportSize);
 
-			var viewportMinCenter = mapBounds.min + viewportSizeWorld * 0.5f;
-			var viewportMaxCenter = mapBounds.max - viewportSizeWorld * 0.5f;
+			var viewportMinCenter = (Vector2) mapBounds.min + viewportSizeWorld * 0.5f;
+			var viewportMaxCenter = (Vector2) mapBounds.max - viewportSizeWorld * 0.5f;
 
 			/* The camera should follow the player and have a constant size. We make an exception when there are multiple local players,
 			 * in which case we want the camera to zoom out enough to fit all local players in the viewport at once.

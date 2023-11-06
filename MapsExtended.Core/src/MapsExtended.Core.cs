@@ -18,6 +18,7 @@ using UnboundLib.Utils;
 using MapsExt.Compatibility;
 using UnboundLib.Utils.UI;
 using Sirenix.Utilities;
+using MapsExt.Utils;
 
 namespace MapsExt
 {
@@ -650,6 +651,165 @@ namespace MapsExt
 
 			int index = __instance.players.FindIndex(p => p.data.playerVel == player);
 			__instance.GetExtraData().PlayersBeingMoved[index] = false;
+		}
+	}
+
+	[HarmonyPatch(typeof(OutOfBoundsHandler))]
+	static class OutOfBoundsHandler_Patch
+	{
+		private static Vector2 GetMapSize()
+		{
+			var customMap = MapManager.instance.GetCurrentCustomMap();
+			if (customMap != null)
+			{
+				var cam = MainCam.instance.cam;
+				return (cam.ScreenToWorldPoint(customMap.Settings.MapSize) - cam.ScreenToWorldPoint(Vector2.zero)) * (20f / cam.orthographicSize);
+			}
+
+			return new Vector2(71.12f, 40f);
+		}
+
+		private static float GetMinX()
+		{
+			return -GetMapSize().x * 0.5f;
+		}
+
+		private static float GetMaxX()
+		{
+			return GetMapSize().x * 0.5f;
+		}
+
+		private static float GetMinY()
+		{
+			return -GetMapSize().y * 0.5f;
+		}
+
+		private static float GetMaxY()
+		{
+			return GetMapSize().y * 0.5f;
+		}
+
+		private static readonly MethodInfo m_minX = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMinX));
+		private static readonly MethodInfo m_maxX = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMaxX));
+		private static readonly MethodInfo m_minY = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMinY));
+		private static readonly MethodInfo m_maxY = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMaxY));
+
+		private static IEnumerable<CodeInstruction> SwitchOutDefaultMapSizes(IEnumerable<CodeInstruction> instructions)
+		{
+			foreach (var ins in instructions)
+			{
+				if (ins.LoadsConstant(-35.56f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_minX).WithLabels(ins.labels);
+				}
+				else if (ins.LoadsConstant(35.56f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_maxX).WithLabels(ins.labels);
+				}
+				else if (ins.LoadsConstant(-20f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_minY).WithLabels(ins.labels);
+				}
+				else if (ins.LoadsConstant(20f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_maxY).WithLabels(ins.labels);
+				}
+				else
+				{
+					yield return ins;
+				}
+			}
+		}
+
+		[HarmonyPatch("LateUpdate")]
+		[HarmonyTranspiler]
+		public static IEnumerable<CodeInstruction> OutOfBoundsHandler_Transpiler1(IEnumerable<CodeInstruction> instructions)
+		{
+			return SwitchOutDefaultMapSizes(instructions);
+		}
+
+		[HarmonyPatch("GetPoint")]
+		[HarmonyTranspiler]
+		public static IEnumerable<CodeInstruction> OutOfBoundsHandler_Transpiler2(IEnumerable<CodeInstruction> instructions)
+		{
+			return SwitchOutDefaultMapSizes(instructions);
+		}
+	}
+
+	[HarmonyPatch(typeof(ScreenEdgeBounce), "Update")]
+	static class ScreenEdgeBounce_Patch
+	{
+		private static Vector2 GetMapSize()
+		{
+			var customMap = MapManager.instance.GetCurrentCustomMap();
+			return customMap == null ? new Vector2(71.12f, 40f) : ConversionUtils.ScreenToWorldUnits(customMap.Settings.MapSize);
+		}
+
+		private static Vector3 GetNormalizedMapPosition(Vector3 worldPosition)
+		{
+			var mapSize = GetMapSize();
+			var clampedX = Mathf.Clamp(worldPosition.x + mapSize.x * 0.5f, 0f, mapSize.x);
+			var clampedY = Mathf.Clamp(worldPosition.y + mapSize.y * 0.5f, 0f, mapSize.y);
+			return new Vector3(clampedX / mapSize.x, clampedY / mapSize.y, 0f);
+		}
+
+		private static Vector3 NormalizedMapPositionToWorldPosition(Vector3 normalizedPosition)
+		{
+			var mapSize = GetMapSize();
+			return new Vector3(mapSize.x * (normalizedPosition.x - 0.5f), mapSize.y * (normalizedPosition.y - 0.5f), normalizedPosition.z);
+		}
+
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var m_normalizedMapPos = AccessTools.Method(typeof(ScreenEdgeBounce_Patch), nameof(ScreenEdgeBounce_Patch.GetNormalizedMapPosition));
+			var m_normalizedMapPosToWorldPos = AccessTools.Method(typeof(ScreenEdgeBounce_Patch), nameof(ScreenEdgeBounce_Patch.NormalizedMapPositionToWorldPosition));
+			var m_worldToScreenPoint = typeof(Camera).GetMethod("WorldToScreenPoint", new[] { typeof(Vector3) });
+			var m_screenToWorldPoint = typeof(Camera).GetMethod("ScreenToWorldPoint", new[] { typeof(Vector3) });
+			var m_screenWidth = typeof(Screen).GetProperty("width").GetGetMethod();
+			var m_screenHeight = typeof(Screen).GetProperty("height").GetGetMethod();
+			var list = instructions.ToList();
+
+			for (int i = 0; i < list.Count; i++)
+			{
+				if (i < list.Count - 22 && list[i].IsLdarg(0) && list[i + 5].Calls(m_worldToScreenPoint))
+				{
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 1].labels);
+					yield return list[i + 2];
+					yield return list[i + 3];
+					yield return list[i + 4];
+					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPos).WithLabels(list[i + 5].labels);
+					yield return list[i + 6];
+					for (int k = i + 7; k <= i + 22; k++)
+					{
+						yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[k].labels);
+					}
+					i += 22;
+				}
+				else if (list[i].Calls(m_screenWidth))
+				{
+					yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+				}
+				else if (list[i].Calls(m_screenHeight))
+				{
+					yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+				}
+				else if (i < list.Count - 4 && list[i].IsLdloc() && list[i + 4].Calls(m_screenToWorldPoint))
+				{
+					yield return list[i];
+					yield return new CodeInstruction(OpCodes.Ldloc_0).WithLabels(list[i + 1].labels);
+					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPosToWorldPos).WithLabels(list[i + 2].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 3].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 4].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 5].labels);
+					yield return list[i + 6];
+					i += 6;
+				}
+				else
+				{
+					yield return list[i];
+				}
+			}
 		}
 	}
 }
