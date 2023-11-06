@@ -8,6 +8,7 @@ using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnboundLib;
 using Sirenix.Utilities;
+using MapsExt.Utils;
 
 namespace MapsExt.Editor
 {

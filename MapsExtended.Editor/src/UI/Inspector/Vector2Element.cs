@@ -10,7 +10,7 @@ namespace MapsExt.Editor.UI
 		public Vector2 Value
 		{
 			get => this.GetValue();
-			set => this.OnChange(value);
+			set => this.OnChange(value, ChangeType.ChangeEnd);
 		}
 
 		protected Vector2Element(string name)
@@ -20,7 +20,9 @@ namespace MapsExt.Editor.UI
 
 		protected override GameObject GetInstance()
 		{
+#pragma warning disable IDE0002
 			var instance = GameObject.Instantiate(Assets.InspectorVector2InputPrefab);
+#pragma warning restore IDE0002
 			var inspectorInput = instance.GetComponent<InspectorVector2Input>();
 			inspectorInput.Label.text = this._name;
 			this._input = inspectorInput.Input;
@@ -37,6 +39,6 @@ namespace MapsExt.Editor.UI
 		}
 
 		protected abstract Vector2 GetValue();
-		protected abstract void OnChange(Vector2 value);
+		protected abstract void OnChange(Vector2 value, ChangeType changeType);
 	}
 }

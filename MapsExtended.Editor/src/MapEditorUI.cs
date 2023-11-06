@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using MapsExt.Editor.UI;
 using System;
 using System.Linq;
+using MapsExt.Editor.Utils;
 
 namespace MapsExt.Editor
 {
@@ -13,17 +14,21 @@ namespace MapsExt.Editor
 		[SerializeField] private Toolbar _toolbar;
 		[SerializeField] private Window _mapObjectWindow;
 		[SerializeField] private Window _inspectorWindow;
+		[SerializeField] private Window _mapSettingsWindow;
 		[SerializeField] private AnimationWindow _animationWindow;
 		[SerializeField] private MapObjectInspector _inspector;
 		private Texture2D _selectionTexture;
 		private Window[] _windows;
 		private bool[] _windowWasOpen;
 		private Vector2 _resolution;
+		private InspectorVector2Input _mapSizeInput;
+		private InspectorSliderInput _viewportHeightInput;
 
 		public MapEditor Editor { get => this._editor; set => this._editor = value; }
 		public Toolbar Toolbar { get => this._toolbar; set => this._toolbar = value; }
 		public Window MapObjectWindow { get => this._mapObjectWindow; set => this._mapObjectWindow = value; }
 		public Window InspectorWindow { get => this._inspectorWindow; set => this._inspectorWindow = value; }
+		public Window MapSettingsWindow { get => this._mapSettingsWindow; set => this._mapSettingsWindow = value; }
 		public AnimationWindow AnimationWindow { get => this._animationWindow; set => this._animationWindow = value; }
 		public MapObjectInspector Inspector { get => this._inspector; set => this._inspector = value; }
 
@@ -44,6 +49,7 @@ namespace MapsExt.Editor
 
 			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Map Objects").Action(this.OpenMapObjectWindow));
 			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Inspector").Action(this.OpenInspectorWindow));
+			this.Toolbar.WindowMenu.AddItem(new MenuItemBuilder().Label("Map Settings").Action(this.OpenMapSettingsWindow));
 
 			var mapObjects = new Dictionary<string, List<(string, Type)>>
 			{
@@ -119,6 +125,9 @@ namespace MapsExt.Editor
 			var inspectorWindowSize = this.InspectorWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
 			this.InspectorWindow.transform.position = new Vector3(Screen.width - (inspectorWindowSize.x / 2f) - 5, this.MapObjectWindow.transform.position.y - inspectorWindowSize.y - 5, 0);
 
+			var mapSettingsWindowSize = this.MapSettingsWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
+			this.MapSettingsWindow.transform.position = new Vector3(Screen.width - (mapSettingsWindowSize.x / 2f) - 5, this.InspectorWindow.transform.position.y - mapSettingsWindowSize.y - 5, 0);
+
 			var animationWindowSize = this.AnimationWindow.gameObject.GetComponent<RectTransform>().sizeDelta;
 			this.AnimationWindow.transform.position = new Vector3((animationWindowSize.x / 2f) + 5, Screen.height - (animationWindowSize.y / 2f) - 35, 0);
 
@@ -175,7 +184,7 @@ namespace MapsExt.Editor
 				}
 				else
 				{
-					var foldout = GameObject.Instantiate(Assets.FoldoutPrefab, this.MapObjectWindow.Content.transform).GetComponent<Foldout>();
+					var foldout = Instantiate(Assets.FoldoutPrefab, this.MapObjectWindow.Content.transform).GetComponent<Foldout>();
 					foldout.Label.text = item.label;
 
 					foreach (var subitem in item.items)
@@ -185,11 +194,28 @@ namespace MapsExt.Editor
 					}
 				}
 			}
+
+			var mapSettingsMapSizeObject = Instantiate(Assets.InspectorVector2InputPrefab, this.MapSettingsWindow.Content.transform);
+			this._mapSizeInput = mapSettingsMapSizeObject.GetComponent<InspectorVector2Input>();
+			this._mapSizeInput.Label.text = "Map Size";
+			this._mapSizeInput.Input.MinX = 100;
+			this._mapSizeInput.Input.MinY = 100;
+			this._mapSizeInput.Input.Value = this.Editor.MapSettings.MapSize;
+			this._mapSizeInput.Input.OnChanged += this.OnChangeMapSize;
+
+			var mapSettingsViewportSizeObject = Instantiate(Assets.InspectorSliderInputPrefab, this.MapSettingsWindow.Content.transform);
+			this._viewportHeightInput = mapSettingsViewportSizeObject.GetComponent<InspectorSliderInput>();
+			this._viewportHeightInput.Label.text = "Viewport Height";
+			this._viewportHeightInput.Input.Slider.minValue = 100;
+			this._viewportHeightInput.Input.Slider.maxValue = 10000;
+			this._viewportHeightInput.Input.Slider.wholeNumbers = true;
+			this._viewportHeightInput.Input.Value = this.Editor.MapSettings.ViewportHeight;
+			this._viewportHeightInput.Input.OnChanged += this.OnChangeViewportHeight;
 		}
 
 		protected virtual void Start()
 		{
-			this._windows = new Window[] { this.MapObjectWindow, this.InspectorWindow, this.AnimationWindow };
+			this._windows = new Window[] { this.MapObjectWindow, this.InspectorWindow, this.MapSettingsWindow, this.AnimationWindow };
 			this._windowWasOpen = new bool[this._windows.Length];
 			this._selectionTexture = UIUtils.GetTexture(2, 2, new Color32(255, 255, 255, 20));
 		}
@@ -253,6 +279,42 @@ namespace MapsExt.Editor
 				btn.interactable = !animWindowOpen;
 				btn.gameObject.GetComponentInChildren<Text>().color = new Color32(200, 200, 200, alpha);
 			}
+
+			if (!this._viewportHeightInput.Input.Input.isFocused)
+			{
+				this._viewportHeightInput.Input.SetWithoutEvent(this.Editor.MapSettings.ViewportHeight);
+			}
+
+			if (!this._mapSizeInput.Input.IsFocused)
+			{
+				this._mapSizeInput.Input.SetWithoutEvent(this.Editor.MapSettings.MapSize);
+			}
+		}
+
+		protected virtual void OnChangeMapSize(Vector2 size, ChangeType changeType)
+		{
+			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
+			{
+				this.Editor.SetMapSize(size);
+			}
+
+			if (changeType == ChangeType.ChangeEnd)
+			{
+				this.Editor.TakeSnaphot();
+			}
+		}
+
+		protected virtual void OnChangeViewportHeight(float size, ChangeType changeType)
+		{
+			if (changeType == ChangeType.Change || changeType == ChangeType.ChangeEnd)
+			{
+				this.Editor.SetViewportHeight(Mathf.RoundToInt(size));
+			}
+
+			if (changeType == ChangeType.ChangeEnd)
+			{
+				this.Editor.TakeSnaphot();
+			}
 		}
 
 		private void OnClickOpen()
@@ -310,7 +372,7 @@ namespace MapsExt.Editor
 
 		private void OnClickResetCameraPosition()
 		{
-			foreach (var cam in GameObject.FindObjectsOfType<Camera>())
+			foreach (var cam in FindObjectsOfType<Camera>())
 			{
 				cam.transform.position = new Vector3(0, 0, cam.transform.position.z);
 			}
@@ -324,6 +386,11 @@ namespace MapsExt.Editor
 		private void OpenInspectorWindow()
 		{
 			this.InspectorWindow.gameObject.SetActive(true);
+		}
+
+		private void OpenMapSettingsWindow()
+		{
+			this.MapSettingsWindow.gameObject.SetActive(true);
 		}
 
 		private void OnGUI()

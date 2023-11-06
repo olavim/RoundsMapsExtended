@@ -9,7 +9,7 @@ namespace MapsExt.Properties
 
 		public PropertySerializerAttribute(Type propertyType)
 		{
-			PropertyType = propertyType;
+			this.PropertyType = propertyType;
 		}
 	}
 }

@@ -45,7 +45,7 @@ namespace MapsExt.Compatibility.V0
 				}
 			}
 
-			return new MapsExt.CustomMap(this.id, this.name, MapsExtended.ModVersion, list.ToArray());
+			return new MapsExt.CustomMap(this.id, this.name, MapsExtended.ModVersion, new CustomMapSettings(), list.ToArray());
 		}
 	}
 }

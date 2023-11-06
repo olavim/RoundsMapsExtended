@@ -9,7 +9,7 @@ namespace MapsExt.MapObjects
 
 		public MapObjectAttribute(Type dataType)
 		{
-			DataType = dataType;
+			this.DataType = dataType;
 		}
 	}
 }

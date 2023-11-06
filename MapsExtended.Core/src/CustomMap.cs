@@ -9,6 +9,7 @@ namespace MapsExt
 		[SerializeField] private readonly string _id;
 		[SerializeField] private readonly string _name;
 		[SerializeField] private readonly string _version;
+		[SerializeField] private CustomMapSettings _settings;
 		[SerializeField] private readonly MapObjectData[] _mapObjects;
 
 		[Obsolete("Deprecated")]
@@ -18,12 +19,14 @@ namespace MapsExt
 		public string Id => this._id;
 		public string Name => this._name;
 		public string Version => this._version;
+		public CustomMapSettings Settings => this._settings;
 		public MapObjectData[] MapObjects => this._mapObjects;
 
-		public CustomMap(string id, string name, string version, MapObjectData[] mapObjects)
+		public CustomMap(string id, string name, string version, CustomMapSettings settings, MapObjectData[] mapObjects)
 		{
 			this._id = id;
 			this._name = name;
+			this._settings = settings;
 			this._mapObjects = mapObjects;
 			this._version = version;
 
@@ -37,6 +40,10 @@ namespace MapsExt
 			if (this._mapObjects == null)
 			{
 				throw new Exception($"Could not load map: {this.Name ?? "<unnamed>"} ({this.Id})");
+			}
+
+			if (this._settings == null) {
+				this._settings = new CustomMapSettings();
 			}
 
 			for (int i = 0; i < this._mapObjects.Length; i++)

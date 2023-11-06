@@ -9,7 +9,7 @@ namespace MapsExt.Editor.UI
 
 		public InspectorElementAttribute(Type propertyType)
 		{
-			PropertyType = propertyType;
+			this.PropertyType = propertyType;
 		}
 	}
 }

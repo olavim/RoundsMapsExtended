@@ -10,7 +10,8 @@ namespace MapsExt.Editor.UI
 		[SerializeField] private Slider _slider;
 		[SerializeField] private InputField _input;
 		private float _inputValue;
-		private float _valueOnSliderMouseDown;
+		private float _startValue;
+		private bool _textWasFocused;
 
 		public Slider Slider { get => this._slider; set => this._slider = value; }
 		public InputField Input { get => this._input; set => this._input = value; }
@@ -39,7 +40,7 @@ namespace MapsExt.Editor.UI
 			};
 			downEntry.callback.AddListener(_ =>
 			{
-				this._valueOnSliderMouseDown = this.Value;
+				this._startValue = this.Value;
 				this.OnChanged?.Invoke(this.Value, ChangeType.ChangeStart);
 			});
 
@@ -49,7 +50,7 @@ namespace MapsExt.Editor.UI
 			};
 			upEntry.callback.AddListener(_ =>
 			{
-				if (this.Value != this._valueOnSliderMouseDown)
+				if (this.Value != this._startValue)
 				{
 					this.OnChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 				}
@@ -57,6 +58,22 @@ namespace MapsExt.Editor.UI
 
 			eventTrigger.triggers.Add(downEntry);
 			eventTrigger.triggers.Add(upEntry);
+		}
+
+		protected virtual void Update()
+		{
+			if (!this._textWasFocused && this.Input.isFocused)
+			{
+				this.OnChanged?.Invoke(this.Value, ChangeType.ChangeStart);
+				this._startValue = this.Value;
+			}
+
+			if (this._textWasFocused && !this.Input.isFocused && this.Value != this._startValue)
+			{
+				this.OnChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
+			}
+
+			this._textWasFocused = this.Input.isFocused;
 		}
 
 		private void UpdateValueSlider(float origValue)
@@ -100,9 +117,7 @@ namespace MapsExt.Editor.UI
 				this._inputValue = value;
 			}
 
-			this.OnChanged?.Invoke(this.Value, ChangeType.ChangeStart);
 			this.OnChanged?.Invoke(this.Value, ChangeType.Change);
-			this.OnChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
 		}
 
 		public void SetWithoutEvent(float value)

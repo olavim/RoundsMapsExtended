@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MapsExt
+namespace MapsExt.Utils
 {
 	public static class GameObjectUtils
 	{
@@ -22,7 +22,7 @@ namespace MapsExt
 			}
 			foreach (var child in children)
 			{
-				GameObjectUtils.DestroyImmediateSafe(child);
+				DestroyImmediateSafe(child);
 			}
 		}
 

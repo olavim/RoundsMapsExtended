@@ -10,6 +10,8 @@ using MapsExt.Editor.Events;
 using System;
 using System.Collections;
 using MapsExt.Editor.MapObjects;
+using MapsExt.Utils;
+using MapsExt.Editor.Utils;
 
 namespace MapsExt.Editor
 {
@@ -29,6 +31,7 @@ namespace MapsExt.Editor
 		private GameObject _activeMapObjectPart;
 		private GameObject _activeMapObjectOverride;
 		private MapWrapper _mapWrapper;
+		private CustomMapSettings _mapSettings = new();
 
 		/// <summary>
 		/// The currently active map object part. Can be the selected map object part or the container of multiple selected map object parts.
@@ -52,6 +55,11 @@ namespace MapsExt.Editor
 		public HashSet<GameObject> SelectedMapObjects { get; } = new();
 
 		public event EventHandler<IEditorEvent> EditorEvent;
+
+		/// <summary>
+		/// Returns a copy of the current map settings.
+		/// </summary>
+		public CustomMapSettings MapSettings => new(this._mapSettings);
 
 		public IEnumerable<GameObject> MapObjects => this.Content.GetComponentsInChildren<MapObjectInstance>(true).Select(x => x.gameObject);
 
@@ -150,7 +158,7 @@ namespace MapsExt.Editor
 				mapObjects.Add(data);
 			}
 
-			return new CustomMap(Guid.NewGuid().ToString(), name, MapsExtended.ModVersion, mapObjects.ToArray());
+			return new CustomMap(Guid.NewGuid().ToString(), name, MapsExtended.ModVersion, this.MapSettings, mapObjects.ToArray());
 		}
 
 		public void CopySelected()
@@ -248,6 +256,8 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 			this.AddSelected(remainingSelected);
 			this.AnimationHandler.Refresh();
+
+			this._mapSettings = new(state.Settings);
 		}
 
 		public bool CanUndo()
@@ -326,7 +336,7 @@ namespace MapsExt.Editor
 			{
 				MapsExtendedEditor.MapObjectManager.Instantiate<SpawnData>(this.Content.transform, instance =>
 				{
-					GameObject.Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
+					Destroy(instance.GetComponent<Visualizers.SpawnVisualizer>());
 					this._tempSpawn = instance;
 					this.ExecuteAfterFrames(1, this.DoStartSimulation);
 				});
@@ -341,9 +351,12 @@ namespace MapsExt.Editor
 		{
 			var simulatedMap = this.SimulatedContent.GetOrAddComponent<Map>();
 			simulatedMap.SetFieldValue("spawnPoints", null);
-			
-			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
-			simulatedMap.size = this.gameObject.GetComponent<Map>().size;
+
+			// var cam = MainCam.instance.cam;
+			// cam.transform.position = new Vector3(0, 0, cam.transform.position.z);
+			// var viewportDiff = this.MapSettings.ViewportSize - CustomMapSettings.DefaultViewportSize;
+			// var wp = cam.ScreenToWorldPoint(this.MapSettings.ViewportSize - viewportDiff * 0.5f) * (20f / cam.orthographicSize);
+			// simulatedMap.size = Mathf.Max(wp.y, wp.x / cam.aspect);
 			simulatedMap.wasSpawned = true;
 			simulatedMap.hasEntered = true;
 			simulatedMap.SetFieldValue("missingObjects", 0);
@@ -352,7 +365,12 @@ namespace MapsExt.Editor
 			simulatedMap.mapIsReadyEarlyAction = null;
 			simulatedMap.mapIsReadyAction = null;
 
-			MapsExtended.LoadMap(this.SimulatedContent, this.GetMapData(), MapsExtended.MapObjectManager, () =>
+			var mapData = this.GetMapData();
+
+			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
+			MapManager.instance.SetCurrentCustomMap(mapData);
+
+			MapsExtended.LoadMap(this.SimulatedContent, mapData, MapsExtended.MapObjectManager, () =>
 			{
 				this.Content.SetActive(false);
 				this.SimulatedContent.SetActive(true);
@@ -368,11 +386,6 @@ namespace MapsExt.Editor
 				{
 					simulatedMap.mapIsReadyEarlyAction?.Invoke();
 					simulatedMap.allRigs = this.SimulatedContent.GetComponentsInChildren<Rigidbody2D>();
-
-					// foreach (var rope in this.SimulatedContent.GetComponentsInChildren<MapObjet_Rope>())
-					// {
-					// 	rope.Go();
-					// }
 
 					this.ExecuteAfterFrames(1, () => simulatedMap.mapIsReadyAction?.Invoke());
 				});
@@ -400,6 +413,7 @@ namespace MapsExt.Editor
 			this.Content.SetActive(true);
 			this.SimulatedContent.SetActive(false);
 			MapManager.instance.currentMap = this._mapWrapper;
+			MapManager.instance.SetCurrentCustomMap(null);
 			this.AnimationHandler.enabled = true;
 		}
 
@@ -607,6 +621,16 @@ namespace MapsExt.Editor
 		public void TakeSnaphot()
 		{
 			this._stateHistory.AddState(this.GetMapData());
+		}
+
+		public void SetMapSize(Vector2 size)
+		{
+			this._mapSettings.MapSize = size;
+		}
+
+		public void SetViewportHeight(int height)
+		{
+			this._mapSettings.ViewportHeight = height;
 		}
 
 		/// <summary>

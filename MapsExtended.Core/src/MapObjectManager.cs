@@ -45,7 +45,7 @@ namespace MapsExt
 
 		protected IMapObject GetMapObject(Type dataType)
 		{
-			return this._mapObjects[dataType];
+			return this._mapObjects.GetValueOrDefault(dataType) ?? throw new ArgumentException($"Map object type not registered: {dataType}");
 		}
 
 		protected IMapObjectSerializer GetSerializer(Type dataType)

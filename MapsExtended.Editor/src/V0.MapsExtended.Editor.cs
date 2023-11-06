@@ -4,6 +4,7 @@ using System.Reflection;
 using BepInEx;
 using UnityEngine;
 using MapsExt.MapObjects;
+using MapsExt.Utils;
 
 #pragma warning disable CS0618
 

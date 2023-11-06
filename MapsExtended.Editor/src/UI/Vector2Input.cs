@@ -9,11 +9,18 @@ namespace MapsExt.Editor.UI
 		[SerializeField] private InputField _xInput;
 		[SerializeField] private InputField _yInput;
 		private Vector2 _inputValue;
+		private bool _wasFocused;
+		private Vector2 _startValue;
 
 		public InputField XInput { get => this._xInput; set => this._xInput = value; }
 		public InputField YInput { get => this._yInput; set => this._yInput = value; }
 
-		public Action<Vector2> OnChanged { get; set; }
+		public float? MinX { get; set; }
+		public float? MinY { get; set; }
+		public float? MaxX { get; set; }
+		public float? MaxY { get; set; }
+
+		public Action<Vector2, ChangeType> OnChanged { get; set; }
 
 		public Vector2 Value
 		{
@@ -21,7 +28,9 @@ namespace MapsExt.Editor.UI
 			set
 			{
 				this.SetWithoutEvent(value);
-				this.OnChanged?.Invoke(value);
+				this.OnChanged?.Invoke(value, ChangeType.ChangeStart);
+				this.OnChanged?.Invoke(value, ChangeType.Change);
+				this.OnChanged?.Invoke(value, ChangeType.ChangeEnd);
 			}
 		}
 
@@ -33,6 +42,27 @@ namespace MapsExt.Editor.UI
 			this.YInput.onValueChanged.AddListener(this.UpdateYValue);
 		}
 
+		protected virtual void Update()
+		{
+			if (!this.IsFocused && (this.XInput.text != this._inputValue.x.ToString() || this.YInput.text != this._inputValue.y.ToString()))
+			{
+				this.SetWithoutEvent(this._inputValue);
+			}
+
+			if (!this._wasFocused && this.IsFocused)
+			{
+				this.OnChanged?.Invoke(this.Value, ChangeType.ChangeStart);
+				this._startValue = this.Value;
+			}
+
+			if (this._wasFocused && !this.IsFocused && this.Value != this._startValue)
+			{
+				this.OnChanged?.Invoke(this.Value, ChangeType.ChangeEnd);
+			}
+
+			this._wasFocused = this.IsFocused;
+		}
+
 		private void UpdateXValue(string valueStr)
 		{
 			if (valueStr.EndsWith("."))
@@ -42,14 +72,14 @@ namespace MapsExt.Editor.UI
 
 			if (valueStr?.Length == 0)
 			{
-				this._inputValue = new Vector2(0, this._inputValue.y);
+				this._inputValue = new Vector2(this.ClampX(0), this._inputValue.y);
 			}
 			else if (float.TryParse(valueStr, out float newX))
 			{
-				this._inputValue = new Vector2(newX, this._inputValue.y);
+				this._inputValue = new Vector2(this.ClampX(newX), this._inputValue.y);
 			}
 
-			this.OnChanged?.Invoke(this.Value);
+			this.OnChanged?.Invoke(this.Value, ChangeType.Change);
 		}
 
 		private void UpdateYValue(string valueStr)
@@ -61,14 +91,40 @@ namespace MapsExt.Editor.UI
 
 			if (valueStr?.Length == 0)
 			{
-				this._inputValue = new Vector2(this._inputValue.x, 0);
+				this._inputValue = new Vector2(this._inputValue.x, this.ClampY(0));
 			}
 			else if (float.TryParse(valueStr, out float newY))
 			{
-				this._inputValue = new Vector2(this._inputValue.x, newY);
+				this._inputValue = new Vector2(this._inputValue.x, this.ClampY(newY));
 			}
 
-			this.OnChanged?.Invoke(this.Value);
+			this.OnChanged?.Invoke(this.Value, ChangeType.Change);
+		}
+
+		private float ClampX(float x)
+		{
+			if (this.MinX != null)
+			{
+				x = Mathf.Max(x, this.MinX.Value);
+			}
+			if (this.MaxX != null)
+			{
+				x = Mathf.Min(x, this.MaxX.Value);
+			}
+			return x;
+		}
+
+		private float ClampY(float y)
+		{
+			if (this.MinY != null)
+			{
+				y = Mathf.Max(y, this.MinY.Value);
+			}
+			if (this.MaxY != null)
+			{
+				y = Mathf.Min(y, this.MaxY.Value);
+			}
+			return y;
 		}
 
 		public void SetWithoutEvent(Vector2 value)

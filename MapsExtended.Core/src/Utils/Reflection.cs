@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 
-namespace MapsExt
+namespace MapsExt.Utils
 {
 	public static class ReflectionUtils
 	{
@@ -61,14 +61,14 @@ namespace MapsExt
 
 			if (deserializerMethod != null)
 			{
-				return ReflectionUtils.ConvertMethod<TDelegate>(null, deserializerMethod);
+				return ConvertMethod<TDelegate>(null, deserializerMethod);
 			}
 
-			var deserializer = ReflectionUtils.GetAttributedProperty<Delegate>(type, attributeType);
+			var deserializer = GetAttributedProperty<Delegate>(type, attributeType);
 
 			if (deserializer != null)
 			{
-				return ReflectionUtils.ConvertDelegate<TDelegate>(deserializer);
+				return ConvertDelegate<TDelegate>(deserializer);
 			}
 
 			return null;
@@ -95,6 +95,18 @@ namespace MapsExt
 		{
 			var delegates = del.GetInvocationList().Select(inv => ConvertMethod<TDelegate>(inv.Target, inv.Method)).ToArray();
 			return (TDelegate) Delegate.Combine(delegates);
+		}
+
+		public static Type[] GetAssemblyTypes(Assembly assembly)
+		{
+			try
+			{
+				return assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException e)
+			{
+				return e.Types.Where(t => t != null).ToArray();
+			}
 		}
 	}
 }

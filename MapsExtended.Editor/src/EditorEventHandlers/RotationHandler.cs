@@ -1,4 +1,6 @@
-﻿using MapsExt.Properties;
+﻿using MapsExt.Editor.Utils;
+using MapsExt.Properties;
+using MapsExt.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;

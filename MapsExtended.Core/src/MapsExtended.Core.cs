@@ -17,6 +17,8 @@ using MapsExt.Properties;
 using UnboundLib.Utils;
 using MapsExt.Compatibility;
 using UnboundLib.Utils.UI;
+using Sirenix.Utilities;
+using MapsExt.Utils;
 
 namespace MapsExt
 {
@@ -34,13 +36,13 @@ namespace MapsExt
 		[Obsolete("Map objects are registered automatically")]
 		public Action<Assembly> RegisterMapObjectsAction;
 
-		private static MapsExtended s_instance;
+		internal static MapsExtended Instance { get; private set; }
 
-		public static NetworkedMapObjectManager MapObjectManager => s_instance._mapObjectManager;
-		public static PropertyManager PropertyManager => s_instance._propertyManager;
+		public static NetworkedMapObjectManager MapObjectManager => Instance._mapObjectManager;
+		public static PropertyManager PropertyManager => Instance._propertyManager;
 
 #pragma warning disable CS0618
-		public static IEnumerable<CustomMap> LoadedMaps => s_instance._maps.Concat(s_instance.maps);
+		public static IEnumerable<CustomMap> LoadedMaps => Instance._maps.Concat(Instance.maps);
 #pragma warning restore CS0618
 
 #pragma warning disable IDE1006
@@ -52,16 +54,17 @@ namespace MapsExt
 		private readonly PropertyManager _propertyManager = new();
 		private NetworkedMapObjectManager _mapObjectManager;
 		private List<CustomMap> _maps;
+		private Dictionary<Type, ICompatibilityPatch> _compatibilityPatches = new();
 
 		private void Awake()
 		{
 #pragma warning disable CS0618
-			MapsExtended.instance = this;
+			instance = this;
 #pragma warning restore CS0618
 
-			s_instance = this;
+			Instance = this;
 
-			new Harmony(MapsExtended.ModId).PatchAll();
+			new Harmony(ModId).PatchAll();
 
 			AssetUtils.LoadAssetBundleFromResources("mapbase", typeof(MapsExtended).Assembly);
 
@@ -77,6 +80,12 @@ namespace MapsExt
 					this.OnInit();
 				}
 			};
+
+			On.MainMenuHandler.Awake += (orig, self) =>
+			{
+				orig(self);
+				MainCam.instance.cam.GetComponentInParent<CameraZoomHandler>().gameObject.AddComponent<CameraHandler>();
+			};
 		}
 
 		private void Start()
@@ -87,13 +96,14 @@ namespace MapsExt
 				this.RegisterMapObjects(asm);
 			}
 
+			this.ApplyCompatibilityPatches();
 			this.OnInit();
 		}
 
 		private void OnInit()
 		{
-			MapsExt.PropertyManager.Current = s_instance._propertyManager;
-			MapsExt.MapObjectManager.Current = s_instance._mapObjectManager;
+			PropertyManager.Current = Instance._propertyManager;
+			MapsExt.MapObjectManager.Current = Instance._mapObjectManager;
 			this.UpdateMapFiles();
 		}
 
@@ -104,20 +114,35 @@ namespace MapsExt
 		}
 #endif
 
+		private void ApplyCompatibilityPatches()
+		{
+			var types = ReflectionUtils.GetAssemblyTypes(Assembly.GetExecutingAssembly());
+
+			foreach (var patchType in types.Where(t => Attribute.IsDefined(t, typeof(CompatibilityPatchAttribute))))
+			{
+				if (!patchType.ImplementsOrInherits(typeof(ICompatibilityPatch)))
+				{
+					throw new Exception($"Compatibility patch {patchType} does not implement {typeof(ICompatibilityPatch).Name}");
+				}
+
+				var patch = (ICompatibilityPatch) Activator.CreateInstance(patchType);
+				this._compatibilityPatches.Add(patchType, patch);
+				this.ExecuteAfterFrames(1, () => patch.Apply());
+			}
+		}
+
+		public static T GetCompatibilityPatch<T>() where T : ICompatibilityPatch
+		{
+			return (T) (Instance._compatibilityPatches as IReadOnlyDictionary<Type, ICompatibilityPatch>).GetValueOrDefault(typeof(T), null)
+				?? throw new ArgumentException($"No compatibility patch of type {typeof(T)} loaded");
+		}
+
 		[Obsolete("Map objects are registered automatically")]
 		public void RegisterMapObjects() { }
 
 		private void RegisterMapObjectProperties(Assembly assembly)
 		{
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var propertySerializerType in types.Where(t => Attribute.IsDefined(t, typeof(PropertySerializerAttribute))))
 			{
@@ -143,16 +168,7 @@ namespace MapsExt
 		private void RegisterMapObjects(Assembly assembly)
 		{
 			var serializer = new PropertyCompositeSerializer(this._propertyManager);
-
-			Type[] types;
-			try
-			{
-				types = assembly.GetTypes();
-			}
-			catch (ReflectionTypeLoadException e)
-			{
-				types = e.Types.Where(t => t != null).ToArray();
-			}
+			var types = ReflectionUtils.GetAssemblyTypes(assembly);
 
 			foreach (var mapObjectType in types.Where(t => Attribute.IsDefined(t, typeof(MapObjectAttribute))))
 			{
@@ -209,9 +225,9 @@ namespace MapsExt
 				allLevels.Remove(level);
 			}
 
-			var pluginMapPaths = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.map", SearchOption.AllDirectories);
+			var pluginMapPaths = Directory.GetFiles(Paths.PluginPath, "*.map", SearchOption.AllDirectories);
 
-			var personalMapsFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps");
+			var personalMapsFolder = Path.Combine(Paths.GameRootPath, "maps");
 			Directory.CreateDirectory(personalMapsFolder);
 
 			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
@@ -226,7 +242,7 @@ namespace MapsExt
 				}
 				catch (Exception)
 				{
-					Logger.LogError($"Could not load personal map {path}");
+					this.Logger.LogError($"Could not load personal map {path}");
 				}
 			}
 
@@ -254,7 +270,7 @@ namespace MapsExt
 				}
 				catch (Exception)
 				{
-					Logger.LogError($"Could not load plugin map {path}");
+					this.Logger.LogError($"Could not load plugin map {path}");
 				}
 			}
 
@@ -266,7 +282,7 @@ namespace MapsExt
 				this._maps.AddRange(m);
 			}
 
-			Logger.LogMessage($"Loaded {this._maps.Count} custom maps");
+			this.Logger.LogMessage($"Loaded {this._maps.Count} custom maps");
 
 			this.RegisterNamedMaps(personalMaps, "Personal");
 
@@ -289,16 +305,16 @@ namespace MapsExt
 
 		internal static void AddPhotonInstantiateListener(PhotonMapObject mapObject, Action<GameObject> callback)
 		{
-			s_instance._photonInstantiationListeners.Add(mapObject, callback);
+			Instance._photonInstantiationListeners.Add(mapObject, callback);
 		}
 
 		internal static void OnPhotonInstantiate(GameObject instance, PhotonMapObject mapObject)
 		{
-			s_instance._photonInstantiationListeners.TryGetValue(mapObject, out Action<GameObject> listener);
+			Instance._photonInstantiationListeners.TryGetValue(mapObject, out Action<GameObject> listener);
 			if (listener != null)
 			{
 				listener(instance);
-				s_instance._photonInstantiationListeners.Remove(mapObject);
+				Instance._photonInstantiationListeners.Remove(mapObject);
 			}
 		}
 
@@ -311,12 +327,12 @@ namespace MapsExt
 		public static void LoadMap(GameObject container, string mapFilePath, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
 			var mapData = MapLoader.LoadPath(mapFilePath);
-			MapsExtended.LoadMap(container, mapData, mapObjectManager, onLoad);
+			LoadMap(container, mapData, mapObjectManager, onLoad);
 		}
 
 		public static void LoadMap(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
-			s_instance.StartCoroutine(MapsExtended.LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
+			Instance.StartCoroutine(LoadMapCoroutine(container, mapData, mapObjectManager, onLoad));
 		}
 
 		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
@@ -352,7 +368,7 @@ namespace MapsExt
 				MapManager.instance.currentMap.Map.wasSpawned = false;
 			}
 
-			SceneManager.sceneLoaded -= MapManagerPatch.OnLevelFinishedLoading;
+			SceneManager.sceneLoaded -= OnLevelFinishedLoading;
 			Map map = scene.GetRootGameObjects().Select(obj => obj.GetComponent<Map>()).FirstOrDefault(m => m != null);
 			MapsExtended.LoadMap(map.gameObject, s_loadedMap, MapsExtended.MapObjectManager);
 		}
@@ -368,8 +384,14 @@ namespace MapsExt
 				s_loadedMap = MapsExtended.LoadedMaps.First(m => m.Id == id);
 				s_loadedMapSceneName = sceneName;
 
+				MapManager.instance.SetCurrentCustomMap(s_loadedMap);
+
 				sceneName = "NewMap";
-				SceneManager.sceneLoaded += MapManagerPatch.OnLevelFinishedLoading;
+				SceneManager.sceneLoaded += OnLevelFinishedLoading;
+			}
+			else
+			{
+				MapManager.instance.SetCurrentCustomMap(null);
 			}
 		}
 
@@ -560,7 +582,7 @@ namespace MapsExt
 			var list = instructions.ToList();
 			var newInstructions = new List<CodeInstruction>();
 
-			var m_instantiate = UnboundLib.ExtensionMethods.GetMethodInfo(typeof(PhotonNetwork), nameof(PhotonNetwork.Instantiate));
+			var m_instantiate = ExtensionMethods.GetMethodInfo(typeof(PhotonNetwork), nameof(PhotonNetwork.Instantiate));
 
 			for (int i = 0; i < list.Count; i++)
 			{
@@ -629,6 +651,165 @@ namespace MapsExt
 
 			int index = __instance.players.FindIndex(p => p.data.playerVel == player);
 			__instance.GetExtraData().PlayersBeingMoved[index] = false;
+		}
+	}
+
+	[HarmonyPatch(typeof(OutOfBoundsHandler))]
+	static class OutOfBoundsHandler_Patch
+	{
+		private static Vector2 GetMapSize()
+		{
+			var customMap = MapManager.instance.GetCurrentCustomMap();
+			if (customMap != null)
+			{
+				var cam = MainCam.instance.cam;
+				return (cam.ScreenToWorldPoint(customMap.Settings.MapSize) - cam.ScreenToWorldPoint(Vector2.zero)) * (20f / cam.orthographicSize);
+			}
+
+			return new Vector2(71.12f, 40f);
+		}
+
+		private static float GetMinX()
+		{
+			return -GetMapSize().x * 0.5f;
+		}
+
+		private static float GetMaxX()
+		{
+			return GetMapSize().x * 0.5f;
+		}
+
+		private static float GetMinY()
+		{
+			return -GetMapSize().y * 0.5f;
+		}
+
+		private static float GetMaxY()
+		{
+			return GetMapSize().y * 0.5f;
+		}
+
+		private static readonly MethodInfo m_minX = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMinX));
+		private static readonly MethodInfo m_maxX = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMaxX));
+		private static readonly MethodInfo m_minY = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMinY));
+		private static readonly MethodInfo m_maxY = AccessTools.Method(typeof(OutOfBoundsHandler_Patch), nameof(OutOfBoundsHandler_Patch.GetMaxY));
+
+		private static IEnumerable<CodeInstruction> SwitchOutDefaultMapSizes(IEnumerable<CodeInstruction> instructions)
+		{
+			foreach (var ins in instructions)
+			{
+				if (ins.LoadsConstant(-35.56f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_minX).WithLabels(ins.labels);
+				}
+				else if (ins.LoadsConstant(35.56f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_maxX).WithLabels(ins.labels);
+				}
+				else if (ins.LoadsConstant(-20f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_minY).WithLabels(ins.labels);
+				}
+				else if (ins.LoadsConstant(20f))
+				{
+					yield return new CodeInstruction(OpCodes.Call, m_maxY).WithLabels(ins.labels);
+				}
+				else
+				{
+					yield return ins;
+				}
+			}
+		}
+
+		[HarmonyPatch("LateUpdate")]
+		[HarmonyTranspiler]
+		public static IEnumerable<CodeInstruction> OutOfBoundsHandler_Transpiler1(IEnumerable<CodeInstruction> instructions)
+		{
+			return SwitchOutDefaultMapSizes(instructions);
+		}
+
+		[HarmonyPatch("GetPoint")]
+		[HarmonyTranspiler]
+		public static IEnumerable<CodeInstruction> OutOfBoundsHandler_Transpiler2(IEnumerable<CodeInstruction> instructions)
+		{
+			return SwitchOutDefaultMapSizes(instructions);
+		}
+	}
+
+	[HarmonyPatch(typeof(ScreenEdgeBounce), "Update")]
+	static class ScreenEdgeBounce_Patch
+	{
+		private static Vector2 GetMapSize()
+		{
+			var customMap = MapManager.instance.GetCurrentCustomMap();
+			return customMap == null ? new Vector2(71.12f, 40f) : ConversionUtils.ScreenToWorldUnits(customMap.Settings.MapSize);
+		}
+
+		private static Vector3 GetNormalizedMapPosition(Vector3 worldPosition)
+		{
+			var mapSize = GetMapSize();
+			var clampedX = Mathf.Clamp(worldPosition.x + mapSize.x * 0.5f, 0f, mapSize.x);
+			var clampedY = Mathf.Clamp(worldPosition.y + mapSize.y * 0.5f, 0f, mapSize.y);
+			return new Vector3(clampedX / mapSize.x, clampedY / mapSize.y, 0f);
+		}
+
+		private static Vector3 NormalizedMapPositionToWorldPosition(Vector3 normalizedPosition)
+		{
+			var mapSize = GetMapSize();
+			return new Vector3(mapSize.x * (normalizedPosition.x - 0.5f), mapSize.y * (normalizedPosition.y - 0.5f), normalizedPosition.z);
+		}
+
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var m_normalizedMapPos = AccessTools.Method(typeof(ScreenEdgeBounce_Patch), nameof(ScreenEdgeBounce_Patch.GetNormalizedMapPosition));
+			var m_normalizedMapPosToWorldPos = AccessTools.Method(typeof(ScreenEdgeBounce_Patch), nameof(ScreenEdgeBounce_Patch.NormalizedMapPositionToWorldPosition));
+			var m_worldToScreenPoint = typeof(Camera).GetMethod("WorldToScreenPoint", new[] { typeof(Vector3) });
+			var m_screenToWorldPoint = typeof(Camera).GetMethod("ScreenToWorldPoint", new[] { typeof(Vector3) });
+			var m_screenWidth = typeof(Screen).GetProperty("width").GetGetMethod();
+			var m_screenHeight = typeof(Screen).GetProperty("height").GetGetMethod();
+			var list = instructions.ToList();
+
+			for (int i = 0; i < list.Count; i++)
+			{
+				if (i < list.Count - 22 && list[i].IsLdarg(0) && list[i + 5].Calls(m_worldToScreenPoint))
+				{
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 1].labels);
+					yield return list[i + 2];
+					yield return list[i + 3];
+					yield return list[i + 4];
+					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPos).WithLabels(list[i + 5].labels);
+					yield return list[i + 6];
+					for (int k = i + 7; k <= i + 22; k++)
+					{
+						yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[k].labels);
+					}
+					i += 22;
+				}
+				else if (list[i].Calls(m_screenWidth))
+				{
+					yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+				}
+				else if (list[i].Calls(m_screenHeight))
+				{
+					yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+				}
+				else if (i < list.Count - 4 && list[i].IsLdloc() && list[i + 4].Calls(m_screenToWorldPoint))
+				{
+					yield return list[i];
+					yield return new CodeInstruction(OpCodes.Ldloc_0).WithLabels(list[i + 1].labels);
+					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPosToWorldPos).WithLabels(list[i + 2].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 3].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 4].labels);
+					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 5].labels);
+					yield return list[i + 6];
+					i += 6;
+				}
+				else
+				{
+					yield return list[i];
+				}
+			}
 		}
 	}
 }

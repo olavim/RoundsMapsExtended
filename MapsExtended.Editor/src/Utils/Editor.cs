@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using MapsExt.Editor.MapObjects;
 
-namespace MapsExt.Editor
+namespace MapsExt.Editor.Utils
 {
 	public static class EditorUtils
 	{

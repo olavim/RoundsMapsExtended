@@ -26,7 +26,7 @@ namespace MapsExt.Tests
 		[Test]
 		public void Test_SerializeMap()
 		{
-			var a = new CustomMap("test", "Test", "1.0.0", new[] {
+			var a = new CustomMap("test", "Test", "1.0.0", new CustomMapSettings(), new[] {
 				SerializationTestUtils.PopulateTestData(new BallData())
 			});
 
