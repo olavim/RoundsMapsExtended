@@ -369,6 +369,7 @@ namespace MapsExt.Editor
 
 			MapManager.instance.currentMap = new MapWrapper(simulatedMap, this._mapWrapper.Scene);
 			MapManager.instance.SetCurrentCustomMap(mapData);
+			CameraHandler.Mode = CameraHandler.CameraMode.FollowPlayer;
 
 			MapsExtended.LoadMap(this.SimulatedContent, mapData, MapsExtended.MapObjectManager, () =>
 			{
@@ -401,6 +402,7 @@ namespace MapsExt.Editor
 			GameModeManager.SetGameMode(null);
 			PlayerManager.instance.RemovePlayers();
 			CardBarHandler.instance.ResetCardBards();
+			CameraHandler.Mode = CameraHandler.CameraMode.Static;
 
 			if (this._tempSpawn != null)
 			{

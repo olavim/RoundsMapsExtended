@@ -19,6 +19,7 @@ using MapsExt.Compatibility;
 using UnboundLib.Utils.UI;
 using Sirenix.Utilities;
 using MapsExt.Utils;
+using System.Runtime.CompilerServices;
 
 namespace MapsExt
 {
@@ -469,6 +470,31 @@ namespace MapsExt
 		}
 	}
 
+	[HarmonyPatch(typeof(MapTransition))]
+	static class MapTransitionPatch_EnterExit
+	{
+		private class MapData
+		{
+			public bool Entered { get; set; }
+		}
+
+		private static readonly ConditionalWeakTable<Map, MapData> s_mapData = new();
+
+		[HarmonyPatch("Enter")]
+		[HarmonyPrefix]
+		public static void EnterPrefix(Map map)
+		{
+			s_mapData.GetOrCreateValue(map).Entered = true;
+		}
+
+		[HarmonyPatch("Exit")]
+		[HarmonyPrefix]
+		public static bool ExitPrefix(Map map)
+		{
+			return s_mapData.GetOrCreateValue(map).Entered;
+		}
+	}
+
 	[HarmonyPatch(typeof(MapObjet_Rope), "AddJoint")]
 	static class RopePatch_AddJoint
 	{
@@ -609,19 +635,6 @@ namespace MapsExt
 		public static bool Prefix(Sonigon.SoundContainer ___soundContainer)
 		{
 			return ___soundContainer != null;
-		}
-	}
-
-	[HarmonyPatch(typeof(MapTransition), "Toggle")]
-	static class MapTransitionTogglePatch
-	{
-		public static void Prefix(GameObject obj, bool enabled)
-		{
-			var anim = obj.GetComponent<MapObjectAnimation>();
-			if (anim)
-			{
-				anim.enabled = enabled;
-			}
 		}
 	}
 

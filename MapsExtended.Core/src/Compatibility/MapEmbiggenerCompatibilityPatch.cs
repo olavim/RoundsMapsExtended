@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MapsExt.Properties;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,13 +35,22 @@ namespace MapsExt.Compatibility
 			this._outOfBoundsUtilsType = this._assembly?.GetType("MapEmbiggener.OutOfBoundsUtils");
 			this._outOfBoundsParticlesType = this._assembly?.GetType("MapEmbiggener.UI.OutOfBoundsParticles");
 
-			this.AddDisableCase((scene) =>
-			{
-				var customMap = MapManager.instance.GetCurrentCustomMap();
-				return customMap != null && !this.MapHasDefaultSizes(customMap);
-			});
+			this.AddDisableCase((scene) => this.CurrentMapHasNonDefaultSizes());
+			this.AddDisableCase((scene) => this.CurrentMapHasAnimations());
 
 			SceneManager.sceneLoaded += this.OnSceneLoad;
+		}
+
+		private bool CurrentMapHasNonDefaultSizes()
+		{
+			var map = MapManager.instance.GetCurrentCustomMap();
+			return map != null && (map.Settings.MapSize != CustomMapSettings.DefaultMapSize || map.Settings.ViewportHeight != CustomMapSettings.DefaultViewportHeight);
+		}
+
+		private bool CurrentMapHasAnimations()
+		{
+			var map = MapManager.instance.GetCurrentCustomMap();
+			return map != null && map.MapObjects.Any(obj => obj.GetProperty<AnimationProperty>() != null);
 		}
 
 		public void AddDisableCase(Predicate<Scene> predicate)
@@ -63,11 +73,6 @@ namespace MapsExt.Compatibility
 			{
 				this.EnableMapEmbiggener();
 			}
-		}
-
-		private bool MapHasDefaultSizes(CustomMap map)
-		{
-			return map.Settings.MapSize == CustomMapSettings.DefaultMapSize && map.Settings.ViewportHeight == CustomMapSettings.DefaultViewportHeight;
 		}
 
 		private void ExecuteAfterInit(Action action)

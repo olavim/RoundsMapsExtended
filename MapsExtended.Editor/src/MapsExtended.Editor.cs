@@ -75,6 +75,7 @@ namespace MapsExt.Editor
 				{
 					this._editorActive = false;
 					this._editorClosing = false;
+					CameraHandler.Mode = CameraHandler.CameraMode.FollowPlayer;
 				}
 			};
 
@@ -139,6 +140,7 @@ namespace MapsExt.Editor
 			s_instance._editorClosing = true;
 			var op = SceneManager.UnloadSceneAsync("MapEditor");
 			MapManager.instance.currentMap = null;
+			CameraHandler.Mode = CameraHandler.CameraMode.FollowPlayer;
 
 			while (!op.isDone)
 			{
@@ -300,6 +302,7 @@ namespace MapsExt.Editor
 			SceneManager.sceneLoaded -= OnEditorLevelLoad;
 
 			s_instance._editorActive = true;
+			CameraHandler.Mode = CameraHandler.CameraMode.Static;
 			var map = MapManager.instance.currentMap.Map;
 			map.SetFieldValue("hasCalledReady", true);
 
