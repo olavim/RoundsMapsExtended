@@ -89,6 +89,7 @@ namespace MapsExt
 			{
 				orig(self);
 				MainCam.instance.cam.GetComponentInParent<CameraZoomHandler>().gameObject.AddComponent<CameraHandler>();
+				GameObject.Find("/Game/Visual/Rendering /").AddComponent<LightHandler>();
 			};
 		}
 

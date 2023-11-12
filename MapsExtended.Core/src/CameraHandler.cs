@@ -14,6 +14,7 @@ namespace MapsExt
 		}
 
 		public static CameraMode Mode { get; set; } = CameraMode.FollowPlayer;
+		public static float StaticZoom { get; set; } = 20f;
 
 		private CameraZoomHandler _zoomHandler;
 		private Camera[] _cameras;
@@ -55,14 +56,17 @@ namespace MapsExt
 				this._cameraUpdateDelay = 1f;
 			}
 
+			if (Mode == CameraMode.Static)
+			{
+				this.LerpOrthographicSize(StaticZoom);
+				return;
+			}
+
 			if (MapManager.instance.currentMap == null || CardChoice.instance.IsPicking)
 			{
 				// Not in a map; use default zoom
 				this.LerpOrthographicSize(20);
-				if (Mode == CameraMode.FollowPlayer)
-				{
-					this.LerpPosition(Vector2.zero);
-				}
+				this.LerpPosition(Vector2.zero);
 				return;
 			}
 
@@ -72,10 +76,7 @@ namespace MapsExt
 			{
 				// Not in a MapsExtended map; use the current map's size
 				this.LerpOrthographicSize(MapManager.instance.currentMap.Map.size);
-				if (Mode == CameraMode.FollowPlayer)
-				{
-					this.LerpPosition(Vector2.zero);
-				}
+				this.LerpPosition(Vector2.zero);
 				return;
 			}
 
@@ -115,17 +116,13 @@ namespace MapsExt
 
 			float targetViewportHeight = Mathf.Max(viewportBounds.size.y, viewportBounds.size.x / aspect);
 			var targetViewportSize = new Vector2(targetViewportHeight * aspect, targetViewportHeight);
-
 			this.LerpOrthographicSize(targetViewportSize.y * 0.5f);
 
-			if (Mode == CameraMode.FollowPlayer)
-			{
-				var targetViewportMinCenter = (Vector2) mapBounds.min + targetViewportSize * 0.5f;
-				var targetViewportMaxCenter = (Vector2) mapBounds.max - targetViewportSize * 0.5f;
-				float viewPosX = targetViewportSize.x >= mapSizeWorld.x ? 0 : Mathf.Clamp(viewportBounds.center.x, targetViewportMinCenter.x, targetViewportMaxCenter.x);
-				float viewPosY = targetViewportSize.y >= mapSizeWorld.y ? 0 : Mathf.Clamp(viewportBounds.center.y, targetViewportMinCenter.y, targetViewportMaxCenter.y);
-				this.LerpPosition(new Vector2(viewPosX, viewPosY));
-			}
+			var targetViewportMinCenter = (Vector2) mapBounds.min + targetViewportSize * 0.5f;
+			var targetViewportMaxCenter = (Vector2) mapBounds.max - targetViewportSize * 0.5f;
+			float viewPosX = targetViewportSize.x >= mapSizeWorld.x ? 0 : Mathf.Clamp(viewportBounds.center.x, targetViewportMinCenter.x, targetViewportMaxCenter.x);
+			float viewPosY = targetViewportSize.y >= mapSizeWorld.y ? 0 : Mathf.Clamp(viewportBounds.center.y, targetViewportMinCenter.y, targetViewportMaxCenter.y);
+			this.LerpPosition(new Vector2(viewPosX, viewPosY));
 		}
 
 		private void LerpOrthographicSize(float size)

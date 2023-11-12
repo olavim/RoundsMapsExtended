@@ -85,6 +85,7 @@ namespace MapsExt.Editor
 			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.MapObjectAnimationLayer);
 			MainCam.instance.cam.cullingMask &= ~(1 << MapsExtendedEditor.MapObjectUILayer);
 			this._mapWrapper = MapManager.instance.currentMap;
+			MapManager.instance.SetCurrentCustomMap(this.GetMapData());
 		}
 
 		protected virtual void Update()
@@ -113,7 +114,7 @@ namespace MapsExt.Editor
 		{
 			MapsExtended.LoadMap(this.Content, map, MapsExtendedEditor.MapObjectManager);
 			this.CurrentMapName = map.Name;
-			this._mapSettings = new(map.Settings);
+			this.SetMapSettings(new(map.Settings));
 
 			this.ExecuteAfterFrames(1, () =>
 			{
@@ -250,8 +251,7 @@ namespace MapsExt.Editor
 			this.ClearSelected();
 			this.AddSelected(remainingSelected);
 			this.AnimationHandler.Refresh();
-
-			this._mapSettings = new(state.Settings);
+			this.SetMapSettings(new(state.Settings));
 		}
 
 		public bool CanUndo()
@@ -280,16 +280,12 @@ namespace MapsExt.Editor
 
 		public void ZoomIn()
 		{
-			var map = this.gameObject.GetComponent<Map>();
-			float newSize = map.size - 2f;
-			map.size = Mathf.Max(2f, newSize);
+			CameraHandler.StaticZoom = Mathf.Max(2f, CameraHandler.StaticZoom - 2f);
 		}
 
 		public void ZoomOut()
 		{
-			var map = this.gameObject.GetComponent<Map>();
-			float newSize = map.size + 2f;
-			map.size = Mathf.Min(50f, newSize);
+			CameraHandler.StaticZoom = Mathf.Min(500f, CameraHandler.StaticZoom + 2f);
 		}
 
 		public void ToggleSnapToGrid(bool enabled)
@@ -409,7 +405,6 @@ namespace MapsExt.Editor
 			this.Content.SetActive(true);
 			this.SimulatedContent.SetActive(false);
 			MapManager.instance.currentMap = this._mapWrapper;
-			MapManager.instance.SetCurrentCustomMap(null);
 			this.AnimationHandler.enabled = true;
 		}
 
@@ -621,12 +616,18 @@ namespace MapsExt.Editor
 
 		public void SetMapSize(Vector2 size)
 		{
-			this._mapSettings.MapSize = size;
+			this.SetMapSettings(new(this._mapSettings) { MapSize = size });
 		}
 
 		public void SetViewportHeight(int height)
 		{
-			this._mapSettings.ViewportHeight = height;
+			this.SetMapSettings(new(this._mapSettings) { ViewportHeight = height });
+		}
+
+		private void SetMapSettings(CustomMapSettings settings)
+		{
+			this._mapSettings = settings;
+			MapManager.instance.SetCurrentCustomMap(this.GetMapData());
 		}
 
 		/// <summary>

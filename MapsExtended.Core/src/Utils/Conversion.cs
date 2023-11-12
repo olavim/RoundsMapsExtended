@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace MapsExt.Utils
 {
-	internal static class ConversionUtils
+	public static class ConversionUtils
 	{
 		private const float UnitRatio = 40f / 1080f;
 
