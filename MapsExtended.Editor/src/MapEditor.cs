@@ -12,6 +12,7 @@ using System.Collections;
 using MapsExt.Editor.MapObjects;
 using MapsExt.Utils;
 using MapsExt.Editor.Utils;
+using MapsExt.Compatibility;
 
 namespace MapsExt.Editor
 {
@@ -101,25 +102,18 @@ namespace MapsExt.Editor
 
 		public void LoadMap(string mapFilePath)
 		{
-			MapsExtended.LoadMap(this.Content, mapFilePath, MapsExtendedEditor.MapObjectManager);
+			var map = MapLoader.LoadPath(mapFilePath);
+			this.LoadMap(map);
 
 			string personalFolder = Path.Combine(BepInEx.Paths.GameRootPath, "maps" + Path.DirectorySeparatorChar);
-			string mapName = mapFilePath.Substring(0, mapFilePath.Length - 4).Replace(personalFolder, "");
-
-			this.CurrentMapName = mapFilePath.StartsWith(personalFolder) ? mapName : null;
-
-			this.ExecuteAfterFrames(1, () =>
-			{
-				this._stateHistory = new StateHistory<CustomMap>(this.GetMapData());
-				this.ResetSpawnLabels();
-				this.ClearSelected();
-			});
+			this.CurrentMapName = mapFilePath.StartsWith(personalFolder) ? map.Name : null;
 		}
 
 		public void LoadMap(CustomMap map)
 		{
 			MapsExtended.LoadMap(this.Content, map, MapsExtendedEditor.MapObjectManager);
 			this.CurrentMapName = map.Name;
+			this._mapSettings = new(map.Settings);
 
 			this.ExecuteAfterFrames(1, () =>
 			{
