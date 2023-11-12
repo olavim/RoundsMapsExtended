@@ -81,6 +81,11 @@ namespace MapsExt
 						mapObject.OnInstantiate(networkInstance);
 						this.WriteMapObject(data, networkInstance);
 
+						if (mapObject is IMapObjectDataWriteCallbackReceiver mapObjectWithCallback)
+						{
+							mapObjectWithCallback.OnDataWrite(networkInstance, data);
+						}
+
 						onInstantiate?.Invoke(networkInstance);
 
 						int viewID = networkInstance.GetComponent<PhotonView>().ViewID;
@@ -100,6 +105,11 @@ namespace MapsExt
 
 			mapObject.OnInstantiate(instance);
 			this.WriteMapObject(data, instance);
+
+			if (mapObject is IMapObjectDataWriteCallbackReceiver mapObjectWithCallback)
+			{
+				mapObjectWithCallback.OnDataWrite(instance, data);
+			}
 
 			// The onInstantiate callback might be called twice: once for the "client-side" instance, and once for the networked instance
 			onInstantiate?.Invoke(instance);

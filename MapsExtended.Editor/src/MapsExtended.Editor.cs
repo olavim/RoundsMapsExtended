@@ -19,8 +19,8 @@ using MapsExt.Editor.UI;
 using MapsExt.Editor.Events;
 using MapsExt.Compatibility;
 using Sirenix.Utilities;
-using UnboundLib.GameModes;
 using MapsExt.Utils;
+using BepInEx.Logging;
 
 namespace MapsExt.Editor
 {
@@ -39,6 +39,7 @@ namespace MapsExt.Editor
 		public static PropertyManager PropertyManager => s_instance._propertyManager;
 		public static EditorMapObjectManager MapObjectManager => s_instance._mapObjectManager;
 
+		internal static ManualLogSource Log;
 
 		internal static Dictionary<Type, Type> PropertyInspectorElements => s_instance._propertyInspectorElements;
 		internal static List<(Type, string, string)> MapObjectAttributes => s_instance._mapObjectAttributes;
@@ -59,6 +60,8 @@ namespace MapsExt.Editor
 		private void Awake()
 		{
 			s_instance = this;
+
+			Log = this.Logger;
 
 			var harmony = new Harmony(ModId);
 			harmony.PatchAll();
@@ -195,10 +198,10 @@ namespace MapsExt.Editor
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register map object serializer {propertySerializerType.Name}: {ex.Message}");
+					MapsExtendedEditor.Log.LogError($"Could not register map object serializer {propertySerializerType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					MapsExtendedEditor.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}
@@ -237,10 +240,10 @@ namespace MapsExt.Editor
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register editor map object {mapObjectType.Name}: {ex.Message}");
+					MapsExtendedEditor.Log.LogError($"Could not register editor map object {mapObjectType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogException(ex);
+					MapsExtendedEditor.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}
@@ -278,10 +281,10 @@ namespace MapsExt.Editor
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register PropertyInspector {elementType.Name}: {ex.Message}");
+					MapsExtendedEditor.Log.LogError($"Could not register PropertyInspector {elementType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					MapsExtendedEditor.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}

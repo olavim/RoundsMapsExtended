@@ -20,6 +20,7 @@ using UnboundLib.Utils.UI;
 using Sirenix.Utilities;
 using MapsExt.Utils;
 using System.Runtime.CompilerServices;
+using BepInEx.Logging;
 
 namespace MapsExt
 {
@@ -33,6 +34,8 @@ namespace MapsExt
 
 		[Obsolete("Deprecated")]
 		public static MapsExtended instance;
+
+		internal static ManualLogSource Log;
 
 		[Obsolete("Map objects are registered automatically")]
 		public Action<Assembly> RegisterMapObjectsAction;
@@ -65,7 +68,7 @@ namespace MapsExt
 
 			Instance = this;
 
-			new Harmony(ModId).PatchAll();
+			Log = this.Logger;
 
 			AssetUtils.LoadAssetBundleFromResources("mapbase", typeof(MapsExtended).Assembly);
 
@@ -91,6 +94,8 @@ namespace MapsExt
 
 		private void Start()
 		{
+			new Harmony(ModId).PatchAll();
+
 			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
 				this.RegisterMapObjectProperties(asm);
@@ -157,10 +162,10 @@ namespace MapsExt
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register map object serializer {propertySerializerType.Name}: {ex.Message}");
+					MapsExtended.Log.LogError($"Could not register map object serializer {propertySerializerType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogError(ex.StackTrace);
+					MapsExtended.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}
@@ -198,10 +203,10 @@ namespace MapsExt
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register map object {mapObjectType.Name}: {ex.Message}");
+					MapsExtended.Log.LogError($"Could not register map object {mapObjectType.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogException(ex);
+					MapsExtended.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}

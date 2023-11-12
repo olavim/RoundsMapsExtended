@@ -22,6 +22,8 @@ namespace MapsExt
 			}
 
 			public void OnInstantiate(GameObject instance) { }
+
+			public virtual void OnWrite(GameObject instance, MapObjectData data) { }
 		}
 
 		private void RegisterV0MapObjects(Assembly assembly)
@@ -51,10 +53,10 @@ namespace MapsExt
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register legacy map object {type.Name}: {ex.Message}");
+					MapsExtended.Log.LogError($"Could not register legacy map object {type.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogException(ex);
+					MapsExtended.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}

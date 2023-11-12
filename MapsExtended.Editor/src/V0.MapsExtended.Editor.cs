@@ -22,6 +22,8 @@ namespace MapsExt.Editor
 			}
 
 			public void OnInstantiate(GameObject instance) { }
+
+			public void OnWrite(GameObject instance, MapObjectData data) { }
 		}
 
 		private void RegisterV0MapObjects(Assembly assembly)
@@ -57,10 +59,10 @@ namespace MapsExt.Editor
 				}
 				catch (Exception ex)
 				{
-					UnityEngine.Debug.LogError($"Could not register legacy editor map object {type.Name}: {ex.Message}");
+					MapsExtendedEditor.Log.LogError($"Could not register legacy editor map object {type.Name}: {ex.Message}");
 
 #if DEBUG
-					UnityEngine.Debug.LogException(ex);
+					MapsExtendedEditor.Log.LogError(ex.StackTrace);
 #endif
 				}
 			}

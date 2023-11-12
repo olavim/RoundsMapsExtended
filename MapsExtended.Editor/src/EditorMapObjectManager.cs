@@ -24,6 +24,11 @@ namespace MapsExt.Editor
 			mapObject.OnInstantiate(instance);
 			this.WriteMapObject(data, instance);
 
+			if (mapObject is IMapObjectDataWriteCallbackReceiver mapObjectWithCallback)
+			{
+				mapObjectWithCallback.OnDataWrite(instance, data);
+			}
+
 			if (instance.GetComponentsInChildren<MapObjectPart>().Count() == 0)
 			{
 				instance.AddComponent<MapObjectPart>();

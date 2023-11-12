@@ -29,10 +29,15 @@ namespace MapsExt.MapObjects
 	}
 
 	[MapObject(typeof(SpawnData))]
-	public class Spawn : IMapObject
+	public class Spawn : IMapObject, IMapObjectDataWriteCallbackReceiver
 	{
 		public virtual GameObject Prefab => MapObjectManager.LoadCustomAsset<GameObject>("Spawn Point");
 
 		public virtual void OnInstantiate(GameObject instance) { }
+
+		public virtual void OnDataWrite(GameObject instance, MapObjectData data)
+		{
+			instance.GetComponent<SpawnPoint>().localStartPos = data.GetProperty<PositionProperty>();
+		}
 	}
 }

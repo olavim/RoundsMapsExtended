@@ -9,7 +9,8 @@ namespace MapsExt
 		public enum CameraMode
 		{
 			Static,
-			FollowPlayer
+			FollowPlayer,
+			Disabled
 		}
 
 		public static CameraMode Mode { get; set; } = CameraMode.FollowPlayer;
@@ -41,6 +42,12 @@ namespace MapsExt
 
 		private void Update()
 		{
+			this._zoomHandler.enabled = Mode == CameraMode.Disabled;
+			if (Mode == CameraMode.Disabled)
+			{
+				return;
+			}
+
 			this._cameraUpdateDelay -= Time.deltaTime;
 			if (this._cameraUpdateDelay <= 0f)
 			{
@@ -48,7 +55,7 @@ namespace MapsExt
 				this._cameraUpdateDelay = 1f;
 			}
 
-			if (MapManager.instance.currentMap == null)
+			if (MapManager.instance.currentMap == null || CardChoice.instance.IsPicking)
 			{
 				// Not in a map; use default zoom
 				this.LerpOrthographicSize(20);

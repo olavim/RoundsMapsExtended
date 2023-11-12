@@ -7,7 +7,7 @@ namespace MapsExt.Editor.Compatibility
 	{
 		public void Apply()
 		{
-			MapsExtended.GetCompatibilityPatch<MapEmbiggenerCompatibilityPatch>().AddDisableCase((scene) => scene.name == "MapEditor");
+			MapsExtended.GetCompatibilityPatch<MapEmbiggenerCompatibilityPatch>().AddDisableCase((sceneName) => sceneName == "MapEditor");
 		}
 	}
 }

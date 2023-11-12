@@ -1,27 +1,41 @@
 using HarmonyLib;
 using MapsExt.Properties;
+using MapsExt.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace MapsExt.Compatibility
 {
 	[CompatibilityPatch]
-	public sealed class MapEmbiggenerCompatibilityPatch : ICompatibilityPatch, IPredicateDisabler<Scene>
+	public sealed class MapEmbiggenerCompatibilityPatch : ICompatibilityPatch, IPredicateDisabler<string>
 	{
 		private const string ModId = "pykess.rounds.plugins.mapembiggener";
 
-		private bool _mapEmbiggenerEnabled = false;
+		private delegate void SceneLoadEvent(string sceneName);
+
+		private static event SceneLoadEvent OnSceneLoad;
+
+		[HarmonyPatch(typeof(MapManager), "RPCA_LoadLevel")]
+		[HarmonyPriority(Priority.Low)]
+		private static class MapEmbiggenerPatch_MapManager
+		{
+			public static void Prefix(string sceneName)
+			{
+				OnSceneLoad?.Invoke(sceneName);
+			}
+		}
+
 		private Assembly _assembly;
 		private Type _outOfBoundsUtilsType;
 		private Type _outOfBoundsParticlesType;
 		private GameObject _outOfBoundsUtilsBorder;
+		private bool _embiggenerEnabled = true;
 
-		private readonly List<Predicate<Scene>> _disableCases = new();
+		private readonly List<Predicate<string>> _disableCases = new();
 
 		public void Apply()
 		{
@@ -30,15 +44,14 @@ namespace MapsExt.Compatibility
 				return;
 			}
 
-			this._mapEmbiggenerEnabled = true;
 			this._assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(asm => asm.GetName().Name == "MapEmbiggener");
 			this._outOfBoundsUtilsType = this._assembly?.GetType("MapEmbiggener.OutOfBoundsUtils");
 			this._outOfBoundsParticlesType = this._assembly?.GetType("MapEmbiggener.UI.OutOfBoundsParticles");
 
-			this.AddDisableCase((scene) => this.CurrentMapHasNonDefaultSizes());
-			this.AddDisableCase((scene) => this.CurrentMapHasAnimations());
+			this.AddDisableCase(sceneName => this.CurrentMapHasNonDefaultSizes());
+			this.AddDisableCase(sceneName => this.CurrentMapHasAnimations());
 
-			SceneManager.sceneLoaded += this.OnSceneLoad;
+			OnSceneLoad += this.HandleSceneLoad;
 		}
 
 		private bool CurrentMapHasNonDefaultSizes()
@@ -50,22 +63,22 @@ namespace MapsExt.Compatibility
 		private bool CurrentMapHasAnimations()
 		{
 			var map = MapManager.instance.GetCurrentCustomMap();
-			return map != null && map.MapObjects.Any(obj => obj.GetProperty<AnimationProperty>() != null);
+			return map != null && map.MapObjects.Any(obj => obj.GetProperty<AnimationProperty>() != null && obj.GetProperty<AnimationProperty>().Keyframes.Any());
 		}
 
-		public void AddDisableCase(Predicate<Scene> predicate)
+		public void AddDisableCase(Predicate<string> predicate)
 		{
 			this._disableCases.Add(predicate);
 		}
 
-		private void OnSceneLoad(Scene scene, LoadSceneMode mode)
+		private void HandleSceneLoad(string sceneName)
 		{
-			if (scene.name == "Main")
+			if (sceneName == "Main")
 			{
 				return;
 			}
 
-			if (this._disableCases.Any(p => p(scene)))
+			if (this._disableCases.Any(p => p(sceneName)))
 			{
 				this.DisableMapEmbiggener();
 			}
@@ -93,41 +106,47 @@ namespace MapsExt.Compatibility
 
 		private void DisableMapEmbiggener()
 		{
-			if (!this._mapEmbiggenerEnabled)
+			MapsExtended.Log.LogInfo("Disabling MapEmbiggener");
+			CameraHandler.Mode = CameraHandler.CameraMode.FollowPlayer;
+
+			if (!this._embiggenerEnabled)
 			{
 				return;
 			}
 
+			Harmony.UnpatchID(ModId);
+			this._embiggenerEnabled = false;
+
 			this.ExecuteAfterInit(() =>
 			{
-				Harmony.UnpatchID(ModId);
 				this._outOfBoundsUtilsBorder.SetActive(false);
 				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
 				{
 					((MonoBehaviour) component).gameObject.SetActive(false);
 				}
-
-				this._mapEmbiggenerEnabled = false;
 			});
 		}
 
 		private void EnableMapEmbiggener()
 		{
-			if (this._mapEmbiggenerEnabled)
+			MapsExtended.Log.LogInfo("Enabling MapEmbiggener");
+			CameraHandler.Mode = CameraHandler.CameraMode.Disabled;
+
+			if (this._embiggenerEnabled)
 			{
 				return;
 			}
 
+			new Harmony(ModId).PatchAll(this._assembly);
+			this._embiggenerEnabled = true;
+
 			this.ExecuteAfterInit(() =>
 			{
-				new Harmony(ModId).PatchAll(this._assembly);
 				this._outOfBoundsUtilsBorder?.SetActive(true);
 				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
 				{
 					((MonoBehaviour) component).gameObject.SetActive(true);
 				}
-
-				this._mapEmbiggenerEnabled = true;
 			});
 		}
 	}
