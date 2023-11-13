@@ -22,6 +22,7 @@ using MapsExt.Utils;
 using System.Runtime.CompilerServices;
 using BepInEx.Logging;
 using Sirenix.Serialization;
+using UnboundLib.GameModes;
 
 namespace MapsExt
 {
@@ -60,6 +61,8 @@ namespace MapsExt
 		private NetworkedMapObjectManager _mapObjectManager;
 		private List<CustomMap> _maps;
 		private Dictionary<Type, ICompatibilityPatch> _compatibilityPatches = new();
+
+		private CameraHandler.CameraMode _previousMode;
 
 		private void Awake()
 		{
@@ -100,6 +103,27 @@ namespace MapsExt
 			}
 
 			this.ApplyCompatibilityPatches();
+
+			IEnumerator PickStart()
+			{
+				this._previousMode = CameraHandler.Mode;
+				CameraHandler.Mode = CameraHandler.CameraMode.Default;
+
+				var handler = MainCam.instance.cam.GetComponentInParent<CameraHandler>();
+				handler.UpdateTargets();
+				handler.ForceTargetPosition();
+				handler.ForceTargetSize();
+				yield break;
+			}
+
+			IEnumerator PickEnd()
+			{
+				CameraHandler.Mode = this._previousMode;
+				yield break;
+			}
+
+			GameModeManager.AddHook(GameModeHooks.HookPickStart, gm => PickStart());
+			GameModeManager.AddHook(GameModeHooks.HookPickEnd, gm => PickEnd());
 		}
 
 		private void OnInit()
