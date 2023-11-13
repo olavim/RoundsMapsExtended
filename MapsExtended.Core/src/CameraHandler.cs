@@ -1,5 +1,8 @@
 ﻿using MapsExt.Utils;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnboundLib.GameModes;
 using UnityEngine;
 
 namespace MapsExt
@@ -8,7 +11,6 @@ namespace MapsExt
 	{
 		public enum CameraMode
 		{
-			Default,
 			Static,
 			FollowPlayer,
 			Disabled
@@ -22,6 +24,8 @@ namespace MapsExt
 		private float _cameraUpdateDelay = 0f;
 		private Vector2 _targetPosition;
 		private float _targetSize;
+		private bool _isPickPhase = false;
+		private bool _playersHaveSpawned = false;
 
 		private void Awake()
 		{
@@ -30,6 +34,13 @@ namespace MapsExt
 
 		private void OnEnable()
 		{
+			GameModeManager.AddHook(GameModeHooks.HookPickStart, this.OnPickStart);
+			GameModeManager.AddHook(GameModeHooks.HookPickEnd, this.OnPickEnd);
+			GameModeManager.AddHook(GameModeHooks.HookPointStart, this.OnPlayersActive);
+			GameModeManager.AddHook(GameModeHooks.HookPointEnd, this.OnPlayersInactive);
+			GameModeManager.AddHook(GameModeHooks.HookRoundStart, this.OnPlayersActive);
+			GameModeManager.AddHook(GameModeHooks.HookRoundEnd, this.OnPlayersInactive);
+
 			if (this._zoomHandler != null)
 			{
 				this._zoomHandler.enabled = false;
@@ -38,15 +49,50 @@ namespace MapsExt
 
 		private void OnDisable()
 		{
+			GameModeManager.RemoveHook(GameModeHooks.HookPickStart, this.OnPickStart);
+			GameModeManager.RemoveHook(GameModeHooks.HookPickEnd, this.OnPickEnd);
+			GameModeManager.RemoveHook(GameModeHooks.HookPointStart, this.OnPlayersActive);
+			GameModeManager.RemoveHook(GameModeHooks.HookPointEnd, this.OnPlayersInactive);
+			GameModeManager.RemoveHook(GameModeHooks.HookRoundStart, this.OnPlayersActive);
+			GameModeManager.RemoveHook(GameModeHooks.HookRoundEnd, this.OnPlayersInactive);
+
 			if (this._zoomHandler != null)
 			{
 				this._zoomHandler.enabled = true;
 			}
 		}
 
+		private IEnumerator OnPickStart(IGameModeHandler gm)
+		{
+			this._isPickPhase = true;
+			this.UpdateTargets();
+			this.ForceTargetPosition();
+			this.ForceTargetSize();
+			yield break;
+		}
+
+		private IEnumerator OnPickEnd(IGameModeHandler gm)
+		{
+			this._isPickPhase = false;
+			yield break;
+		}
+
+		private IEnumerator OnPlayersActive(IGameModeHandler gm)
+		{
+			this._playersHaveSpawned = true;
+			yield break;
+		}
+
+		private IEnumerator OnPlayersInactive(IGameModeHandler gm)
+		{
+			this._playersHaveSpawned = false;
+			yield break;
+		}
+
 		private void Update()
 		{
-			this._zoomHandler.enabled = Mode == CameraMode.Disabled;
+			this._zoomHandler.enabled = Mode == CameraMode.Disabled && !this._isPickPhase;
+
 			if (Mode == CameraMode.Disabled)
 			{
 				return;
@@ -67,7 +113,7 @@ namespace MapsExt
 			}
 		}
 
-		public void UpdateTargets()
+		private void UpdateTargets()
 		{
 			if (Mode == CameraMode.Static)
 			{
@@ -75,7 +121,7 @@ namespace MapsExt
 				return;
 			}
 
-			if (Mode == CameraMode.Default || MapManager.instance.currentMap == null)
+			if (MapManager.instance.currentMap == null || this._isPickPhase)
 			{
 				this._targetSize = 20f;
 				this._targetPosition = Vector2.zero;
@@ -109,9 +155,10 @@ namespace MapsExt
 			 * in which case we want the camera to zoom out enough to fit all local players in the viewport at once.
 			 */
 			var viewportBoundsArr = new List<Bounds>();
-			foreach (var player in PlayerManager.instance.players)
+
+			if (this._playersHaveSpawned)
 			{
-				if (player.data.view.IsMine)
+				foreach (var player in PlayerManager.instance.players.Where(p => p?.data?.view?.IsMine == true))
 				{
 					float posX = viewportSize.x >= mapSize.x ? 0 : Mathf.Clamp(player.transform.position.x, viewportMinCenter.x, viewportMaxCenter.x);
 					float posY = viewportSize.y >= mapSize.y ? 0 : Mathf.Clamp(player.transform.position.y, viewportMinCenter.y, viewportMaxCenter.y);
@@ -120,7 +167,9 @@ namespace MapsExt
 				}
 			}
 
-			var viewportBounds = viewportBoundsArr.Count > 0 ? viewportBoundsArr[0] : new Bounds(Vector2.zero, viewportSizeWorld);
+			float maxViewportHeight = Mathf.Max(mapBounds.size.y, mapBounds.size.x / aspect);
+			var maxViewportSize = new Vector2(maxViewportHeight * aspect, maxViewportHeight);
+			var viewportBounds = viewportBoundsArr.Count > 0 ? viewportBoundsArr[0] : new Bounds(Vector2.zero, maxViewportSize);
 			for (int i = 1; i < viewportBoundsArr.Count; i++)
 			{
 				viewportBounds.Encapsulate(viewportBoundsArr[i]);
@@ -154,7 +203,7 @@ namespace MapsExt
 			}
 		}
 
-		public void ForceTargetPosition()
+		private void ForceTargetPosition()
 		{
 			foreach (var cam in this._cameras)
 			{
@@ -162,7 +211,7 @@ namespace MapsExt
 			}
 		}
 
-		public void ForceTargetSize()
+		private void ForceTargetSize()
 		{
 			foreach (var cam in this._cameras)
 			{
