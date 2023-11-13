@@ -8,6 +8,7 @@ namespace MapsExt
 	{
 		public enum CameraMode
 		{
+			Default,
 			Static,
 			FollowPlayer,
 			Disabled
@@ -19,6 +20,8 @@ namespace MapsExt
 		private CameraZoomHandler _zoomHandler;
 		private Camera[] _cameras;
 		private float _cameraUpdateDelay = 0f;
+		private Vector2 _targetPosition;
+		private float _targetSize;
 
 		private void Awake()
 		{
@@ -56,17 +59,26 @@ namespace MapsExt
 				this._cameraUpdateDelay = 1f;
 			}
 
+			this.UpdateTargets();
+			this.LerpOrthographicSize(this._targetSize);
+			if (Mode != CameraMode.Static)
+			{
+				this.LerpPosition(this._targetPosition);
+			}
+		}
+
+		public void UpdateTargets()
+		{
 			if (Mode == CameraMode.Static)
 			{
-				this.LerpOrthographicSize(StaticZoom);
+				this._targetSize = StaticZoom;
 				return;
 			}
 
-			if (MapManager.instance.currentMap == null || CardChoice.instance.IsPicking)
+			if (Mode == CameraMode.Default || MapManager.instance.currentMap == null)
 			{
-				// Not in a map; use default zoom
-				this.LerpOrthographicSize(20);
-				this.LerpPosition(Vector2.zero);
+				this._targetSize = 20f;
+				this._targetPosition = Vector2.zero;
 				return;
 			}
 
@@ -75,8 +87,8 @@ namespace MapsExt
 			if (customMap == null)
 			{
 				// Not in a MapsExtended map; use the current map's size
-				this.LerpOrthographicSize(MapManager.instance.currentMap.Map.size);
-				this.LerpPosition(Vector2.zero);
+				this._targetSize = MapManager.instance.currentMap.Map.size;
+				this._targetPosition = Vector2.zero;
 				return;
 			}
 
@@ -116,13 +128,13 @@ namespace MapsExt
 
 			float targetViewportHeight = Mathf.Max(viewportBounds.size.y, viewportBounds.size.x / aspect);
 			var targetViewportSize = new Vector2(targetViewportHeight * aspect, targetViewportHeight);
-			this.LerpOrthographicSize(targetViewportSize.y * 0.5f);
+			this._targetSize = targetViewportSize.y * 0.5f;
 
 			var targetViewportMinCenter = (Vector2) mapBounds.min + targetViewportSize * 0.5f;
 			var targetViewportMaxCenter = (Vector2) mapBounds.max - targetViewportSize * 0.5f;
 			float viewPosX = targetViewportSize.x >= mapSizeWorld.x ? 0 : Mathf.Clamp(viewportBounds.center.x, targetViewportMinCenter.x, targetViewportMaxCenter.x);
 			float viewPosY = targetViewportSize.y >= mapSizeWorld.y ? 0 : Mathf.Clamp(viewportBounds.center.y, targetViewportMinCenter.y, targetViewportMaxCenter.y);
-			this.LerpPosition(new Vector2(viewPosX, viewPosY));
+			this._targetPosition = new Vector2(viewPosX, viewPosY);
 		}
 
 		private void LerpOrthographicSize(float size)
@@ -139,6 +151,22 @@ namespace MapsExt
 			{
 				var targetPos = new Vector3(position.x, position.y, cam.transform.position.z);
 				cam.transform.position = Vector3.Lerp(cam.transform.position, targetPos, Time.unscaledDeltaTime * 5f);
+			}
+		}
+
+		public void ForceTargetPosition()
+		{
+			foreach (var cam in this._cameras)
+			{
+				cam.transform.position = new Vector3(this._targetPosition.x, this._targetPosition.y, cam.transform.position.z);
+			}
+		}
+
+		public void ForceTargetSize()
+		{
+			foreach (var cam in this._cameras)
+			{
+				cam.orthographicSize = this._targetSize;
 			}
 		}
 	}
