@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="UnboundLib" Version="3.2.8" IncludeAssets="compile" />
+		<PackageReference Include="UnboundLib" Version="3.2.10" IncludeAssets="compile" />
 		<PackageReference Include="NetTopologySuite" Version="2.4.0" IncludeAssets="compile;runtime" />
 		<ProjectReference Include="..\..\MapsExtended.Core\src\MapsExtended.Core.csproj" Private="false" IncludeAssets="compile" />
 	</ItemGroup>

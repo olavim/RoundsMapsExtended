@@ -13,7 +13,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="MMHOOK.Rounds" Version="1.0.0" IncludeAssets="compile" />
-		<PackageReference Include="UnboundLib" Version="3.2.8" IncludeAssets="compile" />
+		<PackageReference Include="UnboundLib" Version="3.2.10" IncludeAssets="compile" />
 		<PackageReference Include="ThisAssembly.Project" Version="1.0.0" />
 		<ProjectProperty Include="Version" />
 	</ItemGroup>

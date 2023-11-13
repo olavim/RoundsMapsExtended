@@ -21,6 +21,7 @@ using Sirenix.Utilities;
 using MapsExt.Utils;
 using System.Runtime.CompilerServices;
 using BepInEx.Logging;
+using Sirenix.Serialization;
 
 namespace MapsExt
 {
@@ -77,19 +78,14 @@ namespace MapsExt
 			this._mapObjectManager = mapObjectManagerGo.AddComponent<NetworkedMapObjectManager>();
 			this._mapObjectManager.SetNetworkID($"{ModId}/RootMapObjectManager");
 
-			SceneManager.sceneLoaded += (_, mode) =>
-			{
-				if (mode == LoadSceneMode.Single)
-				{
-					this.OnInit();
-				}
-			};
-
 			On.MainMenuHandler.Awake += (orig, self) =>
 			{
 				orig(self);
+
 				MainCam.instance.cam.GetComponentInParent<CameraZoomHandler>().gameObject.AddComponent<CameraHandler>();
 				GameObject.Find("/Game/Visual/Rendering /").AddComponent<LightHandler>();
+
+				this.OnInit();
 			};
 		}
 
@@ -104,14 +100,27 @@ namespace MapsExt
 			}
 
 			this.ApplyCompatibilityPatches();
-			this.OnInit();
 		}
 
 		private void OnInit()
 		{
 			PropertyManager.Current = Instance._propertyManager;
 			MapsExt.MapObjectManager.Current = Instance._mapObjectManager;
-			this.UpdateMapFiles();
+
+			// Reset UnboundLib's level menu
+			if (ToggleLevelMenuHandler.instance != null)
+			{
+				AccessTools.Field(typeof(ToggleLevelMenuHandler), "ScrollViews").SetValue(null, new Dictionary<string, Transform>());
+				GameObject.Destroy(ToggleLevelMenuHandler.instance.mapMenuCanvas);
+				GameObject.Destroy(Unbound.Instance.gameObject.GetComponent<ToggleLevelMenuHandler>());
+				Unbound.Instance.gameObject.AddComponent<ToggleLevelMenuHandler>();
+			}
+
+			// Wait for LevelManager to initialize before updating maps
+			this.ExecuteAfterFrames(1, () =>
+			{
+				this.UpdateMapFiles();
+			});
 		}
 
 #if DEBUG
@@ -217,20 +226,7 @@ namespace MapsExt
 
 		private void UpdateMapFiles()
 		{
-			var activeLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "activeLevels").GetValue(null);
-			var inactiveLevels = (IList<string>) AccessTools.Field(typeof(LevelManager), "inactiveLevels").GetValue(null);
-			var levelsToRedraw = (IList<string>) AccessTools.Field(typeof(ToggleLevelMenuHandler), "levelsThatNeedToRedrawn").GetValue(ToggleLevelMenuHandler.instance);
-			var allLevels = LevelManager.levels;
-
-			var invalidatedLevels = allLevels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray();
-
-			foreach (var level in invalidatedLevels)
-			{
-				activeLevels?.Remove(level);
-				inactiveLevels?.Remove(level);
-				levelsToRedraw?.Remove(level);
-				allLevels.Remove(level);
-			}
+			LevelManager.RemoveLevels(LevelManager.levels.Keys.Where(m => m.StartsWith("MapsExtended:")).ToArray());
 
 			var pluginMapPaths = Directory.GetFiles(Paths.PluginPath, "*.map", SearchOption.AllDirectories);
 
@@ -238,14 +234,24 @@ namespace MapsExt
 			Directory.CreateDirectory(personalMapsFolder);
 
 			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
-
 			var personalMaps = new List<CustomMap>();
+
+			var deserializationContext = new DeserializationContext()
+			{
+				Config = new SerializationConfig()
+				{
+					DebugContext = new DebugContext()
+					{
+						ErrorHandlingPolicy = ErrorHandlingPolicy.ThrowOnErrors
+					}
+				}
+			};
 
 			foreach (var path in personalMapPaths)
 			{
 				try
 				{
-					personalMaps.Add(MapLoader.LoadPath(path));
+					personalMaps.Add(MapLoader.LoadPath(path, deserializationContext));
 				}
 				catch (Exception)
 				{
@@ -273,7 +279,7 @@ namespace MapsExt
 
 				try
 				{
-					pluginMaps[packName].Add(MapLoader.LoadPath(path));
+					pluginMaps[packName].Add(MapLoader.LoadPath(path, deserializationContext));
 				}
 				catch (Exception)
 				{
@@ -307,7 +313,7 @@ namespace MapsExt
 				mapNames["MapsExtended:" + map.Id] = map.Name;
 			}
 
-			LevelManager.RegisterNamedMaps(maps.Select(m => "MapsExtended:" + m.Id), mapNames, category);
+			LevelManager.RegisterNamedMaps(mapNames.Keys, mapNames, category);
 		}
 
 		internal static void AddPhotonInstantiateListener(PhotonMapObject mapObject, Action<GameObject> callback)
