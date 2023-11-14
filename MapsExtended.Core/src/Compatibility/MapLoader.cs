@@ -1,5 +1,6 @@
 using Sirenix.Serialization;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -33,10 +34,22 @@ namespace MapsExt.Compatibility
 
 		public static CustomMap Load(Stream stream, DeserializationContext context = null)
 		{
-			long pos = stream.Position;
-			string version = ReadVersion(stream, context);
-			stream.Seek(pos, SeekOrigin.Begin);
+			string version = ReadValue(stream, "_version", context) ?? "0.0.0";
 			return ForVersion(version, context).Load(stream) ?? throw new MapLoaderException("Map load failed");
+		}
+
+		public static CustomMapInfo LoadInfo(Stream stream, DeserializationContext context = null)
+		{
+			using var memoryStream = new MemoryStream();
+			long pos = stream.Position;
+			stream.CopyTo(memoryStream);
+			stream.Seek(pos, SeekOrigin.Begin);
+
+			string id = ReadValue(stream, "_id", context) ?? ReadValue(stream, "id", context) ?? throw new MapLoaderException("Map info load failed");
+			string name = ReadValue(stream, "_name", context) ?? ReadValue(stream, "name", context) ?? id;
+			string version = ReadValue(stream, "_version", context) ?? "0.0.0";
+
+			return new CustomMapInfo(id, name, version, memoryStream.ToArray());
 		}
 
 		public static CustomMap LoadResource(string resourceName, DeserializationContext context = null)
@@ -67,43 +80,96 @@ namespace MapsExt.Compatibility
 			}
 		}
 
-		public static string ReadVersion(Stream stream, DeserializationContext context = null)
+		public static CustomMapInfo LoadInfoFromPath(string path, DeserializationContext context = null)
 		{
-			int depth = -1;
-
-			using var reader = new JsonTextReader(stream, context ?? new());
-			EntryType entry = 0;
-			string key = null;
-			string value = null;
-
-			while (entry != EntryType.EndOfStream)
+			try
 			{
-				reader.ReadToNextEntry(out key, out value, out entry);
-
-				if (entry == EntryType.StartOfNode)
-				{
-					depth++;
-				}
-
-				if (entry == EntryType.EndOfNode)
-				{
-					depth--;
-				}
-
-				if (key == "_version" && depth == 0)
-				{
-					return value.Trim('"');
-				}
+				var bytes = File.ReadAllBytes(path);
+				using var stream = new MemoryStream(bytes);
+				return LoadInfo(stream, context);
 			}
-
-			return "0.0.0";
+			catch (Exception ex)
+			{
+				throw new MapLoaderException($"Map info load failed for path: {path}", ex);
+			}
 		}
 
-		protected DeserializationContext context;
+		public static string ReadValue(Stream stream, string key, DeserializationContext context = null)
+		{
+			long pos = stream.Position;
+
+			try
+			{
+				int depth = -1;
+
+				using var reader = new JsonTextReader(stream, context ?? new());
+				EntryType entry = 0;
+				string currentKey = null;
+				string value = null;
+
+				while (entry != EntryType.EndOfStream)
+				{
+					reader.ReadToNextEntry(out currentKey, out value, out entry);
+
+					if (entry == EntryType.StartOfNode)
+					{
+						depth++;
+					}
+
+					if (entry == EntryType.EndOfNode)
+					{
+						depth--;
+					}
+
+					if (currentKey == key && depth == 0)
+					{
+						return value.Trim('"');
+					}
+				}
+
+				return null;
+			}
+			finally
+			{
+				stream.Seek(pos, SeekOrigin.Begin);
+			}
+		}
+
+		public static string[] ReadValues(Stream stream, string key, DeserializationContext context = null)
+		{
+			long pos = stream.Position;
+			var values = new List<string>();
+
+			try
+			{
+				using var reader = new JsonTextReader(stream, context ?? new());
+				EntryType entry = 0;
+				string currentKey = null;
+				string value = null;
+
+				while (entry != EntryType.EndOfStream)
+				{
+					reader.ReadToNextEntry(out currentKey, out value, out entry);
+
+					if (currentKey == key)
+					{
+						values.Add(value);
+					}
+				}
+
+				return values.ToArray();
+			}
+			finally
+			{
+				stream.Seek(pos, SeekOrigin.Begin);
+			}
+		}
+
+		public DeserializationContext Context { get; private set; }
 
 		protected MapLoader(DeserializationContext context = null)
 		{
-			this.context = context ?? new();
+			this.Context = context ?? new();
 		}
 
 		public virtual CustomMap LoadResource(string resourceName)
@@ -120,13 +186,13 @@ namespace MapsExt.Compatibility
 	{
 		public V0MapLoader(DeserializationContext context = null) : base(context)
 		{
-			this.context.Binder = new V0.MapObjects.V0MapObjectBinder();
+			this.Context.Binder = new V0.MapObjects.V0MapObjectBinder();
 		}
 
 		public override CustomMap Load(Stream stream)
 		{
 #pragma warning disable CS0618
-			return SerializationUtility.DeserializeValue<V0.CustomMap>(stream, DataFormat.JSON, this.context).Upgrade();
+			return SerializationUtility.DeserializeValue<V0.CustomMap>(stream, DataFormat.JSON, this.Context).Upgrade();
 #pragma warning restore CS0618
 		}
 	}
@@ -135,12 +201,12 @@ namespace MapsExt.Compatibility
 	{
 		public V1MapLoader(DeserializationContext context = null) : base(context)
 		{
-			this.context.Binder = new V1.MapObjects.V1MapObjectBinder();
+			this.Context.Binder = new V1.MapObjects.V1MapObjectBinder();
 		}
 
 		public override CustomMap Load(Stream stream)
 		{
-			return SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, this.context);
+			return SerializationUtility.DeserializeValue<CustomMap>(stream, DataFormat.JSON, this.Context);
 		}
 	}
 }

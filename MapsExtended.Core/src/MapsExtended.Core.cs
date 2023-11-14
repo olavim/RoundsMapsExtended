@@ -22,9 +22,14 @@ using MapsExt.Utils;
 using System.Runtime.CompilerServices;
 using BepInEx.Logging;
 using Sirenix.Serialization;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace MapsExt
 {
+
+
 	[BepInDependency("com.willis.rounds.unbound", "3.2.8")]
 	[BepInPlugin(ModId, ModName, ModVersion)]
 	public sealed partial class MapsExtended : BaseUnityPlugin
@@ -46,19 +51,17 @@ namespace MapsExt
 		public static NetworkedMapObjectManager MapObjectManager => Instance._mapObjectManager;
 		public static PropertyManager PropertyManager => Instance._propertyManager;
 
-#pragma warning disable CS0618
-		public static IEnumerable<CustomMap> LoadedMaps => Instance._maps.Concat(Instance.maps);
-#pragma warning restore CS0618
+		[Obsolete("Deprecated")]
+		public static IEnumerable<CustomMap> LoadedMaps => Instance._loadedMaps.Values.Concat(Instance.maps);
 
-#pragma warning disable IDE1006
-		[Obsolete("Use LoadedMaps instead")]
+		[Obsolete("Deprecated")]
 		public List<CustomMap> maps = new();
-#pragma warning restore IDE1006
 
 		private readonly Dictionary<PhotonMapObject, Action<GameObject>> _photonInstantiationListeners = new();
 		private readonly PropertyManager _propertyManager = new();
 		private NetworkedMapObjectManager _mapObjectManager;
-		private List<CustomMap> _maps;
+		private List<(CustomMapInfo mapInfo, string path)> _mapInfos;
+		private Dictionary<string, CustomMap> _loadedMaps;
 		private Dictionary<Type, ICompatibilityPatch> _compatibilityPatches = new();
 
 		private void Awake()
@@ -102,12 +105,8 @@ namespace MapsExt
 			this.ApplyCompatibilityPatches();
 		}
 
-		private void OnInit()
+		private static void RefreshLevelMenu()
 		{
-			PropertyManager.Current = Instance._propertyManager;
-			MapsExt.MapObjectManager.Current = Instance._mapObjectManager;
-
-			// Reset UnboundLib's level menu
 			if (ToggleLevelMenuHandler.instance != null)
 			{
 				AccessTools.Field(typeof(ToggleLevelMenuHandler), "ScrollViews").SetValue(null, new Dictionary<string, Transform>());
@@ -115,6 +114,13 @@ namespace MapsExt
 				GameObject.Destroy(Unbound.Instance.gameObject.GetComponent<ToggleLevelMenuHandler>());
 				Unbound.Instance.gameObject.AddComponent<ToggleLevelMenuHandler>();
 			}
+		}
+
+		private void OnInit()
+		{
+			PropertyManager.Current = Instance._propertyManager;
+			MapsExt.MapObjectManager.Current = Instance._mapObjectManager;
+			RefreshLevelMenu();
 
 			// Wait for LevelManager to initialize before updating maps
 			this.ExecuteAfterFrames(1, () =>
@@ -234,7 +240,7 @@ namespace MapsExt
 			Directory.CreateDirectory(personalMapsFolder);
 
 			var personalMapPaths = Directory.GetFiles(personalMapsFolder, "*.map", SearchOption.AllDirectories);
-			var personalMaps = new List<CustomMap>();
+			var personalMaps = new List<(CustomMapInfo, string)>();
 
 			var deserializationContext = new DeserializationContext()
 			{
@@ -251,15 +257,15 @@ namespace MapsExt
 			{
 				try
 				{
-					personalMaps.Add(MapLoader.LoadPath(path, deserializationContext));
+					personalMaps.Add((MapLoader.LoadInfoFromPath(path, deserializationContext), path));
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
-					this.Logger.LogError($"Could not load personal map {path}");
+					this.Logger.LogException(ex);
 				}
 			}
 
-			var pluginMaps = new Dictionary<string, List<CustomMap>>();
+			var pluginMaps = new Dictionary<string, List<(CustomMapInfo, string)>>();
 
 			foreach (var path in pluginMapPaths)
 			{
@@ -274,28 +280,29 @@ namespace MapsExt
 
 				if (!pluginMaps.ContainsKey(packName))
 				{
-					pluginMaps[packName] = new List<CustomMap>();
+					pluginMaps[packName] = new List<(CustomMapInfo, string)>();
 				}
 
 				try
 				{
-					pluginMaps[packName].Add(MapLoader.LoadPath(path, deserializationContext));
+					pluginMaps[packName].Add((MapLoader.LoadInfoFromPath(path, deserializationContext), path));
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
-					this.Logger.LogError($"Could not load plugin map {path}");
+					this.Logger.LogException(ex);
 				}
 			}
 
-			this._maps = new List<CustomMap>();
-			this._maps.AddRange(personalMaps);
+			this._loadedMaps = new Dictionary<string, CustomMap>();
+			this._mapInfos = new();
+			this._mapInfos.AddRange(personalMaps);
 
-			foreach (var m in pluginMaps.Values)
+			foreach (var mapInfo in pluginMaps.Values)
 			{
-				this._maps.AddRange(m);
+				this._mapInfos.AddRange(mapInfo);
 			}
 
-			this.Logger.LogMessage($"Loaded {this._maps.Count} custom maps");
+			this.Logger.LogMessage($"Loaded {this._mapInfos.Count} custom maps");
 
 			this.RegisterNamedMaps(personalMaps, "Personal");
 
@@ -303,17 +310,113 @@ namespace MapsExt
 			{
 				this.RegisterNamedMaps(pluginMaps[mod], mod);
 			}
+
+			this.StartCoroutine(this.ValidateMaps());
 		}
 
-		private void RegisterNamedMaps(IEnumerable<CustomMap> maps, string category)
+		private IEnumerator ValidateMaps()
+		{
+			// Parsing JSON is slow, so we split the workload among multiple threads
+			const int mapsPerTask = 5;
+			int taskCount = (int) Mathf.Ceil(this._mapInfos.Count / (float) mapsPerTask);
+			var tasks = new Task[taskCount];
+
+			var invalidMaps = new ConcurrentBag<string>();
+
+			// Validate map dependencies in the background
+			for (int i = 0; i < taskCount; i++)
+			{
+				// Split workload among threads
+				var mapInfos = this._mapInfos.Skip(i * mapsPerTask).Take(mapsPerTask).ToList();
+
+				tasks[i] = Task.Run(() =>
+				{
+					foreach (var (mapInfo, _) in mapInfos)
+					{
+						try
+						{
+							/* Ideally we would just use Sirenix's SerializationUtility to check if the map can be loaded,
+							 * but we need access to Unity's APIs to load referenced types, which is not allowed in worker threads.
+							 * Instead we load the map data into a bit more manual JsonTextReader and check if all referenced types
+							 * can be loaded.
+							 */
+							using var stream = new MemoryStream(mapInfo.Data);
+							var types = new List<string>();
+
+							using var reader = new JsonTextReader(stream, new());
+							EntryType entry = 0;
+
+							while (entry != EntryType.EndOfStream)
+							{
+								reader.ReadToNextEntry(out string currentKey, out string value, out entry);
+
+								if (currentKey == "$type" && value.StartsWith("\""))
+								{
+									types.Add(value.Trim('"').Split('|')[1]);
+								}
+							}
+
+							// Try to load all referenced types in the map
+							var loader = MapLoader.ForVersion(mapInfo.Version);
+							foreach (var typeName in types)
+							{
+								var type = loader.Context.Binder.BindToType(typeName);
+								if (type == null)
+								{
+									invalidMaps.Add(mapInfo.Id);
+									throw new Exception($"Could not load map {mapInfo.Name}: Missing type \"{typeName}\"");
+								}
+							}
+						}
+						catch (Exception ex)
+						{
+							this.Logger.LogError(ex.Message);
+						}
+					}
+				});
+			}
+
+			while (tasks.Any(t => !t.IsCompleted))
+			{
+				yield return null;
+			}
+
+			this._mapInfos.RemoveAll(m => invalidMaps.Contains(m.mapInfo.Id));
+
+			foreach (string id in invalidMaps)
+			{
+				this._loadedMaps.Remove(id);
+			}
+
+			LevelManager.RemoveLevels(invalidMaps.Select(id => $"MapsExtended:{id}").ToArray());
+			RefreshLevelMenu();
+		}
+
+		private void RegisterNamedMaps(IEnumerable<(CustomMapInfo, string)> maps, string category)
 		{
 			var mapNames = new Dictionary<string, string>();
-			foreach (var map in maps)
+			foreach (var (mapInfo, _) in maps)
 			{
-				mapNames["MapsExtended:" + map.Id] = map.Name;
+				mapNames["MapsExtended:" + mapInfo.Id] = mapInfo.Name;
 			}
 
 			LevelManager.RegisterNamedMaps(mapNames.Keys, mapNames, category);
+		}
+
+		internal CustomMap GetMapById(string id)
+		{
+			if (!this._loadedMaps.ContainsKey(id))
+			{
+				var result = this._mapInfos.FirstOrDefault(m => m.mapInfo.Id == id);
+				if (result == default)
+				{
+					throw new ArgumentException($"No map with id {id} found");
+				}
+
+				this._loadedMaps[id] = result == default ? null : MapLoader.LoadPath(result.path);
+			}
+
+			return this._loadedMaps[id];
 		}
 
 		internal static void AddPhotonInstantiateListener(PhotonMapObject mapObject, Action<GameObject> callback)
@@ -394,7 +497,7 @@ namespace MapsExt
 			{
 				string id = sceneName.Split(':')[1];
 
-				s_loadedMap = MapsExtended.LoadedMaps.First(m => m.Id == id);
+				s_loadedMap = MapsExtended.Instance.GetMapById(id);
 				s_loadedMapSceneName = sceneName;
 
 				MapManager.instance.SetCurrentCustomMap(s_loadedMap);
