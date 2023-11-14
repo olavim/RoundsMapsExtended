@@ -123,7 +123,7 @@ namespace MapsExt
 			}
 		}
 
-		private void UpdateTargets()
+		internal void UpdateTargets()
 		{
 			if (Mode == CameraMode.Static)
 			{
@@ -198,7 +198,7 @@ namespace MapsExt
 
 		private void LerpOrthographicSize(float size)
 		{
-			foreach (var cam in this._cameras)
+			foreach (var cam in this._cameras.Where(c => c.gameObject.activeInHierarchy))
 			{
 				cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, size, Time.unscaledDeltaTime * 5f);
 			}
@@ -206,24 +206,24 @@ namespace MapsExt
 
 		private void LerpPosition(Vector2 position)
 		{
-			foreach (var cam in this._cameras)
+			foreach (var cam in this._cameras.Where(c => c.gameObject.activeInHierarchy))
 			{
 				var targetPos = new Vector3(position.x, position.y, cam.transform.position.z);
 				cam.transform.position = Vector3.Lerp(cam.transform.position, targetPos, Time.unscaledDeltaTime * 5f);
 			}
 		}
 
-		private void ForceTargetPosition()
+		internal void ForceTargetPosition()
 		{
-			foreach (var cam in this._cameras)
+			foreach (var cam in this._cameras.Where(c => c.gameObject.activeInHierarchy))
 			{
 				cam.transform.position = new Vector3(this._targetPosition.x, this._targetPosition.y, cam.transform.position.z);
 			}
 		}
 
-		private void ForceTargetSize()
+		internal void ForceTargetSize()
 		{
-			foreach (var cam in this._cameras)
+			foreach (var cam in this._cameras.Where(c => c.gameObject.activeInHierarchy))
 			{
 				cam.orthographicSize = this._targetSize;
 			}

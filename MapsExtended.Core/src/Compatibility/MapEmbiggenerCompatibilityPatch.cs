@@ -1,11 +1,11 @@
 using HarmonyLib;
 using MapsExt.Properties;
-using MapsExt.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnboundLib.GameModes;
 using UnityEngine;
 
 namespace MapsExt.Compatibility
@@ -29,9 +29,23 @@ namespace MapsExt.Compatibility
 			}
 		}
 
+		[HarmonyPatch(typeof(MapManager), "OnLevelFinishedLoading")]
+		[HarmonyAfter(ModId)]
+		private static class MapEmbiggenerPatch_MapManager_OnLevelFinishedLoading
+		{
+			static void Postfix(MapManager __instance, bool ___callInNextMap)
+			{
+				if (!___callInNextMap && __instance.currentMap.Map.transform.position.x < 90f)
+				{
+					__instance.currentMap.Map.transform.position = new Vector3(90f, __instance.currentMap.Map.transform.position.y, __instance.currentMap.Map.transform.position.z);
+				}
+			}
+		}
+
 		private Assembly _assembly;
 		private Type _outOfBoundsUtilsType;
 		private Type _outOfBoundsParticlesType;
+		private Type _controllerManagerType;
 		private GameObject _outOfBoundsUtilsBorder;
 		private bool _embiggenerEnabled = true;
 
@@ -47,11 +61,13 @@ namespace MapsExt.Compatibility
 			this._assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(asm => asm.GetName().Name == "MapEmbiggener");
 			this._outOfBoundsUtilsType = this._assembly?.GetType("MapEmbiggener.OutOfBoundsUtils");
 			this._outOfBoundsParticlesType = this._assembly?.GetType("MapEmbiggener.UI.OutOfBoundsParticles");
+			this._controllerManagerType = this._assembly?.GetType("MapEmbiggener.Controllers.ControllerManager");
 
 			this.AddDisableCase(sceneName => this.CurrentMapHasNonDefaultSizes());
 			this.AddDisableCase(sceneName => this.CurrentMapHasAnimations());
 
 			OnSceneLoad += this.HandleSceneLoad;
+			this.DisableMapEmbiggener();
 		}
 
 		private bool CurrentMapHasNonDefaultSizes()
@@ -88,20 +104,15 @@ namespace MapsExt.Compatibility
 			}
 		}
 
-		private void ExecuteAfterInit(Action action)
+		private IEnumerator ExecuteAfterInit(Action action)
 		{
-			IEnumerator Execute()
+			while (this._outOfBoundsUtilsBorder == null)
 			{
-				while (this._outOfBoundsUtilsBorder == null)
-				{
-					this._outOfBoundsUtilsBorder = (GameObject) this._outOfBoundsUtilsType?.GetProperty("border").GetValue(null);
-					yield return null;
-				}
-
-				action();
+				this._outOfBoundsUtilsBorder = (GameObject) this._outOfBoundsUtilsType?.GetProperty("border").GetValue(null);
+				yield return null;
 			}
 
-			MapsExtended.Instance.StartCoroutine(Execute());
+			action();
 		}
 
 		private void DisableMapEmbiggener()
@@ -112,18 +123,16 @@ namespace MapsExt.Compatibility
 			if (this._embiggenerEnabled)
 			{
 				Harmony.UnpatchID(ModId);
+				GameModeManager.RemoveHook(GameModeHooks.HookPickStart, this.DisableMapEmbiggenerVisuals);
+				GameModeManager.RemoveHook(GameModeHooks.HookPickEnd, this.EnableMapEmbiggenerVisuals);
+				GameModeManager.RemoveHook(GameModeHooks.HookPointStart, this.EnableMapEmbiggenerVisuals);
+				GameModeManager.RemoveHook(GameModeHooks.HookRoundStart, this.EnableMapEmbiggenerVisuals);
+				GameModeManager.RemoveHook(GameModeHooks.HookRoundEnd, this.DisableMapEmbiggenerVisuals);
 			}
 
 			this._embiggenerEnabled = false;
 
-			this.ExecuteAfterInit(() =>
-			{
-				this._outOfBoundsUtilsBorder.SetActive(false);
-				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
-				{
-					((MonoBehaviour) component).gameObject.SetActive(false);
-				}
-			});
+			MapsExtended.Instance.StartCoroutine(this.DisableMapEmbiggenerVisuals(null));
 		}
 
 		private void EnableMapEmbiggener()
@@ -134,11 +143,19 @@ namespace MapsExt.Compatibility
 			if (!this._embiggenerEnabled)
 			{
 				new Harmony(ModId).PatchAll(this._assembly);
+				GameModeManager.AddHook(GameModeHooks.HookPickStart, this.DisableMapEmbiggenerVisuals);
+				GameModeManager.AddHook(GameModeHooks.HookPickEnd, this.EnableMapEmbiggenerVisuals);
+				GameModeManager.AddHook(GameModeHooks.HookPointStart, this.EnableMapEmbiggenerVisuals);
+				GameModeManager.AddHook(GameModeHooks.HookRoundStart, this.EnableMapEmbiggenerVisuals);
+				GameModeManager.AddHook(GameModeHooks.HookRoundEnd, this.DisableMapEmbiggenerVisuals);
 			}
 
 			this._embiggenerEnabled = true;
+		}
 
-			this.ExecuteAfterInit(() =>
+		private IEnumerator EnableMapEmbiggenerVisuals(IGameModeHandler gm)
+		{
+			yield return this.ExecuteAfterInit(() =>
 			{
 				this._outOfBoundsUtilsBorder?.SetActive(true);
 				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
@@ -147,19 +164,17 @@ namespace MapsExt.Compatibility
 				}
 			});
 		}
-	}
 
-	[HarmonyPatch(typeof(MapManager), "OnLevelFinishedLoading")]
-	[HarmonyAfter(MapEmbiggenerCompatibilityPatch.ModId)]
-	static class MapEmbiggenerCompatibility_MapManager_OnLevelFinishedLoading_Patch
-	{
-		// patch to move maps out of the way of the pick phase
-		static void Postfix(MapManager __instance, bool ___callInNextMap)
+		private IEnumerator DisableMapEmbiggenerVisuals(IGameModeHandler gm)
 		{
-			if (!___callInNextMap && __instance.currentMap.Map.transform.position.x < 90f)
+			yield return this.ExecuteAfterInit(() =>
 			{
-				__instance.currentMap.Map.transform.position = new Vector3(90f, __instance.currentMap.Map.transform.position.y, __instance.currentMap.Map.transform.position.z);
-			}
+				this._outOfBoundsUtilsBorder.SetActive(false);
+				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
+				{
+					((MonoBehaviour) component).gameObject.SetActive(false);
+				}
+			});
 		}
 	}
 }
