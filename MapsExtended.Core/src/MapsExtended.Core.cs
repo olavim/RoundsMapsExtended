@@ -319,7 +319,7 @@ namespace MapsExt
 			// Parsing JSON is slow, so we split the workload among multiple threads
 			const int mapsPerTask = 5;
 			int taskCount = (int) Mathf.Ceil(this._mapInfos.Count / (float) mapsPerTask);
-			var tasks = new Task[taskCount];
+			var tasks = new List<Task>();
 
 			var invalidMaps = new ConcurrentBag<string>();
 
@@ -329,16 +329,16 @@ namespace MapsExt
 				// Split workload among threads
 				var mapInfos = this._mapInfos.Skip(i * mapsPerTask).Take(mapsPerTask).ToList();
 
-				tasks[i] = Task.Run(() =>
+				tasks.Add(Task.Run(() =>
 				{
 					foreach (var (mapInfo, _) in mapInfos)
 					{
 						try
 						{
-							/* Ideally we would just use Sirenix's SerializationUtility to check if the map can be loaded,
-							 * but we need access to Unity's APIs to load referenced types, which is not allowed in worker threads.
-							 * Instead we load the map data into a bit more manual JsonTextReader and check if all referenced types
-							 * can be loaded.
+							/* Ideally we would just use Sirenix's SerializationUtility to check if the map can be loaded, but
+							 * we need access to Unity's APIs to load referenced types, which is not allowed in worker threads.
+							 * Instead we load the map data into a bit more manual JsonTextReader and check if all referenced
+							 * types can be loaded.
 							 */
 							using var stream = new MemoryStream(mapInfo.Data);
 							var types = new List<string>();
@@ -373,7 +373,7 @@ namespace MapsExt
 							this.Logger.LogError(ex.Message);
 						}
 					}
-				});
+				}));
 			}
 
 			while (tasks.Any(t => !t.IsCompleted))
@@ -381,15 +381,18 @@ namespace MapsExt
 				yield return null;
 			}
 
-			this._mapInfos.RemoveAll(m => invalidMaps.Contains(m.mapInfo.Id));
-
-			foreach (string id in invalidMaps)
+			if (invalidMaps.Count > 0)
 			{
-				this._loadedMaps.Remove(id);
-			}
+				this._mapInfos.RemoveAll(m => invalidMaps.Contains(m.mapInfo.Id));
 
-			LevelManager.RemoveLevels(invalidMaps.Select(id => $"MapsExtended:{id}").ToArray());
-			RefreshLevelMenu();
+				foreach (string id in invalidMaps)
+				{
+					this._loadedMaps.Remove(id);
+				}
+
+				LevelManager.RemoveLevels(invalidMaps.Select(id => $"MapsExtended:{id}").ToArray());
+				RefreshLevelMenu();
+			}
 		}
 
 		private void RegisterNamedMaps(IEnumerable<(CustomMapInfo, string)> maps, string category)
@@ -938,6 +941,24 @@ namespace MapsExt
 					yield return list[i];
 				}
 			}
+		}
+	}
+
+	[HarmonyPatch(typeof(CardBar), "OnHover")]
+	static class CardBarPatch_OnHover_Patch
+	{
+		public static void Postfix(GameObject ___currentCard)
+		{
+			___currentCard.GetComponentInChildren<SetScaleToZero>().transform.localScale *= MainCam.instance.cam.orthographicSize / 20f;
+		}
+	}
+
+	[HarmonyPatch(typeof(CardVisuals), "ChangeSelected")]
+	static class CardVisuals_ChangeSelected_Patch
+	{
+		public static void Postfix(ScaleShake ___shake)
+		{
+			___shake.targetScale *= MainCam.instance.cam.orthographicSize / 20f;
 		}
 	}
 }

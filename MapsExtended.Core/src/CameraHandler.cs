@@ -21,7 +21,7 @@ namespace MapsExt
 
 		private CameraZoomHandler _zoomHandler;
 		private Camera[] _cameras;
-		private float _cameraUpdateDelay = 0f;
+		private float _refUpdateDelay = 0f;
 		private Vector2 _targetPosition;
 		private float _targetSize;
 		private bool _isPickPhase = false;
@@ -93,16 +93,16 @@ namespace MapsExt
 		{
 			this._zoomHandler.enabled = Mode == CameraMode.Disabled && !this._isPickPhase;
 
+			this._refUpdateDelay -= Time.deltaTime;
+			if (this._refUpdateDelay <= 0f)
+			{
+				this._cameras = this.GetComponentsInChildren<Camera>();
+				this._refUpdateDelay = 1f;
+			}
+
 			if (Mode == CameraMode.Disabled)
 			{
 				return;
-			}
-
-			this._cameraUpdateDelay -= Time.deltaTime;
-			if (this._cameraUpdateDelay <= 0f)
-			{
-				this._cameras = this.GetComponentsInChildren<Camera>();
-				this._cameraUpdateDelay = 1f;
 			}
 
 			this.UpdateTargets();
