@@ -40,7 +40,7 @@ namespace MapsExt.Editor.UI
 		{
 			var paths = Directory.GetFiles(this._basePath, "*.map", SearchOption.AllDirectories);
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.FileContainer);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.FileContainer);
 
 			foreach (string path in paths)
 			{

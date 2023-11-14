@@ -24,7 +24,6 @@ using BepInEx.Logging;
 using Sirenix.Serialization;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace MapsExt
 {
@@ -456,7 +455,7 @@ namespace MapsExt
 
 		private static IEnumerator LoadMapCoroutine(GameObject container, CustomMap mapData, MapObjectManager mapObjectManager, Action onLoad = null)
 		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(container);
+			Utils.GameObjectUtils.DestroyChildrenImmediateSafe(container);
 
 			int toLoad = mapData.MapObjects.Length;
 
@@ -959,6 +958,46 @@ namespace MapsExt
 		public static void Postfix(ScaleShake ___shake)
 		{
 			___shake.targetScale *= MainCam.instance.cam.orthographicSize / 20f;
+		}
+	}
+
+	[HarmonyPatch(typeof(MapTransition), "MoveObject")]
+	static class MapTransition_MoveObject_Patch
+	{
+		public static void Prefix(ref Vector3 targetPos)
+		{
+			if (MapManager.instance.GetCurrentCustomMap() != null && targetPos.x < 0)
+			{
+				var mapSizeWorld = ConversionUtils.ScreenToWorldUnits(MapManager.instance.GetCurrentCustomMap().Settings.MapSize);
+				targetPos = new Vector3(-(mapSizeWorld.x + 20f), targetPos.y, targetPos.z);
+			}
+
+			if (targetPos.x < 0 && targetPos.x > -90f)
+			{
+				targetPos = new Vector3(-90f, targetPos.y, targetPos.z);
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(MapTransition), "SetStartPos")]
+	static class MapTransition_SetStartPos_Patch
+	{
+		public static void Postfix(Map map)
+		{
+			var targetPos = map.transform.position;
+
+			if (MapManager.instance.GetCurrentCustomMap() != null && map.transform.position.x > 0)
+			{
+				var mapSizeWorld = ConversionUtils.ScreenToWorldUnits(MapManager.instance.GetCurrentCustomMap().Settings.MapSize);
+				targetPos = new Vector3(mapSizeWorld.x + 20f, map.transform.position.y, map.transform.position.z);
+			}
+
+			if (targetPos.x < 90f)
+			{
+				targetPos = new Vector3(90f, targetPos.y, targetPos.z);
+			}
+
+			map.transform.position = targetPos;
 		}
 	}
 }

@@ -245,7 +245,7 @@ namespace MapsExt.Editor
 					this.AnimationHandler.SetAnimation(null);
 				}
 
-				GameObjectUtils.DestroyImmediateSafe(dict[id]);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(dict[id]);
 			}
 
 			this.ClearSelected();
@@ -307,7 +307,7 @@ namespace MapsExt.Editor
 					this.AnimationHandler.SetAnimation(null);
 				}
 
-				GameObjectUtils.DestroyImmediateSafe(instance);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(instance);
 			}
 
 			this.ResetSpawnLabels();
@@ -396,11 +396,11 @@ namespace MapsExt.Editor
 
 			if (this._tempSpawn != null)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this._tempSpawn);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(this._tempSpawn);
 				this._tempSpawn = null;
 			}
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.SimulatedContent);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.SimulatedContent);
 
 			this.Content.SetActive(true);
 			this.SimulatedContent.SetActive(false);
@@ -522,7 +522,7 @@ namespace MapsExt.Editor
 
 			if (this._dummyGroup != null)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this._dummyGroup);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(this._dummyGroup);
 			}
 
 			this.SelectedMapObjectParts.Clear();

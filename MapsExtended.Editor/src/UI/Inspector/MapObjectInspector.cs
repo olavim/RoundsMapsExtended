@@ -60,7 +60,7 @@ namespace MapsExt.Editor.UI
 			this._isLinked = true;
 			this.Target = target;
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
 			var targetDataType = this.Target.GetComponent<MapObjectInstance>().DataType;
 
@@ -102,7 +102,7 @@ namespace MapsExt.Editor.UI
 		{
 			this.OnUpdate = null;
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.gameObject);
 
 			this.Target = null;
 			this._isLinked = false;

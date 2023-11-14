@@ -13,7 +13,7 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInstantiate(GameObject instance)
 		{
 			base.OnInstantiate(instance);
-			GameObjectUtils.DisableRigidbody(instance);
+			MapsExt.Utils.GameObjectUtils.DisableRigidbody(instance);
 		}
 	}
 
@@ -23,7 +23,7 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInstantiate(GameObject instance)
 		{
 			base.OnInstantiate(instance);
-			GameObjectUtils.DisableRigidbody(instance);
+			MapsExt.Utils.GameObjectUtils.DisableRigidbody(instance);
 		}
 	}
 
@@ -33,7 +33,7 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInstantiate(GameObject instance)
 		{
 			base.OnInstantiate(instance);
-			GameObjectUtils.DisableRigidbody(instance);
+			MapsExt.Utils.GameObjectUtils.DisableRigidbody(instance);
 		}
 	}
 
@@ -43,7 +43,7 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInstantiate(GameObject instance)
 		{
 			base.OnInstantiate(instance);
-			GameObjectUtils.DisableRigidbody(instance);
+			MapsExt.Utils.GameObjectUtils.DisableRigidbody(instance);
 			GameObject.Destroy(instance.GetComponent<Damagable>());
 		}
 	}
@@ -63,7 +63,7 @@ namespace MapsExt.Editor.MapObjects
 		public override void OnInstantiate(GameObject instance)
 		{
 			base.OnInstantiate(instance);
-			GameObjectUtils.DisableRigidbody(instance);
+			MapsExt.Utils.GameObjectUtils.DisableRigidbody(instance);
 		}
 	}
 

@@ -34,6 +34,7 @@ namespace MapsExt
 
 		private void OnEnable()
 		{
+			GameModeManager.AddHook(GameModeHooks.HookGameStart, this.OnGameStart);
 			GameModeManager.AddHook(GameModeHooks.HookPickStart, this.OnPickStart);
 			GameModeManager.AddHook(GameModeHooks.HookPickEnd, this.OnPickEnd);
 			GameModeManager.AddHook(GameModeHooks.HookPointStart, this.OnPlayersActive);
@@ -49,6 +50,7 @@ namespace MapsExt
 
 		private void OnDisable()
 		{
+			GameModeManager.RemoveHook(GameModeHooks.HookGameStart, this.OnGameStart);
 			GameModeManager.RemoveHook(GameModeHooks.HookPickStart, this.OnPickStart);
 			GameModeManager.RemoveHook(GameModeHooks.HookPickEnd, this.OnPickEnd);
 			GameModeManager.RemoveHook(GameModeHooks.HookPointStart, this.OnPlayersActive);
@@ -60,6 +62,14 @@ namespace MapsExt
 			{
 				this._zoomHandler.enabled = true;
 			}
+		}
+
+		private IEnumerator OnGameStart(IGameModeHandler gm)
+		{
+			this.UpdateTargets();
+			this.ForceTargetPosition();
+			this.ForceTargetSize();
+			yield break;
 		}
 
 		private IEnumerator OnPickStart(IGameModeHandler gm)

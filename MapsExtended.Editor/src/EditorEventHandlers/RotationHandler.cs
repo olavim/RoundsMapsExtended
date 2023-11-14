@@ -167,7 +167,7 @@ namespace MapsExt.Editor.Events
 
 		protected virtual void OnDeselect()
 		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 	}
 }

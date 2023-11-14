@@ -25,7 +25,7 @@ namespace MapsExt.Editor.UI
 
 		public void Refresh()
 		{
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 
 			var anim = this.Editor.AnimationHandler.Animation;
 
@@ -53,7 +53,7 @@ namespace MapsExt.Editor.UI
 			if (keyframe == 0)
 			{
 				keyframeSettings.ContentFoldout.Label.text = "Base";
-				GameObjectUtils.DestroyImmediateSafe(keyframeSettings.ContentFoldout.Content);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(keyframeSettings.ContentFoldout.Content);
 			}
 			else
 			{
@@ -139,7 +139,7 @@ namespace MapsExt.Editor.UI
 		{
 			this.gameObject.SetActive(false);
 			this.Editor.AnimationHandler.SetAnimation(null);
-			GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this.Content);
 		}
 
 		public void SetOpen(bool open)

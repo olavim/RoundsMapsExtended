@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,6 +37,28 @@ namespace MapsExt.Utils
 				rigidbody.angularVelocity = 0;
 				rigidbody.isKinematic = true;
 			}
+		}
+	}
+}
+
+namespace MapsExt
+{
+	[Obsolete("Use MapsExt.Utils.GameObjectUtils instead")]
+	public static class GameObjectUtils
+	{
+		public static void DestroyImmediateSafe(GameObject obj)
+		{
+			MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(obj);
+		}
+
+		public static void DestroyChildrenImmediateSafe(GameObject obj)
+		{
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(obj);
+		}
+
+		public static void DisableRigidbody(GameObject go)
+		{
+			MapsExt.Utils.GameObjectUtils.DisableRigidbody(go);
 		}
 	}
 }

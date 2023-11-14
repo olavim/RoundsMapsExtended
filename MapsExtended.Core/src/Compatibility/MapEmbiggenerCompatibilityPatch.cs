@@ -13,7 +13,7 @@ namespace MapsExt.Compatibility
 	[CompatibilityPatch]
 	public sealed class MapEmbiggenerCompatibilityPatch : ICompatibilityPatch, IPredicateDisabler<string>
 	{
-		private const string ModId = "pykess.rounds.plugins.mapembiggener";
+		internal const string ModId = "pykess.rounds.plugins.mapembiggener";
 
 		private delegate void SceneLoadEvent(string sceneName);
 
@@ -146,6 +146,20 @@ namespace MapsExt.Compatibility
 					((MonoBehaviour) component).gameObject.SetActive(true);
 				}
 			});
+		}
+	}
+
+	[HarmonyPatch(typeof(MapManager), "OnLevelFinishedLoading")]
+	[HarmonyAfter(MapEmbiggenerCompatibilityPatch.ModId)]
+	static class MapEmbiggenerCompatibility_MapManager_OnLevelFinishedLoading_Patch
+	{
+		// patch to move maps out of the way of the pick phase
+		static void Postfix(MapManager __instance, bool ___callInNextMap)
+		{
+			if (!___callInNextMap && __instance.currentMap.Map.transform.position.x < 90f)
+			{
+				__instance.currentMap.Map.transform.position = new Vector3(90f, __instance.currentMap.Map.transform.position.y, __instance.currentMap.Map.transform.position.z);
+			}
 		}
 	}
 }

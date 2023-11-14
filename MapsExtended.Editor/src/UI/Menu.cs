@@ -326,7 +326,7 @@ namespace MapsExt.Editor.UI
 				return;
 			}
 
-			GameObjectUtils.DestroyChildrenImmediateSafe(this._content);
+			MapsExt.Utils.GameObjectUtils.DestroyChildrenImmediateSafe(this._content);
 
 			foreach (var item in this.Items)
 			{

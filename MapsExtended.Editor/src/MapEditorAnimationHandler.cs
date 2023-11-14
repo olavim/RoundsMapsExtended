@@ -163,7 +163,7 @@ namespace MapsExt.Editor
 		{
 			if (this._particles)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this._particles);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(this._particles);
 			}
 
 			var defaultParticles = GameObject.Find("/Game/Visual/Rendering /FrontParticles");
@@ -280,7 +280,7 @@ namespace MapsExt.Editor
 		{
 			if (this.KeyframeMapObject)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this.KeyframeMapObject);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(this.KeyframeMapObject);
 				this.KeyframeMapObject = null;
 			}
 

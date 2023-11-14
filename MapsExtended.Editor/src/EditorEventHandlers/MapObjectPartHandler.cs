@@ -69,7 +69,7 @@ namespace MapsExt.Editor.Events
 		{
 			if (this._isSelected)
 			{
-				GameObjectUtils.DestroyImmediateSafe(this.Content);
+				MapsExt.Utils.GameObjectUtils.DestroyImmediateSafe(this.Content);
 				this._isSelected = false;
 			}
 		}
