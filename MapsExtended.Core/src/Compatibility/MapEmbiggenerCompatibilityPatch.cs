@@ -109,12 +109,11 @@ namespace MapsExt.Compatibility
 			MapsExtended.Log.LogInfo("Disabling MapEmbiggener");
 			CameraHandler.Mode = CameraHandler.CameraMode.FollowPlayer;
 
-			if (!this._embiggenerEnabled)
+			if (this._embiggenerEnabled)
 			{
-				return;
+				Harmony.UnpatchID(ModId);
 			}
 
-			Harmony.UnpatchID(ModId);
 			this._embiggenerEnabled = false;
 
 			this.ExecuteAfterInit(() =>
@@ -132,12 +131,11 @@ namespace MapsExt.Compatibility
 			MapsExtended.Log.LogInfo("Enabling MapEmbiggener");
 			CameraHandler.Mode = CameraHandler.CameraMode.Disabled;
 
-			if (this._embiggenerEnabled)
+			if (!this._embiggenerEnabled)
 			{
-				return;
+				new Harmony(ModId).PatchAll(this._assembly);
 			}
 
-			new Harmony(ModId).PatchAll(this._assembly);
 			this._embiggenerEnabled = true;
 
 			this.ExecuteAfterInit(() =>
