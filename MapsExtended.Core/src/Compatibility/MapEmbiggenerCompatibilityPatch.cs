@@ -5,8 +5,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnboundLib;
 using UnboundLib.GameModes;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace MapsExt.Compatibility
 {
@@ -30,24 +32,41 @@ namespace MapsExt.Compatibility
 		}
 
 		[HarmonyPatch(typeof(MapManager), "OnLevelFinishedLoading")]
-		[HarmonyAfter(ModId)]
 		private static class MapEmbiggenerPatch_MapManager_OnLevelFinishedLoading
 		{
-			static void Postfix(MapManager __instance, bool ___callInNextMap)
+			private static bool s_callInNextMap;
+
+			static void Prefix(bool ___callInNextMap)
+			{
+				s_callInNextMap = ___callInNextMap;
+			}
+
+			[HarmonyBefore(ModId)]
+			[HarmonyPostfix]
+			static void PostfixBefore(ref bool ___callInNextMap)
+			{
+				___callInNextMap = s_callInNextMap;
+			}
+
+			[HarmonyAfter(ModId)]
+			[HarmonyPostfix]
+			static void PostfixAfter(MapManager __instance, ref bool ___callInNextMap)
 			{
 				if (!___callInNextMap && __instance.currentMap.Map.transform.position.x < 90f)
 				{
 					__instance.currentMap.Map.transform.position = new Vector3(90f, __instance.currentMap.Map.transform.position.y, __instance.currentMap.Map.transform.position.z);
 				}
+
+				___callInNextMap = false;
 			}
 		}
 
-		private Assembly _assembly;
-		private Type _outOfBoundsUtilsType;
-		private Type _outOfBoundsParticlesType;
-		private Type _controllerManagerType;
-		private GameObject _outOfBoundsUtilsBorder;
-		private bool _embiggenerEnabled = true;
+		private static Assembly s_assembly;
+		private static Type s_outOfBoundsUtilsType;
+		private static Type s_outOfBoundsParticlesType;
+		private static Type s_controllerManagerType;
+		private static GameObject s_outOfBoundsUtilsBorder;
+		private static bool s_isMapEmbiggenerEnabled = true;
 
 		private readonly List<Predicate<string>> _disableCases = new();
 
@@ -58,13 +77,22 @@ namespace MapsExt.Compatibility
 				return;
 			}
 
-			this._assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(asm => asm.GetName().Name == "MapEmbiggener");
-			this._outOfBoundsUtilsType = this._assembly?.GetType("MapEmbiggener.OutOfBoundsUtils");
-			this._outOfBoundsParticlesType = this._assembly?.GetType("MapEmbiggener.UI.OutOfBoundsParticles");
-			this._controllerManagerType = this._assembly?.GetType("MapEmbiggener.Controllers.ControllerManager");
+			s_assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(asm => asm.GetName().Name == "MapEmbiggener");
+			s_outOfBoundsUtilsType = s_assembly?.GetType("MapEmbiggener.OutOfBoundsUtils");
+			s_outOfBoundsParticlesType = s_assembly?.GetType("MapEmbiggener.UI.OutOfBoundsParticles");
+			s_controllerManagerType = s_assembly?.GetType("MapEmbiggener.Controllers.ControllerManager");
 
+			this.AddDisableCase(sceneName => sceneName == "Main");
 			this.AddDisableCase(sceneName => this.CurrentMapHasNonDefaultSizes());
 			this.AddDisableCase(sceneName => this.CurrentMapHasAnimations());
+
+			SceneManager.sceneLoaded += (scene, mode) =>
+			{
+				if (mode == LoadSceneMode.Single)
+				{
+					MapsExtended.Instance.ExecuteAfterFrames(1, () => OnSceneLoad?.Invoke(scene.name));
+				}
+			};
 
 			OnSceneLoad += this.HandleSceneLoad;
 			this.DisableMapEmbiggener();
@@ -89,11 +117,6 @@ namespace MapsExt.Compatibility
 
 		private void HandleSceneLoad(string sceneName)
 		{
-			if (sceneName == "Main")
-			{
-				return;
-			}
-
 			if (this._disableCases.Any(p => p(sceneName)))
 			{
 				this.DisableMapEmbiggener();
@@ -106,9 +129,9 @@ namespace MapsExt.Compatibility
 
 		private IEnumerator ExecuteAfterInit(Action action)
 		{
-			while (this._outOfBoundsUtilsBorder == null)
+			while (s_outOfBoundsUtilsBorder == null)
 			{
-				this._outOfBoundsUtilsBorder = (GameObject) this._outOfBoundsUtilsType?.GetProperty("border").GetValue(null);
+				s_outOfBoundsUtilsBorder = (GameObject) s_outOfBoundsUtilsType?.GetProperty("border").GetValue(null);
 				yield return null;
 			}
 
@@ -120,7 +143,7 @@ namespace MapsExt.Compatibility
 			MapsExtended.Log.LogInfo("Disabling MapEmbiggener");
 			CameraHandler.Mode = CameraHandler.CameraMode.FollowPlayer;
 
-			if (this._embiggenerEnabled)
+			if (s_isMapEmbiggenerEnabled)
 			{
 				Harmony.UnpatchID(ModId);
 				GameModeManager.RemoveHook(GameModeHooks.HookPickStart, this.DisableMapEmbiggenerVisuals);
@@ -130,9 +153,8 @@ namespace MapsExt.Compatibility
 				GameModeManager.RemoveHook(GameModeHooks.HookRoundEnd, this.DisableMapEmbiggenerVisuals);
 			}
 
-			this._embiggenerEnabled = false;
-
-			MapsExtended.Instance.StartCoroutine(this.DisableMapEmbiggenerVisuals(null));
+			s_isMapEmbiggenerEnabled = false;
+			MapsExtended.Instance.StartCoroutine(this.DisableMapEmbiggenerVisuals());
 		}
 
 		private void EnableMapEmbiggener()
@@ -140,9 +162,9 @@ namespace MapsExt.Compatibility
 			MapsExtended.Log.LogInfo("Enabling MapEmbiggener");
 			CameraHandler.Mode = CameraHandler.CameraMode.Disabled;
 
-			if (!this._embiggenerEnabled)
+			if (!s_isMapEmbiggenerEnabled)
 			{
-				new Harmony(ModId).PatchAll(this._assembly);
+				new Harmony(ModId).PatchAll(s_assembly);
 				GameModeManager.AddHook(GameModeHooks.HookPickStart, this.DisableMapEmbiggenerVisuals);
 				GameModeManager.AddHook(GameModeHooks.HookPickEnd, this.EnableMapEmbiggenerVisuals);
 				GameModeManager.AddHook(GameModeHooks.HookPointStart, this.EnableMapEmbiggenerVisuals);
@@ -150,31 +172,75 @@ namespace MapsExt.Compatibility
 				GameModeManager.AddHook(GameModeHooks.HookRoundEnd, this.DisableMapEmbiggenerVisuals);
 			}
 
-			this._embiggenerEnabled = true;
+			s_isMapEmbiggenerEnabled = true;
+
+			if (GameModeManager.CurrentHandler?.Name == "Sandbox")
+			{
+				this.InvokeGameStartInSandbox();
+			}
 		}
 
-		private IEnumerator EnableMapEmbiggenerVisuals(IGameModeHandler gm)
+		private IEnumerator EnableMapEmbiggenerVisuals(IGameModeHandler gm = null)
 		{
 			yield return this.ExecuteAfterInit(() =>
 			{
-				this._outOfBoundsUtilsBorder?.SetActive(true);
-				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
+				s_outOfBoundsUtilsBorder?.SetActive(true);
+				foreach (var component in Resources.FindObjectsOfTypeAll(s_outOfBoundsParticlesType))
 				{
 					((MonoBehaviour) component).gameObject.SetActive(true);
 				}
 			});
 		}
 
-		private IEnumerator DisableMapEmbiggenerVisuals(IGameModeHandler gm)
+		private IEnumerator DisableMapEmbiggenerVisuals(IGameModeHandler gm = null)
 		{
 			yield return this.ExecuteAfterInit(() =>
 			{
-				this._outOfBoundsUtilsBorder.SetActive(false);
-				foreach (var component in Resources.FindObjectsOfTypeAll(this._outOfBoundsParticlesType))
+				s_outOfBoundsUtilsBorder.SetActive(false);
+				foreach (var component in Resources.FindObjectsOfTypeAll(s_outOfBoundsParticlesType))
 				{
 					((MonoBehaviour) component).gameObject.SetActive(false);
 				}
 			});
+		}
+
+		private void InvokeGameStartInSandbox()
+		{
+			GameManager.instance.isPlaying = true;
+
+			var currentController = AccessTools.Property(s_controllerManagerType, "CurrentMapController").GetValue(null);
+			if (currentController != null)
+			{
+				var gameStartMethod = AccessTools.Method(currentController.GetType(), "OnGameStart");
+				if (gameStartMethod != null)
+				{
+					var enumerator = (IEnumerator) gameStartMethod.Invoke(currentController, new object[] { GameModeManager.CurrentHandler });
+					this.RunEnumerator(enumerator);
+				}
+			}
+
+			var controllerManagerInstance = AccessTools.Field(s_controllerManagerType, "instance").GetValue(null);
+			AccessTools.Method(s_controllerManagerType, "Update").Invoke(controllerManagerInstance, null);
+		}
+
+		private void RunEnumerator(IEnumerator enumerator)
+		{
+			var enumeratorStack = new Stack<IEnumerator>();
+			enumeratorStack.Push(enumerator);
+
+			while (enumeratorStack.Count > 0)
+			{
+				if (!enumeratorStack.Peek().MoveNext())
+				{
+					enumeratorStack.Pop();
+					continue;
+				}
+
+				if (enumeratorStack.Peek().Current is IEnumerator enumerator2)
+				{
+					enumeratorStack.Push(enumerator2);
+				}
+			}
 		}
 	}
 }
