@@ -2,7 +2,7 @@
 	<Import Project="Config.props" Condition="Exists('Config.props')" />
 
 	<PropertyGroup>
-		<Version>1.3.0</Version>
+		<Version>1.3.1</Version>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
 		<RootNamespace>MapsExt</RootNamespace>
 		<Authors>olavim</Authors>

@@ -66,9 +66,12 @@ namespace MapsExt
 
 		private IEnumerator OnGameStart(IGameModeHandler gm)
 		{
-			this.UpdateTargets();
-			this.ForceTargetPosition();
-			this.ForceTargetSize();
+			if (GameModeManager.CurrentHandler.Name != "Sandbox")
+			{
+				this.UpdateTargets();
+				this.ForceTargetPosition();
+				this.ForceTargetSize();
+			}
 			yield break;
 		}
 

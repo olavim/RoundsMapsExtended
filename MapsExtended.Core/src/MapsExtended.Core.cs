@@ -790,13 +790,7 @@ namespace MapsExt
 		private static Vector2 GetMapSize()
 		{
 			var customMap = MapManager.instance.GetCurrentCustomMap();
-			if (customMap != null)
-			{
-				var cam = MainCam.instance.cam;
-				return (cam.ScreenToWorldPoint(customMap.Settings.MapSize) - cam.ScreenToWorldPoint(Vector2.zero)) * (20f / cam.orthographicSize);
-			}
-
-			return new Vector2(71.12f, 40f);
+			return customMap == null ? new Vector2(71.12f, 40f) : ConversionUtils.ScreenToWorldUnits(customMap.Settings.MapSize);
 		}
 
 		private static float GetMinX()
