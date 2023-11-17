@@ -30,7 +30,7 @@ namespace MapsExt.Compatibility.V0.MapObjects
 		{
 			base.Populate(data);
 			data.Position = this.position;
-			data.Scale = this.scale;
+			data.Scale = (ScaleProperty) this.scale;
 			data.Rotation = (int) (this.rotation.eulerAngles.z * 100) / 100f;
 			return data;
 		}

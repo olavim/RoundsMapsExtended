@@ -17,7 +17,7 @@ namespace MapsExt.Editor.Properties
 
 		public virtual ScaleProperty ReadProperty(GameObject instance)
 		{
-			return instance.transform.localScale;
+			return (ScaleProperty) instance.transform.localScale;
 		}
 	}
 
