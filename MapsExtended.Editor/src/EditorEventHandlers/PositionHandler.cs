@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.Events
 {
-	public class PositionHandler : EditorEventHandler
+	public class PositionHandler : EditorEventHandler, ITransformModifyingEditorEventHandler
 	{
 		private static Vector2 KeyCodeToNudge(KeyCode key)
 		{
@@ -35,6 +35,8 @@ namespace MapsExt.Editor.Events
 		private Vector2Int _prevCell;
 		private Vector2 _offset;
 
+		public event TransformChangedEventHandler OnTransformChanged;
+
 		public void Move(PositionProperty delta)
 		{
 			this.SetValue(this.GetValue() + delta);
@@ -43,6 +45,7 @@ namespace MapsExt.Editor.Events
 		public virtual void SetValue(PositionProperty position)
 		{
 			this.transform.position = position;
+			this.OnTransformChanged?.Invoke();
 		}
 
 		public virtual PositionProperty GetValue()

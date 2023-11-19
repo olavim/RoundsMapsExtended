@@ -45,6 +45,7 @@ namespace MapsExt.Editor.Tests
 
 			this.Editor.CopySelected();
 			yield return this.Editor.Paste();
+			yield return null;
 
 			this.Editor.ActiveMapObject.Should().NotBeSameAs(obj);
 

@@ -7,12 +7,14 @@ using UnityEngine.UI.ProceduralImage;
 
 namespace MapsExt.Editor.Events
 {
-	public class RotationHandler : EditorEventHandler
+	public class RotationHandler : EditorEventHandler, ITransformModifyingEditorEventHandler
 	{
-		public GameObject Content { get; private set; }
 
 		private bool _isRotating;
 		private RotationProperty _prevRotation;
+
+		public GameObject Content { get; private set; }
+		public event TransformChangedEventHandler OnTransformChanged;
 
 		protected override void Awake()
 		{
@@ -41,6 +43,7 @@ namespace MapsExt.Editor.Events
 		{
 			this.GetComponent<RotationPropertyInstance>().Rotation = rotation;
 			this.transform.rotation = (Quaternion) rotation;
+			this.OnTransformChanged?.Invoke();
 		}
 
 		public virtual RotationProperty GetValue()

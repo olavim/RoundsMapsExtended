@@ -21,6 +21,11 @@ namespace MapsExt.Editor
 			this.directionMultiplier = directionMultiplier;
 		}
 
+		public Direction2D Abs()
+		{
+			return new(new(Mathf.Abs(this.directionMultiplier.x), Mathf.Abs(this.directionMultiplier.y)));
+		}
+
 		public override string ToString()
 		{
 			return this switch
