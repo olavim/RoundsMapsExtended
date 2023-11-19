@@ -197,8 +197,11 @@ namespace MapsExt.Editor
 			var pastedObjects = pastedMapObjects.SelectMany(obj => obj.GetComponentsInChildren<MapObjectPart>()).Select(obj => obj.gameObject);
 
 			this.AddSelected(pastedObjects);
-			this.EditorEvent?.Invoke(this, new PasteEvent());
 			this.ResetSpawnLabels();
+
+			this.EditorEvent?.Invoke(this, new PasteEvent());
+			yield return null;
+
 			this.TakeSnaphot();
 		}
 
