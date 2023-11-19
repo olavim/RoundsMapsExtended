@@ -10,6 +10,7 @@ namespace MapsExt.Editor.Events
 	public class GroupSizeHandler : SizeHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
+		private float _aspect;
 		private readonly Dictionary<GameObject, Vector2> _localScales = new();
 
 		protected override bool ShouldHandleEvent(IEditorEvent evt)
@@ -30,7 +31,9 @@ namespace MapsExt.Editor.Events
 					bounds.Encapsulate(boundsArr[i]);
 				}
 
-				this.transform.localScale = bounds.size;
+				this._aspect = bounds.size.x / bounds.size.y;
+
+				base.SetValue(bounds.size, Direction2D.Middle);
 
 				foreach (var obj in this._gameObjects)
 				{
@@ -42,15 +45,28 @@ namespace MapsExt.Editor.Events
 			base.HandleEvent(evt);
 		}
 
+		protected override void OnSelect()
+		{
+			this.AddResizeHandle(Direction2D.NorthEast);
+			this.AddResizeHandle(Direction2D.NorthWest);
+			this.AddResizeHandle(Direction2D.SouthEast);
+			this.AddResizeHandle(Direction2D.SouthWest);
+		}
+
 		public override void SetValue(ScaleProperty size, Direction2D resizeDirection)
 		{
-			base.SetValue(size, resizeDirection);
+			float sizeAspect = size.Value.x / size.Value.y;
+
+			var newScale = sizeAspect >= this._aspect
+				? new Vector2(size.Value.x, size.Value.x / this._aspect)
+				: new Vector2(size.Value.y * this._aspect, size.Value.y);
 
 			foreach (var obj in this._gameObjects)
 			{
-				UnityEngine.Debug.Log($"{this._localScales[obj]} * {this.GetValue().Value} = " + Vector2.Scale(this._localScales[obj], this.GetValue().Value));
 				obj.GetComponent<SizeHandler>()?.SetValue(Vector2.Scale(this._localScales[obj], this.GetValue().Value));
 			}
+
+			base.SetValue(newScale, resizeDirection);
 		}
 	}
 }

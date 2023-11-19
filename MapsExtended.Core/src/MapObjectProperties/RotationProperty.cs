@@ -43,6 +43,6 @@ namespace MapsExt.Properties
 
 	public class RotationPropertyInstance : MonoBehaviour
 	{
-		public RotationProperty Rotation { get; set; }
+		public RotationProperty Rotation { get; set; } = new();
 	}
 }

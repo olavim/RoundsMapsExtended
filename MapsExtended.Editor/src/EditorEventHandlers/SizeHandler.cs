@@ -1,17 +1,19 @@
 using MapsExt.Properties;
-using MapsExt.Utils;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MapsExt.Editor.Events
 {
-	public class SizeHandler : EditorEventHandler
+	public class SizeHandler : EditorEventHandler, ITransformModifyingEditorEventHandler
 	{
 		private bool _isResizing;
 		private Direction2D _resizeDirection;
-		private Vector2 _prevMouse;
-		private Vector2 _prevScale;
-		private Vector2Int _prevCell;
+		private Vector2 _initialMousePos;
+		private Vector2 _initialScale;
+		private Vector2Int _initialCell;
+
+		public event TransformChangedEventHandler OnTransformChanged;
 
 		public GameObject Content { get; private set; }
 
@@ -56,24 +58,21 @@ namespace MapsExt.Editor.Events
 
 		public virtual void SetValue(ScaleProperty size, Direction2D resizeDirection)
 		{
-			var delta = size.Value - (Vector2) this.transform.localScale;
-			float gridSize = this.Editor.GridSize;
-			bool snapToGrid = this.Editor.SnapToGrid;
+			var currentScale = this.GetValue().Value;
+			var delta = size.Value - currentScale;
 
 			var scaleDelta = resizeDirection == Direction2D.Middle
 				? delta
-				: resizeDirection * delta;
-			var currentScale = this.GetValue().Value;
-			var currentRotation = this.transform.rotation;
+				: resizeDirection.Abs() * delta;
 
-			if (snapToGrid && scaleDelta.x != 0 && currentScale.x + scaleDelta.x < gridSize)
+			if (this.Editor.SnapToGrid && scaleDelta.x != 0 && currentScale.x + scaleDelta.x < this.Editor.GridSize)
 			{
-				scaleDelta.x = gridSize - currentScale.x;
+				scaleDelta.x = this.Editor.GridSize - currentScale.x;
 			}
 
-			if (snapToGrid && scaleDelta.y != 0 && currentScale.y + scaleDelta.y < gridSize)
+			if (this.Editor.SnapToGrid && scaleDelta.y != 0 && currentScale.y + scaleDelta.y < this.Editor.GridSize)
 			{
-				scaleDelta.y = gridSize - currentScale.y;
+				scaleDelta.y = this.Editor.GridSize - currentScale.y;
 			}
 
 			if (scaleDelta.x != 0 && currentScale.x + scaleDelta.x < 0.1f)
@@ -96,11 +95,19 @@ namespace MapsExt.Editor.Events
 			this.transform.localScale = newScale;
 
 			var posHandler = this.GetComponent<PositionHandler>();
+			var rotHandler = this.GetComponent<RotationHandler>();
+
 			if (posHandler != null)
 			{
-				var positionDelta = (PositionProperty) (currentRotation * (resizeDirection * scaleDelta));
+				var positionDelta = resizeDirection * scaleDelta;
+				if (rotHandler != null)
+				{
+					positionDelta = (PositionProperty) (rotHandler.GetValue() * positionDelta);
+				}
 				posHandler.Move(positionDelta * 0.5f);
 			}
+
+			this.OnTransformChanged?.Invoke();
 		}
 
 		private void OnResizeStart(Direction2D resizeDirection)
@@ -112,16 +119,16 @@ namespace MapsExt.Editor.Events
 
 			this._isResizing = true;
 			this._resizeDirection = resizeDirection;
-			this._prevMouse = mouseWorldPos;
-			this._prevCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
-			this._prevScale = this.transform.localScale;
+			this._initialMousePos = mouseWorldPos;
+			this._initialCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
+			this._initialScale = this.transform.localScale;
 		}
 
 		private void OnResizeEnd()
 		{
 			this._isResizing = false;
 
-			if (this._prevScale != this.GetValue().Value)
+			if (this.GetValue().Value != this._initialScale)
 			{
 				this.Editor.TakeSnaphot();
 			}
@@ -132,19 +139,15 @@ namespace MapsExt.Editor.Events
 			var mousePos = EditorInput.MousePosition;
 			var mouseWorldPos = (Vector2) MainCam.instance.cam.ScreenToWorldPoint(new Vector2(mousePos.x, mousePos.y));
 			var mouseCell = (Vector2Int) this.Editor.Grid.WorldToCell(mouseWorldPos);
-			var mouseDelta = mouseWorldPos - this._prevMouse;
-			Vector2 cellDelta = mouseCell - this._prevCell;
+			var mouseDelta = mouseWorldPos - this._initialMousePos;
+			Vector2 cellDelta = mouseCell - this._initialCell;
 
 			var sizeDelta = this.Editor.SnapToGrid
 				? cellDelta * this.Editor.GridSize
 				: (Vector2) (Quaternion.Inverse(this.Editor.Grid.transform.rotation) * mouseDelta);
+			sizeDelta *= this._resizeDirection;
 
-			if (sizeDelta != Vector2.zero)
-			{
-				this.Resize(sizeDelta, this._resizeDirection);
-				this._prevMouse += mouseDelta;
-				this._prevCell = mouseCell;
-			}
+			this.SetValue(this._initialScale + sizeDelta, this._resizeDirection);
 		}
 
 		protected void AddResizeHandle(Direction2D direction)

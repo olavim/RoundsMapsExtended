@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MapsExt.Editor.Events
 {
-	[GroupEventHandler(typeof(PositionHandler))]
+	[GroupEventHandler(typeof(MapObjectPartHandler), typeof(PositionHandler))]
 	public class GroupRotationHandler : RotationHandler
 	{
 		private IEnumerable<GameObject> _gameObjects;
@@ -23,7 +23,6 @@ namespace MapsExt.Editor.Events
 		{
 			base.SetValue(rotation);
 			this.RefreshRotations();
-			this.GetComponent<GroupPositionHandler>()?.RefreshPositions();
 		}
 
 		public virtual void RefreshRotations()
