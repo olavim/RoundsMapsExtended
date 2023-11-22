@@ -8,7 +8,7 @@ namespace MapsExt.Utils
 
 		public static Vector2 ScreenToWorldUnits(Vector2 p)
 		{
-			return new Vector2(p.x * UnitRatio, p.y * UnitRatio);
+			return new Vector2(p.x * UnitRatio, p.y * UnitRatio).Round(2);
 		}
 
 		public static Vector2 WorldToScreenUnits(Vector2 p)

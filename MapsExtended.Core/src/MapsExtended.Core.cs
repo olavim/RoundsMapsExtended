@@ -895,7 +895,7 @@ namespace MapsExt
 
 			for (int i = 0; i < list.Count; i++)
 			{
-				if (i < list.Count - 22 && list[i].IsLdarg(0) && list[i + 5].Calls(m_worldToScreenPoint))
+				if (i < list.Count - 5 && list[i].IsLdarg(0) && list[i + 5].Calls(m_worldToScreenPoint))
 				{
 					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i].labels);
 					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 1].labels);
@@ -903,12 +903,7 @@ namespace MapsExt
 					yield return list[i + 3];
 					yield return list[i + 4];
 					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPos).WithLabels(list[i + 5].labels);
-					yield return list[i + 6];
-					for (int k = i + 7; k <= i + 22; k++)
-					{
-						yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[k].labels);
-					}
-					i += 22;
+					i += 5;
 				}
 				else if (list[i].Calls(m_screenWidth))
 				{
@@ -921,11 +916,11 @@ namespace MapsExt
 				else if (i < list.Count - 4 && list[i].IsLdloc() && list[i + 4].Calls(m_screenToWorldPoint))
 				{
 					yield return list[i];
-					yield return new CodeInstruction(OpCodes.Ldloc_0).WithLabels(list[i + 1].labels);
-					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPosToWorldPos).WithLabels(list[i + 2].labels);
-					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 3].labels);
-					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 4].labels);
-					yield return new CodeInstruction(OpCodes.Nop).WithLabels(list[i + 5].labels);
+					yield return new CodeInstruction(OpCodes.Ldloc_0);
+					yield return new CodeInstruction(OpCodes.Call, m_normalizedMapPosToWorldPos);
+					yield return new CodeInstruction(OpCodes.Nop);
+					yield return new CodeInstruction(OpCodes.Nop);
+					yield return list[i + 5];
 					yield return list[i + 6];
 					i += 6;
 				}
